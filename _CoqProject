@@ -1,0 +1,4 @@
+-R theories/ CoqCP
+-arg "-w all"
+theories/ExistsInRange.v
+theories/RegularBracketString.v
