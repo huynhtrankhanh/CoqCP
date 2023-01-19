@@ -2,3 +2,4 @@
 -arg "-w all"
 theories/ExistsInRange.v
 theories/RegularBracketString.v
+theories/PrefixApp.v
