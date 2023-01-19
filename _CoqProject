@@ -3,3 +3,4 @@
 theories/ExistsInRange.v
 theories/RegularBracketString.v
 theories/PrefixApp.v
+theories/ListsEqual.v
