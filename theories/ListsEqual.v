@@ -8,10 +8,10 @@ Inductive ListExpression (A : Type) :=
 
 Fixpoint interpret {A : Type} (expression : ListExpression A) : list A :=
   match expression with
-  | (NilExpression _) => []
-  | (VarExpression _ x) => x
-  | (ConsExpression _ a b) => a :: (interpret b)
-  | (AppExpression _ l1 l2) => (interpret l1) ++ (interpret l2)
+  | NilExpression _ => []
+  | VarExpression _ x => x
+  | ConsExpression _ a b => a :: interpret b
+  | AppExpression _ l1 l2 => interpret l1 ++ interpret l2
   end.
 
 Inductive ListExpressionFlattenedTerm (A : Type) :=
@@ -81,16 +81,10 @@ Ltac listsEqual :=
   end.
 
 Lemma test0 (l1 : list nat) (x : nat) : [x] ++ l1 = x :: l1.
-Proof.
-  listsEqual.
-Qed.
+Proof. listsEqual. Qed.
 
 Lemma test1 (l1 l2 l3 : list nat) (x : nat) : l1 ++ [x] ++ l2 ++ l3 = l1 ++ (x :: l2) ++ l3.
-Proof.
-  listsEqual.
-Qed.
+Proof. listsEqual. Qed.
 
 Lemma test2 (a b c d e : nat) : [a; b; c] ++ [] ++ [d; e] = [a; b; c; d; e] ++ [] ++ [].
-Proof.
-  listsEqual.
-Qed.
+Proof. listsEqual. Qed.
