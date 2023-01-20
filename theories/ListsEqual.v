@@ -88,3 +88,6 @@ Proof. listsEqual. Qed.
 
 Lemma test2 (a b c d e : nat) : [a; b; c] ++ [] ++ [d; e] = [a; b; c; d; e] ++ [] ++ [].
 Proof. listsEqual. Qed.
+
+Lemma test3 (l1 l2 l3 : list nat) (x : nat) : l1 ++ [x] ++ l2 ++ l3 = l1 ++ (x :: l2 ++ l3).
+Proof. listsEqual. Qed.
