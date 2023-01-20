@@ -77,7 +77,7 @@ Ltac listsEqual :=
     let r1 := listExpressionReify me1 in
     let r2 := listExpressionReify me2 in
       change (interpret r1 = interpret r2);
-        apply listsEqualReflect; simpl; repeat rewrite app_nil_r; easy
+        apply listsEqualReflect; simpl; repeat rewrite app_nil_r; reflexivity
   end.
 
 Lemma test0 (l1 : list nat) (x : nat) : [x] ++ l1 = x :: l1.
