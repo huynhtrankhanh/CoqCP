@@ -5,14 +5,14 @@ Fixpoint fillLeftToRight (withBlanks : list (option Bracket)) (toFill : list Bra
   match withBlanks, toFill with
   | [], _ => []
   | (None :: tail), (toFill :: remaining) => toFill :: fillLeftToRight tail remaining
-  | (None :: tail), [] => [BracketClose]
+  | (None :: tail), [] => []
   | (Some stuff :: tail), remaining => stuff :: fillLeftToRight tail remaining
   end.
 
-Definition possibleToFill (withBlanks : list (option Bracket)) := exists toFill, isBalanced (fillLeftToRight withBlanks toFill).
-
 #[export] Instance optionBracketEqualityDecidable : EqDecision (option Bracket).
 Proof. solve_decision. Defined.
+
+Definition possibleToFill (withBlanks : list (option Bracket)) := exists toFill, length toFill = count_occ optionBracketEqualityDecidable withBlanks None /\ isBalanced (fillLeftToRight withBlanks toFill).
 
 Definition possibleToFillBool (withBlanks : list (option Bracket)) :=
   let count := length withBlanks / 2 in
