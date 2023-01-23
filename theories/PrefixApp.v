@@ -18,3 +18,10 @@ Proof.
     * tauto.
     * rewrite H. right. exists (y ++ [x0]). rewrite app_assoc. easy.
 Qed.
+
+Lemma prefixSingleton {A : Type} (l : list A) (x : A) (h : l `prefix_of` [x]) : l = [] \/ l = [x].
+Proof.
+  destruct h as [w h]. destruct l.
+  - left. reflexivity.
+  - right. inversion h. symmetry in H1. pose proof app_eq_nil _ _ H1 as H2. destruct H2 as [Hleft Hright]. rewrite Hleft. reflexivity.
+Qed.
