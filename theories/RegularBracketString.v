@@ -67,6 +67,14 @@ Lemma countOpenApp (s1 s2 : list Bracket) : countOpen (s1 ++ s2) = countOpen s1 
 Proof. unfold countOpen. rewrite count_occ_app. reflexivity. Qed.
 Lemma countCloseApp (s1 s2 : list Bracket) : countClose (s1 ++ s2) = countClose s1 + countClose s2.
 Proof. unfold countClose. rewrite count_occ_app. reflexivity. Qed.
+Lemma countOpenPlusCountClose (s : list Bracket) : countOpen s + countClose s = length s.
+Proof.
+  induction s.
+  - easy.
+  - destruct a; rewrite ?countOpenConsOpen, ?countOpenConsClose, ?countCloseConsOpen, ?countCloseConsClose; simpl; lia.
+Qed.
+Lemma countClosePlusCountOpen (s : list Bracket) : countClose s + countOpen s = length s.
+Proof. rewrite Nat.add_comm. apply countOpenPlusCountClose. Qed.
 
 Create HintDb rewriteCount.
 #[global] Hint Rewrite countOpenEmpty : rewriteCount.
@@ -77,6 +85,8 @@ Create HintDb rewriteCount.
 #[global] Hint Rewrite countCloseConsClose : rewriteCount.
 #[global] Hint Rewrite countOpenApp : rewriteCount.
 #[global] Hint Rewrite countCloseApp : rewriteCount.
+#[global] Hint Rewrite countOpenPlusCountClose : rewriteCount.
+#[global] Hint Rewrite countClosePlusCountOpen : rewriteCount.
 
 Lemma withInitialBalanceFactor_empty (balanceFactor : nat) : withInitialBalanceFactor [] balanceFactor <-> balanceFactor = 0.
 Proof.
@@ -166,15 +176,15 @@ Create HintDb balanceFactorPredicates.
 #[global] Hint Rewrite isBalancedBoolAux_consBracketClose_balanceFactorSucc : balanceFactorPredicates.
 #[global] Hint Rewrite withInitialBalanceFactor_consBracketClose_balanceFactorSucc : balanceFactorPredicates.
 
-Lemma isBalancedBoolAuxIffWithInitialBalanceFactor (s : list Bracket) (balanceFactor : nat) : (isBalancedBoolAux s balanceFactor = true) <-> withInitialBalanceFactor s balanceFactor.
+Lemma isBalancedBoolAuxIffWithInitialBalanceFactor (s : list Bracket) (balanceFactor : nat) : isBalancedBoolAux s balanceFactor <-> withInitialBalanceFactor s balanceFactor.
 Proof.
   revert balanceFactor.
   induction s; intro balanceFactor.
-  - autorewrite with balanceFactorPredicates. rewrite bool_decide_eq_true. reflexivity.
+  - autorewrite with balanceFactorPredicates. rewrite bool_decide_spec. easy.
   - destruct a; destruct balanceFactor; autorewrite with balanceFactorPredicates; easy.
 Qed.
 
-Lemma isBalancedBoolIffBalanceFactorBasedDefinition (s : list Bracket) : (isBalancedBool s = true) <-> balanceFactorBasedDefinition s.
+Lemma isBalancedBoolIffBalanceFactorBasedDefinition (s : list Bracket) : isBalancedBool s <-> balanceFactorBasedDefinition s.
 Proof. unfold isBalancedBool. rewrite <- ifSubstituteZero. apply isBalancedBoolAuxIffWithInitialBalanceFactor. Qed.
 
 Lemma isBalancedImpliesBalanceFactorBasedDefinition (s : list Bracket) : isBalanced s -> balanceFactorBasedDefinition s.
@@ -342,4 +352,16 @@ Proof.
           pose proof H w H3 H2 as H0.
           pose proof WrapBalanced _ H0.
           rewrite <- hUnwrap in H4. tauto.
+Qed.
+
+Lemma isBalancedIffBalanceFactorBasedDefinition (s : list Bracket) : isBalanced s <-> balanceFactorBasedDefinition s.
+Proof.
+  split; intros.
+  - apply isBalancedImpliesBalanceFactorBasedDefinition. easy.
+  - apply balanceFactorBasedDefinitionImpliesIsBalanced. easy.
+Qed.
+
+Lemma isBalancedIffIsBalancedBool (s : list Bracket) : isBalanced s <-> isBalancedBool s.
+Proof.
+  rewrite isBalancedIffBalanceFactorBasedDefinition, isBalancedBoolIffBalanceFactorBasedDefinition. reflexivity.
 Qed.
