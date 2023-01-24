@@ -106,6 +106,6 @@ Fixpoint bubbleSortAux {A : Type} (i' : nat) (l : list A) (compare : A -> A -> b
   | S i' => let i := length l - S i' in bubbleSortAux i' (performOneBubbleSortPass i l compare default) compare default
   end.
 
-Definition bubbleSortDemo (l : list nat) := bubbleSortAux (length l - 1) l Nat.ltb (0).
+Definition bubbleSortDemo (l : list nat) := bubbleSortAux (length l - 1) l Nat.ltb 0.
 
 Compute bubbleSortDemo [1; 2; 1; 2; 1; 2].
