@@ -107,5 +107,3 @@ Fixpoint bubbleSortAux {A : Type} (i' : nat) (l : list A) (compare : A -> A -> b
   end.
 
 Definition bubbleSortDemo (l : list nat) := bubbleSortAux (length l - 1) l Nat.ltb 0.
-
-Compute bubbleSortDemo [1; 2; 1; 2; 1; 2].

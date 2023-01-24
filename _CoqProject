@@ -6,3 +6,4 @@ theories/PrefixApp.v
 theories/ListsEqual.v
 theories/FillInTheBlanks.v
 theories/PropertyPreservedAfterSorting.v
+theories/BubbleSortTest.v
