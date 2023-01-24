@@ -85,3 +85,27 @@ Create HintDb rewriteSwapUpdate.
 #[global] Hint Rewrite @swapChopOff : rewriteSwapUpdate.
 #[global] Hint Rewrite @swapChopOff': rewriteSwapUpdate.
 #[global] Hint Rewrite @swapApp : rewriteSwapUpdate.
+
+(* based on https://github.com/stqam/dafny/blob/master/BubbleSort.dfy *)
+
+Fixpoint performOneBubbleSortPass {A : Type} (j : nat) (l : list A) (compare : A -> A -> bool) (default : A) :=
+  match j with
+  | 0 => l
+  | S j =>
+    match compare (nth (S j) l default) (nth j l default) with
+    | false => performOneBubbleSortPass j l compare default
+    | true => let updated := swap l j (S j) default in
+      performOneBubbleSortPass j updated compare default
+    end
+  end.
+
+(* i from 1 to length - 1, so i' from length - 1 to 1 (0 ignored) => i = length - i' *)
+Fixpoint bubbleSortAux {A : Type} (i' : nat) (l : list A) (compare : A -> A -> bool) (default : A) :=
+  match i' with
+  | 0 => l
+  | S i' => let i := length l - S i' in bubbleSortAux i' (performOneBubbleSortPass i l compare default) compare default
+  end.
+
+Definition bubbleSortDemo (l : list nat) := bubbleSortAux (length l - 1) l Nat.ltb (0).
+
+Compute bubbleSortDemo [1; 2; 1; 2; 1; 2].
