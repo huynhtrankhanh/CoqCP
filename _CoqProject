@@ -5,3 +5,4 @@ theories/RegularBracketString.v
 theories/PrefixApp.v
 theories/ListsEqual.v
 theories/FillInTheBlanks.v
+theories/PropertyPreservedAfterSorting.v
