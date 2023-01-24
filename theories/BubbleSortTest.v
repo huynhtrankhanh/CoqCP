@@ -1,4352 +1,4352 @@
 From stdpp Require Import numbers list.
 From CoqCP Require Import PropertyPreservedAfterSorting.
 
-Lemma bubbleSortTestTheorem0 : bubbleSortDemo [0; 1; 2] = [0; 1; 2].
+Lemma bubbleSortTestLemma0 : bubbleSortDemo [0; 1; 2] = [0; 1; 2].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem1 : bubbleSortDemo [0; 2; 1] = [0; 1; 2].
+Lemma bubbleSortTestLemma1 : bubbleSortDemo [0; 2; 1] = [0; 1; 2].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem2 : bubbleSortDemo [1; 0; 2] = [0; 1; 2].
+Lemma bubbleSortTestLemma2 : bubbleSortDemo [1; 0; 2] = [0; 1; 2].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem3 : bubbleSortDemo [1; 2; 0] = [0; 1; 2].
+Lemma bubbleSortTestLemma3 : bubbleSortDemo [1; 2; 0] = [0; 1; 2].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem4 : bubbleSortDemo [2; 0; 1] = [0; 1; 2].
+Lemma bubbleSortTestLemma4 : bubbleSortDemo [2; 0; 1] = [0; 1; 2].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem5 : bubbleSortDemo [2; 1; 0] = [0; 1; 2].
+Lemma bubbleSortTestLemma5 : bubbleSortDemo [2; 1; 0] = [0; 1; 2].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem6 : bubbleSortDemo [0; 1; 2; 3] = [0; 1; 2; 3].
+Lemma bubbleSortTestLemma6 : bubbleSortDemo [0; 1; 2; 3] = [0; 1; 2; 3].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem7 : bubbleSortDemo [0; 1; 3; 2] = [0; 1; 2; 3].
+Lemma bubbleSortTestLemma7 : bubbleSortDemo [0; 1; 3; 2] = [0; 1; 2; 3].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem8 : bubbleSortDemo [0; 2; 1; 3] = [0; 1; 2; 3].
+Lemma bubbleSortTestLemma8 : bubbleSortDemo [0; 2; 1; 3] = [0; 1; 2; 3].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem9 : bubbleSortDemo [0; 2; 3; 1] = [0; 1; 2; 3].
+Lemma bubbleSortTestLemma9 : bubbleSortDemo [0; 2; 3; 1] = [0; 1; 2; 3].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem10 : bubbleSortDemo [0; 3; 1; 2] = [0; 1; 2; 3].
+Lemma bubbleSortTestLemma10 : bubbleSortDemo [0; 3; 1; 2] = [0; 1; 2; 3].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem11 : bubbleSortDemo [0; 3; 2; 1] = [0; 1; 2; 3].
+Lemma bubbleSortTestLemma11 : bubbleSortDemo [0; 3; 2; 1] = [0; 1; 2; 3].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem12 : bubbleSortDemo [1; 0; 2; 3] = [0; 1; 2; 3].
+Lemma bubbleSortTestLemma12 : bubbleSortDemo [1; 0; 2; 3] = [0; 1; 2; 3].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem13 : bubbleSortDemo [1; 0; 3; 2] = [0; 1; 2; 3].
+Lemma bubbleSortTestLemma13 : bubbleSortDemo [1; 0; 3; 2] = [0; 1; 2; 3].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem14 : bubbleSortDemo [1; 2; 0; 3] = [0; 1; 2; 3].
+Lemma bubbleSortTestLemma14 : bubbleSortDemo [1; 2; 0; 3] = [0; 1; 2; 3].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem15 : bubbleSortDemo [1; 2; 3; 0] = [0; 1; 2; 3].
+Lemma bubbleSortTestLemma15 : bubbleSortDemo [1; 2; 3; 0] = [0; 1; 2; 3].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem16 : bubbleSortDemo [1; 3; 0; 2] = [0; 1; 2; 3].
+Lemma bubbleSortTestLemma16 : bubbleSortDemo [1; 3; 0; 2] = [0; 1; 2; 3].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem17 : bubbleSortDemo [1; 3; 2; 0] = [0; 1; 2; 3].
+Lemma bubbleSortTestLemma17 : bubbleSortDemo [1; 3; 2; 0] = [0; 1; 2; 3].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem18 : bubbleSortDemo [2; 0; 1; 3] = [0; 1; 2; 3].
+Lemma bubbleSortTestLemma18 : bubbleSortDemo [2; 0; 1; 3] = [0; 1; 2; 3].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem19 : bubbleSortDemo [2; 0; 3; 1] = [0; 1; 2; 3].
+Lemma bubbleSortTestLemma19 : bubbleSortDemo [2; 0; 3; 1] = [0; 1; 2; 3].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem20 : bubbleSortDemo [2; 1; 0; 3] = [0; 1; 2; 3].
+Lemma bubbleSortTestLemma20 : bubbleSortDemo [2; 1; 0; 3] = [0; 1; 2; 3].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem21 : bubbleSortDemo [2; 1; 3; 0] = [0; 1; 2; 3].
+Lemma bubbleSortTestLemma21 : bubbleSortDemo [2; 1; 3; 0] = [0; 1; 2; 3].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem22 : bubbleSortDemo [2; 3; 0; 1] = [0; 1; 2; 3].
+Lemma bubbleSortTestLemma22 : bubbleSortDemo [2; 3; 0; 1] = [0; 1; 2; 3].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem23 : bubbleSortDemo [2; 3; 1; 0] = [0; 1; 2; 3].
+Lemma bubbleSortTestLemma23 : bubbleSortDemo [2; 3; 1; 0] = [0; 1; 2; 3].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem24 : bubbleSortDemo [3; 0; 1; 2] = [0; 1; 2; 3].
+Lemma bubbleSortTestLemma24 : bubbleSortDemo [3; 0; 1; 2] = [0; 1; 2; 3].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem25 : bubbleSortDemo [3; 0; 2; 1] = [0; 1; 2; 3].
+Lemma bubbleSortTestLemma25 : bubbleSortDemo [3; 0; 2; 1] = [0; 1; 2; 3].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem26 : bubbleSortDemo [3; 1; 0; 2] = [0; 1; 2; 3].
+Lemma bubbleSortTestLemma26 : bubbleSortDemo [3; 1; 0; 2] = [0; 1; 2; 3].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem27 : bubbleSortDemo [3; 1; 2; 0] = [0; 1; 2; 3].
+Lemma bubbleSortTestLemma27 : bubbleSortDemo [3; 1; 2; 0] = [0; 1; 2; 3].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem28 : bubbleSortDemo [3; 2; 0; 1] = [0; 1; 2; 3].
+Lemma bubbleSortTestLemma28 : bubbleSortDemo [3; 2; 0; 1] = [0; 1; 2; 3].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem29 : bubbleSortDemo [3; 2; 1; 0] = [0; 1; 2; 3].
+Lemma bubbleSortTestLemma29 : bubbleSortDemo [3; 2; 1; 0] = [0; 1; 2; 3].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem30 : bubbleSortDemo [0; 1; 2; 3; 4] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma30 : bubbleSortDemo [0; 1; 2; 3; 4] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem31 : bubbleSortDemo [0; 1; 2; 4; 3] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma31 : bubbleSortDemo [0; 1; 2; 4; 3] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem32 : bubbleSortDemo [0; 1; 3; 2; 4] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma32 : bubbleSortDemo [0; 1; 3; 2; 4] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem33 : bubbleSortDemo [0; 1; 3; 4; 2] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma33 : bubbleSortDemo [0; 1; 3; 4; 2] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem34 : bubbleSortDemo [0; 1; 4; 2; 3] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma34 : bubbleSortDemo [0; 1; 4; 2; 3] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem35 : bubbleSortDemo [0; 1; 4; 3; 2] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma35 : bubbleSortDemo [0; 1; 4; 3; 2] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem36 : bubbleSortDemo [0; 2; 1; 3; 4] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma36 : bubbleSortDemo [0; 2; 1; 3; 4] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem37 : bubbleSortDemo [0; 2; 1; 4; 3] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma37 : bubbleSortDemo [0; 2; 1; 4; 3] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem38 : bubbleSortDemo [0; 2; 3; 1; 4] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma38 : bubbleSortDemo [0; 2; 3; 1; 4] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem39 : bubbleSortDemo [0; 2; 3; 4; 1] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma39 : bubbleSortDemo [0; 2; 3; 4; 1] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem40 : bubbleSortDemo [0; 2; 4; 1; 3] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma40 : bubbleSortDemo [0; 2; 4; 1; 3] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem41 : bubbleSortDemo [0; 2; 4; 3; 1] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma41 : bubbleSortDemo [0; 2; 4; 3; 1] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem42 : bubbleSortDemo [0; 3; 1; 2; 4] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma42 : bubbleSortDemo [0; 3; 1; 2; 4] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem43 : bubbleSortDemo [0; 3; 1; 4; 2] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma43 : bubbleSortDemo [0; 3; 1; 4; 2] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem44 : bubbleSortDemo [0; 3; 2; 1; 4] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma44 : bubbleSortDemo [0; 3; 2; 1; 4] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem45 : bubbleSortDemo [0; 3; 2; 4; 1] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma45 : bubbleSortDemo [0; 3; 2; 4; 1] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem46 : bubbleSortDemo [0; 3; 4; 1; 2] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma46 : bubbleSortDemo [0; 3; 4; 1; 2] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem47 : bubbleSortDemo [0; 3; 4; 2; 1] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma47 : bubbleSortDemo [0; 3; 4; 2; 1] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem48 : bubbleSortDemo [0; 4; 1; 2; 3] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma48 : bubbleSortDemo [0; 4; 1; 2; 3] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem49 : bubbleSortDemo [0; 4; 1; 3; 2] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma49 : bubbleSortDemo [0; 4; 1; 3; 2] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem50 : bubbleSortDemo [0; 4; 2; 1; 3] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma50 : bubbleSortDemo [0; 4; 2; 1; 3] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem51 : bubbleSortDemo [0; 4; 2; 3; 1] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma51 : bubbleSortDemo [0; 4; 2; 3; 1] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem52 : bubbleSortDemo [0; 4; 3; 1; 2] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma52 : bubbleSortDemo [0; 4; 3; 1; 2] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem53 : bubbleSortDemo [0; 4; 3; 2; 1] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma53 : bubbleSortDemo [0; 4; 3; 2; 1] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem54 : bubbleSortDemo [1; 0; 2; 3; 4] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma54 : bubbleSortDemo [1; 0; 2; 3; 4] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem55 : bubbleSortDemo [1; 0; 2; 4; 3] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma55 : bubbleSortDemo [1; 0; 2; 4; 3] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem56 : bubbleSortDemo [1; 0; 3; 2; 4] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma56 : bubbleSortDemo [1; 0; 3; 2; 4] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem57 : bubbleSortDemo [1; 0; 3; 4; 2] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma57 : bubbleSortDemo [1; 0; 3; 4; 2] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem58 : bubbleSortDemo [1; 0; 4; 2; 3] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma58 : bubbleSortDemo [1; 0; 4; 2; 3] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem59 : bubbleSortDemo [1; 0; 4; 3; 2] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma59 : bubbleSortDemo [1; 0; 4; 3; 2] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem60 : bubbleSortDemo [1; 2; 0; 3; 4] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma60 : bubbleSortDemo [1; 2; 0; 3; 4] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem61 : bubbleSortDemo [1; 2; 0; 4; 3] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma61 : bubbleSortDemo [1; 2; 0; 4; 3] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem62 : bubbleSortDemo [1; 2; 3; 0; 4] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma62 : bubbleSortDemo [1; 2; 3; 0; 4] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem63 : bubbleSortDemo [1; 2; 3; 4; 0] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma63 : bubbleSortDemo [1; 2; 3; 4; 0] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem64 : bubbleSortDemo [1; 2; 4; 0; 3] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma64 : bubbleSortDemo [1; 2; 4; 0; 3] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem65 : bubbleSortDemo [1; 2; 4; 3; 0] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma65 : bubbleSortDemo [1; 2; 4; 3; 0] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem66 : bubbleSortDemo [1; 3; 0; 2; 4] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma66 : bubbleSortDemo [1; 3; 0; 2; 4] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem67 : bubbleSortDemo [1; 3; 0; 4; 2] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma67 : bubbleSortDemo [1; 3; 0; 4; 2] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem68 : bubbleSortDemo [1; 3; 2; 0; 4] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma68 : bubbleSortDemo [1; 3; 2; 0; 4] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem69 : bubbleSortDemo [1; 3; 2; 4; 0] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma69 : bubbleSortDemo [1; 3; 2; 4; 0] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem70 : bubbleSortDemo [1; 3; 4; 0; 2] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma70 : bubbleSortDemo [1; 3; 4; 0; 2] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem71 : bubbleSortDemo [1; 3; 4; 2; 0] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma71 : bubbleSortDemo [1; 3; 4; 2; 0] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem72 : bubbleSortDemo [1; 4; 0; 2; 3] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma72 : bubbleSortDemo [1; 4; 0; 2; 3] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem73 : bubbleSortDemo [1; 4; 0; 3; 2] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma73 : bubbleSortDemo [1; 4; 0; 3; 2] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem74 : bubbleSortDemo [1; 4; 2; 0; 3] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma74 : bubbleSortDemo [1; 4; 2; 0; 3] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem75 : bubbleSortDemo [1; 4; 2; 3; 0] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma75 : bubbleSortDemo [1; 4; 2; 3; 0] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem76 : bubbleSortDemo [1; 4; 3; 0; 2] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma76 : bubbleSortDemo [1; 4; 3; 0; 2] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem77 : bubbleSortDemo [1; 4; 3; 2; 0] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma77 : bubbleSortDemo [1; 4; 3; 2; 0] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem78 : bubbleSortDemo [2; 0; 1; 3; 4] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma78 : bubbleSortDemo [2; 0; 1; 3; 4] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem79 : bubbleSortDemo [2; 0; 1; 4; 3] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma79 : bubbleSortDemo [2; 0; 1; 4; 3] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem80 : bubbleSortDemo [2; 0; 3; 1; 4] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma80 : bubbleSortDemo [2; 0; 3; 1; 4] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem81 : bubbleSortDemo [2; 0; 3; 4; 1] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma81 : bubbleSortDemo [2; 0; 3; 4; 1] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem82 : bubbleSortDemo [2; 0; 4; 1; 3] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma82 : bubbleSortDemo [2; 0; 4; 1; 3] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem83 : bubbleSortDemo [2; 0; 4; 3; 1] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma83 : bubbleSortDemo [2; 0; 4; 3; 1] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem84 : bubbleSortDemo [2; 1; 0; 3; 4] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma84 : bubbleSortDemo [2; 1; 0; 3; 4] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem85 : bubbleSortDemo [2; 1; 0; 4; 3] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma85 : bubbleSortDemo [2; 1; 0; 4; 3] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem86 : bubbleSortDemo [2; 1; 3; 0; 4] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma86 : bubbleSortDemo [2; 1; 3; 0; 4] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem87 : bubbleSortDemo [2; 1; 3; 4; 0] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma87 : bubbleSortDemo [2; 1; 3; 4; 0] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem88 : bubbleSortDemo [2; 1; 4; 0; 3] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma88 : bubbleSortDemo [2; 1; 4; 0; 3] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem89 : bubbleSortDemo [2; 1; 4; 3; 0] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma89 : bubbleSortDemo [2; 1; 4; 3; 0] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem90 : bubbleSortDemo [2; 3; 0; 1; 4] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma90 : bubbleSortDemo [2; 3; 0; 1; 4] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem91 : bubbleSortDemo [2; 3; 0; 4; 1] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma91 : bubbleSortDemo [2; 3; 0; 4; 1] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem92 : bubbleSortDemo [2; 3; 1; 0; 4] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma92 : bubbleSortDemo [2; 3; 1; 0; 4] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem93 : bubbleSortDemo [2; 3; 1; 4; 0] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma93 : bubbleSortDemo [2; 3; 1; 4; 0] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem94 : bubbleSortDemo [2; 3; 4; 0; 1] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma94 : bubbleSortDemo [2; 3; 4; 0; 1] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem95 : bubbleSortDemo [2; 3; 4; 1; 0] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma95 : bubbleSortDemo [2; 3; 4; 1; 0] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem96 : bubbleSortDemo [2; 4; 0; 1; 3] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma96 : bubbleSortDemo [2; 4; 0; 1; 3] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem97 : bubbleSortDemo [2; 4; 0; 3; 1] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma97 : bubbleSortDemo [2; 4; 0; 3; 1] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem98 : bubbleSortDemo [2; 4; 1; 0; 3] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma98 : bubbleSortDemo [2; 4; 1; 0; 3] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem99 : bubbleSortDemo [2; 4; 1; 3; 0] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma99 : bubbleSortDemo [2; 4; 1; 3; 0] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem100 : bubbleSortDemo [2; 4; 3; 0; 1] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma100 : bubbleSortDemo [2; 4; 3; 0; 1] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem101 : bubbleSortDemo [2; 4; 3; 1; 0] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma101 : bubbleSortDemo [2; 4; 3; 1; 0] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem102 : bubbleSortDemo [3; 0; 1; 2; 4] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma102 : bubbleSortDemo [3; 0; 1; 2; 4] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem103 : bubbleSortDemo [3; 0; 1; 4; 2] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma103 : bubbleSortDemo [3; 0; 1; 4; 2] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem104 : bubbleSortDemo [3; 0; 2; 1; 4] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma104 : bubbleSortDemo [3; 0; 2; 1; 4] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem105 : bubbleSortDemo [3; 0; 2; 4; 1] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma105 : bubbleSortDemo [3; 0; 2; 4; 1] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem106 : bubbleSortDemo [3; 0; 4; 1; 2] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma106 : bubbleSortDemo [3; 0; 4; 1; 2] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem107 : bubbleSortDemo [3; 0; 4; 2; 1] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma107 : bubbleSortDemo [3; 0; 4; 2; 1] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem108 : bubbleSortDemo [3; 1; 0; 2; 4] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma108 : bubbleSortDemo [3; 1; 0; 2; 4] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem109 : bubbleSortDemo [3; 1; 0; 4; 2] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma109 : bubbleSortDemo [3; 1; 0; 4; 2] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem110 : bubbleSortDemo [3; 1; 2; 0; 4] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma110 : bubbleSortDemo [3; 1; 2; 0; 4] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem111 : bubbleSortDemo [3; 1; 2; 4; 0] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma111 : bubbleSortDemo [3; 1; 2; 4; 0] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem112 : bubbleSortDemo [3; 1; 4; 0; 2] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma112 : bubbleSortDemo [3; 1; 4; 0; 2] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem113 : bubbleSortDemo [3; 1; 4; 2; 0] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma113 : bubbleSortDemo [3; 1; 4; 2; 0] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem114 : bubbleSortDemo [3; 2; 0; 1; 4] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma114 : bubbleSortDemo [3; 2; 0; 1; 4] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem115 : bubbleSortDemo [3; 2; 0; 4; 1] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma115 : bubbleSortDemo [3; 2; 0; 4; 1] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem116 : bubbleSortDemo [3; 2; 1; 0; 4] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma116 : bubbleSortDemo [3; 2; 1; 0; 4] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem117 : bubbleSortDemo [3; 2; 1; 4; 0] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma117 : bubbleSortDemo [3; 2; 1; 4; 0] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem118 : bubbleSortDemo [3; 2; 4; 0; 1] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma118 : bubbleSortDemo [3; 2; 4; 0; 1] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem119 : bubbleSortDemo [3; 2; 4; 1; 0] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma119 : bubbleSortDemo [3; 2; 4; 1; 0] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem120 : bubbleSortDemo [3; 4; 0; 1; 2] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma120 : bubbleSortDemo [3; 4; 0; 1; 2] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem121 : bubbleSortDemo [3; 4; 0; 2; 1] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma121 : bubbleSortDemo [3; 4; 0; 2; 1] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem122 : bubbleSortDemo [3; 4; 1; 0; 2] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma122 : bubbleSortDemo [3; 4; 1; 0; 2] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem123 : bubbleSortDemo [3; 4; 1; 2; 0] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma123 : bubbleSortDemo [3; 4; 1; 2; 0] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem124 : bubbleSortDemo [3; 4; 2; 0; 1] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma124 : bubbleSortDemo [3; 4; 2; 0; 1] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem125 : bubbleSortDemo [3; 4; 2; 1; 0] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma125 : bubbleSortDemo [3; 4; 2; 1; 0] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem126 : bubbleSortDemo [4; 0; 1; 2; 3] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma126 : bubbleSortDemo [4; 0; 1; 2; 3] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem127 : bubbleSortDemo [4; 0; 1; 3; 2] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma127 : bubbleSortDemo [4; 0; 1; 3; 2] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem128 : bubbleSortDemo [4; 0; 2; 1; 3] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma128 : bubbleSortDemo [4; 0; 2; 1; 3] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem129 : bubbleSortDemo [4; 0; 2; 3; 1] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma129 : bubbleSortDemo [4; 0; 2; 3; 1] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem130 : bubbleSortDemo [4; 0; 3; 1; 2] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma130 : bubbleSortDemo [4; 0; 3; 1; 2] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem131 : bubbleSortDemo [4; 0; 3; 2; 1] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma131 : bubbleSortDemo [4; 0; 3; 2; 1] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem132 : bubbleSortDemo [4; 1; 0; 2; 3] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma132 : bubbleSortDemo [4; 1; 0; 2; 3] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem133 : bubbleSortDemo [4; 1; 0; 3; 2] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma133 : bubbleSortDemo [4; 1; 0; 3; 2] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem134 : bubbleSortDemo [4; 1; 2; 0; 3] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma134 : bubbleSortDemo [4; 1; 2; 0; 3] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem135 : bubbleSortDemo [4; 1; 2; 3; 0] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma135 : bubbleSortDemo [4; 1; 2; 3; 0] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem136 : bubbleSortDemo [4; 1; 3; 0; 2] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma136 : bubbleSortDemo [4; 1; 3; 0; 2] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem137 : bubbleSortDemo [4; 1; 3; 2; 0] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma137 : bubbleSortDemo [4; 1; 3; 2; 0] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem138 : bubbleSortDemo [4; 2; 0; 1; 3] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma138 : bubbleSortDemo [4; 2; 0; 1; 3] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem139 : bubbleSortDemo [4; 2; 0; 3; 1] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma139 : bubbleSortDemo [4; 2; 0; 3; 1] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem140 : bubbleSortDemo [4; 2; 1; 0; 3] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma140 : bubbleSortDemo [4; 2; 1; 0; 3] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem141 : bubbleSortDemo [4; 2; 1; 3; 0] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma141 : bubbleSortDemo [4; 2; 1; 3; 0] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem142 : bubbleSortDemo [4; 2; 3; 0; 1] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma142 : bubbleSortDemo [4; 2; 3; 0; 1] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem143 : bubbleSortDemo [4; 2; 3; 1; 0] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma143 : bubbleSortDemo [4; 2; 3; 1; 0] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem144 : bubbleSortDemo [4; 3; 0; 1; 2] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma144 : bubbleSortDemo [4; 3; 0; 1; 2] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem145 : bubbleSortDemo [4; 3; 0; 2; 1] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma145 : bubbleSortDemo [4; 3; 0; 2; 1] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem146 : bubbleSortDemo [4; 3; 1; 0; 2] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma146 : bubbleSortDemo [4; 3; 1; 0; 2] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem147 : bubbleSortDemo [4; 3; 1; 2; 0] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma147 : bubbleSortDemo [4; 3; 1; 2; 0] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem148 : bubbleSortDemo [4; 3; 2; 0; 1] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma148 : bubbleSortDemo [4; 3; 2; 0; 1] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem149 : bubbleSortDemo [4; 3; 2; 1; 0] = [0; 1; 2; 3; 4].
+Lemma bubbleSortTestLemma149 : bubbleSortDemo [4; 3; 2; 1; 0] = [0; 1; 2; 3; 4].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem150 : bubbleSortDemo [0; 1; 2; 3; 4; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma150 : bubbleSortDemo [0; 1; 2; 3; 4; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem151 : bubbleSortDemo [0; 1; 2; 3; 5; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma151 : bubbleSortDemo [0; 1; 2; 3; 5; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem152 : bubbleSortDemo [0; 1; 2; 4; 3; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma152 : bubbleSortDemo [0; 1; 2; 4; 3; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem153 : bubbleSortDemo [0; 1; 2; 4; 5; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma153 : bubbleSortDemo [0; 1; 2; 4; 5; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem154 : bubbleSortDemo [0; 1; 2; 5; 3; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma154 : bubbleSortDemo [0; 1; 2; 5; 3; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem155 : bubbleSortDemo [0; 1; 2; 5; 4; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma155 : bubbleSortDemo [0; 1; 2; 5; 4; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem156 : bubbleSortDemo [0; 1; 3; 2; 4; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma156 : bubbleSortDemo [0; 1; 3; 2; 4; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem157 : bubbleSortDemo [0; 1; 3; 2; 5; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma157 : bubbleSortDemo [0; 1; 3; 2; 5; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem158 : bubbleSortDemo [0; 1; 3; 4; 2; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma158 : bubbleSortDemo [0; 1; 3; 4; 2; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem159 : bubbleSortDemo [0; 1; 3; 4; 5; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma159 : bubbleSortDemo [0; 1; 3; 4; 5; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem160 : bubbleSortDemo [0; 1; 3; 5; 2; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma160 : bubbleSortDemo [0; 1; 3; 5; 2; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem161 : bubbleSortDemo [0; 1; 3; 5; 4; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma161 : bubbleSortDemo [0; 1; 3; 5; 4; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem162 : bubbleSortDemo [0; 1; 4; 2; 3; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma162 : bubbleSortDemo [0; 1; 4; 2; 3; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem163 : bubbleSortDemo [0; 1; 4; 2; 5; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma163 : bubbleSortDemo [0; 1; 4; 2; 5; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem164 : bubbleSortDemo [0; 1; 4; 3; 2; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma164 : bubbleSortDemo [0; 1; 4; 3; 2; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem165 : bubbleSortDemo [0; 1; 4; 3; 5; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma165 : bubbleSortDemo [0; 1; 4; 3; 5; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem166 : bubbleSortDemo [0; 1; 4; 5; 2; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma166 : bubbleSortDemo [0; 1; 4; 5; 2; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem167 : bubbleSortDemo [0; 1; 4; 5; 3; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma167 : bubbleSortDemo [0; 1; 4; 5; 3; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem168 : bubbleSortDemo [0; 1; 5; 2; 3; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma168 : bubbleSortDemo [0; 1; 5; 2; 3; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem169 : bubbleSortDemo [0; 1; 5; 2; 4; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma169 : bubbleSortDemo [0; 1; 5; 2; 4; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem170 : bubbleSortDemo [0; 1; 5; 3; 2; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma170 : bubbleSortDemo [0; 1; 5; 3; 2; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem171 : bubbleSortDemo [0; 1; 5; 3; 4; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma171 : bubbleSortDemo [0; 1; 5; 3; 4; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem172 : bubbleSortDemo [0; 1; 5; 4; 2; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma172 : bubbleSortDemo [0; 1; 5; 4; 2; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem173 : bubbleSortDemo [0; 1; 5; 4; 3; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma173 : bubbleSortDemo [0; 1; 5; 4; 3; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem174 : bubbleSortDemo [0; 2; 1; 3; 4; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma174 : bubbleSortDemo [0; 2; 1; 3; 4; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem175 : bubbleSortDemo [0; 2; 1; 3; 5; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma175 : bubbleSortDemo [0; 2; 1; 3; 5; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem176 : bubbleSortDemo [0; 2; 1; 4; 3; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma176 : bubbleSortDemo [0; 2; 1; 4; 3; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem177 : bubbleSortDemo [0; 2; 1; 4; 5; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma177 : bubbleSortDemo [0; 2; 1; 4; 5; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem178 : bubbleSortDemo [0; 2; 1; 5; 3; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma178 : bubbleSortDemo [0; 2; 1; 5; 3; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem179 : bubbleSortDemo [0; 2; 1; 5; 4; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma179 : bubbleSortDemo [0; 2; 1; 5; 4; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem180 : bubbleSortDemo [0; 2; 3; 1; 4; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma180 : bubbleSortDemo [0; 2; 3; 1; 4; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem181 : bubbleSortDemo [0; 2; 3; 1; 5; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma181 : bubbleSortDemo [0; 2; 3; 1; 5; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem182 : bubbleSortDemo [0; 2; 3; 4; 1; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma182 : bubbleSortDemo [0; 2; 3; 4; 1; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem183 : bubbleSortDemo [0; 2; 3; 4; 5; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma183 : bubbleSortDemo [0; 2; 3; 4; 5; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem184 : bubbleSortDemo [0; 2; 3; 5; 1; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma184 : bubbleSortDemo [0; 2; 3; 5; 1; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem185 : bubbleSortDemo [0; 2; 3; 5; 4; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma185 : bubbleSortDemo [0; 2; 3; 5; 4; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem186 : bubbleSortDemo [0; 2; 4; 1; 3; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma186 : bubbleSortDemo [0; 2; 4; 1; 3; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem187 : bubbleSortDemo [0; 2; 4; 1; 5; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma187 : bubbleSortDemo [0; 2; 4; 1; 5; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem188 : bubbleSortDemo [0; 2; 4; 3; 1; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma188 : bubbleSortDemo [0; 2; 4; 3; 1; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem189 : bubbleSortDemo [0; 2; 4; 3; 5; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma189 : bubbleSortDemo [0; 2; 4; 3; 5; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem190 : bubbleSortDemo [0; 2; 4; 5; 1; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma190 : bubbleSortDemo [0; 2; 4; 5; 1; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem191 : bubbleSortDemo [0; 2; 4; 5; 3; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma191 : bubbleSortDemo [0; 2; 4; 5; 3; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem192 : bubbleSortDemo [0; 2; 5; 1; 3; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma192 : bubbleSortDemo [0; 2; 5; 1; 3; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem193 : bubbleSortDemo [0; 2; 5; 1; 4; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma193 : bubbleSortDemo [0; 2; 5; 1; 4; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem194 : bubbleSortDemo [0; 2; 5; 3; 1; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma194 : bubbleSortDemo [0; 2; 5; 3; 1; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem195 : bubbleSortDemo [0; 2; 5; 3; 4; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma195 : bubbleSortDemo [0; 2; 5; 3; 4; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem196 : bubbleSortDemo [0; 2; 5; 4; 1; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma196 : bubbleSortDemo [0; 2; 5; 4; 1; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem197 : bubbleSortDemo [0; 2; 5; 4; 3; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma197 : bubbleSortDemo [0; 2; 5; 4; 3; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem198 : bubbleSortDemo [0; 3; 1; 2; 4; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma198 : bubbleSortDemo [0; 3; 1; 2; 4; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem199 : bubbleSortDemo [0; 3; 1; 2; 5; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma199 : bubbleSortDemo [0; 3; 1; 2; 5; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem200 : bubbleSortDemo [0; 3; 1; 4; 2; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma200 : bubbleSortDemo [0; 3; 1; 4; 2; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem201 : bubbleSortDemo [0; 3; 1; 4; 5; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma201 : bubbleSortDemo [0; 3; 1; 4; 5; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem202 : bubbleSortDemo [0; 3; 1; 5; 2; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma202 : bubbleSortDemo [0; 3; 1; 5; 2; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem203 : bubbleSortDemo [0; 3; 1; 5; 4; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma203 : bubbleSortDemo [0; 3; 1; 5; 4; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem204 : bubbleSortDemo [0; 3; 2; 1; 4; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma204 : bubbleSortDemo [0; 3; 2; 1; 4; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem205 : bubbleSortDemo [0; 3; 2; 1; 5; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma205 : bubbleSortDemo [0; 3; 2; 1; 5; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem206 : bubbleSortDemo [0; 3; 2; 4; 1; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma206 : bubbleSortDemo [0; 3; 2; 4; 1; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem207 : bubbleSortDemo [0; 3; 2; 4; 5; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma207 : bubbleSortDemo [0; 3; 2; 4; 5; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem208 : bubbleSortDemo [0; 3; 2; 5; 1; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma208 : bubbleSortDemo [0; 3; 2; 5; 1; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem209 : bubbleSortDemo [0; 3; 2; 5; 4; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma209 : bubbleSortDemo [0; 3; 2; 5; 4; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem210 : bubbleSortDemo [0; 3; 4; 1; 2; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma210 : bubbleSortDemo [0; 3; 4; 1; 2; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem211 : bubbleSortDemo [0; 3; 4; 1; 5; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma211 : bubbleSortDemo [0; 3; 4; 1; 5; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem212 : bubbleSortDemo [0; 3; 4; 2; 1; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma212 : bubbleSortDemo [0; 3; 4; 2; 1; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem213 : bubbleSortDemo [0; 3; 4; 2; 5; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma213 : bubbleSortDemo [0; 3; 4; 2; 5; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem214 : bubbleSortDemo [0; 3; 4; 5; 1; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma214 : bubbleSortDemo [0; 3; 4; 5; 1; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem215 : bubbleSortDemo [0; 3; 4; 5; 2; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma215 : bubbleSortDemo [0; 3; 4; 5; 2; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem216 : bubbleSortDemo [0; 3; 5; 1; 2; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma216 : bubbleSortDemo [0; 3; 5; 1; 2; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem217 : bubbleSortDemo [0; 3; 5; 1; 4; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma217 : bubbleSortDemo [0; 3; 5; 1; 4; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem218 : bubbleSortDemo [0; 3; 5; 2; 1; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma218 : bubbleSortDemo [0; 3; 5; 2; 1; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem219 : bubbleSortDemo [0; 3; 5; 2; 4; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma219 : bubbleSortDemo [0; 3; 5; 2; 4; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem220 : bubbleSortDemo [0; 3; 5; 4; 1; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma220 : bubbleSortDemo [0; 3; 5; 4; 1; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem221 : bubbleSortDemo [0; 3; 5; 4; 2; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma221 : bubbleSortDemo [0; 3; 5; 4; 2; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem222 : bubbleSortDemo [0; 4; 1; 2; 3; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma222 : bubbleSortDemo [0; 4; 1; 2; 3; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem223 : bubbleSortDemo [0; 4; 1; 2; 5; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma223 : bubbleSortDemo [0; 4; 1; 2; 5; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem224 : bubbleSortDemo [0; 4; 1; 3; 2; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma224 : bubbleSortDemo [0; 4; 1; 3; 2; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem225 : bubbleSortDemo [0; 4; 1; 3; 5; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma225 : bubbleSortDemo [0; 4; 1; 3; 5; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem226 : bubbleSortDemo [0; 4; 1; 5; 2; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma226 : bubbleSortDemo [0; 4; 1; 5; 2; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem227 : bubbleSortDemo [0; 4; 1; 5; 3; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma227 : bubbleSortDemo [0; 4; 1; 5; 3; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem228 : bubbleSortDemo [0; 4; 2; 1; 3; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma228 : bubbleSortDemo [0; 4; 2; 1; 3; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem229 : bubbleSortDemo [0; 4; 2; 1; 5; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma229 : bubbleSortDemo [0; 4; 2; 1; 5; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem230 : bubbleSortDemo [0; 4; 2; 3; 1; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma230 : bubbleSortDemo [0; 4; 2; 3; 1; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem231 : bubbleSortDemo [0; 4; 2; 3; 5; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma231 : bubbleSortDemo [0; 4; 2; 3; 5; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem232 : bubbleSortDemo [0; 4; 2; 5; 1; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma232 : bubbleSortDemo [0; 4; 2; 5; 1; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem233 : bubbleSortDemo [0; 4; 2; 5; 3; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma233 : bubbleSortDemo [0; 4; 2; 5; 3; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem234 : bubbleSortDemo [0; 4; 3; 1; 2; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma234 : bubbleSortDemo [0; 4; 3; 1; 2; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem235 : bubbleSortDemo [0; 4; 3; 1; 5; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma235 : bubbleSortDemo [0; 4; 3; 1; 5; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem236 : bubbleSortDemo [0; 4; 3; 2; 1; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma236 : bubbleSortDemo [0; 4; 3; 2; 1; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem237 : bubbleSortDemo [0; 4; 3; 2; 5; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma237 : bubbleSortDemo [0; 4; 3; 2; 5; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem238 : bubbleSortDemo [0; 4; 3; 5; 1; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma238 : bubbleSortDemo [0; 4; 3; 5; 1; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem239 : bubbleSortDemo [0; 4; 3; 5; 2; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma239 : bubbleSortDemo [0; 4; 3; 5; 2; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem240 : bubbleSortDemo [0; 4; 5; 1; 2; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma240 : bubbleSortDemo [0; 4; 5; 1; 2; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem241 : bubbleSortDemo [0; 4; 5; 1; 3; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma241 : bubbleSortDemo [0; 4; 5; 1; 3; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem242 : bubbleSortDemo [0; 4; 5; 2; 1; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma242 : bubbleSortDemo [0; 4; 5; 2; 1; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem243 : bubbleSortDemo [0; 4; 5; 2; 3; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma243 : bubbleSortDemo [0; 4; 5; 2; 3; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem244 : bubbleSortDemo [0; 4; 5; 3; 1; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma244 : bubbleSortDemo [0; 4; 5; 3; 1; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem245 : bubbleSortDemo [0; 4; 5; 3; 2; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma245 : bubbleSortDemo [0; 4; 5; 3; 2; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem246 : bubbleSortDemo [0; 5; 1; 2; 3; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma246 : bubbleSortDemo [0; 5; 1; 2; 3; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem247 : bubbleSortDemo [0; 5; 1; 2; 4; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma247 : bubbleSortDemo [0; 5; 1; 2; 4; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem248 : bubbleSortDemo [0; 5; 1; 3; 2; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma248 : bubbleSortDemo [0; 5; 1; 3; 2; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem249 : bubbleSortDemo [0; 5; 1; 3; 4; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma249 : bubbleSortDemo [0; 5; 1; 3; 4; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem250 : bubbleSortDemo [0; 5; 1; 4; 2; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma250 : bubbleSortDemo [0; 5; 1; 4; 2; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem251 : bubbleSortDemo [0; 5; 1; 4; 3; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma251 : bubbleSortDemo [0; 5; 1; 4; 3; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem252 : bubbleSortDemo [0; 5; 2; 1; 3; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma252 : bubbleSortDemo [0; 5; 2; 1; 3; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem253 : bubbleSortDemo [0; 5; 2; 1; 4; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma253 : bubbleSortDemo [0; 5; 2; 1; 4; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem254 : bubbleSortDemo [0; 5; 2; 3; 1; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma254 : bubbleSortDemo [0; 5; 2; 3; 1; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem255 : bubbleSortDemo [0; 5; 2; 3; 4; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma255 : bubbleSortDemo [0; 5; 2; 3; 4; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem256 : bubbleSortDemo [0; 5; 2; 4; 1; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma256 : bubbleSortDemo [0; 5; 2; 4; 1; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem257 : bubbleSortDemo [0; 5; 2; 4; 3; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma257 : bubbleSortDemo [0; 5; 2; 4; 3; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem258 : bubbleSortDemo [0; 5; 3; 1; 2; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma258 : bubbleSortDemo [0; 5; 3; 1; 2; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem259 : bubbleSortDemo [0; 5; 3; 1; 4; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma259 : bubbleSortDemo [0; 5; 3; 1; 4; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem260 : bubbleSortDemo [0; 5; 3; 2; 1; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma260 : bubbleSortDemo [0; 5; 3; 2; 1; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem261 : bubbleSortDemo [0; 5; 3; 2; 4; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma261 : bubbleSortDemo [0; 5; 3; 2; 4; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem262 : bubbleSortDemo [0; 5; 3; 4; 1; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma262 : bubbleSortDemo [0; 5; 3; 4; 1; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem263 : bubbleSortDemo [0; 5; 3; 4; 2; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma263 : bubbleSortDemo [0; 5; 3; 4; 2; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem264 : bubbleSortDemo [0; 5; 4; 1; 2; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma264 : bubbleSortDemo [0; 5; 4; 1; 2; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem265 : bubbleSortDemo [0; 5; 4; 1; 3; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma265 : bubbleSortDemo [0; 5; 4; 1; 3; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem266 : bubbleSortDemo [0; 5; 4; 2; 1; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma266 : bubbleSortDemo [0; 5; 4; 2; 1; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem267 : bubbleSortDemo [0; 5; 4; 2; 3; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma267 : bubbleSortDemo [0; 5; 4; 2; 3; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem268 : bubbleSortDemo [0; 5; 4; 3; 1; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma268 : bubbleSortDemo [0; 5; 4; 3; 1; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem269 : bubbleSortDemo [0; 5; 4; 3; 2; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma269 : bubbleSortDemo [0; 5; 4; 3; 2; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem270 : bubbleSortDemo [1; 0; 2; 3; 4; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma270 : bubbleSortDemo [1; 0; 2; 3; 4; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem271 : bubbleSortDemo [1; 0; 2; 3; 5; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma271 : bubbleSortDemo [1; 0; 2; 3; 5; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem272 : bubbleSortDemo [1; 0; 2; 4; 3; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma272 : bubbleSortDemo [1; 0; 2; 4; 3; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem273 : bubbleSortDemo [1; 0; 2; 4; 5; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma273 : bubbleSortDemo [1; 0; 2; 4; 5; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem274 : bubbleSortDemo [1; 0; 2; 5; 3; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma274 : bubbleSortDemo [1; 0; 2; 5; 3; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem275 : bubbleSortDemo [1; 0; 2; 5; 4; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma275 : bubbleSortDemo [1; 0; 2; 5; 4; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem276 : bubbleSortDemo [1; 0; 3; 2; 4; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma276 : bubbleSortDemo [1; 0; 3; 2; 4; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem277 : bubbleSortDemo [1; 0; 3; 2; 5; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma277 : bubbleSortDemo [1; 0; 3; 2; 5; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem278 : bubbleSortDemo [1; 0; 3; 4; 2; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma278 : bubbleSortDemo [1; 0; 3; 4; 2; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem279 : bubbleSortDemo [1; 0; 3; 4; 5; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma279 : bubbleSortDemo [1; 0; 3; 4; 5; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem280 : bubbleSortDemo [1; 0; 3; 5; 2; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma280 : bubbleSortDemo [1; 0; 3; 5; 2; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem281 : bubbleSortDemo [1; 0; 3; 5; 4; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma281 : bubbleSortDemo [1; 0; 3; 5; 4; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem282 : bubbleSortDemo [1; 0; 4; 2; 3; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma282 : bubbleSortDemo [1; 0; 4; 2; 3; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem283 : bubbleSortDemo [1; 0; 4; 2; 5; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma283 : bubbleSortDemo [1; 0; 4; 2; 5; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem284 : bubbleSortDemo [1; 0; 4; 3; 2; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma284 : bubbleSortDemo [1; 0; 4; 3; 2; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem285 : bubbleSortDemo [1; 0; 4; 3; 5; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma285 : bubbleSortDemo [1; 0; 4; 3; 5; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem286 : bubbleSortDemo [1; 0; 4; 5; 2; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma286 : bubbleSortDemo [1; 0; 4; 5; 2; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem287 : bubbleSortDemo [1; 0; 4; 5; 3; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma287 : bubbleSortDemo [1; 0; 4; 5; 3; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem288 : bubbleSortDemo [1; 0; 5; 2; 3; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma288 : bubbleSortDemo [1; 0; 5; 2; 3; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem289 : bubbleSortDemo [1; 0; 5; 2; 4; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma289 : bubbleSortDemo [1; 0; 5; 2; 4; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem290 : bubbleSortDemo [1; 0; 5; 3; 2; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma290 : bubbleSortDemo [1; 0; 5; 3; 2; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem291 : bubbleSortDemo [1; 0; 5; 3; 4; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma291 : bubbleSortDemo [1; 0; 5; 3; 4; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem292 : bubbleSortDemo [1; 0; 5; 4; 2; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma292 : bubbleSortDemo [1; 0; 5; 4; 2; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem293 : bubbleSortDemo [1; 0; 5; 4; 3; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma293 : bubbleSortDemo [1; 0; 5; 4; 3; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem294 : bubbleSortDemo [1; 2; 0; 3; 4; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma294 : bubbleSortDemo [1; 2; 0; 3; 4; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem295 : bubbleSortDemo [1; 2; 0; 3; 5; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma295 : bubbleSortDemo [1; 2; 0; 3; 5; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem296 : bubbleSortDemo [1; 2; 0; 4; 3; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma296 : bubbleSortDemo [1; 2; 0; 4; 3; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem297 : bubbleSortDemo [1; 2; 0; 4; 5; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma297 : bubbleSortDemo [1; 2; 0; 4; 5; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem298 : bubbleSortDemo [1; 2; 0; 5; 3; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma298 : bubbleSortDemo [1; 2; 0; 5; 3; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem299 : bubbleSortDemo [1; 2; 0; 5; 4; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma299 : bubbleSortDemo [1; 2; 0; 5; 4; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem300 : bubbleSortDemo [1; 2; 3; 0; 4; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma300 : bubbleSortDemo [1; 2; 3; 0; 4; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem301 : bubbleSortDemo [1; 2; 3; 0; 5; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma301 : bubbleSortDemo [1; 2; 3; 0; 5; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem302 : bubbleSortDemo [1; 2; 3; 4; 0; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma302 : bubbleSortDemo [1; 2; 3; 4; 0; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem303 : bubbleSortDemo [1; 2; 3; 4; 5; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma303 : bubbleSortDemo [1; 2; 3; 4; 5; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem304 : bubbleSortDemo [1; 2; 3; 5; 0; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma304 : bubbleSortDemo [1; 2; 3; 5; 0; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem305 : bubbleSortDemo [1; 2; 3; 5; 4; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma305 : bubbleSortDemo [1; 2; 3; 5; 4; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem306 : bubbleSortDemo [1; 2; 4; 0; 3; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma306 : bubbleSortDemo [1; 2; 4; 0; 3; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem307 : bubbleSortDemo [1; 2; 4; 0; 5; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma307 : bubbleSortDemo [1; 2; 4; 0; 5; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem308 : bubbleSortDemo [1; 2; 4; 3; 0; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma308 : bubbleSortDemo [1; 2; 4; 3; 0; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem309 : bubbleSortDemo [1; 2; 4; 3; 5; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma309 : bubbleSortDemo [1; 2; 4; 3; 5; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem310 : bubbleSortDemo [1; 2; 4; 5; 0; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma310 : bubbleSortDemo [1; 2; 4; 5; 0; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem311 : bubbleSortDemo [1; 2; 4; 5; 3; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma311 : bubbleSortDemo [1; 2; 4; 5; 3; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem312 : bubbleSortDemo [1; 2; 5; 0; 3; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma312 : bubbleSortDemo [1; 2; 5; 0; 3; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem313 : bubbleSortDemo [1; 2; 5; 0; 4; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma313 : bubbleSortDemo [1; 2; 5; 0; 4; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem314 : bubbleSortDemo [1; 2; 5; 3; 0; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma314 : bubbleSortDemo [1; 2; 5; 3; 0; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem315 : bubbleSortDemo [1; 2; 5; 3; 4; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma315 : bubbleSortDemo [1; 2; 5; 3; 4; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem316 : bubbleSortDemo [1; 2; 5; 4; 0; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma316 : bubbleSortDemo [1; 2; 5; 4; 0; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem317 : bubbleSortDemo [1; 2; 5; 4; 3; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma317 : bubbleSortDemo [1; 2; 5; 4; 3; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem318 : bubbleSortDemo [1; 3; 0; 2; 4; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma318 : bubbleSortDemo [1; 3; 0; 2; 4; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem319 : bubbleSortDemo [1; 3; 0; 2; 5; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma319 : bubbleSortDemo [1; 3; 0; 2; 5; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem320 : bubbleSortDemo [1; 3; 0; 4; 2; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma320 : bubbleSortDemo [1; 3; 0; 4; 2; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem321 : bubbleSortDemo [1; 3; 0; 4; 5; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma321 : bubbleSortDemo [1; 3; 0; 4; 5; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem322 : bubbleSortDemo [1; 3; 0; 5; 2; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma322 : bubbleSortDemo [1; 3; 0; 5; 2; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem323 : bubbleSortDemo [1; 3; 0; 5; 4; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma323 : bubbleSortDemo [1; 3; 0; 5; 4; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem324 : bubbleSortDemo [1; 3; 2; 0; 4; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma324 : bubbleSortDemo [1; 3; 2; 0; 4; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem325 : bubbleSortDemo [1; 3; 2; 0; 5; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma325 : bubbleSortDemo [1; 3; 2; 0; 5; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem326 : bubbleSortDemo [1; 3; 2; 4; 0; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma326 : bubbleSortDemo [1; 3; 2; 4; 0; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem327 : bubbleSortDemo [1; 3; 2; 4; 5; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma327 : bubbleSortDemo [1; 3; 2; 4; 5; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem328 : bubbleSortDemo [1; 3; 2; 5; 0; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma328 : bubbleSortDemo [1; 3; 2; 5; 0; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem329 : bubbleSortDemo [1; 3; 2; 5; 4; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma329 : bubbleSortDemo [1; 3; 2; 5; 4; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem330 : bubbleSortDemo [1; 3; 4; 0; 2; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma330 : bubbleSortDemo [1; 3; 4; 0; 2; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem331 : bubbleSortDemo [1; 3; 4; 0; 5; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma331 : bubbleSortDemo [1; 3; 4; 0; 5; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem332 : bubbleSortDemo [1; 3; 4; 2; 0; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma332 : bubbleSortDemo [1; 3; 4; 2; 0; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem333 : bubbleSortDemo [1; 3; 4; 2; 5; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma333 : bubbleSortDemo [1; 3; 4; 2; 5; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem334 : bubbleSortDemo [1; 3; 4; 5; 0; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma334 : bubbleSortDemo [1; 3; 4; 5; 0; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem335 : bubbleSortDemo [1; 3; 4; 5; 2; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma335 : bubbleSortDemo [1; 3; 4; 5; 2; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem336 : bubbleSortDemo [1; 3; 5; 0; 2; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma336 : bubbleSortDemo [1; 3; 5; 0; 2; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem337 : bubbleSortDemo [1; 3; 5; 0; 4; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma337 : bubbleSortDemo [1; 3; 5; 0; 4; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem338 : bubbleSortDemo [1; 3; 5; 2; 0; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma338 : bubbleSortDemo [1; 3; 5; 2; 0; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem339 : bubbleSortDemo [1; 3; 5; 2; 4; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma339 : bubbleSortDemo [1; 3; 5; 2; 4; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem340 : bubbleSortDemo [1; 3; 5; 4; 0; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma340 : bubbleSortDemo [1; 3; 5; 4; 0; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem341 : bubbleSortDemo [1; 3; 5; 4; 2; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma341 : bubbleSortDemo [1; 3; 5; 4; 2; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem342 : bubbleSortDemo [1; 4; 0; 2; 3; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma342 : bubbleSortDemo [1; 4; 0; 2; 3; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem343 : bubbleSortDemo [1; 4; 0; 2; 5; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma343 : bubbleSortDemo [1; 4; 0; 2; 5; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem344 : bubbleSortDemo [1; 4; 0; 3; 2; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma344 : bubbleSortDemo [1; 4; 0; 3; 2; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem345 : bubbleSortDemo [1; 4; 0; 3; 5; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma345 : bubbleSortDemo [1; 4; 0; 3; 5; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem346 : bubbleSortDemo [1; 4; 0; 5; 2; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma346 : bubbleSortDemo [1; 4; 0; 5; 2; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem347 : bubbleSortDemo [1; 4; 0; 5; 3; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma347 : bubbleSortDemo [1; 4; 0; 5; 3; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem348 : bubbleSortDemo [1; 4; 2; 0; 3; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma348 : bubbleSortDemo [1; 4; 2; 0; 3; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem349 : bubbleSortDemo [1; 4; 2; 0; 5; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma349 : bubbleSortDemo [1; 4; 2; 0; 5; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem350 : bubbleSortDemo [1; 4; 2; 3; 0; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma350 : bubbleSortDemo [1; 4; 2; 3; 0; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem351 : bubbleSortDemo [1; 4; 2; 3; 5; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma351 : bubbleSortDemo [1; 4; 2; 3; 5; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem352 : bubbleSortDemo [1; 4; 2; 5; 0; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma352 : bubbleSortDemo [1; 4; 2; 5; 0; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem353 : bubbleSortDemo [1; 4; 2; 5; 3; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma353 : bubbleSortDemo [1; 4; 2; 5; 3; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem354 : bubbleSortDemo [1; 4; 3; 0; 2; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma354 : bubbleSortDemo [1; 4; 3; 0; 2; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem355 : bubbleSortDemo [1; 4; 3; 0; 5; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma355 : bubbleSortDemo [1; 4; 3; 0; 5; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem356 : bubbleSortDemo [1; 4; 3; 2; 0; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma356 : bubbleSortDemo [1; 4; 3; 2; 0; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem357 : bubbleSortDemo [1; 4; 3; 2; 5; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma357 : bubbleSortDemo [1; 4; 3; 2; 5; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem358 : bubbleSortDemo [1; 4; 3; 5; 0; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma358 : bubbleSortDemo [1; 4; 3; 5; 0; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem359 : bubbleSortDemo [1; 4; 3; 5; 2; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma359 : bubbleSortDemo [1; 4; 3; 5; 2; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem360 : bubbleSortDemo [1; 4; 5; 0; 2; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma360 : bubbleSortDemo [1; 4; 5; 0; 2; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem361 : bubbleSortDemo [1; 4; 5; 0; 3; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma361 : bubbleSortDemo [1; 4; 5; 0; 3; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem362 : bubbleSortDemo [1; 4; 5; 2; 0; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma362 : bubbleSortDemo [1; 4; 5; 2; 0; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem363 : bubbleSortDemo [1; 4; 5; 2; 3; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma363 : bubbleSortDemo [1; 4; 5; 2; 3; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem364 : bubbleSortDemo [1; 4; 5; 3; 0; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma364 : bubbleSortDemo [1; 4; 5; 3; 0; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem365 : bubbleSortDemo [1; 4; 5; 3; 2; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma365 : bubbleSortDemo [1; 4; 5; 3; 2; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem366 : bubbleSortDemo [1; 5; 0; 2; 3; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma366 : bubbleSortDemo [1; 5; 0; 2; 3; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem367 : bubbleSortDemo [1; 5; 0; 2; 4; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma367 : bubbleSortDemo [1; 5; 0; 2; 4; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem368 : bubbleSortDemo [1; 5; 0; 3; 2; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma368 : bubbleSortDemo [1; 5; 0; 3; 2; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem369 : bubbleSortDemo [1; 5; 0; 3; 4; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma369 : bubbleSortDemo [1; 5; 0; 3; 4; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem370 : bubbleSortDemo [1; 5; 0; 4; 2; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma370 : bubbleSortDemo [1; 5; 0; 4; 2; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem371 : bubbleSortDemo [1; 5; 0; 4; 3; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma371 : bubbleSortDemo [1; 5; 0; 4; 3; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem372 : bubbleSortDemo [1; 5; 2; 0; 3; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma372 : bubbleSortDemo [1; 5; 2; 0; 3; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem373 : bubbleSortDemo [1; 5; 2; 0; 4; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma373 : bubbleSortDemo [1; 5; 2; 0; 4; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem374 : bubbleSortDemo [1; 5; 2; 3; 0; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma374 : bubbleSortDemo [1; 5; 2; 3; 0; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem375 : bubbleSortDemo [1; 5; 2; 3; 4; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma375 : bubbleSortDemo [1; 5; 2; 3; 4; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem376 : bubbleSortDemo [1; 5; 2; 4; 0; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma376 : bubbleSortDemo [1; 5; 2; 4; 0; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem377 : bubbleSortDemo [1; 5; 2; 4; 3; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma377 : bubbleSortDemo [1; 5; 2; 4; 3; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem378 : bubbleSortDemo [1; 5; 3; 0; 2; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma378 : bubbleSortDemo [1; 5; 3; 0; 2; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem379 : bubbleSortDemo [1; 5; 3; 0; 4; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma379 : bubbleSortDemo [1; 5; 3; 0; 4; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem380 : bubbleSortDemo [1; 5; 3; 2; 0; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma380 : bubbleSortDemo [1; 5; 3; 2; 0; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem381 : bubbleSortDemo [1; 5; 3; 2; 4; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma381 : bubbleSortDemo [1; 5; 3; 2; 4; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem382 : bubbleSortDemo [1; 5; 3; 4; 0; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma382 : bubbleSortDemo [1; 5; 3; 4; 0; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem383 : bubbleSortDemo [1; 5; 3; 4; 2; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma383 : bubbleSortDemo [1; 5; 3; 4; 2; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem384 : bubbleSortDemo [1; 5; 4; 0; 2; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma384 : bubbleSortDemo [1; 5; 4; 0; 2; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem385 : bubbleSortDemo [1; 5; 4; 0; 3; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma385 : bubbleSortDemo [1; 5; 4; 0; 3; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem386 : bubbleSortDemo [1; 5; 4; 2; 0; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma386 : bubbleSortDemo [1; 5; 4; 2; 0; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem387 : bubbleSortDemo [1; 5; 4; 2; 3; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma387 : bubbleSortDemo [1; 5; 4; 2; 3; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem388 : bubbleSortDemo [1; 5; 4; 3; 0; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma388 : bubbleSortDemo [1; 5; 4; 3; 0; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem389 : bubbleSortDemo [1; 5; 4; 3; 2; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma389 : bubbleSortDemo [1; 5; 4; 3; 2; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem390 : bubbleSortDemo [2; 0; 1; 3; 4; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma390 : bubbleSortDemo [2; 0; 1; 3; 4; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem391 : bubbleSortDemo [2; 0; 1; 3; 5; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma391 : bubbleSortDemo [2; 0; 1; 3; 5; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem392 : bubbleSortDemo [2; 0; 1; 4; 3; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma392 : bubbleSortDemo [2; 0; 1; 4; 3; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem393 : bubbleSortDemo [2; 0; 1; 4; 5; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma393 : bubbleSortDemo [2; 0; 1; 4; 5; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem394 : bubbleSortDemo [2; 0; 1; 5; 3; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma394 : bubbleSortDemo [2; 0; 1; 5; 3; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem395 : bubbleSortDemo [2; 0; 1; 5; 4; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma395 : bubbleSortDemo [2; 0; 1; 5; 4; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem396 : bubbleSortDemo [2; 0; 3; 1; 4; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma396 : bubbleSortDemo [2; 0; 3; 1; 4; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem397 : bubbleSortDemo [2; 0; 3; 1; 5; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma397 : bubbleSortDemo [2; 0; 3; 1; 5; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem398 : bubbleSortDemo [2; 0; 3; 4; 1; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma398 : bubbleSortDemo [2; 0; 3; 4; 1; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem399 : bubbleSortDemo [2; 0; 3; 4; 5; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma399 : bubbleSortDemo [2; 0; 3; 4; 5; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem400 : bubbleSortDemo [2; 0; 3; 5; 1; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma400 : bubbleSortDemo [2; 0; 3; 5; 1; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem401 : bubbleSortDemo [2; 0; 3; 5; 4; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma401 : bubbleSortDemo [2; 0; 3; 5; 4; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem402 : bubbleSortDemo [2; 0; 4; 1; 3; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma402 : bubbleSortDemo [2; 0; 4; 1; 3; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem403 : bubbleSortDemo [2; 0; 4; 1; 5; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma403 : bubbleSortDemo [2; 0; 4; 1; 5; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem404 : bubbleSortDemo [2; 0; 4; 3; 1; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma404 : bubbleSortDemo [2; 0; 4; 3; 1; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem405 : bubbleSortDemo [2; 0; 4; 3; 5; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma405 : bubbleSortDemo [2; 0; 4; 3; 5; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem406 : bubbleSortDemo [2; 0; 4; 5; 1; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma406 : bubbleSortDemo [2; 0; 4; 5; 1; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem407 : bubbleSortDemo [2; 0; 4; 5; 3; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma407 : bubbleSortDemo [2; 0; 4; 5; 3; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem408 : bubbleSortDemo [2; 0; 5; 1; 3; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma408 : bubbleSortDemo [2; 0; 5; 1; 3; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem409 : bubbleSortDemo [2; 0; 5; 1; 4; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma409 : bubbleSortDemo [2; 0; 5; 1; 4; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem410 : bubbleSortDemo [2; 0; 5; 3; 1; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma410 : bubbleSortDemo [2; 0; 5; 3; 1; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem411 : bubbleSortDemo [2; 0; 5; 3; 4; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma411 : bubbleSortDemo [2; 0; 5; 3; 4; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem412 : bubbleSortDemo [2; 0; 5; 4; 1; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma412 : bubbleSortDemo [2; 0; 5; 4; 1; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem413 : bubbleSortDemo [2; 0; 5; 4; 3; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma413 : bubbleSortDemo [2; 0; 5; 4; 3; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem414 : bubbleSortDemo [2; 1; 0; 3; 4; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma414 : bubbleSortDemo [2; 1; 0; 3; 4; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem415 : bubbleSortDemo [2; 1; 0; 3; 5; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma415 : bubbleSortDemo [2; 1; 0; 3; 5; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem416 : bubbleSortDemo [2; 1; 0; 4; 3; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma416 : bubbleSortDemo [2; 1; 0; 4; 3; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem417 : bubbleSortDemo [2; 1; 0; 4; 5; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma417 : bubbleSortDemo [2; 1; 0; 4; 5; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem418 : bubbleSortDemo [2; 1; 0; 5; 3; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma418 : bubbleSortDemo [2; 1; 0; 5; 3; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem419 : bubbleSortDemo [2; 1; 0; 5; 4; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma419 : bubbleSortDemo [2; 1; 0; 5; 4; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem420 : bubbleSortDemo [2; 1; 3; 0; 4; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma420 : bubbleSortDemo [2; 1; 3; 0; 4; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem421 : bubbleSortDemo [2; 1; 3; 0; 5; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma421 : bubbleSortDemo [2; 1; 3; 0; 5; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem422 : bubbleSortDemo [2; 1; 3; 4; 0; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma422 : bubbleSortDemo [2; 1; 3; 4; 0; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem423 : bubbleSortDemo [2; 1; 3; 4; 5; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma423 : bubbleSortDemo [2; 1; 3; 4; 5; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem424 : bubbleSortDemo [2; 1; 3; 5; 0; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma424 : bubbleSortDemo [2; 1; 3; 5; 0; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem425 : bubbleSortDemo [2; 1; 3; 5; 4; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma425 : bubbleSortDemo [2; 1; 3; 5; 4; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem426 : bubbleSortDemo [2; 1; 4; 0; 3; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma426 : bubbleSortDemo [2; 1; 4; 0; 3; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem427 : bubbleSortDemo [2; 1; 4; 0; 5; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma427 : bubbleSortDemo [2; 1; 4; 0; 5; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem428 : bubbleSortDemo [2; 1; 4; 3; 0; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma428 : bubbleSortDemo [2; 1; 4; 3; 0; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem429 : bubbleSortDemo [2; 1; 4; 3; 5; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma429 : bubbleSortDemo [2; 1; 4; 3; 5; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem430 : bubbleSortDemo [2; 1; 4; 5; 0; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma430 : bubbleSortDemo [2; 1; 4; 5; 0; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem431 : bubbleSortDemo [2; 1; 4; 5; 3; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma431 : bubbleSortDemo [2; 1; 4; 5; 3; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem432 : bubbleSortDemo [2; 1; 5; 0; 3; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma432 : bubbleSortDemo [2; 1; 5; 0; 3; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem433 : bubbleSortDemo [2; 1; 5; 0; 4; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma433 : bubbleSortDemo [2; 1; 5; 0; 4; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem434 : bubbleSortDemo [2; 1; 5; 3; 0; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma434 : bubbleSortDemo [2; 1; 5; 3; 0; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem435 : bubbleSortDemo [2; 1; 5; 3; 4; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma435 : bubbleSortDemo [2; 1; 5; 3; 4; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem436 : bubbleSortDemo [2; 1; 5; 4; 0; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma436 : bubbleSortDemo [2; 1; 5; 4; 0; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem437 : bubbleSortDemo [2; 1; 5; 4; 3; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma437 : bubbleSortDemo [2; 1; 5; 4; 3; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem438 : bubbleSortDemo [2; 3; 0; 1; 4; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma438 : bubbleSortDemo [2; 3; 0; 1; 4; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem439 : bubbleSortDemo [2; 3; 0; 1; 5; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma439 : bubbleSortDemo [2; 3; 0; 1; 5; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem440 : bubbleSortDemo [2; 3; 0; 4; 1; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma440 : bubbleSortDemo [2; 3; 0; 4; 1; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem441 : bubbleSortDemo [2; 3; 0; 4; 5; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma441 : bubbleSortDemo [2; 3; 0; 4; 5; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem442 : bubbleSortDemo [2; 3; 0; 5; 1; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma442 : bubbleSortDemo [2; 3; 0; 5; 1; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem443 : bubbleSortDemo [2; 3; 0; 5; 4; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma443 : bubbleSortDemo [2; 3; 0; 5; 4; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem444 : bubbleSortDemo [2; 3; 1; 0; 4; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma444 : bubbleSortDemo [2; 3; 1; 0; 4; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem445 : bubbleSortDemo [2; 3; 1; 0; 5; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma445 : bubbleSortDemo [2; 3; 1; 0; 5; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem446 : bubbleSortDemo [2; 3; 1; 4; 0; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma446 : bubbleSortDemo [2; 3; 1; 4; 0; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem447 : bubbleSortDemo [2; 3; 1; 4; 5; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma447 : bubbleSortDemo [2; 3; 1; 4; 5; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem448 : bubbleSortDemo [2; 3; 1; 5; 0; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma448 : bubbleSortDemo [2; 3; 1; 5; 0; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem449 : bubbleSortDemo [2; 3; 1; 5; 4; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma449 : bubbleSortDemo [2; 3; 1; 5; 4; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem450 : bubbleSortDemo [2; 3; 4; 0; 1; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma450 : bubbleSortDemo [2; 3; 4; 0; 1; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem451 : bubbleSortDemo [2; 3; 4; 0; 5; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma451 : bubbleSortDemo [2; 3; 4; 0; 5; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem452 : bubbleSortDemo [2; 3; 4; 1; 0; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma452 : bubbleSortDemo [2; 3; 4; 1; 0; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem453 : bubbleSortDemo [2; 3; 4; 1; 5; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma453 : bubbleSortDemo [2; 3; 4; 1; 5; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem454 : bubbleSortDemo [2; 3; 4; 5; 0; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma454 : bubbleSortDemo [2; 3; 4; 5; 0; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem455 : bubbleSortDemo [2; 3; 4; 5; 1; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma455 : bubbleSortDemo [2; 3; 4; 5; 1; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem456 : bubbleSortDemo [2; 3; 5; 0; 1; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma456 : bubbleSortDemo [2; 3; 5; 0; 1; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem457 : bubbleSortDemo [2; 3; 5; 0; 4; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma457 : bubbleSortDemo [2; 3; 5; 0; 4; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem458 : bubbleSortDemo [2; 3; 5; 1; 0; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma458 : bubbleSortDemo [2; 3; 5; 1; 0; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem459 : bubbleSortDemo [2; 3; 5; 1; 4; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma459 : bubbleSortDemo [2; 3; 5; 1; 4; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem460 : bubbleSortDemo [2; 3; 5; 4; 0; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma460 : bubbleSortDemo [2; 3; 5; 4; 0; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem461 : bubbleSortDemo [2; 3; 5; 4; 1; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma461 : bubbleSortDemo [2; 3; 5; 4; 1; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem462 : bubbleSortDemo [2; 4; 0; 1; 3; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma462 : bubbleSortDemo [2; 4; 0; 1; 3; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem463 : bubbleSortDemo [2; 4; 0; 1; 5; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma463 : bubbleSortDemo [2; 4; 0; 1; 5; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem464 : bubbleSortDemo [2; 4; 0; 3; 1; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma464 : bubbleSortDemo [2; 4; 0; 3; 1; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem465 : bubbleSortDemo [2; 4; 0; 3; 5; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma465 : bubbleSortDemo [2; 4; 0; 3; 5; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem466 : bubbleSortDemo [2; 4; 0; 5; 1; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma466 : bubbleSortDemo [2; 4; 0; 5; 1; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem467 : bubbleSortDemo [2; 4; 0; 5; 3; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma467 : bubbleSortDemo [2; 4; 0; 5; 3; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem468 : bubbleSortDemo [2; 4; 1; 0; 3; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma468 : bubbleSortDemo [2; 4; 1; 0; 3; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem469 : bubbleSortDemo [2; 4; 1; 0; 5; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma469 : bubbleSortDemo [2; 4; 1; 0; 5; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem470 : bubbleSortDemo [2; 4; 1; 3; 0; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma470 : bubbleSortDemo [2; 4; 1; 3; 0; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem471 : bubbleSortDemo [2; 4; 1; 3; 5; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma471 : bubbleSortDemo [2; 4; 1; 3; 5; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem472 : bubbleSortDemo [2; 4; 1; 5; 0; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma472 : bubbleSortDemo [2; 4; 1; 5; 0; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem473 : bubbleSortDemo [2; 4; 1; 5; 3; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma473 : bubbleSortDemo [2; 4; 1; 5; 3; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem474 : bubbleSortDemo [2; 4; 3; 0; 1; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma474 : bubbleSortDemo [2; 4; 3; 0; 1; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem475 : bubbleSortDemo [2; 4; 3; 0; 5; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma475 : bubbleSortDemo [2; 4; 3; 0; 5; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem476 : bubbleSortDemo [2; 4; 3; 1; 0; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma476 : bubbleSortDemo [2; 4; 3; 1; 0; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem477 : bubbleSortDemo [2; 4; 3; 1; 5; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma477 : bubbleSortDemo [2; 4; 3; 1; 5; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem478 : bubbleSortDemo [2; 4; 3; 5; 0; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma478 : bubbleSortDemo [2; 4; 3; 5; 0; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem479 : bubbleSortDemo [2; 4; 3; 5; 1; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma479 : bubbleSortDemo [2; 4; 3; 5; 1; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem480 : bubbleSortDemo [2; 4; 5; 0; 1; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma480 : bubbleSortDemo [2; 4; 5; 0; 1; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem481 : bubbleSortDemo [2; 4; 5; 0; 3; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma481 : bubbleSortDemo [2; 4; 5; 0; 3; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem482 : bubbleSortDemo [2; 4; 5; 1; 0; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma482 : bubbleSortDemo [2; 4; 5; 1; 0; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem483 : bubbleSortDemo [2; 4; 5; 1; 3; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma483 : bubbleSortDemo [2; 4; 5; 1; 3; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem484 : bubbleSortDemo [2; 4; 5; 3; 0; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma484 : bubbleSortDemo [2; 4; 5; 3; 0; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem485 : bubbleSortDemo [2; 4; 5; 3; 1; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma485 : bubbleSortDemo [2; 4; 5; 3; 1; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem486 : bubbleSortDemo [2; 5; 0; 1; 3; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma486 : bubbleSortDemo [2; 5; 0; 1; 3; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem487 : bubbleSortDemo [2; 5; 0; 1; 4; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma487 : bubbleSortDemo [2; 5; 0; 1; 4; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem488 : bubbleSortDemo [2; 5; 0; 3; 1; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma488 : bubbleSortDemo [2; 5; 0; 3; 1; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem489 : bubbleSortDemo [2; 5; 0; 3; 4; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma489 : bubbleSortDemo [2; 5; 0; 3; 4; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem490 : bubbleSortDemo [2; 5; 0; 4; 1; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma490 : bubbleSortDemo [2; 5; 0; 4; 1; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem491 : bubbleSortDemo [2; 5; 0; 4; 3; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma491 : bubbleSortDemo [2; 5; 0; 4; 3; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem492 : bubbleSortDemo [2; 5; 1; 0; 3; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma492 : bubbleSortDemo [2; 5; 1; 0; 3; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem493 : bubbleSortDemo [2; 5; 1; 0; 4; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma493 : bubbleSortDemo [2; 5; 1; 0; 4; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem494 : bubbleSortDemo [2; 5; 1; 3; 0; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma494 : bubbleSortDemo [2; 5; 1; 3; 0; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem495 : bubbleSortDemo [2; 5; 1; 3; 4; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma495 : bubbleSortDemo [2; 5; 1; 3; 4; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem496 : bubbleSortDemo [2; 5; 1; 4; 0; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma496 : bubbleSortDemo [2; 5; 1; 4; 0; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem497 : bubbleSortDemo [2; 5; 1; 4; 3; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma497 : bubbleSortDemo [2; 5; 1; 4; 3; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem498 : bubbleSortDemo [2; 5; 3; 0; 1; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma498 : bubbleSortDemo [2; 5; 3; 0; 1; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem499 : bubbleSortDemo [2; 5; 3; 0; 4; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma499 : bubbleSortDemo [2; 5; 3; 0; 4; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem500 : bubbleSortDemo [2; 5; 3; 1; 0; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma500 : bubbleSortDemo [2; 5; 3; 1; 0; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem501 : bubbleSortDemo [2; 5; 3; 1; 4; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma501 : bubbleSortDemo [2; 5; 3; 1; 4; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem502 : bubbleSortDemo [2; 5; 3; 4; 0; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma502 : bubbleSortDemo [2; 5; 3; 4; 0; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem503 : bubbleSortDemo [2; 5; 3; 4; 1; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma503 : bubbleSortDemo [2; 5; 3; 4; 1; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem504 : bubbleSortDemo [2; 5; 4; 0; 1; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma504 : bubbleSortDemo [2; 5; 4; 0; 1; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem505 : bubbleSortDemo [2; 5; 4; 0; 3; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma505 : bubbleSortDemo [2; 5; 4; 0; 3; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem506 : bubbleSortDemo [2; 5; 4; 1; 0; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma506 : bubbleSortDemo [2; 5; 4; 1; 0; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem507 : bubbleSortDemo [2; 5; 4; 1; 3; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma507 : bubbleSortDemo [2; 5; 4; 1; 3; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem508 : bubbleSortDemo [2; 5; 4; 3; 0; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma508 : bubbleSortDemo [2; 5; 4; 3; 0; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem509 : bubbleSortDemo [2; 5; 4; 3; 1; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma509 : bubbleSortDemo [2; 5; 4; 3; 1; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem510 : bubbleSortDemo [3; 0; 1; 2; 4; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma510 : bubbleSortDemo [3; 0; 1; 2; 4; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem511 : bubbleSortDemo [3; 0; 1; 2; 5; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma511 : bubbleSortDemo [3; 0; 1; 2; 5; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem512 : bubbleSortDemo [3; 0; 1; 4; 2; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma512 : bubbleSortDemo [3; 0; 1; 4; 2; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem513 : bubbleSortDemo [3; 0; 1; 4; 5; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma513 : bubbleSortDemo [3; 0; 1; 4; 5; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem514 : bubbleSortDemo [3; 0; 1; 5; 2; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma514 : bubbleSortDemo [3; 0; 1; 5; 2; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem515 : bubbleSortDemo [3; 0; 1; 5; 4; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma515 : bubbleSortDemo [3; 0; 1; 5; 4; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem516 : bubbleSortDemo [3; 0; 2; 1; 4; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma516 : bubbleSortDemo [3; 0; 2; 1; 4; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem517 : bubbleSortDemo [3; 0; 2; 1; 5; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma517 : bubbleSortDemo [3; 0; 2; 1; 5; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem518 : bubbleSortDemo [3; 0; 2; 4; 1; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma518 : bubbleSortDemo [3; 0; 2; 4; 1; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem519 : bubbleSortDemo [3; 0; 2; 4; 5; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma519 : bubbleSortDemo [3; 0; 2; 4; 5; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem520 : bubbleSortDemo [3; 0; 2; 5; 1; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma520 : bubbleSortDemo [3; 0; 2; 5; 1; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem521 : bubbleSortDemo [3; 0; 2; 5; 4; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma521 : bubbleSortDemo [3; 0; 2; 5; 4; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem522 : bubbleSortDemo [3; 0; 4; 1; 2; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma522 : bubbleSortDemo [3; 0; 4; 1; 2; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem523 : bubbleSortDemo [3; 0; 4; 1; 5; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma523 : bubbleSortDemo [3; 0; 4; 1; 5; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem524 : bubbleSortDemo [3; 0; 4; 2; 1; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma524 : bubbleSortDemo [3; 0; 4; 2; 1; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem525 : bubbleSortDemo [3; 0; 4; 2; 5; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma525 : bubbleSortDemo [3; 0; 4; 2; 5; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem526 : bubbleSortDemo [3; 0; 4; 5; 1; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma526 : bubbleSortDemo [3; 0; 4; 5; 1; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem527 : bubbleSortDemo [3; 0; 4; 5; 2; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma527 : bubbleSortDemo [3; 0; 4; 5; 2; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem528 : bubbleSortDemo [3; 0; 5; 1; 2; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma528 : bubbleSortDemo [3; 0; 5; 1; 2; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem529 : bubbleSortDemo [3; 0; 5; 1; 4; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma529 : bubbleSortDemo [3; 0; 5; 1; 4; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem530 : bubbleSortDemo [3; 0; 5; 2; 1; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma530 : bubbleSortDemo [3; 0; 5; 2; 1; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem531 : bubbleSortDemo [3; 0; 5; 2; 4; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma531 : bubbleSortDemo [3; 0; 5; 2; 4; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem532 : bubbleSortDemo [3; 0; 5; 4; 1; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma532 : bubbleSortDemo [3; 0; 5; 4; 1; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem533 : bubbleSortDemo [3; 0; 5; 4; 2; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma533 : bubbleSortDemo [3; 0; 5; 4; 2; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem534 : bubbleSortDemo [3; 1; 0; 2; 4; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma534 : bubbleSortDemo [3; 1; 0; 2; 4; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem535 : bubbleSortDemo [3; 1; 0; 2; 5; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma535 : bubbleSortDemo [3; 1; 0; 2; 5; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem536 : bubbleSortDemo [3; 1; 0; 4; 2; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma536 : bubbleSortDemo [3; 1; 0; 4; 2; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem537 : bubbleSortDemo [3; 1; 0; 4; 5; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma537 : bubbleSortDemo [3; 1; 0; 4; 5; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem538 : bubbleSortDemo [3; 1; 0; 5; 2; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma538 : bubbleSortDemo [3; 1; 0; 5; 2; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem539 : bubbleSortDemo [3; 1; 0; 5; 4; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma539 : bubbleSortDemo [3; 1; 0; 5; 4; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem540 : bubbleSortDemo [3; 1; 2; 0; 4; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma540 : bubbleSortDemo [3; 1; 2; 0; 4; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem541 : bubbleSortDemo [3; 1; 2; 0; 5; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma541 : bubbleSortDemo [3; 1; 2; 0; 5; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem542 : bubbleSortDemo [3; 1; 2; 4; 0; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma542 : bubbleSortDemo [3; 1; 2; 4; 0; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem543 : bubbleSortDemo [3; 1; 2; 4; 5; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma543 : bubbleSortDemo [3; 1; 2; 4; 5; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem544 : bubbleSortDemo [3; 1; 2; 5; 0; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma544 : bubbleSortDemo [3; 1; 2; 5; 0; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem545 : bubbleSortDemo [3; 1; 2; 5; 4; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma545 : bubbleSortDemo [3; 1; 2; 5; 4; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem546 : bubbleSortDemo [3; 1; 4; 0; 2; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma546 : bubbleSortDemo [3; 1; 4; 0; 2; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem547 : bubbleSortDemo [3; 1; 4; 0; 5; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma547 : bubbleSortDemo [3; 1; 4; 0; 5; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem548 : bubbleSortDemo [3; 1; 4; 2; 0; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma548 : bubbleSortDemo [3; 1; 4; 2; 0; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem549 : bubbleSortDemo [3; 1; 4; 2; 5; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma549 : bubbleSortDemo [3; 1; 4; 2; 5; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem550 : bubbleSortDemo [3; 1; 4; 5; 0; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma550 : bubbleSortDemo [3; 1; 4; 5; 0; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem551 : bubbleSortDemo [3; 1; 4; 5; 2; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma551 : bubbleSortDemo [3; 1; 4; 5; 2; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem552 : bubbleSortDemo [3; 1; 5; 0; 2; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma552 : bubbleSortDemo [3; 1; 5; 0; 2; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem553 : bubbleSortDemo [3; 1; 5; 0; 4; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma553 : bubbleSortDemo [3; 1; 5; 0; 4; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem554 : bubbleSortDemo [3; 1; 5; 2; 0; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma554 : bubbleSortDemo [3; 1; 5; 2; 0; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem555 : bubbleSortDemo [3; 1; 5; 2; 4; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma555 : bubbleSortDemo [3; 1; 5; 2; 4; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem556 : bubbleSortDemo [3; 1; 5; 4; 0; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma556 : bubbleSortDemo [3; 1; 5; 4; 0; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem557 : bubbleSortDemo [3; 1; 5; 4; 2; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma557 : bubbleSortDemo [3; 1; 5; 4; 2; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem558 : bubbleSortDemo [3; 2; 0; 1; 4; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma558 : bubbleSortDemo [3; 2; 0; 1; 4; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem559 : bubbleSortDemo [3; 2; 0; 1; 5; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma559 : bubbleSortDemo [3; 2; 0; 1; 5; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem560 : bubbleSortDemo [3; 2; 0; 4; 1; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma560 : bubbleSortDemo [3; 2; 0; 4; 1; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem561 : bubbleSortDemo [3; 2; 0; 4; 5; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma561 : bubbleSortDemo [3; 2; 0; 4; 5; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem562 : bubbleSortDemo [3; 2; 0; 5; 1; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma562 : bubbleSortDemo [3; 2; 0; 5; 1; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem563 : bubbleSortDemo [3; 2; 0; 5; 4; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma563 : bubbleSortDemo [3; 2; 0; 5; 4; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem564 : bubbleSortDemo [3; 2; 1; 0; 4; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma564 : bubbleSortDemo [3; 2; 1; 0; 4; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem565 : bubbleSortDemo [3; 2; 1; 0; 5; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma565 : bubbleSortDemo [3; 2; 1; 0; 5; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem566 : bubbleSortDemo [3; 2; 1; 4; 0; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma566 : bubbleSortDemo [3; 2; 1; 4; 0; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem567 : bubbleSortDemo [3; 2; 1; 4; 5; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma567 : bubbleSortDemo [3; 2; 1; 4; 5; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem568 : bubbleSortDemo [3; 2; 1; 5; 0; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma568 : bubbleSortDemo [3; 2; 1; 5; 0; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem569 : bubbleSortDemo [3; 2; 1; 5; 4; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma569 : bubbleSortDemo [3; 2; 1; 5; 4; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem570 : bubbleSortDemo [3; 2; 4; 0; 1; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma570 : bubbleSortDemo [3; 2; 4; 0; 1; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem571 : bubbleSortDemo [3; 2; 4; 0; 5; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma571 : bubbleSortDemo [3; 2; 4; 0; 5; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem572 : bubbleSortDemo [3; 2; 4; 1; 0; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma572 : bubbleSortDemo [3; 2; 4; 1; 0; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem573 : bubbleSortDemo [3; 2; 4; 1; 5; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma573 : bubbleSortDemo [3; 2; 4; 1; 5; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem574 : bubbleSortDemo [3; 2; 4; 5; 0; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma574 : bubbleSortDemo [3; 2; 4; 5; 0; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem575 : bubbleSortDemo [3; 2; 4; 5; 1; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma575 : bubbleSortDemo [3; 2; 4; 5; 1; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem576 : bubbleSortDemo [3; 2; 5; 0; 1; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma576 : bubbleSortDemo [3; 2; 5; 0; 1; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem577 : bubbleSortDemo [3; 2; 5; 0; 4; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma577 : bubbleSortDemo [3; 2; 5; 0; 4; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem578 : bubbleSortDemo [3; 2; 5; 1; 0; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma578 : bubbleSortDemo [3; 2; 5; 1; 0; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem579 : bubbleSortDemo [3; 2; 5; 1; 4; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma579 : bubbleSortDemo [3; 2; 5; 1; 4; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem580 : bubbleSortDemo [3; 2; 5; 4; 0; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma580 : bubbleSortDemo [3; 2; 5; 4; 0; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem581 : bubbleSortDemo [3; 2; 5; 4; 1; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma581 : bubbleSortDemo [3; 2; 5; 4; 1; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem582 : bubbleSortDemo [3; 4; 0; 1; 2; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma582 : bubbleSortDemo [3; 4; 0; 1; 2; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem583 : bubbleSortDemo [3; 4; 0; 1; 5; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma583 : bubbleSortDemo [3; 4; 0; 1; 5; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem584 : bubbleSortDemo [3; 4; 0; 2; 1; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma584 : bubbleSortDemo [3; 4; 0; 2; 1; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem585 : bubbleSortDemo [3; 4; 0; 2; 5; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma585 : bubbleSortDemo [3; 4; 0; 2; 5; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem586 : bubbleSortDemo [3; 4; 0; 5; 1; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma586 : bubbleSortDemo [3; 4; 0; 5; 1; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem587 : bubbleSortDemo [3; 4; 0; 5; 2; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma587 : bubbleSortDemo [3; 4; 0; 5; 2; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem588 : bubbleSortDemo [3; 4; 1; 0; 2; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma588 : bubbleSortDemo [3; 4; 1; 0; 2; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem589 : bubbleSortDemo [3; 4; 1; 0; 5; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma589 : bubbleSortDemo [3; 4; 1; 0; 5; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem590 : bubbleSortDemo [3; 4; 1; 2; 0; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma590 : bubbleSortDemo [3; 4; 1; 2; 0; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem591 : bubbleSortDemo [3; 4; 1; 2; 5; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma591 : bubbleSortDemo [3; 4; 1; 2; 5; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem592 : bubbleSortDemo [3; 4; 1; 5; 0; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma592 : bubbleSortDemo [3; 4; 1; 5; 0; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem593 : bubbleSortDemo [3; 4; 1; 5; 2; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma593 : bubbleSortDemo [3; 4; 1; 5; 2; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem594 : bubbleSortDemo [3; 4; 2; 0; 1; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma594 : bubbleSortDemo [3; 4; 2; 0; 1; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem595 : bubbleSortDemo [3; 4; 2; 0; 5; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma595 : bubbleSortDemo [3; 4; 2; 0; 5; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem596 : bubbleSortDemo [3; 4; 2; 1; 0; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma596 : bubbleSortDemo [3; 4; 2; 1; 0; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem597 : bubbleSortDemo [3; 4; 2; 1; 5; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma597 : bubbleSortDemo [3; 4; 2; 1; 5; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem598 : bubbleSortDemo [3; 4; 2; 5; 0; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma598 : bubbleSortDemo [3; 4; 2; 5; 0; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem599 : bubbleSortDemo [3; 4; 2; 5; 1; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma599 : bubbleSortDemo [3; 4; 2; 5; 1; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem600 : bubbleSortDemo [3; 4; 5; 0; 1; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma600 : bubbleSortDemo [3; 4; 5; 0; 1; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem601 : bubbleSortDemo [3; 4; 5; 0; 2; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma601 : bubbleSortDemo [3; 4; 5; 0; 2; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem602 : bubbleSortDemo [3; 4; 5; 1; 0; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma602 : bubbleSortDemo [3; 4; 5; 1; 0; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem603 : bubbleSortDemo [3; 4; 5; 1; 2; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma603 : bubbleSortDemo [3; 4; 5; 1; 2; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem604 : bubbleSortDemo [3; 4; 5; 2; 0; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma604 : bubbleSortDemo [3; 4; 5; 2; 0; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem605 : bubbleSortDemo [3; 4; 5; 2; 1; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma605 : bubbleSortDemo [3; 4; 5; 2; 1; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem606 : bubbleSortDemo [3; 5; 0; 1; 2; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma606 : bubbleSortDemo [3; 5; 0; 1; 2; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem607 : bubbleSortDemo [3; 5; 0; 1; 4; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma607 : bubbleSortDemo [3; 5; 0; 1; 4; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem608 : bubbleSortDemo [3; 5; 0; 2; 1; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma608 : bubbleSortDemo [3; 5; 0; 2; 1; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem609 : bubbleSortDemo [3; 5; 0; 2; 4; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma609 : bubbleSortDemo [3; 5; 0; 2; 4; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem610 : bubbleSortDemo [3; 5; 0; 4; 1; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma610 : bubbleSortDemo [3; 5; 0; 4; 1; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem611 : bubbleSortDemo [3; 5; 0; 4; 2; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma611 : bubbleSortDemo [3; 5; 0; 4; 2; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem612 : bubbleSortDemo [3; 5; 1; 0; 2; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma612 : bubbleSortDemo [3; 5; 1; 0; 2; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem613 : bubbleSortDemo [3; 5; 1; 0; 4; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma613 : bubbleSortDemo [3; 5; 1; 0; 4; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem614 : bubbleSortDemo [3; 5; 1; 2; 0; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma614 : bubbleSortDemo [3; 5; 1; 2; 0; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem615 : bubbleSortDemo [3; 5; 1; 2; 4; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma615 : bubbleSortDemo [3; 5; 1; 2; 4; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem616 : bubbleSortDemo [3; 5; 1; 4; 0; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma616 : bubbleSortDemo [3; 5; 1; 4; 0; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem617 : bubbleSortDemo [3; 5; 1; 4; 2; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma617 : bubbleSortDemo [3; 5; 1; 4; 2; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem618 : bubbleSortDemo [3; 5; 2; 0; 1; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma618 : bubbleSortDemo [3; 5; 2; 0; 1; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem619 : bubbleSortDemo [3; 5; 2; 0; 4; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma619 : bubbleSortDemo [3; 5; 2; 0; 4; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem620 : bubbleSortDemo [3; 5; 2; 1; 0; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma620 : bubbleSortDemo [3; 5; 2; 1; 0; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem621 : bubbleSortDemo [3; 5; 2; 1; 4; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma621 : bubbleSortDemo [3; 5; 2; 1; 4; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem622 : bubbleSortDemo [3; 5; 2; 4; 0; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma622 : bubbleSortDemo [3; 5; 2; 4; 0; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem623 : bubbleSortDemo [3; 5; 2; 4; 1; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma623 : bubbleSortDemo [3; 5; 2; 4; 1; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem624 : bubbleSortDemo [3; 5; 4; 0; 1; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma624 : bubbleSortDemo [3; 5; 4; 0; 1; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem625 : bubbleSortDemo [3; 5; 4; 0; 2; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma625 : bubbleSortDemo [3; 5; 4; 0; 2; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem626 : bubbleSortDemo [3; 5; 4; 1; 0; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma626 : bubbleSortDemo [3; 5; 4; 1; 0; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem627 : bubbleSortDemo [3; 5; 4; 1; 2; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma627 : bubbleSortDemo [3; 5; 4; 1; 2; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem628 : bubbleSortDemo [3; 5; 4; 2; 0; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma628 : bubbleSortDemo [3; 5; 4; 2; 0; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem629 : bubbleSortDemo [3; 5; 4; 2; 1; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma629 : bubbleSortDemo [3; 5; 4; 2; 1; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem630 : bubbleSortDemo [4; 0; 1; 2; 3; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma630 : bubbleSortDemo [4; 0; 1; 2; 3; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem631 : bubbleSortDemo [4; 0; 1; 2; 5; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma631 : bubbleSortDemo [4; 0; 1; 2; 5; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem632 : bubbleSortDemo [4; 0; 1; 3; 2; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma632 : bubbleSortDemo [4; 0; 1; 3; 2; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem633 : bubbleSortDemo [4; 0; 1; 3; 5; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma633 : bubbleSortDemo [4; 0; 1; 3; 5; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem634 : bubbleSortDemo [4; 0; 1; 5; 2; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma634 : bubbleSortDemo [4; 0; 1; 5; 2; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem635 : bubbleSortDemo [4; 0; 1; 5; 3; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma635 : bubbleSortDemo [4; 0; 1; 5; 3; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem636 : bubbleSortDemo [4; 0; 2; 1; 3; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma636 : bubbleSortDemo [4; 0; 2; 1; 3; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem637 : bubbleSortDemo [4; 0; 2; 1; 5; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma637 : bubbleSortDemo [4; 0; 2; 1; 5; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem638 : bubbleSortDemo [4; 0; 2; 3; 1; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma638 : bubbleSortDemo [4; 0; 2; 3; 1; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem639 : bubbleSortDemo [4; 0; 2; 3; 5; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma639 : bubbleSortDemo [4; 0; 2; 3; 5; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem640 : bubbleSortDemo [4; 0; 2; 5; 1; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma640 : bubbleSortDemo [4; 0; 2; 5; 1; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem641 : bubbleSortDemo [4; 0; 2; 5; 3; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma641 : bubbleSortDemo [4; 0; 2; 5; 3; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem642 : bubbleSortDemo [4; 0; 3; 1; 2; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma642 : bubbleSortDemo [4; 0; 3; 1; 2; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem643 : bubbleSortDemo [4; 0; 3; 1; 5; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma643 : bubbleSortDemo [4; 0; 3; 1; 5; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem644 : bubbleSortDemo [4; 0; 3; 2; 1; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma644 : bubbleSortDemo [4; 0; 3; 2; 1; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem645 : bubbleSortDemo [4; 0; 3; 2; 5; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma645 : bubbleSortDemo [4; 0; 3; 2; 5; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem646 : bubbleSortDemo [4; 0; 3; 5; 1; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma646 : bubbleSortDemo [4; 0; 3; 5; 1; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem647 : bubbleSortDemo [4; 0; 3; 5; 2; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma647 : bubbleSortDemo [4; 0; 3; 5; 2; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem648 : bubbleSortDemo [4; 0; 5; 1; 2; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma648 : bubbleSortDemo [4; 0; 5; 1; 2; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem649 : bubbleSortDemo [4; 0; 5; 1; 3; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma649 : bubbleSortDemo [4; 0; 5; 1; 3; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem650 : bubbleSortDemo [4; 0; 5; 2; 1; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma650 : bubbleSortDemo [4; 0; 5; 2; 1; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem651 : bubbleSortDemo [4; 0; 5; 2; 3; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma651 : bubbleSortDemo [4; 0; 5; 2; 3; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem652 : bubbleSortDemo [4; 0; 5; 3; 1; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma652 : bubbleSortDemo [4; 0; 5; 3; 1; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem653 : bubbleSortDemo [4; 0; 5; 3; 2; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma653 : bubbleSortDemo [4; 0; 5; 3; 2; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem654 : bubbleSortDemo [4; 1; 0; 2; 3; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma654 : bubbleSortDemo [4; 1; 0; 2; 3; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem655 : bubbleSortDemo [4; 1; 0; 2; 5; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma655 : bubbleSortDemo [4; 1; 0; 2; 5; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem656 : bubbleSortDemo [4; 1; 0; 3; 2; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma656 : bubbleSortDemo [4; 1; 0; 3; 2; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem657 : bubbleSortDemo [4; 1; 0; 3; 5; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma657 : bubbleSortDemo [4; 1; 0; 3; 5; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem658 : bubbleSortDemo [4; 1; 0; 5; 2; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma658 : bubbleSortDemo [4; 1; 0; 5; 2; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem659 : bubbleSortDemo [4; 1; 0; 5; 3; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma659 : bubbleSortDemo [4; 1; 0; 5; 3; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem660 : bubbleSortDemo [4; 1; 2; 0; 3; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma660 : bubbleSortDemo [4; 1; 2; 0; 3; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem661 : bubbleSortDemo [4; 1; 2; 0; 5; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma661 : bubbleSortDemo [4; 1; 2; 0; 5; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem662 : bubbleSortDemo [4; 1; 2; 3; 0; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma662 : bubbleSortDemo [4; 1; 2; 3; 0; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem663 : bubbleSortDemo [4; 1; 2; 3; 5; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma663 : bubbleSortDemo [4; 1; 2; 3; 5; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem664 : bubbleSortDemo [4; 1; 2; 5; 0; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma664 : bubbleSortDemo [4; 1; 2; 5; 0; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem665 : bubbleSortDemo [4; 1; 2; 5; 3; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma665 : bubbleSortDemo [4; 1; 2; 5; 3; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem666 : bubbleSortDemo [4; 1; 3; 0; 2; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma666 : bubbleSortDemo [4; 1; 3; 0; 2; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem667 : bubbleSortDemo [4; 1; 3; 0; 5; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma667 : bubbleSortDemo [4; 1; 3; 0; 5; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem668 : bubbleSortDemo [4; 1; 3; 2; 0; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma668 : bubbleSortDemo [4; 1; 3; 2; 0; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem669 : bubbleSortDemo [4; 1; 3; 2; 5; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma669 : bubbleSortDemo [4; 1; 3; 2; 5; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem670 : bubbleSortDemo [4; 1; 3; 5; 0; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma670 : bubbleSortDemo [4; 1; 3; 5; 0; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem671 : bubbleSortDemo [4; 1; 3; 5; 2; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma671 : bubbleSortDemo [4; 1; 3; 5; 2; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem672 : bubbleSortDemo [4; 1; 5; 0; 2; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma672 : bubbleSortDemo [4; 1; 5; 0; 2; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem673 : bubbleSortDemo [4; 1; 5; 0; 3; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma673 : bubbleSortDemo [4; 1; 5; 0; 3; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem674 : bubbleSortDemo [4; 1; 5; 2; 0; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma674 : bubbleSortDemo [4; 1; 5; 2; 0; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem675 : bubbleSortDemo [4; 1; 5; 2; 3; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma675 : bubbleSortDemo [4; 1; 5; 2; 3; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem676 : bubbleSortDemo [4; 1; 5; 3; 0; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma676 : bubbleSortDemo [4; 1; 5; 3; 0; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem677 : bubbleSortDemo [4; 1; 5; 3; 2; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma677 : bubbleSortDemo [4; 1; 5; 3; 2; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem678 : bubbleSortDemo [4; 2; 0; 1; 3; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma678 : bubbleSortDemo [4; 2; 0; 1; 3; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem679 : bubbleSortDemo [4; 2; 0; 1; 5; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma679 : bubbleSortDemo [4; 2; 0; 1; 5; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem680 : bubbleSortDemo [4; 2; 0; 3; 1; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma680 : bubbleSortDemo [4; 2; 0; 3; 1; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem681 : bubbleSortDemo [4; 2; 0; 3; 5; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma681 : bubbleSortDemo [4; 2; 0; 3; 5; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem682 : bubbleSortDemo [4; 2; 0; 5; 1; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma682 : bubbleSortDemo [4; 2; 0; 5; 1; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem683 : bubbleSortDemo [4; 2; 0; 5; 3; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma683 : bubbleSortDemo [4; 2; 0; 5; 3; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem684 : bubbleSortDemo [4; 2; 1; 0; 3; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma684 : bubbleSortDemo [4; 2; 1; 0; 3; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem685 : bubbleSortDemo [4; 2; 1; 0; 5; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma685 : bubbleSortDemo [4; 2; 1; 0; 5; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem686 : bubbleSortDemo [4; 2; 1; 3; 0; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma686 : bubbleSortDemo [4; 2; 1; 3; 0; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem687 : bubbleSortDemo [4; 2; 1; 3; 5; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma687 : bubbleSortDemo [4; 2; 1; 3; 5; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem688 : bubbleSortDemo [4; 2; 1; 5; 0; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma688 : bubbleSortDemo [4; 2; 1; 5; 0; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem689 : bubbleSortDemo [4; 2; 1; 5; 3; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma689 : bubbleSortDemo [4; 2; 1; 5; 3; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem690 : bubbleSortDemo [4; 2; 3; 0; 1; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma690 : bubbleSortDemo [4; 2; 3; 0; 1; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem691 : bubbleSortDemo [4; 2; 3; 0; 5; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma691 : bubbleSortDemo [4; 2; 3; 0; 5; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem692 : bubbleSortDemo [4; 2; 3; 1; 0; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma692 : bubbleSortDemo [4; 2; 3; 1; 0; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem693 : bubbleSortDemo [4; 2; 3; 1; 5; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma693 : bubbleSortDemo [4; 2; 3; 1; 5; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem694 : bubbleSortDemo [4; 2; 3; 5; 0; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma694 : bubbleSortDemo [4; 2; 3; 5; 0; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem695 : bubbleSortDemo [4; 2; 3; 5; 1; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma695 : bubbleSortDemo [4; 2; 3; 5; 1; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem696 : bubbleSortDemo [4; 2; 5; 0; 1; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma696 : bubbleSortDemo [4; 2; 5; 0; 1; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem697 : bubbleSortDemo [4; 2; 5; 0; 3; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma697 : bubbleSortDemo [4; 2; 5; 0; 3; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem698 : bubbleSortDemo [4; 2; 5; 1; 0; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma698 : bubbleSortDemo [4; 2; 5; 1; 0; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem699 : bubbleSortDemo [4; 2; 5; 1; 3; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma699 : bubbleSortDemo [4; 2; 5; 1; 3; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem700 : bubbleSortDemo [4; 2; 5; 3; 0; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma700 : bubbleSortDemo [4; 2; 5; 3; 0; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem701 : bubbleSortDemo [4; 2; 5; 3; 1; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma701 : bubbleSortDemo [4; 2; 5; 3; 1; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem702 : bubbleSortDemo [4; 3; 0; 1; 2; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma702 : bubbleSortDemo [4; 3; 0; 1; 2; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem703 : bubbleSortDemo [4; 3; 0; 1; 5; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma703 : bubbleSortDemo [4; 3; 0; 1; 5; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem704 : bubbleSortDemo [4; 3; 0; 2; 1; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma704 : bubbleSortDemo [4; 3; 0; 2; 1; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem705 : bubbleSortDemo [4; 3; 0; 2; 5; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma705 : bubbleSortDemo [4; 3; 0; 2; 5; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem706 : bubbleSortDemo [4; 3; 0; 5; 1; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma706 : bubbleSortDemo [4; 3; 0; 5; 1; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem707 : bubbleSortDemo [4; 3; 0; 5; 2; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma707 : bubbleSortDemo [4; 3; 0; 5; 2; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem708 : bubbleSortDemo [4; 3; 1; 0; 2; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma708 : bubbleSortDemo [4; 3; 1; 0; 2; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem709 : bubbleSortDemo [4; 3; 1; 0; 5; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma709 : bubbleSortDemo [4; 3; 1; 0; 5; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem710 : bubbleSortDemo [4; 3; 1; 2; 0; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma710 : bubbleSortDemo [4; 3; 1; 2; 0; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem711 : bubbleSortDemo [4; 3; 1; 2; 5; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma711 : bubbleSortDemo [4; 3; 1; 2; 5; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem712 : bubbleSortDemo [4; 3; 1; 5; 0; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma712 : bubbleSortDemo [4; 3; 1; 5; 0; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem713 : bubbleSortDemo [4; 3; 1; 5; 2; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma713 : bubbleSortDemo [4; 3; 1; 5; 2; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem714 : bubbleSortDemo [4; 3; 2; 0; 1; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma714 : bubbleSortDemo [4; 3; 2; 0; 1; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem715 : bubbleSortDemo [4; 3; 2; 0; 5; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma715 : bubbleSortDemo [4; 3; 2; 0; 5; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem716 : bubbleSortDemo [4; 3; 2; 1; 0; 5] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma716 : bubbleSortDemo [4; 3; 2; 1; 0; 5] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem717 : bubbleSortDemo [4; 3; 2; 1; 5; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma717 : bubbleSortDemo [4; 3; 2; 1; 5; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem718 : bubbleSortDemo [4; 3; 2; 5; 0; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma718 : bubbleSortDemo [4; 3; 2; 5; 0; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem719 : bubbleSortDemo [4; 3; 2; 5; 1; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma719 : bubbleSortDemo [4; 3; 2; 5; 1; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem720 : bubbleSortDemo [4; 3; 5; 0; 1; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma720 : bubbleSortDemo [4; 3; 5; 0; 1; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem721 : bubbleSortDemo [4; 3; 5; 0; 2; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma721 : bubbleSortDemo [4; 3; 5; 0; 2; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem722 : bubbleSortDemo [4; 3; 5; 1; 0; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma722 : bubbleSortDemo [4; 3; 5; 1; 0; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem723 : bubbleSortDemo [4; 3; 5; 1; 2; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma723 : bubbleSortDemo [4; 3; 5; 1; 2; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem724 : bubbleSortDemo [4; 3; 5; 2; 0; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma724 : bubbleSortDemo [4; 3; 5; 2; 0; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem725 : bubbleSortDemo [4; 3; 5; 2; 1; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma725 : bubbleSortDemo [4; 3; 5; 2; 1; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem726 : bubbleSortDemo [4; 5; 0; 1; 2; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma726 : bubbleSortDemo [4; 5; 0; 1; 2; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem727 : bubbleSortDemo [4; 5; 0; 1; 3; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma727 : bubbleSortDemo [4; 5; 0; 1; 3; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem728 : bubbleSortDemo [4; 5; 0; 2; 1; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma728 : bubbleSortDemo [4; 5; 0; 2; 1; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem729 : bubbleSortDemo [4; 5; 0; 2; 3; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma729 : bubbleSortDemo [4; 5; 0; 2; 3; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem730 : bubbleSortDemo [4; 5; 0; 3; 1; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma730 : bubbleSortDemo [4; 5; 0; 3; 1; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem731 : bubbleSortDemo [4; 5; 0; 3; 2; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma731 : bubbleSortDemo [4; 5; 0; 3; 2; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem732 : bubbleSortDemo [4; 5; 1; 0; 2; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma732 : bubbleSortDemo [4; 5; 1; 0; 2; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem733 : bubbleSortDemo [4; 5; 1; 0; 3; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma733 : bubbleSortDemo [4; 5; 1; 0; 3; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem734 : bubbleSortDemo [4; 5; 1; 2; 0; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma734 : bubbleSortDemo [4; 5; 1; 2; 0; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem735 : bubbleSortDemo [4; 5; 1; 2; 3; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma735 : bubbleSortDemo [4; 5; 1; 2; 3; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem736 : bubbleSortDemo [4; 5; 1; 3; 0; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma736 : bubbleSortDemo [4; 5; 1; 3; 0; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem737 : bubbleSortDemo [4; 5; 1; 3; 2; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma737 : bubbleSortDemo [4; 5; 1; 3; 2; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem738 : bubbleSortDemo [4; 5; 2; 0; 1; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma738 : bubbleSortDemo [4; 5; 2; 0; 1; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem739 : bubbleSortDemo [4; 5; 2; 0; 3; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma739 : bubbleSortDemo [4; 5; 2; 0; 3; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem740 : bubbleSortDemo [4; 5; 2; 1; 0; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma740 : bubbleSortDemo [4; 5; 2; 1; 0; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem741 : bubbleSortDemo [4; 5; 2; 1; 3; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma741 : bubbleSortDemo [4; 5; 2; 1; 3; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem742 : bubbleSortDemo [4; 5; 2; 3; 0; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma742 : bubbleSortDemo [4; 5; 2; 3; 0; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem743 : bubbleSortDemo [4; 5; 2; 3; 1; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma743 : bubbleSortDemo [4; 5; 2; 3; 1; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem744 : bubbleSortDemo [4; 5; 3; 0; 1; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma744 : bubbleSortDemo [4; 5; 3; 0; 1; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem745 : bubbleSortDemo [4; 5; 3; 0; 2; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma745 : bubbleSortDemo [4; 5; 3; 0; 2; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem746 : bubbleSortDemo [4; 5; 3; 1; 0; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma746 : bubbleSortDemo [4; 5; 3; 1; 0; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem747 : bubbleSortDemo [4; 5; 3; 1; 2; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma747 : bubbleSortDemo [4; 5; 3; 1; 2; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem748 : bubbleSortDemo [4; 5; 3; 2; 0; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma748 : bubbleSortDemo [4; 5; 3; 2; 0; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem749 : bubbleSortDemo [4; 5; 3; 2; 1; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma749 : bubbleSortDemo [4; 5; 3; 2; 1; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem750 : bubbleSortDemo [5; 0; 1; 2; 3; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma750 : bubbleSortDemo [5; 0; 1; 2; 3; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem751 : bubbleSortDemo [5; 0; 1; 2; 4; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma751 : bubbleSortDemo [5; 0; 1; 2; 4; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem752 : bubbleSortDemo [5; 0; 1; 3; 2; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma752 : bubbleSortDemo [5; 0; 1; 3; 2; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem753 : bubbleSortDemo [5; 0; 1; 3; 4; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma753 : bubbleSortDemo [5; 0; 1; 3; 4; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem754 : bubbleSortDemo [5; 0; 1; 4; 2; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma754 : bubbleSortDemo [5; 0; 1; 4; 2; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem755 : bubbleSortDemo [5; 0; 1; 4; 3; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma755 : bubbleSortDemo [5; 0; 1; 4; 3; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem756 : bubbleSortDemo [5; 0; 2; 1; 3; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma756 : bubbleSortDemo [5; 0; 2; 1; 3; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem757 : bubbleSortDemo [5; 0; 2; 1; 4; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma757 : bubbleSortDemo [5; 0; 2; 1; 4; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem758 : bubbleSortDemo [5; 0; 2; 3; 1; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma758 : bubbleSortDemo [5; 0; 2; 3; 1; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem759 : bubbleSortDemo [5; 0; 2; 3; 4; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma759 : bubbleSortDemo [5; 0; 2; 3; 4; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem760 : bubbleSortDemo [5; 0; 2; 4; 1; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma760 : bubbleSortDemo [5; 0; 2; 4; 1; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem761 : bubbleSortDemo [5; 0; 2; 4; 3; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma761 : bubbleSortDemo [5; 0; 2; 4; 3; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem762 : bubbleSortDemo [5; 0; 3; 1; 2; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma762 : bubbleSortDemo [5; 0; 3; 1; 2; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem763 : bubbleSortDemo [5; 0; 3; 1; 4; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma763 : bubbleSortDemo [5; 0; 3; 1; 4; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem764 : bubbleSortDemo [5; 0; 3; 2; 1; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma764 : bubbleSortDemo [5; 0; 3; 2; 1; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem765 : bubbleSortDemo [5; 0; 3; 2; 4; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma765 : bubbleSortDemo [5; 0; 3; 2; 4; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem766 : bubbleSortDemo [5; 0; 3; 4; 1; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma766 : bubbleSortDemo [5; 0; 3; 4; 1; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem767 : bubbleSortDemo [5; 0; 3; 4; 2; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma767 : bubbleSortDemo [5; 0; 3; 4; 2; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem768 : bubbleSortDemo [5; 0; 4; 1; 2; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma768 : bubbleSortDemo [5; 0; 4; 1; 2; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem769 : bubbleSortDemo [5; 0; 4; 1; 3; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma769 : bubbleSortDemo [5; 0; 4; 1; 3; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem770 : bubbleSortDemo [5; 0; 4; 2; 1; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma770 : bubbleSortDemo [5; 0; 4; 2; 1; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem771 : bubbleSortDemo [5; 0; 4; 2; 3; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma771 : bubbleSortDemo [5; 0; 4; 2; 3; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem772 : bubbleSortDemo [5; 0; 4; 3; 1; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma772 : bubbleSortDemo [5; 0; 4; 3; 1; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem773 : bubbleSortDemo [5; 0; 4; 3; 2; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma773 : bubbleSortDemo [5; 0; 4; 3; 2; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem774 : bubbleSortDemo [5; 1; 0; 2; 3; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma774 : bubbleSortDemo [5; 1; 0; 2; 3; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem775 : bubbleSortDemo [5; 1; 0; 2; 4; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma775 : bubbleSortDemo [5; 1; 0; 2; 4; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem776 : bubbleSortDemo [5; 1; 0; 3; 2; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma776 : bubbleSortDemo [5; 1; 0; 3; 2; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem777 : bubbleSortDemo [5; 1; 0; 3; 4; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma777 : bubbleSortDemo [5; 1; 0; 3; 4; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem778 : bubbleSortDemo [5; 1; 0; 4; 2; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma778 : bubbleSortDemo [5; 1; 0; 4; 2; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem779 : bubbleSortDemo [5; 1; 0; 4; 3; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma779 : bubbleSortDemo [5; 1; 0; 4; 3; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem780 : bubbleSortDemo [5; 1; 2; 0; 3; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma780 : bubbleSortDemo [5; 1; 2; 0; 3; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem781 : bubbleSortDemo [5; 1; 2; 0; 4; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma781 : bubbleSortDemo [5; 1; 2; 0; 4; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem782 : bubbleSortDemo [5; 1; 2; 3; 0; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma782 : bubbleSortDemo [5; 1; 2; 3; 0; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem783 : bubbleSortDemo [5; 1; 2; 3; 4; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma783 : bubbleSortDemo [5; 1; 2; 3; 4; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem784 : bubbleSortDemo [5; 1; 2; 4; 0; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma784 : bubbleSortDemo [5; 1; 2; 4; 0; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem785 : bubbleSortDemo [5; 1; 2; 4; 3; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma785 : bubbleSortDemo [5; 1; 2; 4; 3; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem786 : bubbleSortDemo [5; 1; 3; 0; 2; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma786 : bubbleSortDemo [5; 1; 3; 0; 2; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem787 : bubbleSortDemo [5; 1; 3; 0; 4; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma787 : bubbleSortDemo [5; 1; 3; 0; 4; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem788 : bubbleSortDemo [5; 1; 3; 2; 0; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma788 : bubbleSortDemo [5; 1; 3; 2; 0; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem789 : bubbleSortDemo [5; 1; 3; 2; 4; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma789 : bubbleSortDemo [5; 1; 3; 2; 4; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem790 : bubbleSortDemo [5; 1; 3; 4; 0; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma790 : bubbleSortDemo [5; 1; 3; 4; 0; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem791 : bubbleSortDemo [5; 1; 3; 4; 2; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma791 : bubbleSortDemo [5; 1; 3; 4; 2; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem792 : bubbleSortDemo [5; 1; 4; 0; 2; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma792 : bubbleSortDemo [5; 1; 4; 0; 2; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem793 : bubbleSortDemo [5; 1; 4; 0; 3; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma793 : bubbleSortDemo [5; 1; 4; 0; 3; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem794 : bubbleSortDemo [5; 1; 4; 2; 0; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma794 : bubbleSortDemo [5; 1; 4; 2; 0; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem795 : bubbleSortDemo [5; 1; 4; 2; 3; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma795 : bubbleSortDemo [5; 1; 4; 2; 3; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem796 : bubbleSortDemo [5; 1; 4; 3; 0; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma796 : bubbleSortDemo [5; 1; 4; 3; 0; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem797 : bubbleSortDemo [5; 1; 4; 3; 2; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma797 : bubbleSortDemo [5; 1; 4; 3; 2; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem798 : bubbleSortDemo [5; 2; 0; 1; 3; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma798 : bubbleSortDemo [5; 2; 0; 1; 3; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem799 : bubbleSortDemo [5; 2; 0; 1; 4; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma799 : bubbleSortDemo [5; 2; 0; 1; 4; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem800 : bubbleSortDemo [5; 2; 0; 3; 1; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma800 : bubbleSortDemo [5; 2; 0; 3; 1; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem801 : bubbleSortDemo [5; 2; 0; 3; 4; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma801 : bubbleSortDemo [5; 2; 0; 3; 4; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem802 : bubbleSortDemo [5; 2; 0; 4; 1; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma802 : bubbleSortDemo [5; 2; 0; 4; 1; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem803 : bubbleSortDemo [5; 2; 0; 4; 3; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma803 : bubbleSortDemo [5; 2; 0; 4; 3; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem804 : bubbleSortDemo [5; 2; 1; 0; 3; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma804 : bubbleSortDemo [5; 2; 1; 0; 3; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem805 : bubbleSortDemo [5; 2; 1; 0; 4; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma805 : bubbleSortDemo [5; 2; 1; 0; 4; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem806 : bubbleSortDemo [5; 2; 1; 3; 0; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma806 : bubbleSortDemo [5; 2; 1; 3; 0; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem807 : bubbleSortDemo [5; 2; 1; 3; 4; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma807 : bubbleSortDemo [5; 2; 1; 3; 4; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem808 : bubbleSortDemo [5; 2; 1; 4; 0; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma808 : bubbleSortDemo [5; 2; 1; 4; 0; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem809 : bubbleSortDemo [5; 2; 1; 4; 3; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma809 : bubbleSortDemo [5; 2; 1; 4; 3; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem810 : bubbleSortDemo [5; 2; 3; 0; 1; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma810 : bubbleSortDemo [5; 2; 3; 0; 1; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem811 : bubbleSortDemo [5; 2; 3; 0; 4; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma811 : bubbleSortDemo [5; 2; 3; 0; 4; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem812 : bubbleSortDemo [5; 2; 3; 1; 0; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma812 : bubbleSortDemo [5; 2; 3; 1; 0; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem813 : bubbleSortDemo [5; 2; 3; 1; 4; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma813 : bubbleSortDemo [5; 2; 3; 1; 4; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem814 : bubbleSortDemo [5; 2; 3; 4; 0; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma814 : bubbleSortDemo [5; 2; 3; 4; 0; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem815 : bubbleSortDemo [5; 2; 3; 4; 1; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma815 : bubbleSortDemo [5; 2; 3; 4; 1; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem816 : bubbleSortDemo [5; 2; 4; 0; 1; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma816 : bubbleSortDemo [5; 2; 4; 0; 1; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem817 : bubbleSortDemo [5; 2; 4; 0; 3; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma817 : bubbleSortDemo [5; 2; 4; 0; 3; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem818 : bubbleSortDemo [5; 2; 4; 1; 0; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma818 : bubbleSortDemo [5; 2; 4; 1; 0; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem819 : bubbleSortDemo [5; 2; 4; 1; 3; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma819 : bubbleSortDemo [5; 2; 4; 1; 3; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem820 : bubbleSortDemo [5; 2; 4; 3; 0; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma820 : bubbleSortDemo [5; 2; 4; 3; 0; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem821 : bubbleSortDemo [5; 2; 4; 3; 1; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma821 : bubbleSortDemo [5; 2; 4; 3; 1; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem822 : bubbleSortDemo [5; 3; 0; 1; 2; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma822 : bubbleSortDemo [5; 3; 0; 1; 2; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem823 : bubbleSortDemo [5; 3; 0; 1; 4; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma823 : bubbleSortDemo [5; 3; 0; 1; 4; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem824 : bubbleSortDemo [5; 3; 0; 2; 1; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma824 : bubbleSortDemo [5; 3; 0; 2; 1; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem825 : bubbleSortDemo [5; 3; 0; 2; 4; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma825 : bubbleSortDemo [5; 3; 0; 2; 4; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem826 : bubbleSortDemo [5; 3; 0; 4; 1; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma826 : bubbleSortDemo [5; 3; 0; 4; 1; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem827 : bubbleSortDemo [5; 3; 0; 4; 2; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma827 : bubbleSortDemo [5; 3; 0; 4; 2; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem828 : bubbleSortDemo [5; 3; 1; 0; 2; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma828 : bubbleSortDemo [5; 3; 1; 0; 2; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem829 : bubbleSortDemo [5; 3; 1; 0; 4; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma829 : bubbleSortDemo [5; 3; 1; 0; 4; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem830 : bubbleSortDemo [5; 3; 1; 2; 0; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma830 : bubbleSortDemo [5; 3; 1; 2; 0; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem831 : bubbleSortDemo [5; 3; 1; 2; 4; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma831 : bubbleSortDemo [5; 3; 1; 2; 4; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem832 : bubbleSortDemo [5; 3; 1; 4; 0; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma832 : bubbleSortDemo [5; 3; 1; 4; 0; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem833 : bubbleSortDemo [5; 3; 1; 4; 2; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma833 : bubbleSortDemo [5; 3; 1; 4; 2; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem834 : bubbleSortDemo [5; 3; 2; 0; 1; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma834 : bubbleSortDemo [5; 3; 2; 0; 1; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem835 : bubbleSortDemo [5; 3; 2; 0; 4; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma835 : bubbleSortDemo [5; 3; 2; 0; 4; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem836 : bubbleSortDemo [5; 3; 2; 1; 0; 4] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma836 : bubbleSortDemo [5; 3; 2; 1; 0; 4] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem837 : bubbleSortDemo [5; 3; 2; 1; 4; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma837 : bubbleSortDemo [5; 3; 2; 1; 4; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem838 : bubbleSortDemo [5; 3; 2; 4; 0; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma838 : bubbleSortDemo [5; 3; 2; 4; 0; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem839 : bubbleSortDemo [5; 3; 2; 4; 1; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma839 : bubbleSortDemo [5; 3; 2; 4; 1; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem840 : bubbleSortDemo [5; 3; 4; 0; 1; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma840 : bubbleSortDemo [5; 3; 4; 0; 1; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem841 : bubbleSortDemo [5; 3; 4; 0; 2; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma841 : bubbleSortDemo [5; 3; 4; 0; 2; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem842 : bubbleSortDemo [5; 3; 4; 1; 0; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma842 : bubbleSortDemo [5; 3; 4; 1; 0; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem843 : bubbleSortDemo [5; 3; 4; 1; 2; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma843 : bubbleSortDemo [5; 3; 4; 1; 2; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem844 : bubbleSortDemo [5; 3; 4; 2; 0; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma844 : bubbleSortDemo [5; 3; 4; 2; 0; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem845 : bubbleSortDemo [5; 3; 4; 2; 1; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma845 : bubbleSortDemo [5; 3; 4; 2; 1; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem846 : bubbleSortDemo [5; 4; 0; 1; 2; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma846 : bubbleSortDemo [5; 4; 0; 1; 2; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem847 : bubbleSortDemo [5; 4; 0; 1; 3; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma847 : bubbleSortDemo [5; 4; 0; 1; 3; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem848 : bubbleSortDemo [5; 4; 0; 2; 1; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma848 : bubbleSortDemo [5; 4; 0; 2; 1; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem849 : bubbleSortDemo [5; 4; 0; 2; 3; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma849 : bubbleSortDemo [5; 4; 0; 2; 3; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem850 : bubbleSortDemo [5; 4; 0; 3; 1; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma850 : bubbleSortDemo [5; 4; 0; 3; 1; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem851 : bubbleSortDemo [5; 4; 0; 3; 2; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma851 : bubbleSortDemo [5; 4; 0; 3; 2; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem852 : bubbleSortDemo [5; 4; 1; 0; 2; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma852 : bubbleSortDemo [5; 4; 1; 0; 2; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem853 : bubbleSortDemo [5; 4; 1; 0; 3; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma853 : bubbleSortDemo [5; 4; 1; 0; 3; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem854 : bubbleSortDemo [5; 4; 1; 2; 0; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma854 : bubbleSortDemo [5; 4; 1; 2; 0; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem855 : bubbleSortDemo [5; 4; 1; 2; 3; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma855 : bubbleSortDemo [5; 4; 1; 2; 3; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem856 : bubbleSortDemo [5; 4; 1; 3; 0; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma856 : bubbleSortDemo [5; 4; 1; 3; 0; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem857 : bubbleSortDemo [5; 4; 1; 3; 2; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma857 : bubbleSortDemo [5; 4; 1; 3; 2; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem858 : bubbleSortDemo [5; 4; 2; 0; 1; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma858 : bubbleSortDemo [5; 4; 2; 0; 1; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem859 : bubbleSortDemo [5; 4; 2; 0; 3; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma859 : bubbleSortDemo [5; 4; 2; 0; 3; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem860 : bubbleSortDemo [5; 4; 2; 1; 0; 3] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma860 : bubbleSortDemo [5; 4; 2; 1; 0; 3] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem861 : bubbleSortDemo [5; 4; 2; 1; 3; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma861 : bubbleSortDemo [5; 4; 2; 1; 3; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem862 : bubbleSortDemo [5; 4; 2; 3; 0; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma862 : bubbleSortDemo [5; 4; 2; 3; 0; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem863 : bubbleSortDemo [5; 4; 2; 3; 1; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma863 : bubbleSortDemo [5; 4; 2; 3; 1; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem864 : bubbleSortDemo [5; 4; 3; 0; 1; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma864 : bubbleSortDemo [5; 4; 3; 0; 1; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem865 : bubbleSortDemo [5; 4; 3; 0; 2; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma865 : bubbleSortDemo [5; 4; 3; 0; 2; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem866 : bubbleSortDemo [5; 4; 3; 1; 0; 2] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma866 : bubbleSortDemo [5; 4; 3; 1; 0; 2] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem867 : bubbleSortDemo [5; 4; 3; 1; 2; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma867 : bubbleSortDemo [5; 4; 3; 1; 2; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem868 : bubbleSortDemo [5; 4; 3; 2; 0; 1] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma868 : bubbleSortDemo [5; 4; 3; 2; 0; 1] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
 
-Lemma bubbleSortTestTheorem869 : bubbleSortDemo [5; 4; 3; 2; 1; 0] = [0; 1; 2; 3; 4; 5].
+Lemma bubbleSortTestLemma869 : bubbleSortDemo [5; 4; 3; 2; 1; 0] = [0; 1; 2; 3; 4; 5].
 Proof.
   simpl. easy.
 Qed.
