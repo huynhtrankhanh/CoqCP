@@ -9,3 +9,4 @@ theories/PropertyPreservedAfterSorting.v
 theories/SelectionSortTest.v
 theories/ListRange.v
 theories/SwapUpdate.v
+theories/SelectionSort.v

@@ -1,5 +1,5 @@
 From stdpp Require Import numbers list.
-From CoqCP Require Import PropertyPreservedAfterSorting.
+From CoqCP Require Import SelectionSort.
 
 Lemma selectionSortTestLemma0 : selectionSortDemo [0; 1; 2] = [0; 1; 2].
 Proof.
