@@ -10,3 +10,6 @@ theories/SelectionSortTest.v
 theories/ListRange.v
 theories/SwapUpdate.v
 theories/SelectionSort.v
+theories/Foldl.v
+theories/PickSmallestInRangeProperties.v
+theories/Comparator.v

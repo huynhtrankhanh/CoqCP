@@ -57,6 +57,21 @@ Proof.
   - rewrite Nat.add_1_r. simpl. rewrite nthAppZero. simpl. rewrite updateAppZero. simpl. easy.
 Qed.
 
+Lemma swapPreservesLength {A : Type} (l : list A) (default : A) (i j : nat) : length (swap l i j default) = length l.
+Proof.
+  unfold swap. rewrite ?insert_length. reflexivity.
+Qed.
+
+Lemma updateSelf {A : Type} (l : list A) (default : A) (i : nat) : <[i := nth i l default]> l = l.
+Proof.
+  revert i. induction l; intros; simpl; destruct i; try simpl; rewrite ?IHl; reflexivity.
+Qed.
+
+Lemma swapSelf {A : Type} (l : list A) (default : A) (i : nat) : swap l i i default = l.
+Proof.
+  unfold swap. rewrite ?updateSelf. reflexivity.
+Qed.
+
 Create HintDb rewriteSwapUpdate.
 #[global] Hint Rewrite @updateAtIndexLength : rewriteSwapUpdate.
 #[global] Hint Rewrite @updateAtIndexLengthPlusSomething : rewriteSwapUpdate.
@@ -67,3 +82,6 @@ Create HintDb rewriteSwapUpdate.
 #[global] Hint Rewrite @swapChopOff : rewriteSwapUpdate.
 #[global] Hint Rewrite @swapChopOff': rewriteSwapUpdate.
 #[global] Hint Rewrite @swapApp : rewriteSwapUpdate.
+#[global] Hint Rewrite @swapPreservesLength : rewriteSwapUpdate.
+#[global] Hint Rewrite @updateSelf : rewriteSwapUpdate.
+#[global] Hint Rewrite @swapSelf : rewriteSwapUpdate.
