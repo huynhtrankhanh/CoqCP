@@ -18,7 +18,7 @@ Proof.
   unfold pickSmallestInRange. apply pickSmallestInRangeInvariant.
 Qed.
 
-Lemma pickSmallestInRangeCompare_aux {A : Type} (default : A) (compare : A -> A -> bool) (l : list A) (i delta : nat) : i < pickSmallestInRange default compare i (i + delta) l <-> i <> pickSmallestInRange default compare i (i + delta) l.
+Lemma pickSmallestInRangeLtIffNeq {A : Type} (default : A) (compare : A -> A -> bool) (l : list A) (i delta : nat) : i < pickSmallestInRange default compare i (i + delta) l <-> i <> pickSmallestInRange default compare i (i + delta) l.
 Proof.
   split; pose proof iLessEqualPickSmallestInRange default compare l i delta; intros; lia.
 Qed.
