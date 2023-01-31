@@ -13,3 +13,4 @@ theories/SelectionSort.v
 theories/Foldl.v
 theories/PickSmallestInRangeProperties.v
 theories/Comparator.v
+theories/ListDecomposition.v

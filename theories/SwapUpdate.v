@@ -1,4 +1,5 @@
 From stdpp Require Import numbers list.
+From CoqCP Require Import ListDecomposition ListsEqual.
 
 (* all indices 0 based *)
 Definition swap {A : Type} (l : list A) (i j : nat) (default : A) :=
@@ -72,16 +73,154 @@ Proof.
   unfold swap. rewrite ?updateSelf. reflexivity.
 Qed.
 
-Create HintDb rewriteSwapUpdate.
-#[global] Hint Rewrite @updateAtIndexLength : rewriteSwapUpdate.
-#[global] Hint Rewrite @updateAtIndexLengthPlusSomething : rewriteSwapUpdate.
-#[global] Hint Rewrite @updateApp : rewriteSwapUpdate.
-#[global] Hint Rewrite @updateAppZero : rewriteSwapUpdate.
-#[global] Hint Rewrite @nthApp : rewriteSwapUpdate.
-#[global] Hint Rewrite @nthAppZero : rewriteSwapUpdate.
-#[global] Hint Rewrite @swapChopOff : rewriteSwapUpdate.
-#[global] Hint Rewrite @swapChopOff': rewriteSwapUpdate.
-#[global] Hint Rewrite @swapApp : rewriteSwapUpdate.
-#[global] Hint Rewrite @swapPreservesLength : rewriteSwapUpdate.
-#[global] Hint Rewrite @updateSelf : rewriteSwapUpdate.
-#[global] Hint Rewrite @swapSelf : rewriteSwapUpdate.
+Lemma nthTake {A : Type} (l : list A) (default : A) (i j : nat) (hLt : i < j) : nth i l default = nth i (take j l) default.
+Proof.
+  revert l hLt. revert j. induction i; intros j l hLt.
+  - destruct l; rewrite ?take_nil; simpl.
+    + reflexivity.
+    + destruct j; try lia. simpl. reflexivity.
+  - destruct l; rewrite ?take_nil; simpl.
+    + reflexivity.
+    + destruct j; try lia. simpl. apply IHi. lia.
+Qed.
+
+Lemma nthConsDrop {A : Type} (l : list A) (default : A) (hNotNil : l <> []) (i : nat) (hLt : i < length l) : nth i l default :: drop (S i) l = drop i l.
+Proof.
+  revert hNotNil hLt. revert l.
+  induction i; intros l hNotNil hLt.
+  - destruct l; easy.
+  - destruct l; simpl; try easy. apply IHi.
+    + intro h. rewrite h in hLt. simpl in hLt. lia.
+    + simpl in hLt. lia.
+Qed.
+
+Lemma swapIndices {A : Type} (l : list A) (default : A) (i j : nat) : swap l i j default = swap l j i default.
+Proof.
+  unfold swap.
+  assert (hCases : i = j \/ i <> j). { lia. }
+  destruct hCases as [h | h].
+  - rewrite h. reflexivity.
+  - rewrite list_insert_commute; try lia. reflexivity.
+Qed.
+
+Lemma swapTwice' {A : Type} (l : list A) (default : A) (i j : nat) (hIJ : i < j) (hJ : j < length l) : swap (swap l i j default) i j default = l.
+Proof.
+  rewrite (listDecomposition l i j ltac:(lia) ltac:(lia) default).
+  assert (takeLength : i = length (take i l)). { rewrite take_length. lia. }
+  assert (hRewrite : forall x y, swap (take i l ++ [x] ++ drop (S i) (take j l) ++ [y] ++ drop (j + 1) l) i j default = swap (take i l ++ [x] ++ drop (S i) (take j l) ++ [y] ++ drop (j + 1) l) (length (take i l)) j default). { intros. rewrite <- ?takeLength. easy. }
+  rewrite hRewrite. clear hRewrite takeLength.
+  assert (takeLength : j = length (take i l) + length (drop (S i) (take j l)) + 1).
+  { rewrite take_length, drop_length, take_length.
+    assert (subtask1 : i `min` length l = i). { lia. }
+    assert (subtask2 : j `min` length l = j). { lia. }
+    rewrite subtask1, subtask2. lia. }
+  assert (hRewrite : forall x y, swap (take i l ++ [x] ++ drop (S i) (take j l) ++ [y] ++ drop (j + 1) l) (length (take i l)) j default = swap (take i l ++ [x] ++ drop (S i) (take j l) ++ [y] ++ drop (j + 1) l) (length (take i l)) (length (take i l) + length (drop (S i) (take j l)) + 1) default). { rewrite <- ?takeLength. easy. }
+  rewrite hRewrite, swapApp. clear hRewrite takeLength.
+  assert (takeLength : i = length (take i l)). { rewrite take_length. lia. }
+  assert (hRewrite : forall x y, swap (take i l ++ [x] ++ drop (S i) (take j l) ++ [y] ++ drop (j + 1) l) i j default = swap (take i l ++ [x] ++ drop (S i) (take j l) ++ [y] ++ drop (j + 1) l) (length (take i l)) j default). { intros. rewrite <- ?takeLength. easy. }
+  rewrite hRewrite. clear hRewrite takeLength.
+  assert (takeLength : j = length (take i l) + length (drop (S i) (take j l)) + 1).
+  { rewrite take_length, drop_length, take_length.
+    assert (subtask1 : i `min` length l = i). { lia. }
+    assert (subtask2 : j `min` length l = j). { lia. }
+    rewrite subtask1, subtask2. lia. }
+  assert (hRewrite : forall x y, swap (take i l ++ [x] ++ drop (S i) (take j l) ++ [y] ++ drop (j + 1) l) (length (take i l)) j default = swap (take i l ++ [x] ++ drop (S i) (take j l) ++ [y] ++ drop (j + 1) l) (length (take i l)) (length (take i l) + length (drop (S i) (take j l)) + 1) default). { rewrite <- ?takeLength. easy. }
+  rewrite hRewrite, swapApp. clear hRewrite takeLength.
+  reflexivity.
+Qed.
+
+Lemma swapTwice {A : Type} (l : list A) (default : A) (i j : nat) (hI : i < length l) (hJ : j < length l) : swap (swap l i j default) i j default = l.
+Proof.
+  assert (hWlog : i < j \/ j < i \/ i = j). { lia. }
+  destruct hWlog as [hWlog | [hWlog | hWlog]].
+  - apply swapTwice'; lia.
+  - rewrite ?(swapIndices _ default i j).
+    apply (swapTwice' _ _ j i); lia.
+  - rewrite hWlog, ?swapSelf. reflexivity.
+Qed.
+
+Lemma swapTwiceVariant {A : Type} (l : list A) (default : A) (i j : nat) (hI : i < length l) (hJ : j < length l) : swap (swap l i j default) j i default = l.
+Proof.
+  rewrite swapIndices. apply swapTwice; lia.
+Qed.
+
+Lemma nthSwap' {A : Type} (l : list A) (default : A) (i j : nat) (hWlog : i < j) (hJ : j < length l) : nth i (swap l i j default) default = nth j l default.
+  rewrite (listDecomposition l i j ltac:(lia) ltac:(lia) default).
+  assert (takeLength : i = length (take i l)). { rewrite take_length. lia. }
+  assert (hRewrite : swap (take i l ++ [nth i l default] ++ drop (S i) (take j l) ++ [nth j l default] ++ drop (j + 1) l) i j default = swap (take i l ++ [nth i l default] ++ drop (S i) (take j l) ++ [nth j l default] ++ drop (j + 1) l) (length (take i l)) j default). { rewrite <- ?takeLength. easy. }
+  rewrite hRewrite. clear hRewrite takeLength.
+  assert (takeLength : j = length (take i l) + length (drop (S i) (take j l)) + 1).
+  { rewrite take_length, drop_length, take_length.
+    assert (subtask1 : i `min` length l = i). { lia. }
+    assert (subtask2 : j `min` length l = j). { lia. }
+    rewrite subtask1, subtask2. lia. }
+  assert (hRewrite : swap (take i l ++ [nth i l default] ++ drop (S i) (take j l) ++ [nth j l default] ++ drop (j + 1) l) (length (take i l)) j default = swap (take i l ++ [nth i l default] ++ drop (S i) (take j l) ++ [nth j l default] ++ drop (j + 1) l) (length (take i l)) (length (take i l) + length (drop (S i) (take j l)) + 1) default). { rewrite <- ?takeLength. easy. }
+  rewrite hRewrite, swapApp. clear hRewrite takeLength.
+  pose proof nthAppZero (take i l) as H.
+  rewrite take_length in H.
+  assert (hEqI : i `min` length l = i). { lia. }
+  rewrite hEqI in H.
+  rewrite H. simpl.
+  assert (H' : take i l ++ nth i l default :: drop (S i) (take j l) = take j l).
+  { assert (subtask1 : take i l = take i (take j l)).
+    { rewrite take_take.
+      assert (hIJ : i `min` j = i). { lia. }
+      rewrite hIJ. reflexivity. }
+    rewrite subtask1.
+    assert (subtask2 : nth i l default = nth i (take j l) default).
+    { apply nthTake. lia. }
+    assert (hNthCons : nth i l default :: drop (S i) (take j l) = drop i (take j l)).
+    { rewrite subtask2. apply nthConsDrop.
+      - intro h.
+        assert (hTakeJ : length (take j l) = j).
+        { rewrite take_length. lia. }
+        assert (hContradiction : j = 0).
+        { rewrite <- hTakeJ, h. easy. }
+        lia.
+      - rewrite take_length. lia. }
+    rewrite hNthCons, take_drop. reflexivity. }
+    assert (hRebracketing : forall a c e : list A, forall b d : A, a ++ b :: c ++ d :: e = (a ++ b :: c) ++ d :: e).
+    { intros. listsEqual. }
+    rewrite hRebracketing, H'.
+    rewrite Nat.add_1_r, nthConsDrop; try lia.
+    - rewrite take_drop. reflexivity.
+    - intro h. rewrite h in *. simpl in *. lia.
+Qed.
+
+Lemma nthSwap {A : Type} (l : list A) (default : A) (i j : nat) (hI : i < length l) (hJ : j < length l) : nth i (swap l i j default) default = nth j l default.
+Proof.
+  assert (hWlog : i = j \/ i < j \/ j < i). { lia. }
+  destruct hWlog as [hWlog | [hWlog | hWlog]].
+  - rewrite hWlog, swapSelf. reflexivity.
+  - apply nthSwap'; lia.
+  - pose proof nthSwap' (swap l i j default) default j i as H.
+    rewrite swapPreservesLength, swapIndices in H; rewrite ?swapPreservesLength; try lia. rewrite swapTwice in H; try lia. rewrite H; try lia. reflexivity.
+Qed.
+
+Lemma nthSwapVariant {A : Type} (l : list A) (default : A) (i j : nat) (hI : i < length l) (hJ : j < length l) : nth i (swap l j i default) default = nth j l default.
+Proof.
+  rewrite swapIndices, nthSwap; try lia. reflexivity.
+Qed.
+
+Lemma nthUpdate {A : Type} (l : list A) (default : A) (i : nat) (value : A) (hLt : i < length l) : nth i (<[i := value]> l) default = value.
+Proof.
+  revert hLt; revert i; induction l; intros i hLt; unfold alter; try easy; simpl; unfold alter in IHl; destruct i; simpl; rewrite ?IHl; simpl in *; try lia; reflexivity.
+Qed.
+
+Lemma nthUpdateExcept {A : Type} (l : list A) (default : A) (i uninvolved : nat) (value : A) (hLt : i < length l) (hUninvolved : uninvolved <> i) : nth uninvolved (<[i := value]> l) default = nth uninvolved l default.
+Proof.
+  revert hLt; revert hUninvolved; revert i uninvolved; induction l; intros i uninvolved hUninvolved hLt; unfold alter; try easy; unfold alter in IHl; destruct i; rewrite ?IHl; simpl in hLt; try lia.
+  - simpl. destruct uninvolved; try lia; reflexivity.
+  - simpl. destruct uninvolved; try lia; try reflexivity.
+    apply IHl; lia.
+Qed.
+
+Lemma nthSwapExcept {A : Type} (l : list A) (default : A) (i j uninvolved : nat) (hI : i < length l) (hJ : j < length l) (hUninvolvedI : uninvolved <> i) (hUninvolvedJ : uninvolved <> j) : nth uninvolved (swap l i j default) default = nth uninvolved l default.
+Proof.
+  unfold swap. rewrite ?nthUpdateExcept; rewrite ?insert_length; try lia; reflexivity.
+Qed.
+
+Lemma nthSwapExceptVariant {A : Type} (l : list A) (default : A) (i j uninvolved : nat) (hI : i < length l) (hJ : j < length l) (hUninvolvedI : uninvolved <> i) (hUninvolvedJ : uninvolved <> j) : nth uninvolved (swap l j i default) default = nth uninvolved l default.
+Proof.
+  rewrite swapIndices, nthSwapExcept; try lia. reflexivity.
+Qed.
