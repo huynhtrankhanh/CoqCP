@@ -16,3 +16,4 @@ theories/Comparator.v
 theories/ListDecomposition.v
 theories/Sorted.v
 theories/SelectionSortProperties.v
+theories/SortedProperties.v
