@@ -1,7 +1,6 @@
 From stdpp Require Import numbers list.
 From CoqCP Require Import Sorted Comparator SelectionSort SelectionSortProperties.
 Require Import Permutation.
-Require Import Coq.Program.Equality.
 
 Lemma sortedCons [A : Type] [default : A] [a : A] [l : list A] [compare : A -> A -> bool] (hCons : sorted default compare (a :: l)) : sorted default compare l.
 Proof.
