@@ -44,5 +44,5 @@ Proof.
         rewrite hnthi1 in ineq1. rewrite hnthi2 in ineq2.
         simpl in ineq1, ineq2. destruct (comparatorStrict a a0) as [hSplit | [hSplit | hSplit]]; tauto. }
       rewrite hEq in *.
-      erewrite (IHl1 (sortedCons hL1Sorted) l2 (Permutation_cons_inv hPermutation) (sortedCons hL2Sorted)). reflexivity.
+      rewrite (IHl1 (sortedCons hL1Sorted) l2 (Permutation_cons_inv hPermutation) (sortedCons hL2Sorted)). reflexivity.
 Qed.
