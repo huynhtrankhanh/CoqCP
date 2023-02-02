@@ -15,7 +15,14 @@ Inductive isBalanced : list Bracket -> Prop :=
 Proof. solve_decision. Defined.
 
 Definition countOpen (s : list Bracket) := count_occ bracketEqualityDecidable s BracketOpen.
+
+Lemma foldCountOpen (s : list Bracket) : countOpen s = count_occ bracketEqualityDecidable s BracketOpen.
+Proof. easy. Qed.
+
 Definition countClose (s : list Bracket) := count_occ bracketEqualityDecidable s BracketClose.
+
+Lemma foldCountClose (s : list Bracket) : countClose s = count_occ bracketEqualityDecidable s BracketClose.
+Proof. easy. Qed.
 
 Definition balanceFactorBasedDefinition (s : list Bracket) := countOpen s = countClose s /\ forall prefix, prefix `prefix_of` s -> countOpen prefix >= countClose prefix.
 
@@ -364,4 +371,15 @@ Qed.
 Lemma isBalancedIffIsBalancedBool (s : list Bracket) : isBalanced s <-> isBalancedBool s.
 Proof.
   rewrite isBalancedIffBalanceFactorBasedDefinition, isBalancedBoolIffBalanceFactorBasedDefinition. reflexivity.
+Qed.
+
+Lemma isBalancedEvenLength (s : list Bracket) (h : isBalanced s) : (2 | length s).
+Proof.
+  induction h.
+  - simpl. now exists 0.
+  - rewrite ?app_length. destruct IHh as [w h'].
+    exists (S w). rewrite h'. simpl. lia.
+  - rewrite ?app_length. destruct IHh1 as [w1 h'1].
+    destruct IHh2 as [w2 h'2]. exists (w1 + w2).
+    lia.
 Qed.

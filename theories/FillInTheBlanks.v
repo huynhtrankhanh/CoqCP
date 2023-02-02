@@ -118,10 +118,81 @@ Qed.
 Lemma subtractToCountNone (withBlanks : list (option Bracket)) : length withBlanks - (count_occ optionBracketEqualityDecidable withBlanks (Some BracketOpen) + count_occ optionBracketEqualityDecidable withBlanks (Some BracketClose)) = count_occ optionBracketEqualityDecidable withBlanks None.
 Proof. pose proof addThreeTypes withBlanks. lia. Qed.
 
+Lemma countSymbolAfterFill (withBlanks : list (option Bracket)) (toFill : list Bracket) (hValid : length toFill = count_occ optionBracketEqualityDecidable withBlanks None) (symbol : Bracket) : count_occ optionBracketEqualityDecidable withBlanks (Some symbol) + count_occ bracketEqualityDecidable toFill symbol = count_occ bracketEqualityDecidable (fillLeftToRight withBlanks toFill) symbol.
+Proof.
+  revert toFill hValid. induction withBlanks; intros toFill hValid.
+  - simpl in *. rewrite (nil_length_inv _ hValid).
+    easy.
+  - destruct a.
+    + destruct toFill.
+      * pose proof IHwithBlanks [] ltac:(destruct b; simpl; easy) as H.
+        simpl in H. rewrite Nat.add_0_r in H.
+        assert (hCases : b = symbol \/ b <> symbol). { destruct b; destruct symbol; try (left; easy); try (right; easy). }
+        destruct hCases as [hCases | hCases].
+        { rewrite ?hCases. simpl. destruct symbol; simpl; rewrite H; lia. }
+        { destruct b; destruct symbol; try easy; simpl; rewrite H; lia. }
+      * simpl in hValid.
+        assert (hCases : b = symbol \/ b <> symbol). { destruct b; destruct symbol; try (left; easy); try (right; easy). }
+        destruct hCases as [hCases | hCases].
+        { rewrite ?hCases. simpl. destruct symbol; destruct b0; simpl; rewrite <- IHwithBlanks; simpl; lia. }
+        { destruct symbol; destruct b0; simpl in hCases; try easy; simpl; destruct b; simpl; rewrite <- IHwithBlanks; simpl; lia. }
+    + assert (hSimplify : count_occ optionBracketEqualityDecidable (None :: withBlanks) (Some symbol) = count_occ optionBracketEqualityDecidable withBlanks (Some symbol)). { destruct symbol; easy. }
+      rewrite hSimplify.
+      destruct toFill.
+      * simpl in hValid. lia.
+      * simpl in hValid.
+        assert (hCases : b = symbol \/ b <> symbol). { destruct b; destruct symbol; try (left; easy); try (right; easy). }
+        destruct hCases as [hCases | hCases].
+        { rewrite ?hCases. simpl. destruct symbol; simpl; rewrite <- IHwithBlanks; simpl; lia. }
+        { destruct symbol; simpl in hCases; try easy; simpl; destruct b; simpl; rewrite <- IHwithBlanks; simpl; lia. }
+Qed.
+
+Lemma existingLeqAfterFill (withBlanks : list (option Bracket)) (toFill : list Bracket) (hValid : length toFill = count_occ optionBracketEqualityDecidable withBlanks None) (symbol : Bracket) : count_occ optionBracketEqualityDecidable withBlanks (Some symbol) <= count_occ bracketEqualityDecidable (fillLeftToRight withBlanks toFill) symbol.
+Proof.
+  pose proof countSymbolAfterFill withBlanks toFill hValid symbol.
+  lia.
+Qed.
+
 Lemma possibleToFillIffPossibleToFillBool (withBlanks : list (option Bracket)) : possibleToFill withBlanks <-> possibleToFillBool withBlanks.
 Proof.
   split.
-  - admit.
+  - intro hPossible. unfold possibleToFill in hPossible. unfold possibleToFillBool.
+    case_bool_decide as hEven.
+    + shelve.
+    + destruct hPossible as [toFill [hLength hBalanced]].
+      pose proof fillLeftToRightPreservesLength withBlanks toFill hLength as hPreserve.
+      pose proof isBalancedEvenLength _ hBalanced.
+      rewrite hPreserve in *. tauto.
+    Unshelve.
+    case_bool_decide as enoughBlanks1.
+    * shelve.
+    * destruct hPossible as [toFill [hLength hBalanced]].
+      destruct (isBalancedImpliesBalanceFactorBasedDefinition _ hBalanced) as [hCount _].
+      pose proof fillLeftToRightPreservesLength withBlanks toFill hLength as hPreserve.
+      rewrite <- hPreserve, <- countOpenPlusCountClose, <- hCount in enoughBlanks1.
+      assert (hSimplify : forall a : nat, (a + a) / 2 = a).
+      { intro a.
+        pose proof Nat.add_b2n_double_div2 false a.
+        simpl in *. rewrite Nat.add_0_r in *. lia. }
+      rewrite hSimplify in enoughBlanks1.
+      pose proof existingLeqAfterFill withBlanks toFill ltac:(lia) BracketOpen as H.
+      rewrite <- foldCountOpen in H. lia.
+    Unshelve.
+    case_bool_decide as enoughBlanks2; simpl.
+    { shelve. }
+    { destruct hPossible as [toFill [hLength hBalanced]].
+      destruct (isBalancedImpliesBalanceFactorBasedDefinition _ hBalanced) as [hCount _].
+      pose proof fillLeftToRightPreservesLength withBlanks toFill hLength as hPreserve.
+      rewrite <- hPreserve, <- countOpenPlusCountClose, hCount in enoughBlanks2.
+      assert (hSimplify : forall a : nat, (a + a) / 2 = a).
+      { intro a.
+        pose proof Nat.add_b2n_double_div2 false a.
+        simpl in *. rewrite Nat.add_0_r in *. lia. }
+      rewrite hSimplify in enoughBlanks2.
+      pose proof existingLeqAfterFill withBlanks toFill ltac:(lia) BracketClose as H.
+      rewrite <- foldCountClose in H. lia. }
+    Unshelve.
+    admit.
   - intro h. exists (getWitness withBlanks). split.
     + unfold getWitness. rewrite app_length, ?repeat_length.
       assert (H : length withBlanks / 2 - count_occ optionBracketEqualityDecidable withBlanks (Some BracketOpen) + (length withBlanks / 2 - count_occ optionBracketEqualityDecidable withBlanks (Some BracketClose)) = 2 * (length withBlanks / 2) - (count_occ optionBracketEqualityDecidable withBlanks (Some BracketOpen) + count_occ optionBracketEqualityDecidable withBlanks (Some BracketClose))).
