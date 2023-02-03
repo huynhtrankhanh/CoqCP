@@ -1,5 +1,5 @@
 From stdpp Require Import numbers list.
-From CoqCP Require Import RegularBracketString PrefixApp ListsEqual SelectionSort Comparator Sorted SortedProperties SelectionSortProperties.
+From CoqCP Require Import RegularBracketString PrefixApp ListsEqual SelectionSort Comparator Sorted SortedProperties SelectionSortProperties PropertyPreservedAfterSorting.
 
 Definition compareSymbols (a b : Bracket) :=
   match a, b with
@@ -108,6 +108,8 @@ Proof.
   { destruct H4 as [w1 H4]. exists w1. rewrite H4. listsEqual. }
 Qed.
 
+Definition satisfactoryWitness (withBlanks : list (option Bracket)) (witness : list Bracket) := count_occ optionBracketEqualityDecidable withBlanks None = length witness /\ isBalanced (fillLeftToRight withBlanks witness).
+
 Lemma fillLeftToRightPreservesLength (withBlanks : list (option Bracket)) (witness : list Bracket) (h : length witness = count_occ optionBracketEqualityDecidable withBlanks None) : length (fillLeftToRight withBlanks witness) = length withBlanks.
 Proof.
   revert witness h. induction withBlanks; intros.
@@ -118,6 +120,15 @@ Proof.
       * simpl in h. lia.
       * simpl. simpl in h. rewrite IHwithBlanks; lia.
 Qed.
+
+Lemma canAlwaysSwapCloseAndOpenInWitness (s1 s2 s3 : list Bracket) (withBlanks : list (option Bracket)) (hPrevious: satisfactoryWitness withBlanks (s1 ++ [BracketClose] ++ s2 ++ [BracketOpen] ++ s3)) : satisfactoryWitness withBlanks (s1 ++ [BracketOpen] ++ s2 ++ [BracketClose] ++ s3).
+Proof.
+  unfold satisfactoryWitness in *.
+  split.
+  - rewrite (proj1 hPrevious), ?app_length. simpl. lia.
+  - 
+  (* this is a tougher nut to crack *)
+Admitted.
 
 Lemma addThreeTypes (withBlanks : list (option Bracket)) : count_occ optionBracketEqualityDecidable withBlanks None + count_occ optionBracketEqualityDecidable withBlanks (Some BracketOpen) + count_occ optionBracketEqualityDecidable withBlanks (Some BracketClose) = length withBlanks.
 Proof.
@@ -178,7 +189,7 @@ Proof.
   - lia.
 Qed.
 
-Lemma alwaysSorted (openCount closeCount : nat) : sorted BracketOpen compareSymbols (repeat BracketOpen openCount ++ repeat BracketClose closeCount).
+Lemma alwaysSorted (openCount closeCount : nat) : sorted BracketOpen (compare _ symbolComparator) (repeat BracketOpen openCount ++ repeat BracketClose closeCount).
 Proof.
   induction openCount.
   - simpl. apply alwaysSortedAux.
@@ -234,7 +245,37 @@ Proof.
     unfold getWitness.
     pose proof alwaysSorted (length withBlanks / 2 - count_occ optionBracketEqualityDecidable withBlanks (Some BracketOpen)) (length withBlanks / 2 - count_occ optionBracketEqualityDecidable withBlanks (Some BracketClose)) as hWitnessSorted.
     pose proof selectionSortCorrect BracketOpen symbolComparator toFill as hSelectionSort.
-    admit.
+    pose proof selectionSortPermutation BracketOpen (compare _ symbolComparator) toFill as hPermutation1.
+    assert (hSimplify : forall a : nat, (a + a) / 2 = a).
+    { intro a.
+      pose proof Nat.add_b2n_double_div2 false a.
+      simpl in *. rewrite Nat.add_0_r in *. lia. }
+    assert (hCountBalanced : forall x symbol, isBalanced x -> count_occ bracketEqualityDecidable x symbol = length x / 2).
+    { intros x symbol h.
+      destruct (isBalancedImpliesBalanceFactorBasedDefinition _ h) as [h1 h2].
+      rewrite <- countOpenPlusCountClose, h1, hSimplify.
+      destruct symbol; rewrite <- ?foldCountClose, <- ?foldCountOpen; lia. }
+    assert (hPermutation2 : Permutation toFill (repeat BracketOpen (length withBlanks / 2 - count_occ optionBracketEqualityDecidable withBlanks (Some BracketOpen)) ++ repeat BracketClose (length withBlanks / 2 - count_occ optionBracketEqualityDecidable withBlanks (Some BracketClose)))).
+    { rewrite (Permutation_count_occ bracketEqualityDecidable).
+      intro x.
+      rewrite count_occ_app.
+      pose proof countSymbolAfterFill withBlanks toFill hLength x as H.
+      destruct x; rewrite ?(@count_occ_repeat_neq Bracket bracketEqualityDecidable BracketOpen BracketClose), ?(@count_occ_repeat_neq Bracket bracketEqualityDecidable BracketClose BracketOpen), ?Nat.add_0_l, ?Nat.add_0_r; try easy; rewrite count_occ_repeat_eq; try reflexivity.
+      - pose proof hCountBalanced (fillLeftToRight withBlanks toFill) BracketOpen ltac:(assumption) as H'.
+        pose proof (fillLeftToRightPreservesLength withBlanks toFill ltac:(assumption)) as hRewrite.
+        rewrite hRewrite in *. lia.
+      - pose proof hCountBalanced (fillLeftToRight withBlanks toFill) BracketClose ltac:(assumption) as H'.
+        pose proof (fillLeftToRightPreservesLength withBlanks toFill ltac:(assumption)) as hRewrite.
+        rewrite hRewrite in *. lia. }
+    symmetry in hPermutation2.
+    pose proof (perm_trans hPermutation2 hPermutation1) as hPermutation.
+    rewrite (sortedArraysEqual hPermutation hWitnessSorted ltac:(assumption) ltac:(intros a b; destruct a; destruct b; try (left; left; easy); try (left; right; easy); try (right; left; easy); try (right; right; easy); try (left; easy); try (right; easy))).
+    epose proof propertyPreservedAfterSorting BracketOpen symbolComparator toFill (satisfactoryWitness withBlanks) ltac:(shelve) ltac:(shelve) as H.
+    rewrite <- isBalancedIffIsBalancedBool.
+    exact (proj2 H).
+    Unshelve.
+    { intros l1 l2 l3 a1 a2 h. destruct a1; destruct a2; try easy. apply canAlwaysSwapCloseAndOpenInWitness. }
+    { split; [lia | assumption]. }
   - intro h. exists (getWitness withBlanks). split.
     + unfold getWitness. rewrite app_length, ?repeat_length.
       assert (H : length withBlanks / 2 - count_occ optionBracketEqualityDecidable withBlanks (Some BracketOpen) + (length withBlanks / 2 - count_occ optionBracketEqualityDecidable withBlanks (Some BracketClose)) = 2 * (length withBlanks / 2) - (count_occ optionBracketEqualityDecidable withBlanks (Some BracketOpen) + count_occ optionBracketEqualityDecidable withBlanks (Some BracketClose))).
@@ -254,4 +295,4 @@ Proof.
       case_bool_decide.
       * case_bool_decide; try case_bool_decide; simpl in h; try rewrite <- isBalancedIffIsBalancedBool in h; easy.
       * easy.
-Admitted.
+Qed.
