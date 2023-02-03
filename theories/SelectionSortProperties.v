@@ -1,5 +1,5 @@
 From stdpp Require Import numbers list.
-From CoqCP Require Import ListRange SwapUpdate SelectionSort Foldl Comparator PickSmallestInRangeProperties ListDecomposition Sorted.
+From CoqCP Require Import ListRange SwapUpdate SelectionSort Foldl Comparator PickSmallestInRangeProperties ListDecomposition Sorted ListsEqual.
 
 Definition partialSelectionSort {A : Type} (default : A) (compare : A -> A -> bool) (l : list A) (iterationCount : nat) := foldl (fun accumulated i => swap accumulated i (pickSmallestInRange default compare i (length l - 1) accumulated) default) l (range iterationCount).
 
@@ -13,7 +13,7 @@ Proof.
   unfold partialSelectionSort. rewrite rangeSucc, foldl_app. simpl. reflexivity.
 Qed.
 
-Lemma selectionSortComplete {A : Type} (default : A) (comparator : Comparator A) (l : list A) : partialSelectionSort default (compare A comparator) l (length l) = selectionSort default (compare A comparator) l.
+Lemma selectionSortComplete {A : Type} (default : A) (compare : A -> A -> bool) (l : list A) : partialSelectionSort default compare l (length l) = selectionSort default compare l.
 Proof. easy. Qed.
 
 Lemma selectionSortPreservesLength {A : Type} (default : A) (compare : A -> A -> bool) (l : list A) : length (selectionSort default compare l) = length l.
@@ -119,4 +119,43 @@ Proof.
     apply H.
     + assumption.
     + rewrite selectionSortPreservesLength in h2. simpl in h2. assumption.
+Qed.
+
+Lemma selectionSortPermutation {A : Type} (default : A) (compare : A -> A -> bool) (l : list A) : Permutation l (selectionSort default compare l).
+Proof.
+  rewrite <- selectionSortComplete.
+  remember (length l) as iterationCount.
+  assert (hIterationCount : iterationCount <= length l). { lia. }
+  clear HeqiterationCount.
+  induction iterationCount.
+  - easy.
+  - rewrite partialSelectionSortSucc.
+    remember (partialSelectionSort default compare l iterationCount) as pastIteration.
+    remember (pickSmallestInRange default compare iterationCount (length l - 1) pastIteration) as j.
+    assert (hSimplify : iterationCount + (length l - 1 - iterationCount) = length l - 1). { lia. }
+    assert (hJUpperBound : j <= length l - 1).
+    { pose proof pickSmallestInRangeUpperBound default compare pastIteration iterationCount (length l - 1 - iterationCount) as H.
+      rewrite hSimplify in *. lia. }
+    assert (hJLowerBound : iterationCount = j \/ iterationCount < j).
+    { pose proof iLessEqualPickSmallestInRange default compare pastIteration iterationCount (length l - 1 - iterationCount) as H.
+      rewrite hSimplify in *. lia. }
+    destruct hJLowerBound as [hJLowerBound | hJLowerBound].
+    + rewrite hJLowerBound, swapSelf. apply IHiterationCount. lia.
+    + assert (hLeq1 : iterationCount < length pastIteration). { rewrite HeqpastIteration, partialSelectionSortPreservesLength in *; lia. }
+      assert (hLeq2 : j < length pastIteration). { rewrite HeqpastIteration, partialSelectionSortPreservesLength in *; lia. }
+      rewrite swapDecomposition, IHiterationCount; try lia.
+      assert (hPartial : Permutation pastIteration (take iterationCount pastIteration ++ [nth iterationCount pastIteration default] ++ drop (S iterationCount) (take j pastIteration) ++ [nth j pastIteration default] ++ drop (j + 1) pastIteration)).
+      { epose proof (listDecomposition pastIteration iterationCount j ltac:(lia) ltac:(rewrite HeqpastIteration in *; assumption) default) as H.
+        rewrite <- H. reflexivity. }
+      transitivity (take iterationCount pastIteration ++ [nth iterationCount pastIteration default] ++ drop (S iterationCount) (take j pastIteration) ++ [nth j pastIteration default] ++ drop (j + 1) pastIteration); try assumption.
+      remember (take iterationCount pastIteration) as A1.
+      remember ([nth iterationCount pastIteration default]) as A2.
+      remember (drop (S iterationCount) (take j pastIteration)) as A3.
+      remember ([nth j pastIteration default]) as A4.
+      remember (drop (j + 1) pastIteration) as A5.
+      assert (hRewriteInner : Permutation (A2 ++ A3 ++ A4) (A4 ++ A3 ++ A2)).
+      { rewrite (Permutation_app_comm A3 A2), (app_assoc A4 A2 A3), (Permutation_app_comm A4 A2), (Permutation_app_comm A3 A4), <- app_assoc. reflexivity. }
+      assert (rebracket1 : A1 ++ A2 ++ A3 ++ A4 ++ A5 = A1 ++ (A2 ++ A3 ++ A4) ++ A5). { listsEqual. }
+      assert (rebracket2 : A1 ++ A4 ++ A3 ++ A2 ++ A5 = A1 ++ (A4 ++ A3 ++ A2) ++ A5). { listsEqual. }
+      rewrite rebracket1, rebracket2, hRewriteInner. reflexivity.
 Qed.
