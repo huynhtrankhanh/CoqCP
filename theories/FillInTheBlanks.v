@@ -108,7 +108,13 @@ Proof.
   { destruct H4 as [w1 H4]. exists w1. rewrite H4. listsEqual. }
 Qed.
 
-Definition satisfactoryWitness (withBlanks : list (option Bracket)) (witness : list Bracket) := count_occ optionBracketEqualityDecidable withBlanks None = length witness /\ isBalanced (fillLeftToRight withBlanks witness).
+(* Paolo: I use a notation to avoid having to unfold this. *)
+Notation right_len withBlanks s :=
+  (count_occ optionBracketEqualityDecidable withBlanks None = length s) (only parsing).
+
+Definition satisfactoryWitness (withBlanks : list (option Bracket)) (witness : list Bracket) :=
+  right_len withBlanks witness /\
+  isBalanced (fillLeftToRight withBlanks witness).
 
 Lemma fillLeftToRightPreservesLength (withBlanks : list (option Bracket)) (witness : list Bracket) (h : length witness = count_occ optionBracketEqualityDecidable withBlanks None) : length (fillLeftToRight withBlanks witness) = length withBlanks.
 Proof.
@@ -121,14 +127,57 @@ Proof.
       * simpl. simpl in h. rewrite IHwithBlanks; lia.
 Qed.
 
+Section helpers.
+  Implicit Type (s : list Bracket).
+
+  Lemma fillLeftToRight_split {b s1 s2 withBlanks} :
+    let s := s1 ++ [b] ++ s2 in
+    right_len withBlanks s ->
+    ∃ wb1 wb2,
+      withBlanks = wb1 ++ [None] ++ wb2 /\
+      right_len wb1 s1 /\
+      right_len wb2 s2.
+  Proof.
+    simpl; rewrite !app_length; simpl; rewrite Nat.add_succ_r; simpl; clear b.
+    induction withBlanks as [|[b'|] wb] in s1, s2 |- *; intros HL; simplify_eq/=. {
+      destruct (IHwb s1 s2 HL) as (wb1 & wb2 & -> & ?); destruct_and!.
+      by exists (Some b' :: wb1), wb2.
+    }
+    destruct s1 as [|b1 s1]; simplify_eq/=. { by exists [], wb. }
+    destruct (IHwb s1 s2 HL) as (wb1 & wb2 & -> & ?); destruct_and!.
+    by exists (None :: wb1), wb2; split_and!; simpl; try f_equiv.
+  Qed.
+
+  Lemma right_len_app w1 w2 s1 s2 :
+    right_len w1 s1 ->
+    right_len w2 s2 ->
+    right_len (w1 ++ w2) (s1 ++ s2).
+  Proof. rewrite count_occ_app, app_length. lia. Qed.
+
+  Lemma fillLeftToRight_app w1 w2 s1 s2 :
+    right_len w1 s1 ->
+    right_len w2 s2 ->
+    fillLeftToRight (w1 ++ w2) (s1 ++ s2) = fillLeftToRight w1 s1 ++ fillLeftToRight w2 s2.
+  Proof.
+    induction w1 as [|[b|] w1] in s1, s2, w2 |- *; destruct s1 as [|b1 s1]; simpl in *;
+      try (done || lia); intros H1 H2. {
+      by rewrite <-(IHw1 w2 [] s2).
+    }
+    by rewrite <-(IHw1 w2 (b1 :: s1) s2).
+    rewrite <-(IHw1 w2 s1 s2); try done; lia.
+  Qed.
+End helpers.
+
 Lemma canAlwaysSwapCloseAndOpenInWitness (s1 s2 s3 : list Bracket) (withBlanks : list (option Bracket)) (hPrevious: satisfactoryWitness withBlanks (s1 ++ [BracketClose] ++ s2 ++ [BracketOpen] ++ s3)) : satisfactoryWitness withBlanks (s1 ++ [BracketOpen] ++ s2 ++ [BracketClose] ++ s3).
 Proof.
-  unfold satisfactoryWitness in *.
+  unfold satisfactoryWitness in *. destruct hPrevious as [HO HB].
   split.
-  - rewrite (proj1 hPrevious), ?app_length. simpl. lia.
-  - 
-  (* this is a tougher nut to crack *)
-Admitted.
+  - rewrite HO, ?app_length. simpl. lia.
+  - destruct (fillLeftToRight_split HO) as (wb1 & wb2' & -> & Hb1 & Hb2').
+    destruct (fillLeftToRight_split Hb2') as (wb2 & wb3 & -> & Hb2 & Hb3); clear Hb2'.
+    rewrite !fillLeftToRight_app in HB |- *; repeat apply right_len_app; simpl; try done.
+    by apply canAlwaysSwapCloseAndOpen.
+Qed.
 
 Lemma addThreeTypes (withBlanks : list (option Bracket)) : count_occ optionBracketEqualityDecidable withBlanks None + count_occ optionBracketEqualityDecidable withBlanks (Some BracketOpen) + count_occ optionBracketEqualityDecidable withBlanks (Some BracketClose) = length withBlanks.
 Proof.
