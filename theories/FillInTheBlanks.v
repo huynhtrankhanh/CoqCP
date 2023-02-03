@@ -130,26 +130,6 @@ Qed.
 Section helpers.
   Implicit Type (s : list Bracket).
 
-  (* Fails at the end. *)
-  Lemma fillLeftToRight_split_bad {b s1 s2 withBlanks} :
-    let s := s1 ++ [b] ++ s2 in
-    right_len withBlanks s ->
-    ∃ wb1 wbb wb2,
-      withBlanks = wb1 ++ wbb ++ wb2 /\
-      right_len wb1 s1 /\
-      right_len wbb [b] /\
-      right_len wb2 s2.
-  Proof.
-    simpl; rewrite !app_length; simpl; rewrite Nat.add_succ_r; simpl; clear b.
-    induction withBlanks as [|[b'|] wb] in s1, s2 |- *; intros HL; simplify_eq/=. {
-      destruct (IHwb s1 s2 HL) as (wb1 & wbb & wb2 & -> & ?); destruct_and!.
-      by exists (Some b' :: wb1), wbb, wb2.
-    }
-    destruct s1 as [|b1 s1]; simplify_eq/=. { by exists [], [None], wb. }
-    destruct (IHwb s1 s2 HL) as (wb1 & wbb & wb2 & -> & ?); destruct_and!.
-    by exists (None :: wb1), wbb, wb2; split_and!; simpl; try f_equiv.
-  Qed.
-
   Lemma fillLeftToRight_split {b s1 s2 withBlanks} :
     let s := s1 ++ [b] ++ s2 in
     right_len withBlanks s ->
@@ -186,33 +166,6 @@ Section helpers.
     by rewrite <-(IHw1 w2 (b1 :: s1) s2).
     rewrite <-(IHw1 w2 s1 s2); try done; lia.
   Qed.
-
-  (* Too weak. *)
-  (*
-  Lemma foo b s1 s2 withBlanks :
-    let s := s1 ++ [b] ++ s2 in
-    right_len withBlanks s ->
-    ∃ s1' s2',
-    fillLeftToRight withBlanks s = s1' ++ [b] ++ s2'.
-  Proof.
-    unfold right_len.
-    induction withBlanks as [|[b'|] bs] in s1, s2 |- *; simpl in *; intros HO.
-    { exfalso. by destruct s1. }
-    { destruct (IHbs s1 s2 HO) as (s1' & s2' & ->). by exists (b' :: s1'), s2'. }
-    destruct (s1 ++ b :: s2) as [|b' l] eqn:?. { exfalso; simpl in *; lia. }
-    destruct s1 as [|b1 s1]; simplify_eq/=. { by eexists [], _. }
-    destruct (IHbs s1 s2 HO) as (s1' & s2' & ->).
-    by exists (b' :: s1'), s2'.
-  Qed.
-
-  Lemma foo' withBlanks s1 s2 s3 :
-    let s := s1 ++ [BracketOpen] ++ s2 ++ [BracketClose] ++ s3 in
-    count_occ optionBracketEqualityDecidable withBlanks None = length s ->
-    ∃ s1' s2' s3',
-    fillLeftToRight withBlanks s = s1' ++ [BracketOpen] ++ s2' ++ [BracketClose] ++ s3'.
-  Proof.
-  Admitted.
-  *)
 End helpers.
 
 Lemma canAlwaysSwapCloseAndOpenInWitness (s1 s2 s3 : list Bracket) (withBlanks : list (option Bracket)) (hPrevious: satisfactoryWitness withBlanks (s1 ++ [BracketClose] ++ s2 ++ [BracketOpen] ++ s3)) : satisfactoryWitness withBlanks (s1 ++ [BracketOpen] ++ s2 ++ [BracketClose] ++ s3).
@@ -220,28 +173,11 @@ Proof.
   unfold satisfactoryWitness in *. destruct hPrevious as [HO HB].
   split.
   - rewrite HO, ?app_length. simpl. lia.
-  -
-    (* Here's what I tried with [fillLeftToRight_split_bad]. *)
-    destruct (fillLeftToRight_split_bad HO) as (wb1 & ? & wb2' & -> & Hb1 & ? & Hb2').
-    destruct (fillLeftToRight_split_bad Hb2') as (wb2 & ? & wb3 & -> & Hb2 & ? & Hb3); clear Hb2'.
-    rewrite !fillLeftToRight_app in HB |- *; repeat apply right_len_app; simpl; try done.
-    Fail apply canAlwaysSwapCloseAndOpen.
-    Undo 4.
-
-    destruct (fillLeftToRight_split HO) as (wb1 & wb2' & -> & Hb1 & Hb2').
+  - destruct (fillLeftToRight_split HO) as (wb1 & wb2' & -> & Hb1 & Hb2').
     destruct (fillLeftToRight_split Hb2') as (wb2 & wb3 & -> & Hb2 & Hb3); clear Hb2'.
     rewrite !fillLeftToRight_app in HB |- *; repeat apply right_len_app; simpl; try done.
     by apply canAlwaysSwapCloseAndOpen.
 Qed.
-
-  (* (*
-  edestruct (foo' withBlanks s1 s2 s3) as (s1' & s2' & s3' & Heq). {
-      rewrite HO, ?app_length; simpl. lia.
-    }
-    rewrite Heq.
-    apply canAlwaysSwapCloseAndOpen.
-  *)
-Admitted. *)
 
 Lemma addThreeTypes (withBlanks : list (option Bracket)) : count_occ optionBracketEqualityDecidable withBlanks None + count_occ optionBracketEqualityDecidable withBlanks (Some BracketOpen) + count_occ optionBracketEqualityDecidable withBlanks (Some BracketClose) = length withBlanks.
 Proof.
