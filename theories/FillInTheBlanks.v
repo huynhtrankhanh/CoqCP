@@ -1,5 +1,5 @@
 From stdpp Require Import numbers list.
-From CoqCP Require Import RegularBracketString PrefixApp ListsEqual SelectionSort Comparator.
+From CoqCP Require Import RegularBracketString PrefixApp ListsEqual SelectionSort Comparator Sorted SortedProperties.
 
 Definition compareSymbols (a b : Bracket) :=
   match a, b with
@@ -164,6 +164,30 @@ Lemma existingLeqAfterFill (withBlanks : list (option Bracket)) (toFill : list B
 Proof.
   pose proof countSymbolAfterFill withBlanks toFill hValid symbol.
   lia.
+Qed.
+
+Lemma alwaysSortedAux (closeCount : nat) : sorted BracketOpen compareSymbols (repeat BracketClose closeCount).
+Proof.
+  intros i j hI hJ.
+  pose proof nth_repeat BracketClose closeCount j as h1.
+  pose proof nth_repeat BracketClose closeCount i as h2.
+  erewrite (nth_indep _ BracketOpen BracketClose ltac:(shelve)), (nth_indep _ BracketOpen BracketClose ltac:(shelve)), h1, h2.
+  easy.
+  Unshelve.
+  - lia.
+  - lia.
+Qed.
+
+Lemma alwaysSorted (openCount closeCount : nat) : sorted BracketOpen compareSymbols (repeat BracketOpen openCount ++ repeat BracketClose closeCount).
+Proof.
+  induction openCount.
+  - simpl. apply alwaysSortedAux.
+  - simpl. intros i j hI hJ.
+    destruct i; destruct j; try easy.
+    + simpl. remember (nth j (repeat BracketOpen openCount ++ repeat BracketClose closeCount) BracketOpen) as random.
+      destruct random; easy.
+    + pose proof IHopenCount i j ltac:(lia) ltac:(simpl in *; lia).
+      simpl. assumption.
 Qed.
 
 Lemma possibleToFillIffPossibleToFillBool (withBlanks : list (option Bracket)) : possibleToFill withBlanks <-> possibleToFillBool withBlanks.
