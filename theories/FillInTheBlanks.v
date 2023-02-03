@@ -1,5 +1,18 @@
 From stdpp Require Import numbers list.
-From CoqCP Require Import RegularBracketString PrefixApp ListsEqual.
+From CoqCP Require Import RegularBracketString PrefixApp ListsEqual SelectionSort Comparator.
+
+Definition compareSymbols (a b : Bracket) :=
+  match a, b with
+  | BracketOpen, BracketOpen => false
+  | BracketOpen, BracketClose => true
+  | BracketClose, BracketOpen => false
+  | BracketClose, BracketClose => false
+  end.
+
+Lemma symbolComparator : Comparator Bracket.
+Proof.
+  exact {| compare := compareSymbols; transitive := ltac:(intros a b c h1 h2; destruct a; destruct b; destruct c; simpl in *; easy); irreflexive := ltac:(intro a; destruct a; easy); asymmetry := ltac:(intros a b h; destruct a; destruct b; simpl in *; easy); equalityExcludedMiddle := ltac:(intros a b; destruct a; destruct b; try (left; easy); try (right; easy)); connected := ltac:(intros a b h; destruct a; destruct b; simpl in *; try (left; easy); try (right; easy)) |}.
+Defined.
 
 Fixpoint fillLeftToRight (withBlanks : list (option Bracket)) (toFill : list Bracket) : list Bracket :=
   match withBlanks, toFill with
@@ -192,6 +205,8 @@ Proof.
       pose proof existingLeqAfterFill withBlanks toFill ltac:(lia) BracketClose as H.
       rewrite <- foldCountClose in H. lia. }
     Unshelve.
+    destruct hPossible as [toFill [hLength hBalanced]].
+    remember (selectionSort BracketOpen (compare _ symbolComparator) toFill) as sorted.
     admit.
   - intro h. exists (getWitness withBlanks). split.
     + unfold getWitness. rewrite app_length, ?repeat_length.
