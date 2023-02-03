@@ -1,5 +1,5 @@
 From stdpp Require Import numbers list.
-From CoqCP Require Import RegularBracketString PrefixApp ListsEqual SelectionSort Comparator Sorted SortedProperties.
+From CoqCP Require Import RegularBracketString PrefixApp ListsEqual SelectionSort Comparator Sorted SortedProperties SelectionSortProperties.
 
 Definition compareSymbols (a b : Bracket) :=
   match a, b with
@@ -230,7 +230,10 @@ Proof.
       rewrite <- foldCountClose in H. lia. }
     Unshelve.
     destruct hPossible as [toFill [hLength hBalanced]].
-    remember (selectionSort BracketOpen (compare _ symbolComparator) toFill) as sorted.
+    remember (selectionSort BracketOpen (compare _ symbolComparator) toFill) as afterSorting.
+    unfold getWitness.
+    pose proof alwaysSorted (length withBlanks / 2 - count_occ optionBracketEqualityDecidable withBlanks (Some BracketOpen)) (length withBlanks / 2 - count_occ optionBracketEqualityDecidable withBlanks (Some BracketClose)) as hWitnessSorted.
+    pose proof selectionSortCorrect BracketOpen symbolComparator toFill as hSelectionSort.
     admit.
   - intro h. exists (getWitness withBlanks). split.
     + unfold getWitness. rewrite app_length, ?repeat_length.
