@@ -1,20 +1,20 @@
 From stdpp Require Import options numbers list.
-From CoqCP Require Import SelectionSort Comparator ListDecomposition Sorted SelectionSortProperties SwapUpdate PickSmallestInRangeProperties.
+From CoqCP Require Import Options SelectionSort Comparator ListDecomposition Sorted SelectionSortProperties SwapUpdate PickSmallestInRangeProperties.
 
 Lemma propertyPreservedAfterSwapping {A : Type} (default : A) (comparator : Comparator A) (l : list A) (property : list A -> Prop) (hPreserve : forall l1 l2 l3 a1 a2, compare _ comparator a2 a1 -> property (l1 ++ [a1] ++ l2 ++ [a2] ++ l3) -> property (l1 ++ [a2] ++ l2 ++ [a1] ++ l3)) (hProperty : property l) (i : nat) (hInBounds : i < length l) : property (swap l i (pickSmallestInRange default (compare _ comparator) i (length l - 1) l) default).
 Proof.
   pose proof pickSmallestInRangeCompare default comparator l i (length l - 1 - i) 0 ltac:(lia) as H.
   assert (H1 : i + (length l - 1 - i) = length l - 1). { lia. }
   rewrite H1, Nat.add_0_r in H.
-  remember (pickSmallestInRange default (compare A comparator) i (length l - 1) l) as j.
+  remember (pickSmallestInRange default (compare A comparator) i (length l - 1) l) as j eqn:Heqj.
   pose proof pickSmallestInRangeUpperBound default (compare A comparator) l i (length l - 1 - i) as upperBound.
   rewrite H1, <- Heqj in upperBound.
   pose proof pickSmallestInRangeInvariant default (compare A comparator) l i (length l - 1 - i) as hLeq.
   rewrite pickSmallestInRangeFold, H1, <- Heqj in hLeq.
   assert (hSplit : i = j \/ i < j). { lia. }
-  destruct hSplit.
+  destruct hSplit as [H0 | H0].
   - rewrite H0, swapSelf. assumption.
-  - pose proof proj1 (lessThanOrEqual comparator (nth i l default) (nth j l default)) H as H2. destruct H2.
+  - pose proof proj1 (lessThanOrEqual comparator (nth i l default) (nth j l default)) H as H2. destruct H2 as [H2 | H2].
     + unfold swap. rewrite <- H2, updateSelf, H2, updateSelf. assumption.
     + rewrite (listDecomposition l i j ltac:(lia) ltac:(lia) default).
       assert (takeLength : i = length (take i l)). { rewrite take_length. lia. }
@@ -33,7 +33,7 @@ Qed.
 
 Lemma propertyPreservedAfterPartialSorting {A : Type} (default : A) (comparator : Comparator A) (l : list A) (property : list A -> Prop) (hPreserve : forall l1 l2 l3 a1 a2, compare _ comparator a2 a1 -> property (l1 ++ [a1] ++ l2 ++ [a2] ++ l3) -> property (l1 ++ [a2] ++ l2 ++ [a1] ++ l3)) (hProperty : property l) (iterationCount : nat) (hIterationCount : iterationCount <= length l) : property (partialSelectionSort default (compare _ comparator) l iterationCount).
 Proof.
-  induction iterationCount.
+  induction iterationCount as [| iterationCount IHiterationCount].
   - easy.
   - rewrite partialSelectionSortSucc.
     assert (hPosition : iterationCount <= pickSmallestInRange default (compare A comparator) iterationCount (length l - 1)
@@ -44,7 +44,7 @@ Proof.
     assert (hPosition2 : iterationCount = pickSmallestInRange default (compare A comparator) iterationCount (length l - 1)
     (partialSelectionSort default (compare A comparator) l iterationCount) \/ iterationCount < pickSmallestInRange default (compare A comparator) iterationCount (length l - 1)
     (partialSelectionSort default (compare A comparator) l iterationCount)). { lia. }
-    destruct hPosition2.
+    destruct hPosition2 as [H | H].
     + rewrite <- H, swapSelf. pose proof IHiterationCount ltac:(lia). assumption.
     + pose proof IHiterationCount ltac:(lia) as hNext.
       rewrite <- (partialSelectionSortPreservesLength default (compare _ comparator) l iterationCount).

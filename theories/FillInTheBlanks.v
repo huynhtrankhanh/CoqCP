@@ -1,5 +1,5 @@
 From stdpp Require Import options numbers list.
-From CoqCP Require Import RegularBracketString PrefixApp ListsEqual SelectionSort Comparator Sorted SortedProperties SelectionSortProperties PropertyPreservedAfterSorting.
+From CoqCP Require Import Options RegularBracketString PrefixApp ListsEqual SelectionSort Comparator Sorted SortedProperties SelectionSortProperties PropertyPreservedAfterSorting.
 
 Definition compareSymbols (a b : Bracket) :=
   match a, b with
@@ -75,29 +75,29 @@ Proof.
   split.
   - autorewrite with rewriteCount. autorewrite with rewriteCount in h1. lia.
   - intros prefix hPrefix. pose proof prefixAppCases _ _ _ hPrefix as H.
-    destruct H.
+    destruct H as [H | H].
     + epose proof h2 prefix _. assumption.
     + destruct H as [l' h3]. rewrite h3 in hPrefix.
       pose proof prefix_app_inv s1 l' ([BracketOpen] ++ s2 ++ [BracketClose] ++ s3) hPrefix as hPrefix2.
       pose proof prefixAppCases _ _ _ hPrefix2 as H1.
-      destruct H1.
+      destruct H1 as [H | H].
       * rewrite h3. autorewrite with rewriteCount.
-        destruct (prefixSingleton _ _ H).
+        destruct (prefixSingleton _ _ H) as [H0 | H0].
         { rewrite H0. autorewrite with rewriteCount. rewrite ?Nat.add_0_r.
           epose proof h2 s1 _. assumption. }
         { rewrite H0. autorewrite with rewriteCount. epose proof h2 s1 _. lia. }
       * destruct H as [l0 H]. rewrite ?h3, ?H. autorewrite with rewriteCount.
         rewrite H in hPrefix2. pose proof prefix_app_inv _ _ _ hPrefix2 as H0.
-        pose proof prefixAppCases _ _ _ H0 as H1. destruct H1.
-        { epose proof h2 (s1 ++ [BracketClose] ++ l0) _. autorewrite with rewriteCount in H2. lia. }
+        pose proof prefixAppCases _ _ _ H0 as H1. destruct H1 as [H1 | H1].
+        { epose proof h2 (s1 ++ [BracketClose] ++ l0) _ as H2. autorewrite with rewriteCount in H2. lia. }
         { destruct H1 as [w H1]. rewrite H1 in H0. pose proof prefix_app_inv _ _ _ H0 as H2.
-          pose proof prefixAppCases _ _ _ H2.
-          destruct H3.
-          - destruct (prefixSingleton _ _ H3).
+          pose proof prefixAppCases _ _ _ H2 as H3.
+          destruct H3 as [H3 | H3].
+          - destruct (prefixSingleton _ _ H3) as [H4 | H4].
             + rewrite H4 in H1. rewrite app_nil_r in H1. rewrite H1. epose proof h2 (s1 ++ [BracketClose] ++ s2 ++ [BracketOpen]) _ as H6. autorewrite with rewriteCount in H6. lia.
             + rewrite H4 in H1. rewrite H1. autorewrite with rewriteCount. epose proof h2 (s1 ++ [BracketClose] ++ s2 ++ [BracketOpen]) _ as H5. autorewrite with rewriteCount in H5. lia.
           - destruct H3 as [w' H3]. rewrite H3 in H2. pose proof prefix_app_inv _ _ _ H2 as H4.
-            epose proof h2 (s1 ++ [BracketClose] ++ s2 ++ [BracketOpen] ++ w') _. autorewrite with rewriteCount in H5. rewrite H1, H3. autorewrite with rewriteCount. lia. }
+            epose proof h2 (s1 ++ [BracketClose] ++ s2 ++ [BracketOpen] ++ w') _ as H5. autorewrite with rewriteCount in H5. rewrite H1, H3. autorewrite with rewriteCount. lia. }
   Unshelve.
   { destruct H as [w H]. exists (w ++ [BracketClose] ++ s2 ++ [BracketOpen] ++ s3). rewrite H. listsEqual. }
   { exists ([BracketClose] ++ s2 ++ [BracketOpen] ++ s3). reflexivity. }
@@ -118,7 +118,7 @@ Definition satisfactoryWitness (withBlanks : list (option Bracket)) (witness : l
 
 Lemma fillLeftToRightPreservesLength (withBlanks : list (option Bracket)) (witness : list Bracket) (h : length witness = count_occ optionBracketEqualityDecidable withBlanks None) : length (fillLeftToRight withBlanks witness) = length withBlanks.
 Proof.
-  revert witness h. induction withBlanks; intros.
+  revert witness h. induction withBlanks as [| a withBlanks IHwithBlanks]; intros witness h.
   - easy.
   - destruct a; simpl.
     + simpl in h. rewrite (IHwithBlanks _ h). reflexivity.
@@ -139,7 +139,7 @@ Section helpers.
       right_len wb2 s2.
   Proof.
     simpl; rewrite !app_length; simpl; rewrite Nat.add_succ_r; simpl; clear b.
-    induction withBlanks as [|[b'|] wb] in s1, s2 |- *; intros HL; simplify_eq/=. {
+    induction withBlanks as [|[b'|] wb IHwb] in s1, s2 |- *; intros HL; simplify_eq/=. {
       destruct (IHwb s1 s2 HL) as (wb1 & wb2 & -> & ?); destruct_and!.
       by exists (Some b' :: wb1), wb2.
     }
@@ -159,7 +159,7 @@ Section helpers.
     right_len w2 s2 ->
     fillLeftToRight (w1 ++ w2) (s1 ++ s2) = fillLeftToRight w1 s1 ++ fillLeftToRight w2 s2.
   Proof.
-    induction w1 as [|[b|] w1] in s1, s2, w2 |- *; destruct s1 as [|b1 s1]; simpl in *;
+    induction w1 as [|[b|] w1 IHw1] in s1, s2, w2 |- *; destruct s1 as [|b1 s1]; simpl in *;
       try (done || lia); intros H1 H2. {
       by rewrite <-(IHw1 w2 [] s2).
     }
@@ -181,9 +181,9 @@ Qed.
 
 Lemma addThreeTypes (withBlanks : list (option Bracket)) : count_occ optionBracketEqualityDecidable withBlanks None + count_occ optionBracketEqualityDecidable withBlanks (Some BracketOpen) + count_occ optionBracketEqualityDecidable withBlanks (Some BracketClose) = length withBlanks.
 Proof.
-  induction withBlanks.
+  induction withBlanks as [| a withBlanks].
   - easy.
-  - destruct a.
+  - destruct a as [b |].
     + destruct b; simpl; lia.
     + simpl. lia.
 Qed.
@@ -193,11 +193,11 @@ Proof. pose proof addThreeTypes withBlanks. lia. Qed.
 
 Lemma countSymbolAfterFill (withBlanks : list (option Bracket)) (toFill : list Bracket) (hValid : length toFill = count_occ optionBracketEqualityDecidable withBlanks None) (symbol : Bracket) : count_occ optionBracketEqualityDecidable withBlanks (Some symbol) + count_occ bracketEqualityDecidable toFill symbol = count_occ bracketEqualityDecidable (fillLeftToRight withBlanks toFill) symbol.
 Proof.
-  revert toFill hValid. induction withBlanks; intros toFill hValid.
+  revert toFill hValid. induction withBlanks as [| a withBlanks IHwithBlanks]; intros toFill hValid.
   - simpl in *. rewrite (nil_length_inv _ hValid).
     easy.
-  - destruct a.
-    + destruct toFill.
+  - destruct a as [b |].
+    + destruct toFill as [| b0 toFill].
       * pose proof IHwithBlanks [] ltac:(destruct b; simpl; easy) as H.
         simpl in H. rewrite Nat.add_0_r in H.
         assert (hCases : b = symbol \/ b <> symbol). { destruct b; destruct symbol; try (left; easy); try (right; easy). }
@@ -211,7 +211,7 @@ Proof.
         { destruct symbol; destruct b0; simpl in hCases; try easy; simpl; destruct b; simpl; rewrite <- IHwithBlanks; simpl; lia. }
     + assert (hSimplify : count_occ optionBracketEqualityDecidable (None :: withBlanks) (Some symbol) = count_occ optionBracketEqualityDecidable withBlanks (Some symbol)). { destruct symbol; easy. }
       rewrite hSimplify.
-      destruct toFill.
+      destruct toFill as [| b toFill].
       * simpl in hValid. lia.
       * simpl in hValid.
         assert (hCases : b = symbol \/ b <> symbol). { destruct b; destruct symbol; try (left; easy); try (right; easy). }
@@ -240,10 +240,10 @@ Qed.
 
 Lemma alwaysSorted (openCount closeCount : nat) : sorted BracketOpen (compare _ symbolComparator) (repeat BracketOpen openCount ++ repeat BracketClose closeCount).
 Proof.
-  induction openCount.
+  induction openCount as [| openCount IHopenCount].
   - simpl. apply alwaysSortedAux.
   - simpl. intros i j hI hJ.
-    destruct i; destruct j; try easy.
+    destruct i as [| i]; destruct j as [| j]; try easy.
     + simpl. remember (nth j (repeat BracketOpen openCount ++ repeat BracketClose closeCount) BracketOpen) as random.
       destruct random; easy.
     + pose proof IHopenCount i j ltac:(lia) ltac:(simpl in *; lia).

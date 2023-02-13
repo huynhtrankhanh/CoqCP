@@ -1,5 +1,5 @@
 From stdpp Require Import options numbers list.
-From CoqCP Require Import ListRange SwapUpdate SelectionSort Foldl Comparator PickSmallestInRangeProperties ListDecomposition Sorted ListsEqual.
+From CoqCP Require Import Options ListRange SwapUpdate SelectionSort Foldl Comparator PickSmallestInRangeProperties ListDecomposition Sorted ListsEqual.
 
 Definition partialSelectionSort {A : Type} (default : A) (compare : A -> A -> bool) (l : list A) (iterationCount : nat) := foldl (fun accumulated i => swap accumulated i (pickSmallestInRange default compare i (length l - 1) accumulated) default) l (range iterationCount).
 
@@ -19,28 +19,28 @@ Proof. easy. Qed.
 Lemma selectionSortPreservesLength {A : Type} (default : A) (compare : A -> A -> bool) (l : list A) : length (selectionSort default compare l) = length l.
 Proof.
   unfold selectionSort.
-  remember (range _) as randomList.
+  remember (range _) as randomList eqn:HeqrandomList.
   clear HeqrandomList. revert l.
-  induction randomList; intros.
+  induction randomList as [| a randomList IHrandomList].
   - easy.
-  - simpl. pose proof IHrandomList (swap l a (pickSmallestInRange default compare a (length l - 1) l) default) as H.
+  - intro l. simpl. pose proof IHrandomList (swap l a (pickSmallestInRange default compare a (length l - 1) l) default) as H.
     rewrite ?swapPreservesLength in H. assumption.
 Qed.
 
 Lemma partialSelectionSortPreservesLength {A : Type} (default : A) (compare : A -> A -> bool) (l : list A) (iterationCount : nat) : length (partialSelectionSort default compare l iterationCount) = length l.
 Proof.
   unfold partialSelectionSort.
-  remember (range _) as randomList.
+  remember (range _) as randomList eqn:HeqrandomList.
   clear HeqrandomList. revert l.
-  induction randomList; intros.
+  induction randomList as [| a randomList IHrandomList].
   - easy.
-  - simpl. pose proof IHrandomList (swap l a (pickSmallestInRange default compare a (length l - 1) l) default) as H.
+  - intro l. simpl. pose proof IHrandomList (swap l a (pickSmallestInRange default compare a (length l - 1) l) default) as H.
     rewrite ?swapPreservesLength in H. assumption.
 Qed.
 
 Lemma partialSelectionSortInvariant {A : Type} (default : A) (comparator : Comparator A) (l : list A) (i : nat) (hLt : i < length l) : prefixSorted default (compare _ comparator) (partialSelectionSort default (compare _ comparator) l (S i)) (S i) /\ partitioned default (compare _ comparator) (partialSelectionSort default (compare _ comparator) l (S i)) i.
 Proof.
-  induction i.
+  induction i as [| i IHi].
   - rewrite partialSelectionSortSucc, partialSelectionSortZero.
     split.
     + intros i j hIJ hJ. lia.
@@ -60,7 +60,7 @@ Proof.
         rewrite ?Nat.add_0_l in H0. assumption.
       * rewrite nthSwapExcept; try lia. assumption.
   - rewrite partialSelectionSortSucc.
-    remember (partialSelectionSort default (compare A comparator) l (S i)) as pastIteration.
+    remember (partialSelectionSort default (compare A comparator) l (S i)) as pastIteration eqn:HeqpastIteration.
     assert (hPastIterationSameLength : length pastIteration = length l).
     { rewrite HeqpastIteration, partialSelectionSortPreservesLength. reflexivity. }
     assert (hSimplify : S i + (length l - 1 - S i) = length l - 1). { lia. }
@@ -112,9 +112,9 @@ Qed.
 
 Lemma selectionSortCorrect {A : Type} (default : A) (comparator : Comparator A) (l : list A) : sorted default (compare _ comparator) (selectionSort default (compare _ comparator) l).
 Proof.
-  destruct l.
+  destruct l as [| a l].
   - intros a b h1 h2. simpl in *. lia.
-  - pose proof proj1 (partialSelectionSortInvariant default comparator (a :: l) (length l) ltac:(simpl; lia)).
+  - pose proof proj1 (partialSelectionSortInvariant default comparator (a :: l) (length l) ltac:(simpl; lia)) as H.
     intros i j h1 h2.
     apply H.
     + assumption.
@@ -124,14 +124,14 @@ Qed.
 Lemma selectionSortPermutation {A : Type} (default : A) (compare : A -> A -> bool) (l : list A) : Permutation l (selectionSort default compare l).
 Proof.
   rewrite <- selectionSortComplete.
-  remember (length l) as iterationCount.
+  remember (length l) as iterationCount eqn:HeqiterationCount.
   assert (hIterationCount : iterationCount <= length l). { lia. }
   clear HeqiterationCount.
-  induction iterationCount.
+  induction iterationCount as [| iterationCount IHiterationCount].
   - easy.
   - rewrite partialSelectionSortSucc.
-    remember (partialSelectionSort default compare l iterationCount) as pastIteration.
-    remember (pickSmallestInRange default compare iterationCount (length l - 1) pastIteration) as j.
+    remember (partialSelectionSort default compare l iterationCount) as pastIteration eqn:HeqpastIteration.
+    remember (pickSmallestInRange default compare iterationCount (length l - 1) pastIteration) as j eqn:Heqj.
     assert (hSimplify : iterationCount + (length l - 1 - iterationCount) = length l - 1). { lia. }
     assert (hJUpperBound : j <= length l - 1).
     { pose proof pickSmallestInRangeUpperBound default compare pastIteration iterationCount (length l - 1 - iterationCount) as H.

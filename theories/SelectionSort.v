@@ -1,5 +1,5 @@
 From stdpp Require Import options numbers list.
-From CoqCP Require Import ListsEqual SwapUpdate ListRange.
+From CoqCP Require Import Options ListsEqual SwapUpdate ListRange.
 
 Section selectionSort.
 Context {A : Type} (default : A) (compare : A -> A -> bool) (l : list A).

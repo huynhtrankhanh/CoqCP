@@ -1,5 +1,5 @@
 From stdpp Require Import options numbers list.
-From CoqCP Require Import ListDecomposition ListsEqual.
+From CoqCP Require Import Options ListDecomposition ListsEqual.
 
 (* all indices 0 based *)
 Definition swap {A : Type} (l : list A) (i j : nat) (default : A) :=
@@ -10,43 +10,43 @@ Definition swap {A : Type} (l : list A) (i j : nat) (default : A) :=
 
 Lemma updateAtIndexLength {A : Type} (l : list A) (value : A) : <[length l := value]> l = l.
 Proof.
-  induction l; unfold alter; try easy; simpl; unfold alter in IHl; rewrite IHl; easy.
+  induction l as [| head l IHl]; unfold alter; try easy; simpl; unfold alter in IHl; rewrite IHl; easy.
 Qed.
 
 Lemma updateAtIndexLengthPlusSomething {A : Type} (l : list A) (value : A) (something : nat) : <[length l + something := value]> l = l.
 Proof.
-  induction l; unfold alter; try easy; simpl; unfold alter in IHl; rewrite IHl; easy.
+  induction l as [| head l IHl]; unfold alter; try easy; simpl; unfold alter in IHl; rewrite IHl; easy.
 Qed.
 
 Lemma updateApp {A : Type} (l1 l2 : list A) (value : A) (i : nat) : <[length l1 + i := value]> (l1 ++ l2) = l1 ++ <[i := value]> l2.
 Proof.
-  induction l1; unfold alter; try easy; simpl; unfold alter in IHl1; rewrite IHl1; easy.
+  induction l1 as [| head l1 IHl1]; unfold alter; try easy; simpl; unfold alter in IHl1; rewrite IHl1; easy.
 Qed.
 
 Lemma updateAppZero {A : Type} (l1 l2 : list A) (value : A) : <[length l1 := value]> (l1 ++ l2) = l1 ++ <[0 := value]> l2.
 Proof.
-  induction l1; unfold alter; try easy; simpl; unfold alter in IHl1; rewrite IHl1; easy.
+  induction l1 as [| head l1 IHl1]; unfold alter; try easy; simpl; unfold alter in IHl1; rewrite IHl1; easy.
 Qed.
 
 Lemma nthApp {A : Type} (l1 l2 : list A) (i : nat) (default : A) : nth (length l1 + i) (l1 ++ l2) default = nth i l2 default.
 Proof.
-  induction l1; unfold nth; try easy; simpl; unfold nth in IHl1; rewrite IHl1; easy.
+  induction l1 as [| head l1 IHl1]; unfold nth; try easy; simpl; unfold nth in IHl1; rewrite IHl1; easy.
 Qed.
 
 Lemma nthAppZero {A : Type} (l1 l2 : list A) (default : A) : nth (length l1) (l1 ++ l2) default = nth 0 l2 default.
 Proof.
-  induction l1; unfold nth; try easy; simpl; unfold nth in IHl1; rewrite IHl1; easy.
+  induction l1 as [| head l1 IHl1]; unfold nth; try easy; simpl; unfold nth in IHl1; rewrite IHl1; easy.
 Qed.
 
 Lemma swapChopOff {A : Type} (l1 l2 : list A) (i j : nat) (default : A) : swap (l1 ++ l2) (length l1 + i) (length l1 + j) default = l1 ++ swap l2 i j default.
 Proof.
-  induction l1; simpl; try easy.
+  induction l1 as [| head l1 IHl1]; simpl; try easy.
   unfold swap. destruct i; destruct j; destruct l1; simpl; try easy; simpl in IHl1; rewrite ?IHl1, ?app_nil_r, ?Nat.add_0_r; simpl; rewrite ?updateAtIndexLength, ?updateAtIndexLengthPlusSomething, ?updateApp, ?updateAppZero, ?nthApp, ?nthAppZero, ?updateApp; easy.
 Qed.
 
 Lemma swapChopOff' {A : Type} (l1 l2 : list A) (j : nat) (default : A) : swap (l1 ++ l2) (length l1) (length l1 + j) default = l1 ++ swap l2 0 j default.
 Proof.
-  induction l1; simpl; try easy.
+  induction l1 as [| head l1 IHl1]; simpl; try easy.
   unfold swap. destruct j; destruct l1; simpl; try easy; simpl in IHl1; rewrite ?IHl1, ?app_nil_r, ?Nat.add_0_r; simpl; rewrite ?updateAtIndexLength, ?updateAtIndexLengthPlusSomething, ?updateApp, ?updateAppZero, ?nthApp, ?nthAppZero, ?updateApp; easy.
 Qed.
 
@@ -65,7 +65,7 @@ Qed.
 
 Lemma updateSelf {A : Type} (l : list A) (default : A) (i : nat) : <[i := nth i l default]> l = l.
 Proof.
-  revert i. induction l; intros; simpl; destruct i; try simpl; rewrite ?IHl; reflexivity.
+  revert i. induction l as [| head l IHl]; intro i; simpl; destruct i; try simpl; rewrite ?IHl; reflexivity.
 Qed.
 
 Lemma swapSelf {A : Type} (l : list A) (default : A) (i : nat) : swap l i i default = l.
@@ -75,7 +75,7 @@ Qed.
 
 Lemma nthTake {A : Type} (l : list A) (default : A) (i j : nat) (hLt : i < j) : nth i l default = nth i (take j l) default.
 Proof.
-  revert l hLt. revert j. induction i; intros j l hLt.
+  revert l hLt. revert j. induction i as [| i IHi]; intros j l hLt.
   - destruct l; rewrite ?take_nil; simpl.
     + reflexivity.
     + destruct j; try lia. simpl. reflexivity.
@@ -87,7 +87,7 @@ Qed.
 Lemma nthConsDrop {A : Type} (l : list A) (default : A) (hNotNil : l <> []) (i : nat) (hLt : i < length l) : nth i l default :: drop (S i) l = drop i l.
 Proof.
   revert hNotNil hLt. revert l.
-  induction i; intros l hNotNil hLt.
+  induction i as [| i IHi]; intros l hNotNil hLt.
   - destruct l; easy.
   - destruct l; simpl; try easy. apply IHi.
     + intro h. rewrite h in hLt. simpl in hLt. lia.
@@ -220,12 +220,12 @@ Qed.
 
 Lemma nthUpdate {A : Type} (l : list A) (default : A) (i : nat) (value : A) (hLt : i < length l) : nth i (<[i := value]> l) default = value.
 Proof.
-  revert hLt; revert i; induction l; intros i hLt; unfold alter; try easy; simpl; unfold alter in IHl; destruct i; simpl; rewrite ?IHl; simpl in *; try lia; reflexivity.
+  revert hLt; revert i; induction l as [| head l IHl]; intros i hLt; unfold alter; try easy; simpl; unfold alter in IHl; destruct i; simpl; rewrite ?IHl; simpl in *; try lia; reflexivity.
 Qed.
 
 Lemma nthUpdateExcept {A : Type} (l : list A) (default : A) (i uninvolved : nat) (value : A) (hLt : i < length l) (hUninvolved : uninvolved <> i) : nth uninvolved (<[i := value]> l) default = nth uninvolved l default.
 Proof.
-  revert hLt; revert hUninvolved; revert i uninvolved; induction l; intros i uninvolved hUninvolved hLt; unfold alter; try easy; unfold alter in IHl; destruct i; rewrite ?IHl; simpl in hLt; try lia.
+  revert hLt; revert hUninvolved; revert i uninvolved; induction l as [| head l IHl]; intros i uninvolved hUninvolved hLt; unfold alter; try easy; unfold alter in IHl; destruct i; rewrite ?IHl; simpl in hLt; try lia.
   - simpl. destruct uninvolved; try lia; reflexivity.
   - simpl. destruct uninvolved; try lia; try reflexivity.
     apply IHl; lia.

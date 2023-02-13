@@ -1,6 +1,6 @@
 From stdpp Require Import options numbers list.
 Require Import Wellfounded.
-From CoqCP Require Import ExistsInRange PrefixApp ListsEqual.
+From CoqCP Require Import Options ExistsInRange PrefixApp ListsEqual.
 
 Inductive Bracket :=
 | BracketOpen
@@ -76,7 +76,7 @@ Lemma countCloseApp (s1 s2 : list Bracket) : countClose (s1 ++ s2) = countClose 
 Proof. unfold countClose. rewrite count_occ_app. reflexivity. Qed.
 Lemma countOpenPlusCountClose (s : list Bracket) : countOpen s + countClose s = length s.
 Proof.
-  induction s.
+  induction s as [| a b c].
   - easy.
   - destruct a; rewrite ?countOpenConsOpen, ?countOpenConsClose, ?countCloseConsOpen, ?countCloseConsClose; simpl; lia.
 Qed.
@@ -124,7 +124,7 @@ Proof.
     intro h. split.
     + lia.
     + intros prefix h1. destruct h as [h2 h3].
-      destruct prefix.
+      destruct prefix as [| head prefix].
       * autorewrite with rewriteCount. lia.
       * pose proof prefix_cons_inv_1 _ _ _ _ h1 as H. rewrite H in *.
         autorewrite with rewriteCount.
@@ -163,7 +163,7 @@ Proof.
   - intro h. autorewrite with rewriteCount. split.
     + lia.
     + intros prefix h1. destruct h as [h2 h3].
-      destruct prefix.
+      destruct prefix as [| head prefix].
       * autorewrite with rewriteCount. lia.
       * pose proof h3 prefix (prefix_cons_inv_2 _ _ _ _ h1) as H.
         pose proof prefix_cons_inv_1 _ _ _ _ h1 as H0. rewrite H0 in *.
@@ -186,7 +186,7 @@ Create HintDb balanceFactorPredicates.
 Lemma isBalancedBoolAuxIffWithInitialBalanceFactor (s : list Bracket) (balanceFactor : nat) : isBalancedBoolAux s balanceFactor <-> withInitialBalanceFactor s balanceFactor.
 Proof.
   revert balanceFactor.
-  induction s; intro balanceFactor.
+  induction s as [| a b c]; intro balanceFactor.
   - autorewrite with balanceFactorPredicates. rewrite bool_decide_spec. easy.
   - destruct a; destruct balanceFactor; autorewrite with balanceFactorPredicates; easy.
 Qed.
@@ -197,7 +197,7 @@ Proof. unfold isBalancedBool. rewrite <- ifSubstituteZero. apply isBalancedBoolA
 Lemma isBalancedImpliesBalanceFactorBasedDefinition (s : list Bracket) : isBalanced s -> balanceFactorBasedDefinition s.
 Proof.
   intro h.
-  induction h.
+  induction h as [| s h IHh | s1 s2 h1 IHh1 h2 IHh2].
   - unfold balanceFactorBasedDefinition. rewrite countOpenEmpty, countCloseEmpty.
     split; try easy.
     + intros prefix h. rewrite (prefix_nil_inv _ h), countOpenEmpty, countCloseEmpty. lia.
@@ -209,12 +209,12 @@ Proof.
       lia.
     + unfold balanceFactorBasedDefinition in IHh. destruct IHh as [_ h1].
       intros prefix h2.
-      simpl in h2. destruct prefix.
+      simpl in h2. destruct prefix as [| head prefix].
       * rewrite countOpenEmpty, countCloseEmpty. lia.
       * pose proof prefix_cons_inv_1 _ _ _ _ h2 as H0. rewrite H0 in *.
         rewrite countOpenConsOpen, countCloseConsOpen.
         pose proof prefix_cons_inv_2 _ _ _ _ h2 as H.
-        pose proof prefixOfAppSingleton _ _ _ H. destruct H1.
+        pose proof prefixOfAppSingleton _ _ _ H as H1. destruct H1 as [H1 | H1].
         { pose proof h1 _ H1. lia. }
         { rewrite H1 in *. autorewrite with rewriteCount.
           assert (prefixSelf : s `prefix_of` s). { auto. }
@@ -227,7 +227,7 @@ Proof.
       destruct IHh1 as [_ h3].
       destruct IHh2 as [_ h4].
       pose proof prefixAppCases _ _ _ h as H.
-      destruct H.
+      destruct H as [H | H].
       * pose proof h3 _ H. easy.
       * destruct H as [w H]. rewrite H in h. pose proof h4 _ (prefix_app_inv _ _ _ h).
         rewrite H. autorewrite with rewriteCount.
@@ -239,7 +239,7 @@ Definition canSplit (s : list Bracket) := existsInRange (length s - 2) (fun n =>
 
 Lemma balanceFactorBasedDefinitionImpliesIsBalanced (s : list Bracket) : balanceFactorBasedDefinition s -> isBalanced s.
 Proof.
-  induction s using (well_founded_induction (wf_inverse_image _ nat _ (@length _) PeanoNat.Nat.lt_wf_0)).
+  induction s as [s H] using (well_founded_induction (wf_inverse_image _ nat _ (@length _) PeanoNat.Nat.lt_wf_0)).
   remember (bool_decide (length s = 0)) as hEmptyDecide.
   case_bool_decide as hEmpty.
   - rewrite (nil_length_inv _ hEmpty). intro h. exact EmptyBalanced.
@@ -247,7 +247,7 @@ Proof.
     case_bool_decide as hSingleton.
     + intro h. unfold balanceFactorBasedDefinition in h.
       destruct h as [single _].
-      destruct s.
+      destruct s as [| b s].
       * easy.
       * destruct s.
         { destruct b; autorewrite with rewriteCount in single; lia. }
@@ -302,11 +302,11 @@ Proof.
         intro h.
         assert (hUnwrap : exists t, s = [BracketOpen] ++ t ++ [BracketClose]).
         { exists (take (length s - 2) (drop 1 s)).
-          destruct s.
+          destruct s as [| b s].
           - simpl in hEmpty. lia.
           - destruct b.
             + unfold drop. rewrite cons_length. simpl.
-              induction s using rev_ind.
+              induction s as [| x s] using rev_ind.
               * simpl in hSingleton. lia.
               * rewrite app_length. simpl. rewrite Nat.add_sub.
                 rewrite (take_app s [x]).
@@ -357,7 +357,7 @@ Proof.
           assert (H2 : balanceFactorBasedDefinition w). { split; assumption. }
           assert (H3 : length w < length s). { rewrite hUnwrap, ?app_length. simpl. lia. }
           pose proof H w H3 H2 as H0.
-          pose proof WrapBalanced _ H0.
+          pose proof WrapBalanced _ H0 as H4.
           rewrite <- hUnwrap in H4. tauto.
 Qed.
 
@@ -375,7 +375,7 @@ Qed.
 
 Lemma isBalancedEvenLength (s : list Bracket) (h : isBalanced s) : (2 | length s).
 Proof.
-  induction h.
+  induction h as [| s h IHh | s1 s2 h1 IHh1 h2 IHh2].
   - simpl. now exists 0.
   - rewrite ?app_length. destruct IHh as [w h'].
     exists (S w). rewrite h'. simpl. lia.

@@ -1,5 +1,5 @@
 From stdpp Require Import options numbers list.
-From CoqCP Require Import SelectionSort.
+From CoqCP Require Import Options SelectionSort.
 
 Lemma selectionSortTestLemma0 : selectionSortDemo [0; 1; 2] = [0; 1; 2].
 Proof.
