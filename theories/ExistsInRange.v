@@ -1,4 +1,4 @@
-From stdpp Require Import numbers list.
+From stdpp Require Import options numbers list.
 
 Fixpoint existsInRange (n : nat) (f : nat -> bool) :=
   match n with

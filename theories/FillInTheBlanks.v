@@ -1,4 +1,4 @@
-From stdpp Require Import numbers list.
+From stdpp Require Import options numbers list.
 From CoqCP Require Import RegularBracketString PrefixApp ListsEqual SelectionSort Comparator Sorted SortedProperties SelectionSortProperties PropertyPreservedAfterSorting.
 
 Definition compareSymbols (a b : Bracket) :=
@@ -163,8 +163,8 @@ Section helpers.
       try (done || lia); intros H1 H2. {
       by rewrite <-(IHw1 w2 [] s2).
     }
-    by rewrite <-(IHw1 w2 (b1 :: s1) s2).
-    rewrite <-(IHw1 w2 s1 s2); try done; lia.
+    - by rewrite <-(IHw1 w2 (b1 :: s1) s2).
+    - rewrite <-(IHw1 w2 s1 s2); try done; lia.
   Qed.
 End helpers.
 
@@ -333,10 +333,10 @@ Proof.
         assert (H2 : length withBlanks / 2 >= count_occ optionBracketEqualityDecidable withBlanks (Some BracketClose)).
         { unfold possibleToFillBool in h; case_bool_decide; try case_bool_decide; simpl in h; try case_bool_decide; easy. }
         lia. }
-      rewrite H. rewrite <- (Nat.divide_div_mul_exact _ _ _).
       assert (H1 : (2 * length withBlanks) / 2 = length withBlanks).
       { rewrite Nat.mul_comm. apply Nat.div_mul. easy. }
-      rewrite H1. rewrite subtractToCountNone. reflexivity.
+      rewrite H. rewrite <- (Nat.divide_div_mul_exact _ _ _).
+      * rewrite H1. rewrite subtractToCountNone. reflexivity.
       * easy.
       * unfold possibleToFillBool in h.
         case_bool_decide; easy.

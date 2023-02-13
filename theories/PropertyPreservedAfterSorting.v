@@ -1,4 +1,4 @@
-From stdpp Require Import numbers list.
+From stdpp Require Import options numbers list.
 From CoqCP Require Import SelectionSort Comparator ListDecomposition Sorted SelectionSortProperties SwapUpdate PickSmallestInRangeProperties.
 
 Lemma propertyPreservedAfterSwapping {A : Type} (default : A) (comparator : Comparator A) (l : list A) (property : list A -> Prop) (hPreserve : forall l1 l2 l3 a1 a2, compare _ comparator a2 a1 -> property (l1 ++ [a1] ++ l2 ++ [a2] ++ l3) -> property (l1 ++ [a2] ++ l2 ++ [a1] ++ l3)) (hProperty : property l) (i : nat) (hInBounds : i < length l) : property (swap l i (pickSmallestInRange default (compare _ comparator) i (length l - 1) l) default).

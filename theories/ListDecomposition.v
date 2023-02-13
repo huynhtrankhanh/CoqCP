@@ -1,4 +1,4 @@
-From stdpp Require Import numbers list.
+From stdpp Require Import options numbers list.
 
 Lemma listDecomposition {A : Type} (l : list A) (i j : nat) (hLt : i < j) (hUpperBound : j < length l) (default : A) : l = take i l ++ [nth i l default] ++ drop (S i) (take j l) ++ [nth j l default] ++ drop (j + 1) l.
 Proof.

@@ -1,4 +1,4 @@
-From stdpp Require Import numbers list.
+From stdpp Require Import options numbers list.
 
 (* models the less than operator *)
 Structure Comparator (A : Type) := {
