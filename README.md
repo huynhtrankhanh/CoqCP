@@ -12,6 +12,8 @@ This mistake could have been avoided entirely if the folks responsible for the r
 
 Dependencies: Only `coq-stdpp`.
 
+Note: Whenever you create a new file, remember to import `options` from `coq-stdpp` with the `From stdpp Require Import options.` command. Coq will then error if you apply a tactic when multiple goals are visible.
+
 Documentation:
 
 - [Regular bracket strings](docs/RegularBracketString.md)
