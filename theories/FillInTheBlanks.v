@@ -76,7 +76,7 @@ Proof.
   - autorewrite with rewriteCount. autorewrite with rewriteCount in h1. lia.
   - intros prefix hPrefix. pose proof prefixAppCases _ _ _ hPrefix as H.
     destruct H.
-    + epose proof h2 prefix ltac:(shelve). assumption.
+    + epose proof h2 prefix _. assumption.
     + destruct H as [l' h3]. rewrite h3 in hPrefix.
       pose proof prefix_app_inv s1 l' ([BracketOpen] ++ s2 ++ [BracketClose] ++ s3) hPrefix as hPrefix2.
       pose proof prefixAppCases _ _ _ hPrefix2 as H1.
@@ -84,20 +84,20 @@ Proof.
       * rewrite h3. autorewrite with rewriteCount.
         destruct (prefixSingleton _ _ H).
         { rewrite H0. autorewrite with rewriteCount. rewrite ?Nat.add_0_r.
-          epose proof h2 s1 ltac:(shelve). assumption. }
-        { rewrite H0. autorewrite with rewriteCount. epose proof h2 s1 ltac:(shelve). lia. }
+          epose proof h2 s1 _. assumption. }
+        { rewrite H0. autorewrite with rewriteCount. epose proof h2 s1 _. lia. }
       * destruct H as [l0 H]. rewrite ?h3, ?H. autorewrite with rewriteCount.
         rewrite H in hPrefix2. pose proof prefix_app_inv _ _ _ hPrefix2 as H0.
         pose proof prefixAppCases _ _ _ H0 as H1. destruct H1.
-        { epose proof h2 (s1 ++ [BracketClose] ++ l0) ltac:(shelve). autorewrite with rewriteCount in H2. lia. }
+        { epose proof h2 (s1 ++ [BracketClose] ++ l0) _. autorewrite with rewriteCount in H2. lia. }
         { destruct H1 as [w H1]. rewrite H1 in H0. pose proof prefix_app_inv _ _ _ H0 as H2.
           pose proof prefixAppCases _ _ _ H2.
           destruct H3.
           - destruct (prefixSingleton _ _ H3).
-            + rewrite H4 in H1. rewrite app_nil_r in H1. rewrite H1. epose proof h2 (s1 ++ [BracketClose] ++ s2 ++ [BracketOpen]) ltac:(shelve) as H6. autorewrite with rewriteCount in H6. lia.
-            + rewrite H4 in H1. rewrite H1. autorewrite with rewriteCount. epose proof h2 (s1 ++ [BracketClose] ++ s2 ++ [BracketOpen]) ltac:(shelve) as H5. autorewrite with rewriteCount in H5. lia.
+            + rewrite H4 in H1. rewrite app_nil_r in H1. rewrite H1. epose proof h2 (s1 ++ [BracketClose] ++ s2 ++ [BracketOpen]) _ as H6. autorewrite with rewriteCount in H6. lia.
+            + rewrite H4 in H1. rewrite H1. autorewrite with rewriteCount. epose proof h2 (s1 ++ [BracketClose] ++ s2 ++ [BracketOpen]) _ as H5. autorewrite with rewriteCount in H5. lia.
           - destruct H3 as [w' H3]. rewrite H3 in H2. pose proof prefix_app_inv _ _ _ H2 as H4.
-            epose proof h2 (s1 ++ [BracketClose] ++ s2 ++ [BracketOpen] ++ w') ltac:(shelve). autorewrite with rewriteCount in H5. rewrite H1, H3. autorewrite with rewriteCount. lia. }
+            epose proof h2 (s1 ++ [BracketClose] ++ s2 ++ [BracketOpen] ++ w') _. autorewrite with rewriteCount in H5. rewrite H1, H3. autorewrite with rewriteCount. lia. }
   Unshelve.
   { destruct H as [w H]. exists (w ++ [BracketClose] ++ s2 ++ [BracketOpen] ++ s3). rewrite H. listsEqual. }
   { exists ([BracketClose] ++ s2 ++ [BracketOpen] ++ s3). reflexivity. }
@@ -231,7 +231,7 @@ Proof.
   intros i j hI hJ.
   pose proof nth_repeat BracketClose closeCount j as h1.
   pose proof nth_repeat BracketClose closeCount i as h2.
-  erewrite (nth_indep _ BracketOpen BracketClose ltac:(shelve)), (nth_indep _ BracketOpen BracketClose ltac:(shelve)), h1, h2.
+  erewrite (nth_indep _ BracketOpen BracketClose _), (nth_indep _ BracketOpen BracketClose _), h1, h2.
   easy.
   Unshelve.
   - lia.
@@ -319,7 +319,7 @@ Proof.
     symmetry in hPermutation2.
     pose proof (perm_trans hPermutation2 hPermutation1) as hPermutation.
     rewrite (sortedArraysEqual hPermutation hWitnessSorted ltac:(assumption) ltac:(intros a b; destruct a; destruct b; try (left; left; easy); try (left; right; easy); try (right; left; easy); try (right; right; easy); try (left; easy); try (right; easy))).
-    epose proof propertyPreservedAfterSorting BracketOpen symbolComparator toFill (satisfactoryWitness withBlanks) ltac:(shelve) ltac:(shelve) as H.
+    epose proof propertyPreservedAfterSorting BracketOpen symbolComparator toFill (satisfactoryWitness withBlanks) _ _ as H.
     rewrite <- isBalancedIffIsBalancedBool.
     exact (proj2 H).
     Unshelve.

@@ -14,7 +14,7 @@ Lemma negativelyTransitive {A : Type} (comparator : Comparator A) : forall a b c
 Proof.
   intros a b c h1 h2 h3.
   pose proof transitive _ comparator a c b h3 as h.
-  epose proof connected _ comparator b c ltac:(shelve) as h4.
+  epose proof connected _ comparator b c _ as h4.
   destruct h4; tauto.
   Unshelve.
   intro h4. rewrite h4 in h1. tauto.
