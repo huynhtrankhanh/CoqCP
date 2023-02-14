@@ -18,3 +18,4 @@ theories/Sorted.v
 theories/SelectionSortProperties.v
 theories/SortedProperties.v
 theories/Options.v
+theories/Completion.v
