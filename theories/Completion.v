@@ -89,12 +89,12 @@ Lemma rightLengthApp (w1 w2 : list (option A)) (s1 s2 : list A) :
   length (s1 ++ s2) = count_occ decide (w1 ++ w2) None.
 Proof. rewrite count_occ_app, app_length. lia. Qed.
 
-Fixpoint laxFill (withBlanks : list (option A)) (toFill : list A) : list A :=
+Fixpoint fillLax (withBlanks : list (option A)) (toFill : list A) : list A :=
   match withBlanks, toFill with
   | [], _ => []
-  | (None :: tail), (toFill :: remaining) => toFill :: laxFill tail remaining
+  | (None :: tail), (toFill :: remaining) => toFill :: fillLax tail remaining
   | (None :: tail), [] => []
-  | (Some stuff :: tail), remaining => stuff :: laxFill tail remaining
+  | (Some stuff :: tail), remaining => stuff :: fillLax tail remaining
   end.
 
 Lemma stripOptionsProofIndependent (l : list (option A)) (h1 h2 : Forall is_Some l) : stripOptions l h1 = stripOptions l h2.
@@ -109,7 +109,7 @@ Proof.
   unfold fill. now rewrite (stripOptionsProofIndependent _ _ h').
 Qed.
 
-Lemma laxFillEqFill (withBlanks : list (option A)) (toFill : list A) h : laxFill withBlanks toFill = fill withBlanks toFill h.
+Lemma fillLaxEqFill (withBlanks : list (option A)) (toFill : list A) h : fillLax withBlanks toFill = fill withBlanks toFill h.
 Proof.
   induction withBlanks as [| [head |] tail IH] in toFill, h |- *.
   - unfold fill. now simpl.
@@ -125,10 +125,10 @@ Proof.
       now rewrite <- (foldFill tail tail1 h1), (IH _ h1).
 Qed.
 
-Lemma laxFillApp (w1 w2 : list (option A)) (s1 s2 : list A)
+Lemma fillLaxApp (w1 w2 : list (option A)) (s1 s2 : list A)
   (h1 : length s1 = count_occ decide w1 None)
   (h2 : length s2 = count_occ decide w2 None) :
-  laxFill (w1 ++ w2) (s1 ++ s2) = laxFill w1 s1 ++ laxFill w2 s2.
+  fillLax (w1 ++ w2) (s1 ++ s2) = fillLax w1 s1 ++ fillLax w2 s2.
 Proof.
   revert s1 h1; induction w1 as [| [b |] w1 IHw1]; intros s1 h1; destruct s1 as [| b1 s1];
   simpl in *; try destruct (decide _ _); try rewrite <- IHw1; try (done || lia).
@@ -137,7 +137,7 @@ Qed.
 Lemma fillApp (w1 w2 : list (option A)) (s1 s2 : list A) h1 h2 h3 :
   fill (w1 ++ w2) (s1 ++ s2) h3 = fill w1 s1 h1 ++ fill w2 s2 h2.
 Proof.
-  now rewrite <- (laxFillEqFill _ _ h1), <- (laxFillEqFill _ _ h2), <- (laxFillEqFill _ _ h3), laxFillApp.
+  now rewrite <- (fillLaxEqFill _ _ h1), <- (fillLaxEqFill _ _ h2), <- (fillLaxEqFill _ _ h3), fillLaxApp.
 Qed.
 
 Lemma partialCompletionTransitive (s1 s2 s3 : list (option A)) (h1 : isPartialCompletion s1 s2) (h2 : isPartialCompletion s2 s3) : isPartialCompletion s1 s3.
@@ -164,7 +164,7 @@ Qed.
 
 Lemma extractAnswersCorrect (s : list (option A)) (completed : list A) (h : isCompletion s completed) (h1 : length (extractAnswers s completed h) = count_occ decide s None) h2 : fill s (extractAnswers s completed h2) h1 = completed.
 Proof.
-  unfold extractAnswers in *. rewrite <- laxFillEqFill.
+  unfold extractAnswers in *. rewrite <- fillLaxEqFill.
   induction s as [| [head |] tail IH] in completed, h, h1, h2 |- *;
   destruct completed as [| head1 tail1];
   unfold extractAnswers; simpl in *;
@@ -183,6 +183,15 @@ Proof.
   destruct s1 as [|b1 s1]; simplify_eq/=. { by exists [], wb. }
   destruct (IHwb s1 s2 HL) as (wb1 & wb2 & -> & ?); destruct_and!.
   exists (None :: wb1), wb2; split_and!; simpl; try destruct (decide _ _); (done || lia).
+Qed.
+
+Lemma fillIsCompletion (withBlanks : list (option A)) (answers : list A) h : isCompletion withBlanks (fill withBlanks answers h).
+Proof.
+  rewrite <- fillLaxEqFill.
+  induction withBlanks as [| [head |] tail IH] in answers, h |- *.
+  - easy.
+  - destruct answers as [| head1 tail1]; simpl; case_bool_decide; try easy; simpl in *; destruct (decide _ _); now apply IH.
+  - destruct answers as [| head1 tail1]; simpl in *; destruct (decide _ _); try easy. apply IH. lia.
 Qed.
 
 End Completion.

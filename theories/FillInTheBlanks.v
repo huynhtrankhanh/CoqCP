@@ -1,5 +1,5 @@
 From stdpp Require Import options numbers list.
-From CoqCP Require Import Options RegularBracketString PrefixApp ListsEqual SelectionSort Comparator Sorted SortedProperties SelectionSortProperties PropertyPreservedAfterSorting.
+From CoqCP Require Import Options RegularBracketString PrefixApp ListsEqual SelectionSort Comparator Sorted SortedProperties SelectionSortProperties PropertyPreservedAfterSorting Completion.
 
 Definition compareSymbols (a b : Bracket) :=
   match a, b with
@@ -26,6 +26,36 @@ Fixpoint fillLeftToRight (withBlanks : list (option Bracket)) (toFill : list Bra
 Proof. solve_decision. Defined.
 
 Definition possibleToFill (withBlanks : list (option Bracket)) := exists toFill, length toFill = count_occ optionBracketEqualityDecidable withBlanks None /\ isBalanced (fillLeftToRight withBlanks toFill).
+
+Definition possibleToFill2 (withBlanks : list (option Bracket)) := exists completed, isCompletion withBlanks completed /\ isBalanced completed.
+
+Lemma fillLeftToRightEqFillLax withBlanks witness : fillLeftToRight withBlanks witness = fillLax withBlanks witness.
+Proof.
+  induction withBlanks as [| [head |] tail IH] in witness |- *.
+  - easy.
+  - destruct witness as [| head1 tail1]; simpl; now rewrite IH.
+  - destruct witness as [| head1 tail1]; simpl; now (rewrite IH || done).
+Qed.
+
+Lemma possibleToFillIffPossibleToFill2 withBlanks : possibleToFill withBlanks <-> possibleToFill2 withBlanks.
+Proof.
+  induction withBlanks as [| [head |] tail IH].
+  - unfold possibleToFill, possibleToFill2. split; exists []; simpl; split; try done; exact EmptyBalanced.
+  - split; intros [w [h1 h2]].
+    + exists (fillLeftToRight (Some head :: tail) w). rewrite fillLeftToRightEqFillLax, (fillLaxEqFill _ _ h1) in *. split.
+      * apply fillIsCompletion.
+      * assumption.
+    + exists (extractAnswers (Some head :: tail) w h1). split.
+      * apply extractAnswersLength.
+      * now rewrite fillLeftToRightEqFillLax, (fillLaxEqFill _ _ (extractAnswersLength _ _ h1)), extractAnswersCorrect.
+  - split; intros [w [h1 h2]].
+    + exists (fillLeftToRight (None :: tail) w). rewrite fillLeftToRightEqFillLax, (fillLaxEqFill _ _ h1) in *. split.
+      * apply fillIsCompletion.
+      * assumption.
+    + exists (extractAnswers (None :: tail) w h1). split.
+      * apply extractAnswersLength.
+      * now rewrite fillLeftToRightEqFillLax, (fillLaxEqFill _ _ (extractAnswersLength _ _ h1)), extractAnswersCorrect.
+Qed.
 
 Definition getWitness (withBlanks : list (option Bracket)) :=
   let count := length withBlanks / 2 in
