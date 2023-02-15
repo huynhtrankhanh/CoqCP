@@ -1,3 +1,5 @@
+**DISCLAIMER:** This is a formal verification repository. I am not a formal verification expert. Nothing in this repository should be construed as expert advice. I am not responsible for any loss and damage arising from the information in this repository.
+
 **You can't bluff a computer.**
 
 This is a repository of formally verified competitive programming code. Formal verification is very important.
