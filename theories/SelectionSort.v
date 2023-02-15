@@ -1,4 +1,4 @@
-From stdpp Require Import options numbers list.
+From stdpp Require Import numbers list.
 From CoqCP Require Import Options ListsEqual SwapUpdate ListRange.
 
 Section selectionSort.

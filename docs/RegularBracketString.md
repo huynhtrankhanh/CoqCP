@@ -91,8 +91,7 @@ To check, we fill in the question marks according to the construction described 
 As described above, a solution is an array of characters to be filled sequentially from left to right into the string. Now we have two arbitrary solutions, `witness1` and `witness2`. These two solutions are different. We perform these preprocessing steps:
 
 - If `witness1` is already equal to our construction, that is, we fill the first several question marks with `(` and the rest with `)`, don't do anything.
-- Otherwise, if `witness2` is already equal to our construction, swap `witness1` and `witness2`.
-- Otherwise, replace `witness1` with our construction.
+- Otherwise, swap `witness1` and `witness2` then replace `witness1` with our construction.
 
 After these preprocessing steps, `witness1` and `witness2` are still two distinct valid solutions.
 

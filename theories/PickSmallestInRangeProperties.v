@@ -1,4 +1,4 @@
-From stdpp Require Import options numbers list.
+From stdpp Require Import numbers list.
 From CoqCP Require Import Options ListRange Foldl Comparator SelectionSort.
 
 Lemma pickSmallestInRangeFold {A : Type} (default : A) (compare : A -> A -> bool) (l : list A) (i delta : nat) : foldl (fun accumulated current => if compare (nth current l default) (nth accumulated l default) then current else accumulated) i (range2 i (i + delta)) = pickSmallestInRange default compare i (i + delta) l.

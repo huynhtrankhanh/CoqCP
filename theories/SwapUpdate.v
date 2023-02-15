@@ -1,4 +1,4 @@
-From stdpp Require Import options numbers list.
+From stdpp Require Import numbers list.
 From CoqCP Require Import Options ListDecomposition ListsEqual.
 
 (* all indices 0 based *)
@@ -239,4 +239,17 @@ Qed.
 Lemma nthSwapExceptVariant {A : Type} (l : list A) (default : A) (i j uninvolved : nat) (hI : i < length l) (hJ : j < length l) (hUninvolvedI : uninvolved <> i) (hUninvolvedJ : uninvolved <> j) : nth uninvolved (swap l j i default) default = nth uninvolved l default.
 Proof.
   rewrite swapIndices, nthSwapExcept; try lia. reflexivity.
+Qed.
+
+Lemma oneDifferentPlace {A : Type} `{EqDecision A} (l1 l2 : list A) (default : A) (hDiff : l1 <> l2) (hSameLength : length l1 = length l2) : exists i, i < length l1 /\ nth i l1 default <> nth i l2 default.
+Proof.
+  induction l1 as [| head tail IH] in l2, hDiff, hSameLength |- *.
+  - simpl in hSameLength. pose proof nil_length_inv _ (eq_sym hSameLength). congruence.
+  - destruct l2 as [| head1 tail1]; try easy.
+    remember (bool_decide (head = head1)) as split eqn:hSplit.
+    destruct split; symmetry in hSplit; rewrite <- ?Is_true_true, <- ?Is_true_false, bool_decide_spec in hSplit.
+    + rewrite hSplit in *.
+      destruct (IH tail1 ltac:(congruence) ltac:(simpl in *; lia)) as [w h].
+      exists (S w). simpl. split; (lia || easy).
+    + exists 0. simpl. split; (lia || easy).
 Qed.

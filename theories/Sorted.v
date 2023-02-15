@@ -1,4 +1,4 @@
-From stdpp Require Import options numbers list.
+From stdpp Require Import numbers list.
 
 Definition sorted {A : Type} (default : A) (compare : A -> A -> bool) (l : list A) := forall i j, i < j -> j < length l -> ~compare (nth j l default) (nth i l default).
 

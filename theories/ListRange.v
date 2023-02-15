@@ -1,4 +1,4 @@
-From stdpp Require Import options numbers list.
+From stdpp Require Import numbers list.
 
 Fixpoint rangeReversed (n : nat) : list nat :=
   match n with

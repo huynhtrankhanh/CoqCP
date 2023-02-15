@@ -1,4 +1,4 @@
-From CoqCP Require Import Options ListsEqual.
+From CoqCP Require Import Options ListsEqual ListDecomposition SwapUpdate.
 From stdpp Require Import numbers list.
 
 Section Completion.
@@ -173,18 +173,6 @@ Proof.
   try (destruct h2 as [h2a h2]; rewrite h2a); rewrite ?IH; (done || lia).
 Qed.
 
-Lemma fillSplit (b : A) (s1 s2 : list A) (withBlanks : list (option A)) : length (s1 ++ [b] ++ s2) = count_occ decide withBlanks None -> exists wb1 wb2, withBlanks = wb1 ++ [None] ++ wb2 /\ length s1 = count_occ decide wb1 None /\ length s2 = count_occ decide wb2 None.
-Proof.
-  simpl; rewrite !app_length; simpl; rewrite Nat.add_succ_r; simpl; clear b.
-  induction withBlanks as [|[b'|] wb IHwb] in s1, s2 |- *; intros HL; simplify_eq/=; try destruct (decide _ _); try done. {
-    destruct (IHwb s1 s2 HL) as (wb1 & wb2 & -> & ?); destruct_and!.
-    exists (Some b' :: wb1), wb2. simpl. now destruct (decide _ _).
-  }
-  destruct s1 as [|b1 s1]; simplify_eq/=. { by exists [], wb. }
-  destruct (IHwb s1 s2 HL) as (wb1 & wb2 & -> & ?); destruct_and!.
-  exists (None :: wb1), wb2; split_and!; simpl; try destruct (decide _ _); (done || lia).
-Qed.
-
 Lemma fillIsCompletion (withBlanks : list (option A)) (answers : list A) h : isCompletion withBlanks (fill withBlanks answers h).
 Proof.
   rewrite <- fillLaxEqFill.
@@ -192,6 +180,96 @@ Proof.
   - easy.
   - destruct answers as [| head1 tail1]; simpl; case_bool_decide; try easy; simpl in *; destruct (decide _ _); now apply IH.
   - destruct answers as [| head1 tail1]; simpl in *; destruct (decide _ _); try easy. apply IH. lia.
+Qed.
+
+Fixpoint getKthBlank (withBlanks : list (option A)) (k : nat) :=
+  match withBlanks, k with
+  | [], _ => 0 (* who cares *)
+  | (Some _ :: tail), k => S (getKthBlank tail k)
+  | (None :: tail), 0 => 0
+  | (None :: tail), S k => S (getKthBlank tail k)
+  end.
+
+Lemma nthGetKthBlank (withBlanks : list (option A)) (k : nat) (default : option A) (hReasonable : k < count_occ decide withBlanks None) : nth (getKthBlank withBlanks k) withBlanks default = None.
+Proof.
+  induction withBlanks as [| [head |] tail IH] in k, hReasonable |- *.
+  - simpl in *. lia.
+  - simpl in hReasonable. destruct (decide (Some head) None); destruct k; simpl in *; rewrite IH; (lia || done).
+  - simpl in hReasonable. destruct (decide None None); destruct k; simpl in *; try rewrite IH; (lia || done).
+Qed.
+
+Lemma getKthBlankUpperBound (withBlanks : list (option A)) (k : nat) (hReasonable : k < count_occ decide withBlanks None) : getKthBlank withBlanks k < length withBlanks.
+Proof.
+  induction withBlanks as [| head tail IH] in k, hReasonable |- *.
+  - simpl in *. lia.
+  - destruct head; simpl in hReasonable; destruct (decide _ _); destruct k as [| k]; simpl in *; try apply Arith_prebase.lt_n_S_stt; try refine (IH _ _); (done || lia).
+Qed.
+
+Lemma fillSplit (b : A) (s1 s2 : list A) (withBlanks : list (option A)) k (hK : k = length s1) : length (s1 ++ [b] ++ s2) = count_occ decide withBlanks None -> withBlanks = take (getKthBlank withBlanks k) withBlanks ++ [None] ++ drop (S (getKthBlank withBlanks k)) withBlanks /\ length s1 = count_occ decide (take (getKthBlank withBlanks k) withBlanks) None /\ length s2 = count_occ decide (drop (S (getKthBlank withBlanks k)) withBlanks) None.
+Proof.
+  intro hLength.
+  pose proof ltac:(rewrite !app_length in hLength; simpl in *; lia) : k < count_occ decide withBlanks None as hReasonable.
+  pose proof getKthBlankUpperBound withBlanks k ltac:(lia).
+  assert (hCountOcc1 : count_occ decide (take (getKthBlank withBlanks k) withBlanks) None = k).
+  { induction withBlanks as [| head tail IH] in k, hReasonable |- *.
+    - simpl in *. lia.
+    - destruct k; destruct head; simpl in *; destruct (decide _ _); try rewrite IH; (lia || done). }
+  repeat split.
+  - now rewrite <- (nthGetKthBlank withBlanks k None), <- listDecompositionSingle.
+  - congruence.
+  - pose proof nthGetKthBlank withBlanks k None hReasonable.
+    assert (hIntermediate : count_occ decide (take (getKthBlank withBlanks k) withBlanks) None + count_occ decide [nth (getKthBlank withBlanks k) withBlanks None] None + count_occ decide (drop (S (getKthBlank withBlanks k)) withBlanks) None = count_occ decide withBlanks None).
+    { now rewrite <- !count_occ_app, (ltac:(intros; listsEqual) : forall (A : Type) (a b c : list A), (a ++ b) ++ c = a ++ b ++ c), <- listDecompositionSingle. }
+    simpl in hIntermediate. destruct (decide _ _); try easy.
+    rewrite !app_length in hLength. simpl in *. lia.
+Qed.
+
+Lemma fillInOneBlank_h1Parameter (withBlanks : list (option A)) (k : nat) (hReasonable: k < count_occ decide withBlanks None) (value : A) (answers : list A) (h : length answers + 1 = count_occ decide withBlanks None) : length (take k answers ++ [value] ++ drop k answers) = count_occ decide withBlanks None.
+Proof.
+  rewrite !app_length. simpl. rewrite Nat.add_succ_r, <- app_length, take_drop. lia.
+Qed.
+
+Lemma fillInOneBlank_h2Parameter (withBlanks : list (option A)) (k : nat) (hReasonable: k < count_occ decide withBlanks None) (value : A) (answers : list A) (h : length answers + 1 = count_occ decide withBlanks None) : length answers = count_occ decide (<[getKthBlank withBlanks k:= Some value]> withBlanks) None.
+Proof.
+  pose proof getKthBlankUpperBound _ _ hReasonable as hUpperBound.
+  pose proof updateAppZero (take (getKthBlank withBlanks k) withBlanks) ([nth (getKthBlank withBlanks k) withBlanks None] ++ drop (S (getKthBlank withBlanks k)) withBlanks) (Some value) as H.
+  rewrite <- (listDecompositionSingle withBlanks (getKthBlank withBlanks k) hUpperBound None) in *.
+  rewrite take_length in H.
+  assert (hMin : getKthBlank withBlanks k `min` length withBlanks = getKthBlank withBlanks k). { lia. }
+  rewrite hMin in *. rewrite H.
+  simpl.
+  rewrite (ltac:(now intros) : forall (A : Type) (head : A) (tail : list A), head :: tail = [head] ++ tail), !count_occ_app.
+  simpl. destruct (decide _ _); try easy.
+  rewrite Nat.add_0_l.
+  rewrite (listDecompositionSingle withBlanks (getKthBlank withBlanks k) hUpperBound None), !count_occ_app in h.
+  simpl in *. destruct (decide _ _) as [| h'].
+  - lia.
+  - rewrite nthGetKthBlank in h'; (lia || done).
+Qed.
+
+Lemma fillInOneBlank (withBlanks : list (option A)) (k : nat) (hReasonable : k < count_occ decide withBlanks None) (value : A) (answers : list A) h1 h2 : fill withBlanks (take k answers ++ [value] ++ drop k answers) h1 = fill (<[getKthBlank withBlanks k := Some value]> withBlanks) answers h2.
+Proof.
+  rewrite <- !fillLaxEqFill.
+  destruct (fillSplit value (take k answers) (drop k answers) withBlanks k) as [H1 [H2 H3]].
+  { rewrite !app_length in h1. simpl in h1. rewrite Nat.add_succ_r, <- app_length, take_drop in h1. rewrite take_length. lia. }
+  { assumption. }
+  pose proof fillLaxApp (take (getKthBlank withBlanks k) withBlanks) ([None] ++ (drop (S (getKthBlank withBlanks k)) withBlanks)) (take k answers) ([value] ++ drop k answers) H2 ltac:(rewrite !app_length, !count_occ_app; simpl; destruct (decide _ _); (lia || done)) as step1.
+  rewrite <- H1 in step1.
+  rewrite step1.
+  simpl.
+  pose proof getKthBlankUpperBound _ _ hReasonable as hUpperBound.
+  pose proof updateAppZero (take (getKthBlank withBlanks k) withBlanks) ([nth (getKthBlank withBlanks k) withBlanks None] ++ drop (S (getKthBlank withBlanks k)) withBlanks) (Some value) as H.
+  rewrite <- (listDecompositionSingle withBlanks (getKthBlank withBlanks k) hUpperBound None) in *.
+  rewrite take_length in H.
+  assert (hMin : getKthBlank withBlanks k `min` length withBlanks = getKthBlank withBlanks k). { lia. }
+  rewrite hMin in *. rewrite H. simpl.
+  assert (hCountOcc1 : count_occ decide (take (getKthBlank withBlanks k) withBlanks) None = k).
+  { induction withBlanks as [| head tail IH] in k, hReasonable |- *.
+    - simpl in *. lia.
+    - destruct k; destruct head; simpl in *; destruct (decide _ _); try rewrite IH; (lia || done). }
+  pose proof fillLaxApp (take (getKthBlank withBlanks k) withBlanks) (Some value :: drop (S (getKthBlank withBlanks k)) withBlanks) (take k answers) (drop k answers) ltac:(simpl in *; rewrite hCountOcc1, take_length, !app_length in *; simpl in *; rewrite Nat.add_succ_r, <- app_length, take_drop in *; lia) ltac:(simpl; now destruct (decide _ _)) as hPartial.
+  rewrite take_drop in hPartial.
+  rewrite hPartial. simpl. reflexivity.
 Qed.
 
 End Completion.

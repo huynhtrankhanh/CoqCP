@@ -1,4 +1,4 @@
-From stdpp Require Import options numbers list.
+From stdpp Require Import numbers list.
 
 Lemma foldlSingleton {A B : Type} (f : A -> B -> A) (initial : A) (x : B) : foldl f initial [x] = f initial x.
 Proof. easy. Qed.

@@ -1,4 +1,4 @@
-From stdpp Require Import options numbers list.
+From stdpp Require Import numbers list.
 From CoqCP Require Import Options RegularBracketString PrefixApp ListsEqual SelectionSort Comparator Sorted SortedProperties SelectionSortProperties PropertyPreservedAfterSorting Completion.
 
 Definition compareSymbols (a b : Bracket) :=

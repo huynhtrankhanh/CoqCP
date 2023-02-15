@@ -1,4 +1,4 @@
-From stdpp Require Import options numbers list.
+From stdpp Require Import numbers list.
 Require Import Wellfounded.
 From CoqCP Require Import Options ExistsInRange PrefixApp ListsEqual.
 

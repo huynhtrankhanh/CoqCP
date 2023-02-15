@@ -1,4 +1,4 @@
-From stdpp Require Import options numbers list.
+From stdpp Require Import numbers list.
 
 Lemma prefixOfAppSingleton {A : Type} (l1 l2 : list A) (x : A) : l1 `prefix_of` l2 ++ [x] -> l1 `prefix_of` l2 \/ l1 = l2 ++ [x].
 Proof.
