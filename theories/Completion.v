@@ -272,4 +272,16 @@ Proof.
   rewrite hPartial. simpl. reflexivity.
 Qed.
 
+Lemma partialCompletionSelf (x : list (option A)) : isPartialCompletion x x.
+Proof.
+  induction x as [| [head |] tail IH]; simpl; now rewrite ?andb_True, ?bool_decide_spec.
+Qed.
+
+Lemma updateKthPartialCompletion (withBlanks : list (option A)) (k : nat) (hReasonable : k < count_occ decide withBlanks None) (value : A) : isPartialCompletion withBlanks (<[getKthBlank withBlanks k := Some value]> withBlanks).
+Proof.
+  induction withBlanks as [| [head |] tail IH] in k, hReasonable |- *; try easy;
+  destruct k; simpl in *; rewrite ?andb_True, ?bool_decide_spec;
+  ((try split; try tauto; apply IH; destruct (decide _ _); (done || lia)) || apply partialCompletionSelf).
+Qed.
+
 End Completion.

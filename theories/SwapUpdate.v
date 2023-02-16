@@ -253,3 +253,32 @@ Proof.
       exists (S w). simpl. split; (lia || easy).
     + exists 0. simpl. split; (lia || easy).
 Qed.
+
+Lemma takeAppLt {A : Type} (l1 l2 : list A) (i : nat) (hI : i <= length l1) : take i (l1 ++ l2) = take i l1.
+Proof.
+  induction l1 as [| head tail IH] in i, hI |- *; simpl in *;
+  try (rewrite (ltac:(lia) : i = 0) in *; easy).
+  destruct i; try easy. simpl. rewrite IH; (done || lia).
+Qed.
+
+Lemma takeRepeat {A : Type} (x : A) (i j : nat) (hIJ : i <= j) : take i (repeat x j) = repeat x i.
+Proof.
+  induction i as [| i IH] in j, hIJ |- *; try easy.
+  destruct j; simpl; rewrite ?IH; (lia || done).
+Qed.
+
+Lemma dropApp {A : Type} (l1 l2 : list A) (i : nat) (hI : i <= length l1) : drop i (l1 ++ l2) = drop i l1 ++ l2.
+Proof.
+  induction l1 as [| head tail IH] in i, hI, l2 |- *; simpl in *.
+  - now rewrite (ltac:(lia) : i = 0), drop_0.
+  - destruct i.
+    + now rewrite drop_0.
+    + simpl. rewrite IH; (done || lia).
+Qed.
+
+Lemma dropRepeat {A : Type} (x : A) (i j : nat) : drop i (repeat x j) = repeat x (j - i).
+Proof.
+  induction i as [| i IH] in j |- *.
+  - now rewrite Nat.sub_0_r, drop_0.
+  - destruct j; try easy. simpl. now rewrite IH.
+Qed.

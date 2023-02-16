@@ -11,7 +11,7 @@ Lemma twoWaysToFillAux (withBlanks : list (option Bracket)) (witness : list Brac
 Proof.
   destruct (possibleToFillIffPossibleToFillBool withBlanks) as [H _].
   rewrite possibleToFillIffPossibleToFill2 in H.
-  epose proof H _ as H'.
+  pose proof H ltac:(exists (fill withBlanks witness hRightLength); now pose proof fillIsCompletion withBlanks witness hRightLength) as H'.
   unfold possibleToFillBool in H'.
   case_bool_decide as condition1; try easy.
   case_bool_decide as condition2; try easy.
@@ -40,6 +40,12 @@ Proof.
     { pose proof listDecompositionSingle witness w ltac:(lia) BracketOpen.
       now rewrite <- hSymbol2. }
     remember (<[getKthBlank withBlanks w := Some BracketClose]> withBlanks) as injected eqn:hInjected.
+    epose proof fillInOneBlank withBlanks w ltac:(lia) BracketClose (repeat BracketOpen (length withBlanks / 2 - count_occ optionBracketEqualityDecidable withBlanks (Some BracketOpen)) ++ (repeat BracketClose (length withBlanks / 2 - count_occ optionBracketEqualityDecidable withBlanks (Some BracketClose) - 1))) _ _ as hFillOne.
+    rewrite <- !fillLaxEqFill, (takeAppLt (repeat BracketOpen (length withBlanks / 2 - count_occ optionBracketEqualityDecidable withBlanks (Some BracketOpen))) (repeat BracketClose (length withBlanks / 2 - count_occ optionBracketEqualityDecidable withBlanks (Some BracketClose) - 1)) w ltac:(rewrite repeat_length; lia)), takeRepeat, dropApp, dropRepeat in hFillOne; try rewrite repeat_length; try lia.
+    (* it isn't really our job to care about the whole solution. we keep only two positions, and ignore the rest *)
+    (* how to say "i cleared everything except"? *)
+    (* looks like we have a really broken API. it's great that we have a prototype, but we need some heavy refactoring *)
+    pose proof updateKthPartialCompletion withBlanks w ltac:(lia) BracketClose.
     admit.
   - assert (hSymbol : nth w (getWitness withBlanks) BracketOpen = BracketClose).
     { rewrite (nth_indep _ BracketOpen BracketClose h1). unfold getWitness.
@@ -53,10 +59,6 @@ Proof.
       now rewrite <- hSymbol2. }
     remember (<[getKthBlank withBlanks w := Some BracketOpen]> withBlanks) as injected eqn:hInjected.
     admit.
-  Unshelve.
-  exists (fill withBlanks witness hRightLength).
-  pose proof fillIsCompletion withBlanks witness hRightLength.
-  tauto.
 Admitted.
 
 Lemma twoWaysToFill (withBlanks : list (option Bracket)) (witness1 witness2 : list Bracket) (hDiff : witness1 <> witness2) hRightLength1 hRightLength2 (hWitness1Valid : isBalanced (fill withBlanks witness1 hRightLength1)) (hWitness2Valid : isBalanced (fill withBlanks witness2 hRightLength2)) : isBalanced (fillLax withBlanks (getSecondWitness withBlanks)).
