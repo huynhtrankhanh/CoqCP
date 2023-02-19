@@ -383,3 +383,17 @@ Proof.
     destruct IHh2 as [w2 h'2]. exists (w1 + w2).
     lia.
 Qed.
+
+Lemma countOpenEqHalfLength (s : list Bracket) (h : isBalanced s) : countOpen s = length s / 2.
+Proof.
+  rewrite isBalancedIffBalanceFactorBasedDefinition in h.
+  destruct h as [h _]. rewrite <- countOpenPlusCountClose.
+  now rewrite h, (ltac:(lia) : forall x : nat, x + x = x * 2), Nat.div_mul.
+Qed.
+
+Lemma countCloseEqHalfLength (s : list Bracket) (h : isBalanced s) : countClose s = length s / 2.
+Proof.
+  rewrite isBalancedIffBalanceFactorBasedDefinition in h.
+  destruct h as [h _]. rewrite <- countOpenPlusCountClose.
+  now rewrite h, (ltac:(lia) : forall x : nat, x + x = x * 2), Nat.div_mul.
+Qed.

@@ -14,47 +14,31 @@ Proof.
   exact {| compare := compareSymbols; transitive := ltac:(intros a b c h1 h2; destruct a; destruct b; destruct c; simpl in *; easy); irreflexive := ltac:(intro a; destruct a; easy); asymmetry := ltac:(intros a b h; destruct a; destruct b; simpl in *; easy); equalityExcludedMiddle := ltac:(intros a b; destruct a; destruct b; try (left; easy); try (right; easy)); connected := ltac:(intros a b h; destruct a; destruct b; simpl in *; try (left; easy); try (right; easy)) |}.
 Defined.
 
-Fixpoint fillLeftToRight (withBlanks : list (option Bracket)) (toFill : list Bracket) : list Bracket :=
-  match withBlanks, toFill with
-  | [], _ => []
-  | (None :: tail), (toFill :: remaining) => toFill :: fillLeftToRight tail remaining
-  | (None :: tail), [] => []
-  | (Some stuff :: tail), remaining => stuff :: fillLeftToRight tail remaining
-  end.
-
 #[export] Instance optionBracketEqualityDecidable : EqDecision (option Bracket).
 Proof. solve_decision. Defined.
 
-Definition possibleToFill (withBlanks : list (option Bracket)) := exists toFill, length toFill = count_occ optionBracketEqualityDecidable withBlanks None /\ isBalanced (fillLeftToRight withBlanks toFill).
+Definition possibleToFill (withBlanks : list (option Bracket)) := exists toFill, length toFill = count_occ optionBracketEqualityDecidable withBlanks None /\ isBalanced (fill withBlanks toFill).
 
 Definition possibleToFill2 (withBlanks : list (option Bracket)) := exists completed, isCompletion withBlanks completed /\ isBalanced completed.
-
-Lemma fillLeftToRightEqFillLax withBlanks witness : fillLeftToRight withBlanks witness = fillLax withBlanks witness.
-Proof.
-  induction withBlanks as [| [head |] tail IH] in witness |- *.
-  - easy.
-  - destruct witness as [| head1 tail1]; simpl; now rewrite IH.
-  - destruct witness as [| head1 tail1]; simpl; now (rewrite IH || done).
-Qed.
 
 Lemma possibleToFillIffPossibleToFill2 withBlanks : possibleToFill withBlanks <-> possibleToFill2 withBlanks.
 Proof.
   induction withBlanks as [| [head |] tail IH].
   - unfold possibleToFill, possibleToFill2. split; exists []; simpl; split; try done; exact EmptyBalanced.
   - split; intros [w [h1 h2]].
-    + exists (fillLeftToRight (Some head :: tail) w). rewrite fillLeftToRightEqFillLax, (fillLaxEqFill _ _ h1) in *. split.
-      * apply fillIsCompletion.
+    + exists (fill (Some head :: tail) w). split.
+      * now apply fillIsCompletion.
       * assumption.
-    + exists (extractAnswers (Some head :: tail) w h1). split.
-      * apply extractAnswersLength.
-      * now rewrite fillLeftToRightEqFillLax, (fillLaxEqFill _ _ (extractAnswersLength _ _ h1)), extractAnswersCorrect.
+    + exists (extractAnswers (Some head :: tail) w). split.
+      * now apply extractAnswersLength.
+      * now (rewrite extractAnswersCorrect; try apply extractAnswersLength).
   - split; intros [w [h1 h2]].
-    + exists (fillLeftToRight (None :: tail) w). rewrite fillLeftToRightEqFillLax, (fillLaxEqFill _ _ h1) in *. split.
-      * apply fillIsCompletion.
+    + exists (fill (None :: tail) w). split.
+      * now apply fillIsCompletion.
       * assumption.
-    + exists (extractAnswers (None :: tail) w h1). split.
-      * apply extractAnswersLength.
-      * now rewrite fillLeftToRightEqFillLax, (fillLaxEqFill _ _ (extractAnswersLength _ _ h1)), extractAnswersCorrect.
+    + exists (extractAnswers (None :: tail) w). split.
+      * now apply extractAnswersLength.
+      * now (rewrite extractAnswersCorrect; try apply extractAnswersLength).
 Qed.
 
 Definition getWitness (withBlanks : list (option Bracket)) :=
@@ -72,7 +56,7 @@ Definition possibleToFillBool (withBlanks : list (option Bracket)) :=
     let remainingCloseCount := count - count_occ optionBracketEqualityDecidable withBlanks (Some BracketClose) in
     match bool_decide (count_occ optionBracketEqualityDecidable withBlanks (Some BracketOpen) <= count) && bool_decide (count_occ optionBracketEqualityDecidable withBlanks (Some BracketClose) <= count) with
     | false => false
-    | true => isBalancedBool (fillLeftToRight withBlanks (getWitness withBlanks))
+    | true => isBalancedBool (fill withBlanks (getWitness withBlanks))
     end
   end.
 
@@ -91,7 +75,7 @@ Proof.
   unfold possibleToFillBool; case_bool_decide; simpl; try case_bool_decide; simpl; try easy; intro h1; case_bool_decide; simpl in h; try lia; easy.
 Qed.
 
-Lemma possibleToFillBool_allConditionsSatisfied (withBlanks : list (option Bracket)) (h1 : (2 | length withBlanks)) (h2 : count_occ optionBracketEqualityDecidable withBlanks (Some BracketOpen) <= length withBlanks / 2) (h3 : count_occ optionBracketEqualityDecidable withBlanks (Some BracketClose) <= length withBlanks / 2) : possibleToFillBool withBlanks <-> isBalancedBool (fillLeftToRight withBlanks (getWitness withBlanks)).
+Lemma possibleToFillBool_allConditionsSatisfied (withBlanks : list (option Bracket)) (h1 : (2 | length withBlanks)) (h2 : count_occ optionBracketEqualityDecidable withBlanks (Some BracketOpen) <= length withBlanks / 2) (h3 : count_occ optionBracketEqualityDecidable withBlanks (Some BracketClose) <= length withBlanks / 2) : possibleToFillBool withBlanks <-> isBalancedBool (fill withBlanks (getWitness withBlanks)).
 Proof.
   split; unfold possibleToFillBool in *; case_bool_decide; simpl; try case_bool_decide; simpl; try easy; case_bool_decide; easy.
 Qed.
@@ -144,9 +128,9 @@ Notation right_len withBlanks s :=
 
 Definition satisfactoryWitness (withBlanks : list (option Bracket)) (witness : list Bracket) :=
   right_len withBlanks witness /\
-  isBalanced (fillLeftToRight withBlanks witness).
+  isBalanced (fill withBlanks witness).
 
-Lemma fillLeftToRightPreservesLength (withBlanks : list (option Bracket)) (witness : list Bracket) (h : length witness = count_occ optionBracketEqualityDecidable withBlanks None) : length (fillLeftToRight withBlanks witness) = length withBlanks.
+Lemma fillPreservesLength (withBlanks : list (option Bracket)) (witness : list Bracket) (h : length witness = count_occ optionBracketEqualityDecidable withBlanks None) : length (fill withBlanks witness) = length withBlanks.
 Proof.
   revert witness h. induction withBlanks as [| a withBlanks IHwithBlanks]; intros witness h.
   - easy.
@@ -160,7 +144,7 @@ Qed.
 Section helpers.
   Implicit Type (s : list Bracket).
 
-  Lemma fillLeftToRight_split {b s1 s2 withBlanks} :
+  Lemma fill_split {b s1 s2 withBlanks} :
     let s := s1 ++ [b] ++ s2 in
     right_len withBlanks s ->
     ∃ wb1 wb2,
@@ -184,10 +168,10 @@ Section helpers.
     right_len (w1 ++ w2) (s1 ++ s2).
   Proof. rewrite count_occ_app, app_length. lia. Qed.
 
-  Lemma fillLeftToRight_app w1 w2 s1 s2 :
+  Lemma fill_app w1 w2 s1 s2 :
     right_len w1 s1 ->
     right_len w2 s2 ->
-    fillLeftToRight (w1 ++ w2) (s1 ++ s2) = fillLeftToRight w1 s1 ++ fillLeftToRight w2 s2.
+    fill (w1 ++ w2) (s1 ++ s2) = fill w1 s1 ++ fill w2 s2.
   Proof.
     induction w1 as [|[b|] w1 IHw1] in s1, s2, w2 |- *; destruct s1 as [|b1 s1]; simpl in *;
       try (done || lia); intros H1 H2. {
@@ -203,9 +187,9 @@ Proof.
   unfold satisfactoryWitness in *. destruct hPrevious as [HO HB].
   split.
   - rewrite HO, ?app_length. simpl. lia.
-  - destruct (fillLeftToRight_split HO) as (wb1 & wb2' & -> & Hb1 & Hb2').
-    destruct (fillLeftToRight_split Hb2') as (wb2 & wb3 & -> & Hb2 & Hb3); clear Hb2'.
-    rewrite !fillLeftToRight_app in HB |- *; repeat apply right_len_app; simpl; try done.
+  - destruct (fill_split HO) as (wb1 & wb2' & -> & Hb1 & Hb2').
+    destruct (fill_split Hb2') as (wb2 & wb3 & -> & Hb2 & Hb3); clear Hb2'.
+    rewrite !fill_app in HB |- *; repeat apply right_len_app; simpl; try done.
     by apply canAlwaysSwapCloseAndOpen.
 Qed.
 
@@ -221,7 +205,7 @@ Qed.
 Lemma subtractToCountNone (withBlanks : list (option Bracket)) : length withBlanks - (count_occ optionBracketEqualityDecidable withBlanks (Some BracketOpen) + count_occ optionBracketEqualityDecidable withBlanks (Some BracketClose)) = count_occ optionBracketEqualityDecidable withBlanks None.
 Proof. pose proof addThreeTypes withBlanks. lia. Qed.
 
-Lemma countSymbolAfterFill (withBlanks : list (option Bracket)) (toFill : list Bracket) (hValid : length toFill = count_occ optionBracketEqualityDecidable withBlanks None) (symbol : Bracket) : count_occ optionBracketEqualityDecidable withBlanks (Some symbol) + count_occ bracketEqualityDecidable toFill symbol = count_occ bracketEqualityDecidable (fillLeftToRight withBlanks toFill) symbol.
+Lemma countSymbolAfterFill (withBlanks : list (option Bracket)) (toFill : list Bracket) (hValid : length toFill = count_occ optionBracketEqualityDecidable withBlanks None) (symbol : Bracket) : count_occ optionBracketEqualityDecidable withBlanks (Some symbol) + count_occ bracketEqualityDecidable toFill symbol = count_occ bracketEqualityDecidable (fill withBlanks toFill) symbol.
 Proof.
   revert toFill hValid. induction withBlanks as [| a withBlanks IHwithBlanks]; intros toFill hValid.
   - simpl in *. rewrite (nil_length_inv _ hValid).
@@ -250,7 +234,7 @@ Proof.
         { destruct symbol; simpl in hCases; try easy; simpl; destruct b; simpl; rewrite <- IHwithBlanks; simpl; lia. }
 Qed.
 
-Lemma existingLeqAfterFill (withBlanks : list (option Bracket)) (toFill : list Bracket) (hValid : length toFill = count_occ optionBracketEqualityDecidable withBlanks None) (symbol : Bracket) : count_occ optionBracketEqualityDecidable withBlanks (Some symbol) <= count_occ bracketEqualityDecidable (fillLeftToRight withBlanks toFill) symbol.
+Lemma existingLeqAfterFill (withBlanks : list (option Bracket)) (toFill : list Bracket) (hValid : length toFill = count_occ optionBracketEqualityDecidable withBlanks None) (symbol : Bracket) : count_occ optionBracketEqualityDecidable withBlanks (Some symbol) <= count_occ bracketEqualityDecidable (fill withBlanks toFill) symbol.
 Proof.
   pose proof countSymbolAfterFill withBlanks toFill hValid symbol.
   lia.
@@ -287,7 +271,7 @@ Proof.
     case_bool_decide as hEven.
     + shelve.
     + destruct hPossible as [toFill [hLength hBalanced]].
-      pose proof fillLeftToRightPreservesLength withBlanks toFill hLength as hPreserve.
+      pose proof fillPreservesLength withBlanks toFill hLength as hPreserve.
       pose proof isBalancedEvenLength _ hBalanced.
       rewrite hPreserve in *. tauto.
     Unshelve.
@@ -295,7 +279,7 @@ Proof.
     * shelve.
     * destruct hPossible as [toFill [hLength hBalanced]].
       destruct (isBalancedImpliesBalanceFactorBasedDefinition _ hBalanced) as [hCount _].
-      pose proof fillLeftToRightPreservesLength withBlanks toFill hLength as hPreserve.
+      pose proof fillPreservesLength withBlanks toFill hLength as hPreserve.
       rewrite <- hPreserve, <- countOpenPlusCountClose, <- hCount in enoughBlanks1.
       assert (hSimplify : forall a : nat, (a + a) / 2 = a).
       { intro a.
@@ -309,7 +293,7 @@ Proof.
     { shelve. }
     { destruct hPossible as [toFill [hLength hBalanced]].
       destruct (isBalancedImpliesBalanceFactorBasedDefinition _ hBalanced) as [hCount _].
-      pose proof fillLeftToRightPreservesLength withBlanks toFill hLength as hPreserve.
+      pose proof fillPreservesLength withBlanks toFill hLength as hPreserve.
       rewrite <- hPreserve, <- countOpenPlusCountClose, hCount in enoughBlanks2.
       assert (hSimplify : forall a : nat, (a + a) / 2 = a).
       { intro a.
@@ -340,11 +324,11 @@ Proof.
       rewrite count_occ_app.
       pose proof countSymbolAfterFill withBlanks toFill hLength x as H.
       destruct x; rewrite ?(@count_occ_repeat_neq Bracket bracketEqualityDecidable BracketOpen BracketClose), ?(@count_occ_repeat_neq Bracket bracketEqualityDecidable BracketClose BracketOpen), ?Nat.add_0_l, ?Nat.add_0_r; try easy; rewrite count_occ_repeat_eq; try reflexivity.
-      - pose proof hCountBalanced (fillLeftToRight withBlanks toFill) BracketOpen ltac:(assumption) as H'.
-        pose proof (fillLeftToRightPreservesLength withBlanks toFill ltac:(assumption)) as hRewrite.
+      - pose proof hCountBalanced (fill withBlanks toFill) BracketOpen ltac:(assumption) as H'.
+        pose proof (fillPreservesLength withBlanks toFill ltac:(assumption)) as hRewrite.
         rewrite hRewrite in *. lia.
-      - pose proof hCountBalanced (fillLeftToRight withBlanks toFill) BracketClose ltac:(assumption) as H'.
-        pose proof (fillLeftToRightPreservesLength withBlanks toFill ltac:(assumption)) as hRewrite.
+      - pose proof hCountBalanced (fill withBlanks toFill) BracketClose ltac:(assumption) as H'.
+        pose proof (fillPreservesLength withBlanks toFill ltac:(assumption)) as hRewrite.
         rewrite hRewrite in *. lia. }
     symmetry in hPermutation2.
     pose proof (perm_trans hPermutation2 hPermutation1) as hPermutation.
@@ -374,4 +358,64 @@ Proof.
       case_bool_decide.
       * case_bool_decide; try case_bool_decide; simpl in h; try rewrite <- isBalancedIffIsBalancedBool in h; easy.
       * easy.
+Qed.
+
+(* get a nice package of everything you'll ever need if you already have a witness *)
+Lemma fromArbitraryWitness (withBlanks : list (option Bracket)) (witness : list Bracket) (hBalanced : isBalanced (fill withBlanks witness)) (hCorrectLength : length witness = count_occ optionBracketEqualityDecidable withBlanks None) : isBalanced (fill withBlanks (getWitness withBlanks)) /\ (2 | length withBlanks) /\ (count_occ optionBracketEqualityDecidable withBlanks (Some BracketOpen) <= length withBlanks / 2) /\ (count_occ optionBracketEqualityDecidable withBlanks (Some BracketClose) <= length withBlanks / 2) /\ length (getWitness withBlanks) = count_occ optionBracketEqualityDecidable withBlanks None.
+Proof.
+  pose proof proj1 (possibleToFillIffPossibleToFillBool withBlanks) (ex_intro _ witness (conj hCorrectLength hBalanced)) as h.
+  unfold possibleToFillBool in h.
+  case_bool_decide as hEven; try easy.
+  repeat (case_bool_decide; try easy). simpl in h.
+  rewrite <- isBalancedIffIsBalancedBool in h. intuition.
+  unfold getWitness. destruct hEven as [w h']. rewrite app_length, ?repeat_length.
+  pose proof addThreeTypes withBlanks.
+  assert (hDiv : w * 2 / 2 = w). { now apply Nat.div_mul. } rewrite <- h' in hDiv. lia.
+Qed.
+
+Lemma fromArbitraryWitness_1 (withBlanks : list (option Bracket)) (witness : list Bracket) (hBalanced : isBalanced (fill withBlanks witness)) (hCorrectLength : length witness = count_occ optionBracketEqualityDecidable withBlanks None) : isBalanced (fill withBlanks (getWitness withBlanks)).
+Proof.
+  pose proof fromArbitraryWitness withBlanks witness. intuition.
+Qed.
+
+Lemma fromArbitraryWitness_2 (withBlanks : list (option Bracket)) (witness : list Bracket) (hBalanced : isBalanced (fill withBlanks witness)) (hCorrectLength : length witness = count_occ optionBracketEqualityDecidable withBlanks None) : (2 | length withBlanks).
+Proof.
+  pose proof fromArbitraryWitness withBlanks witness. intuition.
+Qed.
+
+Lemma fromArbitraryWitness_3 (withBlanks : list (option Bracket)) (witness : list Bracket) (hBalanced : isBalanced (fill withBlanks witness)) (hCorrectLength : length witness = count_occ optionBracketEqualityDecidable withBlanks None) : count_occ optionBracketEqualityDecidable withBlanks (Some BracketOpen) <= length withBlanks / 2.
+Proof.
+  pose proof fromArbitraryWitness withBlanks witness. intuition.
+Qed.
+
+Lemma fromArbitraryWitness_4 (withBlanks : list (option Bracket)) (witness : list Bracket) (hBalanced : isBalanced (fill withBlanks witness)) (hCorrectLength : length witness = count_occ optionBracketEqualityDecidable withBlanks None) : count_occ optionBracketEqualityDecidable withBlanks (Some BracketClose) <= length withBlanks / 2.
+Proof.
+  pose proof fromArbitraryWitness withBlanks witness. intuition.
+Qed.
+
+Lemma fromArbitraryWitness_5 (withBlanks : list (option Bracket)) (witness : list Bracket) (hBalanced : isBalanced (fill withBlanks witness)) (hCorrectLength : length witness = count_occ optionBracketEqualityDecidable withBlanks None) : length (getWitness withBlanks) = count_occ optionBracketEqualityDecidable withBlanks None.
+Proof.
+  pose proof fromArbitraryWitness withBlanks witness. intuition.
+Qed.
+
+Lemma fromArbitraryWitness_countOpen (withBlanks : list (option Bracket)) (witness : list Bracket) (hBalanced : isBalanced (fill withBlanks witness)) (hCorrectLength : length witness = count_occ optionBracketEqualityDecidable withBlanks None) : count_occ optionBracketEqualityDecidable withBlanks (Some BracketOpen) + count_occ bracketEqualityDecidable witness BracketOpen = length withBlanks / 2.
+Proof.
+  pose proof countOpenEqHalfLength (fill withBlanks witness) hBalanced as h.
+  rewrite fillPreservesLength in h; try easy.
+  rewrite <- h.
+  induction withBlanks as [| [head |] tail IH] in hCorrectLength, witness |- *.
+  - simpl in *. rewrite (nil_length_inv _ hCorrectLength). easy.
+  - destruct head; simpl in *; rewrite ?countOpenConsOpen, ?countOpenConsClose, IH; try (lia || done).
+  - destruct witness as [| head1 tail1]; simpl in *; try destruct head1; simpl in *; rewrite ?countOpenConsOpen, ?countOpenConsClose; try lia; pose proof IH tail1 ltac:(lia); lia.
+Qed.
+
+Lemma fromArbitraryWitness_countClose (withBlanks : list (option Bracket)) (witness : list Bracket) (hBalanced : isBalanced (fill withBlanks witness)) (hCorrectLength : length witness = count_occ optionBracketEqualityDecidable withBlanks None) : count_occ optionBracketEqualityDecidable withBlanks (Some BracketClose) + count_occ bracketEqualityDecidable witness BracketClose = length withBlanks / 2.
+Proof.
+  pose proof countCloseEqHalfLength (fill withBlanks witness) hBalanced as h.
+  rewrite fillPreservesLength in h; try easy.
+  rewrite <- h.
+  induction withBlanks as [| [head |] tail IH] in hCorrectLength, witness |- *.
+  - simpl in *. rewrite (nil_length_inv _ hCorrectLength). easy.
+  - destruct head; simpl in *; rewrite ?countCloseConsOpen, ?countCloseConsClose, IH; try (done || lia).
+  - destruct witness as [| head1 tail1]; simpl in *; try destruct head1; simpl in *; rewrite ?countCloseConsOpen, ?countCloseConsClose; try lia; pose proof IH tail1 ltac:(lia); lia.
 Qed.

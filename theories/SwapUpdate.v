@@ -282,3 +282,17 @@ Proof.
   - now rewrite Nat.sub_0_r, drop_0.
   - destruct j; try easy. simpl. now rewrite IH.
 Qed.
+
+Lemma nthAppLt {A : Type} (default : A) (l1 l2 : list A) (i : nat) (hI : i < length l1) : nth i (l1 ++ l2) default = nth i l1 default.
+Proof.
+  induction l1 as [| head tail IH] in i, hI |- *.
+  - simpl in *. lia.
+  - destruct i; try easy. simpl in *. rewrite IH; (done || lia).
+Qed.
+
+Lemma nthAppGeq {A : Type} (default : A) (l1 l2 : list A) (i : nat) (hI : length l1 <= i) : nth i (l1 ++ l2) default = nth (i - length l1) l2 default.
+Proof.
+  induction l1 as [| head tail IH] in i, hI |- *.
+  - simpl in *. now rewrite Nat.sub_0_r.
+  - destruct i; try easy. simpl in *. rewrite IH; (done || lia).
+Qed.
