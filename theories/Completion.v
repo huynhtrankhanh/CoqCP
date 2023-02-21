@@ -176,6 +176,20 @@ Lemma dropSuccKthBlankCountOcc (withBlanks : list (option A)) (k : nat) : count_
   - destruct k; destruct head; simpl in *; destruct (decide _ _); try rewrite IH; try rewrite drop_0; try (lia || done).
 Qed.
 
+Lemma dropSuccTakeKthBlankCountOcc (withBlanks : list (option A)) (i j : nat) (hLt : i <= j) (hReasonable : j < count_occ decide withBlanks None) : count_occ decide (drop (S (getKthBlank withBlanks i)) (take (getKthBlank withBlanks j) withBlanks)) None = j - i - 1.
+Proof.
+  induction withBlanks as [| [head |] tail IH] in i, j, hLt, hReasonable |- *; try easy;
+  destruct i as [| i]; destruct j as [| j]; simpl in *; try rewrite IH; try destruct (decide _ _); try (done || lia).
+  rewrite drop_0, takeKthBlankCountOcc; lia.
+Qed.
+
+Lemma dropTakeKthBlankCountOcc (withBlanks : list (option A)) (i j : nat) (hLt : i <= j) (hReasonable : j < count_occ decide withBlanks None) : count_occ decide (drop (getKthBlank withBlanks i) (take (getKthBlank withBlanks j) withBlanks)) None = j - i.
+Proof.
+  induction withBlanks as [| [head |] tail IH] in i, j, hLt, hReasonable |- *; try easy;
+  destruct i as [| i]; destruct j as [| j]; simpl in *; try rewrite IH; try destruct (decide _ _); try (done || lia).
+  rewrite takeKthBlankCountOcc; lia.
+Qed.
+
 Lemma fillSplit (b : A) (s1 s2 : list A) (withBlanks : list (option A)) k (hK : k = length s1) : length (s1 ++ [b] ++ s2) = count_occ decide withBlanks None -> withBlanks = take (getKthBlank withBlanks k) withBlanks ++ [None] ++ drop (S (getKthBlank withBlanks k)) withBlanks /\ length s1 = count_occ decide (take (getKthBlank withBlanks k) withBlanks) None /\ length s2 = count_occ decide (drop (S (getKthBlank withBlanks k)) withBlanks) None.
 Proof.
   intro hLength.
@@ -248,6 +262,11 @@ Proof.
   induction withBlanks as [| [head |] tail IH] in k, hReasonable |- *; try easy;
   destruct k; simpl in *; rewrite ?andb_True, ?bool_decide_spec;
   ((try split; try tauto; apply IH; destruct (decide _ _); (done || lia)) || apply partialCompletionSelf).
+Qed.
+
+Lemma getKthBlankLt (withBlanks : list (option A)) (i j : nat) (hReasonable : j < count_occ decide withBlanks None) (hLt : i < j) : getKthBlank withBlanks i < getKthBlank withBlanks j.
+Proof.
+  induction withBlanks as [| [head |] tail IH] in i, j, hReasonable, hLt |- *; try easy; destruct i as [| i]; destruct j as [| j]; simpl in *; destruct (decide _ _); try (done || lia); apply Arith_prebase.lt_n_S_stt, IH; (done || lia).
 Qed.
 
 End Completion.

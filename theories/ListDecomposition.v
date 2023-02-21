@@ -24,6 +24,12 @@ Proof.
   rewrite app_assoc, H2, Nat.add_1_r, take_drop. reflexivity.
 Qed.
 
+Lemma listDecomposition_rhsSucc {A : Type} (l : list A) (i j : nat) (hLt : i < j) (hUpperBound : j < length l) (default : A) : l = take i l ++ [nth i l default] ++ drop (S i) (take j l) ++ [nth j l default] ++ drop (S j) l.
+Proof.
+  pose proof listDecomposition l i j hLt hUpperBound default as h.
+  now rewrite Nat.add_1_r in h.
+Qed.
+
 Lemma listDecompositionSingle {A : Type} (l : list A) (i : nat) (hLt : i < length l) (default : A) : l = take i l ++ [nth i l default] ++ drop (S i) l.
 Proof.
   induction l as [| head tail IH] in i, hLt |- *.
