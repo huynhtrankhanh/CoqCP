@@ -14,7 +14,7 @@ This mistake could have been avoided entirely if the folks responsible for the r
 
 Dependencies: Only `coq-stdpp`.
 
-Note: Whenever you create a new file, remember to import `Options`with the `From CoqCP Require Import Options Options.` command. Coq will then error if you apply a tactic when multiple goals are visible.
+Note: Whenever you create a new file, remember to import `Options` with the `From CoqCP Require Import Options Options.` command. Coq will then error if you apply a tactic when multiple goals are visible.
 
 Documentation:
 
