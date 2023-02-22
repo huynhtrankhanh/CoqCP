@@ -1,4 +1,4 @@
-From CoqCP Require Import Options FillInTheBlanks Completion RegularBracketString SwapUpdate ListDecomposition ListsEqual.
+From CoqCP Require Import Options FillInTheBlanks Completion RegularBracketString SwapUpdate ListDecomposition ListsEqual PrefixApp.
 From stdpp Require Import numbers list.
 
 Definition getSecondWitness (withBlanks : list (option Bracket)) :=
@@ -165,6 +165,152 @@ Proof.
     intuition. rewrite !app_length, !repeat_length, !(ltac:(easy) : forall x : Bracket, length [x] = 1). lia.
 Qed.
 
+Fixpoint mirror (s : list Bracket) := match s with
+  | [] => []
+  | (BracketOpen :: tail) => mirror tail ++ [BracketClose]
+  | (BracketClose :: tail) => mirror tail ++ [BracketOpen]
+  end.
+
+Fixpoint mirrorWithBlanks (s : list (option Bracket)) := match s with
+  | [] => []
+  | (Some BracketOpen :: tail) => mirrorWithBlanks tail ++ [Some BracketClose]
+  | (Some BracketClose :: tail) => mirrorWithBlanks tail ++ [Some BracketOpen]
+  | (None :: tail) => mirrorWithBlanks tail ++ [None]
+  end.
+
+Lemma mirrorPreservesLength s : length (mirror s) = length s.
+Proof.
+  induction s as [| [|] tail IH]; try easy; simpl in *; rewrite app_length, IH; simpl; lia.
+Qed.
+
+Lemma mirrorWithBlanksPreservesLength s : length (mirrorWithBlanks s) = length s.
+Proof.
+  induction s as [| [[|]|] tail IH]; try easy; simpl in *; rewrite app_length, IH; simpl; lia.
+Qed.
+
+Lemma mirrorCountOpen (s : list Bracket) : countOpen (mirror s) = countClose s.
+Proof.
+  induction s as [| [|] tail IH]; simpl in *; autorewrite with rewriteCount; lia.
+Qed.
+
+Lemma mirrorCountClose (s : list Bracket) : countClose (mirror s) = countOpen s.
+Proof.
+  induction s as [| [|] tail IH]; simpl in *; autorewrite with rewriteCount; lia.
+Qed.
+
+Lemma mirrorOpenCountEqualCloseCount (s : list Bracket) (h : countOpen s = countClose s) : countOpen (mirror s) = countClose (mirror s).
+Proof.
+  pose (mirrorCountOpen s).
+  pose (mirrorCountClose s).
+  congruence.
+Qed.
+
+Lemma mirrorApp s1 s2 : mirror (s1 ++ s2) = mirror s2 ++ mirror s1.
+Proof.
+  induction s1 as [| head tail IH].
+  - simpl. now rewrite app_nil_r.
+  - rewrite <- app_comm_cons. destruct head; simpl; now rewrite IH, <- !app_assoc.
+Qed.
+
+Lemma mirrorStillBalanced (s : list Bracket) (hBalanced : isBalanced s) : isBalanced (mirror s).
+Proof.
+  induction hBalanced as [| s IH |].
+  - apply EmptyBalanced.
+  - assert (h1 : forall s, mirror (s ++ [BracketClose]) = [BracketOpen] ++ mirror s).
+    { intro l. induction l as [| head tail IH'].
+      - easy.
+      - rewrite <- app_comm_cons. destruct head; simpl in *; now rewrite IH'. }
+    assert (h2 : forall s, mirror ([BracketOpen] ++ s ++ [BracketClose]) = [BracketOpen] ++ mirror s ++ [BracketClose]).
+    { intro l. rewrite app_assoc, h1. easy. }
+    rewrite h2. now apply WrapBalanced.
+  - rewrite mirrorApp. now apply JoinBalanced.
+Qed.
+
+Lemma mirrorWithBlanksCountOpen (s : list (option Bracket)) : count_occ optionBracketEqualityDecidable (mirrorWithBlanks s) (Some BracketOpen) = count_occ optionBracketEqualityDecidable s (Some BracketClose).
+Proof.
+  induction s as [| [[|]|] tail IH]; simpl in *. { easy. }
+  #[local] Hint Resolve Nat.add_1_r : core.
+  all: now rewrite count_occ_app, IH.
+Qed.
+
+Lemma mirrorWithBlanksCountClose (s : list (option Bracket)) : count_occ optionBracketEqualityDecidable (mirrorWithBlanks s) (Some BracketClose) = count_occ optionBracketEqualityDecidable s (Some BracketOpen).
+Proof.
+  induction s as [| [[|]|] tail IH]; simpl in *. { easy. }
+  #[local] Hint Resolve Nat.add_1_r : core.
+  all: now rewrite count_occ_app, IH.
+Qed.
+
+Lemma mirrorWithBlanksCountNone (s : list (option Bracket)) : count_occ optionBracketEqualityDecidable (mirrorWithBlanks s) None = count_occ optionBracketEqualityDecidable s None.
+Proof.
+  induction s as [| [[|]|] tail IH]; simpl in *. { easy. }
+  #[local] Hint Resolve Nat.add_1_r : core.
+  all: now rewrite count_occ_app, IH.
+Qed.
+
+Lemma mirrorRepeatOpen (n : nat) : mirror (repeat BracketOpen n) = repeat BracketClose n.
+Proof.
+  induction n as [| n IH]. { easy. }
+  simpl. now rewrite IH, repeat_cons.
+Qed.
+
+Lemma mirrorRepeatClose (n : nat) : mirror (repeat BracketClose n) = repeat BracketOpen n.
+Proof.
+  induction n as [| n IH]. { easy. }
+  simpl. now rewrite IH, repeat_cons.
+Qed.
+
+Lemma getWitnessMirror (s : list (option Bracket)) : getWitness (mirrorWithBlanks s) = mirror (getWitness s).
+Proof.
+  unfold getWitness in *. now rewrite mirrorWithBlanksPreservesLength, mirrorApp, mirrorRepeatClose, mirrorRepeatOpen, mirrorWithBlanksCountClose, mirrorWithBlanksCountOpen.
+Qed.
+
+Lemma getSecondWitnessMirror (s : list (option Bracket)) : getSecondWitness (mirrorWithBlanks s) = mirror (getSecondWitness s).
+Proof.
+  unfold getSecondWitness in *. rewrite mirrorWithBlanksPreservesLength, !mirrorApp, mirrorRepeatClose, mirrorRepeatOpen, mirrorWithBlanksCountClose, mirrorWithBlanksCountOpen. simpl. listsEqual.
+Qed.
+
+Definition oppositeSign (x : Bracket) := match x with
+  | BracketOpen => BracketClose
+  | BracketClose => BracketOpen
+  end.
+
+Lemma nthMirror (s : list Bracket) (position : nat) (h : position < length s) default : nth position s default = oppositeSign (nth (length s - position - 1) (mirror s) default).
+Proof.
+  induction s as [| head tail IH] in position, h |- *. { easy. }
+  destruct position as [| position].
+  { simpl in *. rewrite Nat.sub_0_r in *.
+    rewrite <- mirrorPreservesLength.
+    destruct head; now rewrite (nthAppZero (mirror tail)). }
+  simpl in *.
+  destruct head; rewrite nthAppLt, IH; try (rewrite mirrorPreservesLength); (done || lia).
+Qed.
+
+Lemma nthMirror2 (s : list Bracket) (position : nat) (h : position < length s) default : oppositeSign (nth position s default) = nth (length s - position - 1) (mirror s) default.
+Proof.
+  induction s as [| head tail IH] in position, h |- *. { easy. }
+  destruct position as [| position].
+  { simpl in *. rewrite Nat.sub_0_r in *.
+    rewrite <- mirrorPreservesLength.
+    destruct head; now rewrite (nthAppZero (mirror tail)). }
+  simpl in *.
+  destruct head; rewrite nthAppLt, IH; try (rewrite mirrorPreservesLength); (done || lia).
+Qed.
+
+Lemma mirrorMirror (s : list Bracket) : mirror (mirror s) = s.
+Proof.
+  induction s as [| [|] tail IH]. { easy. }
+  all: simpl; now rewrite mirrorApp, IH.
+Qed.
+
+Lemma fillMirror (withBlanks : list (option Bracket)) witness (hRightLength : length witness = count_occ optionBracketEqualityDecidable withBlanks None) : mirror (fill withBlanks witness) = fill (mirrorWithBlanks withBlanks) (mirror witness).
+Proof.
+  induction withBlanks as [| [[|] |] tail IH] in witness, hRightLength |- *. { easy. }
+  - simpl in *. rewrite (ltac:(now rewrite app_nil_r) : mirror witness = mirror witness ++ []), fillApp, IH; try easy. now rewrite mirrorPreservesLength, mirrorWithBlanksCountNone.
+  - simpl in *. rewrite (ltac:(now rewrite app_nil_r) : mirror witness = mirror witness ++ []), fillApp, IH; try easy. now rewrite mirrorPreservesLength, mirrorWithBlanksCountNone.
+  - destruct witness as [| head' tail']; simpl in *; try lia.
+    destruct head'; rewrite fillApp; try (rewrite mirrorPreservesLength, mirrorWithBlanksCountNone; lia); try easy; rewrite IH; (done || lia).
+Qed.
+
 Lemma twoWaysToFillAux (withBlanks : list (option Bracket)) (witness : list Bracket) (hDiff : getWitness withBlanks <> witness) (hRightLength : length witness = count_occ optionBracketEqualityDecidable withBlanks None) (hWitnessValid : isBalanced (fill withBlanks witness)) : isBalanced (fill withBlanks (getSecondWitness withBlanks)).
 Proof.
   destruct (fromArbitraryWitness withBlanks witness hWitnessValid hRightLength) as [hGetWitness [hEven [hCountLt1 [hCountLt2 hLengthGetWitness]]]].
@@ -178,9 +324,19 @@ Proof.
     rewrite (nth_indep _ BracketOpen BracketClose), nth_repeat in *; try (rewrite ?app_length, ?repeat_length in *; lia). destruct (nth position witness BracketOpen); intuition. }
   destruct (decide (position < length withBlanks / 2 - count_occ optionBracketEqualityDecidable withBlanks (Some BracketOpen))) as [hSplit | hSplit].
   - apply (twoWaysToFillAux_differenceOnLeftSegment withBlanks witness position); try (lia || done).
-  - destruct (hGeq ltac:(lia)) as [hNthGetWitness hNthWitness]. admit.
-    (* I'd take advantage of symmetry. there's no way I'd go through this grueling proof ever again *)
-Admitted.
+  - destruct (hGeq ltac:(lia)) as [hNthGetWitness hNthWitness].
+    destruct hEven as [w hEven].
+    pose proof (ltac:(now apply Nat.div_mul) : w * 2 / 2 = w) as hDiv. rewrite <- hEven in hDiv.
+    pose proof addThreeTypes withBlanks.
+    assert (hOppositeSignDiff : forall a b, a <> b -> oppositeSign a <> oppositeSign b).
+    { intros a b h. destruct a; destruct b; easy. }
+    assert (hGetWitnessLength : length (getWitness (mirrorWithBlanks withBlanks)) = length (getWitness withBlanks)).
+    { unfold getWitness. rewrite !app_length, !repeat_length, !mirrorWithBlanksPreservesLength, !mirrorWithBlanksCountClose, !mirrorWithBlanksCountOpen. lia. }
+    epose proof twoWaysToFillAux_differenceOnLeftSegment (mirrorWithBlanks withBlanks) (mirror witness) (length witness - position - 1) ltac:(lia) ltac:(rewrite mirrorWithBlanksPreservesLength, mirrorWithBlanksCountOpen; lia) ltac:(rewrite getWitnessMirror, nthMirror; rewrite mirrorPreservesLength, ?mirrorMirror; try lia; rewrite (ltac:(lia) : (length (getWitness withBlanks) - (length witness - position - 1) - 1) = position), <- nthMirror2; try lia; now apply hOppositeSignDiff) ltac:(now rewrite mirrorPreservesLength, mirrorWithBlanksCountNone) ltac:(rewrite <- fillMirror; now try apply mirrorStillBalanced) as hDestination.
+    rewrite getSecondWitnessMirror, <- fillMirror in hDestination.
+    + pose proof mirrorStillBalanced _ hDestination. now rewrite mirrorMirror in *.
+    + unfold getSecondWitness. rewrite !app_length, !repeat_length, (ltac:(easy) : length [BracketClose; BracketOpen] = 2). lia.
+Qed.
 
 Lemma twoWaysToFill (withBlanks : list (option Bracket)) (witness1 witness2 : list Bracket) (hDiff : witness1 <> witness2) (hRightLength1 : length witness1 = count_occ optionBracketEqualityDecidable withBlanks None) (hRightLength2 : length witness2 = count_occ optionBracketEqualityDecidable withBlanks None) (hWitness1Valid : isBalanced (fill withBlanks witness1)) (hWitness2Valid : isBalanced (fill withBlanks witness2)) : isBalanced (fill withBlanks (getSecondWitness withBlanks)).
 Proof.
