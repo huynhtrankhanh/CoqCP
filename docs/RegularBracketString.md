@@ -82,9 +82,11 @@ Now, we prove for a regular bracket string of the form `a = s1 + ")" + s2 + "(" 
 
 With this result, we can prove the next result.
 
-**There is also a quick way to check if there are two separate ways to replace the question marks** (not proved yet)
+**There is also a quick way to check if there are two separate ways to replace the question marks**
 
 Problem link: https://codeforces.com/contest/1709/problem/C
+
+This is proved in the [`TwoWaysToFill.v`](../theories/TwoWaysToFill.v) file.
 
 To check, we fill in the question marks according to the construction described in the previous result. But then we swap the last question mark filled with `(` and the first question mark filled with `)` and then check if the resulting string is a regular bracket string.
 
