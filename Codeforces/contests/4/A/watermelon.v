@@ -17,7 +17,7 @@ Record input_w : Type := {
 Definition is_division_possible (total_weight : input_w): bool :=
   (4 <=? total_weight.(value)) && Nat.even total_weight.(value).
 
-(* Test in example *)
+(* Test with input examples *)
 Definition input_w_with_8_value : input_w :=
   {| value := 8;
      constraints := ltac:(lia)
