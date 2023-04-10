@@ -17,6 +17,16 @@ Record input_w : Type := {
 Definition is_division_possible (total_weight : input_w): bool :=
   (4 <=? total_weight.(value)) && Nat.even total_weight.(value).
 
+(* Test in example *)
+Definition input_w_with_8_value : input_w :=
+  {| value := 8;
+     constraints := ltac:(lia) 
+  |}.
+Example input_w_with_8_value_example: is_division_possible(input_w_with_8_value) = true.
+Proof.
+  reflexivity.
+Qed.
+
 (* Prove the algorithm *)
 
 Definition valid_division (w1 w2 : nat) (total_weight : input_w) : Prop :=
