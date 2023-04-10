@@ -1,4 +1,4 @@
-From CoqCP Require Import Options Options.
+From CoqCP Require Import Options.
 From stdpp Require Import numbers.
 
 (* Define general properties (move to shared file?)*)
