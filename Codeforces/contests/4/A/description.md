@@ -25,3 +25,11 @@ We split the statement into two parts.
 
   As a and b are even, a + b is even and therefore x is even.
 - If x is not less than 4 and is an even number then there exist two positive even integers a and b such a that x = a + b
+
+  We pick a = 2 and b = x - 2. We will show both numbers are positive and even.
+
+  First, 2 is an even and positive number, therefore a is even and positive.
+
+  Second, as x is even and 2 is even, x - 2 is even and therefore b is even. Also as 4 <= a + b and a = 2, we have 2 <= b. Therefore b is positive.
+
+We now proved our solution is correct. The code can be found at [`watermelon.v`](./watermelon.v).
