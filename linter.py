@@ -15,11 +15,18 @@ def lint_coq_file(filename, spaces, max_line_length):
     last_line_blank = False
     prev_indentation = 0
 
-    operators = [r'\b->\b', r'\b<->\b', r'\b/\\\b', r'\b\\/\b', r'\b=\b', r'\b<\b', r'\b>\b', r'\b<=\b', r'\b>=\b', r'\b<>\b',
-             r'\b&&\b', r'\b\|\|\b', r'\b<=\?\b', r'\b>=\?\b', r'\b<\?\b', r'\b>\?\b']
+    
+    operators = ['->', '<->', '/\\', '\\/', '=', '<', '>', '<=', '>=', '<>',
+                 '&&', '||', '<=?', '>=?', '<?', '>?', '*', '/']
 
-    operators_without_boundaries = ['->', '<->', '/\\', '\\/', '=', '<', '>', '<=', '>=', '<>',
-                                '&&', '||', '<=?', '>=?', '<?', '>?']
+    operator_regexes = {
+        op : [
+            rf'(\d|[A-Za-z]){re.escape(op)}\s',
+            rf'\s{re.escape(op)}(\d|[A-Za-z])',
+            rf'(\d|[A-Za-z]){re.escape(op)}(\d|[A-Za-z])'
+         ]
+        for op in operators
+    }
 
     for line in lines:
         stripped_line = line.rstrip()
@@ -36,7 +43,6 @@ def lint_coq_file(filename, spaces, max_line_length):
 
         if not stripped_line and last_line_blank:
             issues.append(f"Line {line_number}: Consecutive blank lines found")
-            issues_found += 1
 
         if len(line) > max_line_length:
             issues.append(f"Line {line_number}: Line exceeds maximum length of {max_line_length} characters")
@@ -44,9 +50,10 @@ def lint_coq_file(filename, spaces, max_line_length):
         if "Admitted." in stripped_line:
             issues.append(f"Line {line_number}: 'Admitted' found, incomplete proofs are not allowed")
 
-        for index, op in enumerate(operators):
-            if re.search(fr'{op}', stripped_line):
-                issues.append(f"Line {line_number}: Missing spaces around operator '{operators_without_boundaries[index]}'")
+        for op in operators:
+            for pattern in operator_regexes[op]:
+                if re.search(pattern, stripped_line):
+                    issues.append(f"Line {line_number}: Missing spaces around operator '{op}'")
 
         last_line_blank = not stripped_line
         prev_indentation = indentation if stripped_line else prev_indentation  # Only update prev_indentation for non-empty lines
