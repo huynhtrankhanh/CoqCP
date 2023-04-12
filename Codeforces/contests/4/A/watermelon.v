@@ -19,8 +19,9 @@ Definition is_division_possible (total_weight : input_w): bool :=
 
 (* Test with input examples *)
 Definition input_w_with_8_value : input_w :=
-  {| value := 8;
-     constraints := ltac:(lia)
+  {|
+    value := 8;
+    constraints := ltac:(lia)
   |}.
 
 Example input_w_with_8_value_example: is_division_possible(input_w_with_8_value) = true.
@@ -31,15 +32,15 @@ Qed.
 (* Prove the algorithm *)
 
 Definition valid_division (w1 w2 : nat) (total_weight : input_w) : Prop :=
-  is_positive w1 
+  is_positive w1
   /\ is_positive w2
   /\ Nat.Even w1
   /\ Nat.Even w2
   /\ ((w1 + w2) = (total_weight.(value))).
 
-Theorem solution_is_correct: forall total_weight : input_w ,
- (is_division_possible total_weight
- <-> exists w1:nat, exists w2:nat, valid_division w1 w2 total_weight).
+Theorem solution_is_correct: forall total_weight : input_w,
+  (is_division_possible total_weight
+    <-> exists w1:nat, exists w2:nat, valid_division w1 w2 total_weight).
 Proof.
   intro total_weight.
   split.
@@ -60,33 +61,33 @@ Proof.
         lia.
       + split.
         ++ unfold Nat.Even.
-           exists 1.
-           lia.
+          exists 1.
+          lia.
         ++ split.
           ** destruct H2 as [k Hk].
-              rewrite -> Hk.
-              unfold Nat.Even.
-              exists (k-1).
-              lia.
+            rewrite -> Hk.
+            unfold Nat.Even.
+            exists (k - 1).
+            lia.
           ** lia.
   - intro H.
     unfold is_division_possible.
     destruct H as [x H1].
     destruct H1 as [y H1'].
     destruct H1' as [P1 [P2 [P3 [P4 P5]]]].
-    assert (Px: x>=2).
+    assert (Px: x >= 2).
     {
       unfold is_positive in P1.
       destruct P3 as [k Hk].
       lia.
-    }    
-    assert (Py: y>=2).
+    }
+    assert (Py: y >= 2).
     {
       unfold is_positive in P2.
       destruct P4 as [k Hk].
       lia.
     }
-    assert (Psum: 4 <= x+y).
+    assert (Psum: 4 <= x + y).
     {
       lia.
     }
@@ -98,7 +99,7 @@ Proof.
       rewrite Ha in P5.
       rewrite Hb in P5.
       unfold Nat.Even.
-      exists (a+b).
+      exists (a + b).
       lia.
     }
     apply Nat.leb_le in Psum.

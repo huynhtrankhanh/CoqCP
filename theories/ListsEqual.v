@@ -4,7 +4,7 @@ Inductive ListExpression (A : Type) :=
 | NilExpression
 | VarExpression (x : list A)
 | ConsExpression (head : A) (tail : ListExpression A)
-| AppExpression (l1 l2 : ListExpression A). 
+| AppExpression (l1 l2 : ListExpression A).
 
 Fixpoint interpret {A : Type} (expression : ListExpression A) : list A :=
   match expression with
