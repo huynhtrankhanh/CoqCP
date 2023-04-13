@@ -214,7 +214,7 @@ Proof.
   rewrite !app_length. simpl. rewrite Nat.add_succ_r, <- app_length, take_drop. lia.
 Qed.
 
-Lemma fillInOneBlank_h2Parameter (withBlanks : list (option A)) (k : nat) (hReasonable: k < count_occ decide withBlanks None) (value : A) (answers : list A) (h : length answers + 1 = count_occ decide withBlanks None) : length answers = count_occ decide (<[getKthBlank withBlanks k:= Some value]> withBlanks) None.
+Lemma fillInOneBlank_h2Parameter (withBlanks : list (option A)) (k : nat) (hReasonable: k < count_occ decide withBlanks None) (value : A) (answers : list A) (h : length answers + 1 = count_occ decide withBlanks None) : length answers = count_occ decide (<[getKthBlank withBlanks k := Some value]> withBlanks) None.
 Proof.
   pose proof getKthBlankUpperBound _ _ hReasonable as hUpperBound.
   pose proof updateAppZero (take (getKthBlank withBlanks k) withBlanks) ([nth (getKthBlank withBlanks k) withBlanks None] ++ drop (S (getKthBlank withBlanks k)) withBlanks) (Some value) as H.

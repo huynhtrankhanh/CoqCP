@@ -1,0 +1,21 @@
+# ChatGPT generated this
+
+name: Lint Check
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  lint-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+      - name: Lint check
+        run: python linter.py

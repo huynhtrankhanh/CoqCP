@@ -20,3 +20,4 @@ theories/SortedProperties.v
 theories/Options.v
 theories/Completion.v
 theories/TwoWaysToFill.v
+Codeforces/contests/4/A/watermelon.v
