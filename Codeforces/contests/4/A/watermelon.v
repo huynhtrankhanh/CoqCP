@@ -15,7 +15,7 @@ Record input_w : Type := {
 (* Define the algorithm *)
 
 Definition is_division_possible (total_weight : input_w): bool :=
-  (4 <=? total_weight.(value)) && Nat.even total_weight.(value).
+  (4 <=? value total_weight) && Nat.even (value total_weight).
 
 (* Test with input examples *)
 Definition input_w_with_8_value : input_w :=
@@ -36,7 +36,7 @@ Definition valid_division (w1 w2 : nat) (total_weight : input_w) : Prop :=
   /\ is_positive w2
   /\ Nat.Even w1
   /\ Nat.Even w2
-  /\ ((w1 + w2) = (total_weight.(value))).
+  /\ ((w1 + w2) = (value total_weight)).
 
 Theorem solution_is_correct: forall total_weight : input_w,
   (is_division_possible total_weight
@@ -51,7 +51,7 @@ Proof.
     destruct H as [H1 H2].
     apply Nat.leb_le in H1.
     apply Nat.even_spec in H2.
-    exists 2, (total_weight.(value)-2).
+    exists 2, ((value total_weight)-2).
     unfold valid_division.
     split.
     * unfold is_positive.
@@ -92,7 +92,7 @@ Proof.
       lia.
     }
     rewrite P5 in Psum.
-    assert (Peven: Nat.Even(total_weight.(value))).
+    assert (Peven: Nat.Even(value total_weight)).
     {
       destruct P3 as [a Ha].
       destruct P4 as [b Hb].
