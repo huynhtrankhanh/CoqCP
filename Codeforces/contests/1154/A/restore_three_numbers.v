@@ -41,14 +41,16 @@ Record input_list : Type := {
 }.
 
 (* Define the algorithm *)
-Definition restore_a_b_c_aux(l : list Z) :=
-  let s := merge_sort Z.le l in
-  let a := (nth 3 s 0) - (nth 0 s 0) in
-  let b := (nth 3 s 0) - (nth 1 s 0) in
-  let c := (nth 3 s 0) - (nth 2 s 0) in
-  [a; b; c].
+Definition restore_a_b_c_aux(l : list Z): option (list Z) :=
+  let total := (foldr Z.add 0 l)/3 in
+  let modified_l := map (fun x => total - x) l in
+  let index_of_zero := list_find (fun x => x =? 0) modified_l in
+  match index_of_zero with
+  | Some (index, _) => Some(list_delete index modified_l)
+  | None => None
+  end.
 
-Definition restore_a_b_c (l : input_list) : list Z :=
+Definition restore_a_b_c (l : input_list) : option(list Z) :=
   restore_a_b_c_aux(value l).
 
 (* Test with input examples *)
@@ -74,7 +76,7 @@ Definition input_list_example_1 : input_list :=
     constraints := ltac:(valid_input_list_tactic 2 1 3)
   |}.
 
-Example restore_a_b_c_example_1: restore_a_b_c(input_list_example_1) = [3; 2; 1].
+Example restore_a_b_c_example_1: restore_a_b_c(input_list_example_1) = Some([3; 1; 2]).
 Proof.
   reflexivity.
 Qed.
@@ -86,7 +88,7 @@ Definition input_list_example_2 : input_list :=
     constraints := ltac:(valid_input_list_tactic 20 20 20)
   |}.
 
-Example restore_a_b_c_example_2: restore_a_b_c(input_list_example_2) = [20; 20; 20].
+Example restore_a_b_c_example_2: restore_a_b_c(input_list_example_2) = Some([20; 20; 20]).
 Proof.
   reflexivity.
 Qed.
@@ -98,18 +100,19 @@ Definition input_list_example_3 : input_list :=
     constraints := ltac:(valid_input_list_tactic 1 100 100)
   |}.
 
-Example restore_a_b_c_example_3: restore_a_b_c(input_list_example_3) = [100; 100; 1].
+Example restore_a_b_c_example_3: restore_a_b_c(input_list_example_3) = Some([100; 100; 1]).
 Proof.
   reflexivity.
 Qed.
 
 (* Prove the algorithm *)
 
-Definition is_answer_valid(l : input_list): Prop :=
+Definition is_answer_valid(l : option input_list): Prop :=
+  
   let answer := restore_a_b_c(l) in
-  let a := (nth 3 answer 0) - (nth 0 answer 0) in
-  let b := (nth 3 answer 0) - (nth 1 answer 0) in
-  let c := (nth 3 answer 0) - (nth 2 answer 0) in
+  let a := l !! 1 in
+  let b := l !! 2 in
+  let c := l !! 3 in
   let sums := [a+b; a+c; b+c; a+b+c] in
   length answer = Z.to_nat 3 
   /\ Permutation sums (value l).
@@ -118,6 +121,7 @@ Theorem solution_is_correct: forall input_l : input_list, is_answer_valid(input_
 Proof.
   intro l'.
   destruct l' as [l H].
+  destruct H as [H1 H2].
   unfold is_answer_valid.
   split.
   - reflexivity.
