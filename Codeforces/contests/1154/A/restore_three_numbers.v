@@ -34,14 +34,6 @@ Proof.
   auto.
 Qed.
 
-Lemma filter_permutation : forall (A : Type) (P : A -> bool) (l1 l2 : list A),
-  Permutation l1 l2 -> Permutation (filter P l1) (filter P l2).
-Proof.
-  intros A P l1 l2 Hperm.
-  rewrite Hperm.
-  reflexivity.
-Qed.
-
 (* Define the inputs *)
 
 Definition valid_input_list(l : list Z) (a b c : Z) : Prop :=
