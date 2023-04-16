@@ -44,20 +44,19 @@ Qed.
 
 (* Define the inputs *)
 
-Definition valid_input_list(l : list Z) : Prop :=
+Definition valid_input_list(l : list Z) (a b c : Z) : Prop :=
   (forall x, In x l -> 2 <= x <= 1000000000)
-  /\
-  exists a : Z, 
-  exists b : Z, 
-  exists c : Z, 
-  (a >= 1)
+  /\ (a >= 1)
   /\ (b >= 1)
   /\ (c >= 1)
   /\ Permutation [a+b; a+c; b+c; a+b+c] l.
 
 Record input_list : Type := {
     value : list Z;
-    constraints : valid_input_list(value)
+    inner_a : Z;
+    inner_b : Z;
+    inner_c : Z;
+    constraints : valid_input_list value inner_a inner_b inner_c
 }.
 
 (* Define the algorithm *)
@@ -71,25 +70,26 @@ Definition restore_a_b_c (l : input_list) : list Z :=
 
 (* Test with input examples *)
 
-Ltac valid_input_list_tactic a b c :=
+Ltac valid_input_list_tactic :=
   unfold valid_input_list;
   split;
-  [ intros x H; 
+  [ intros x H;
     repeat (destruct H as [H1 | H]; try lia);
     contradiction
-  | exists a, b, c; 
-    repeat (split; try lia); 
+  | repeat (split; try lia);
     apply z_permutation_by_merge_sort;
     reflexivity
   ].
 
-
 (* Example 1 *)
 
 Definition input_list_example_1 : input_list :=
-  {| 
+  {|
     value := [3; 6; 5; 4];
-    constraints := ltac:(valid_input_list_tactic 2 1 3)
+    inner_a := 2;
+    inner_b := 1;
+    inner_c := 3;
+    constraints := ltac:(valid_input_list_tactic)
   |}.
 
 Example restore_a_b_c_example_1: restore_a_b_c(input_list_example_1) = [3; 1; 2].
@@ -101,7 +101,10 @@ Qed.
 Definition input_list_example_2 : input_list :=
   {|
     value := [40; 40; 40; 60];
-    constraints := ltac:(valid_input_list_tactic 20 20 20)
+    inner_a := 20;
+    inner_b := 20;
+    inner_c := 20;
+    constraints := ltac:(valid_input_list_tactic)
   |}.
 
 Example restore_a_b_c_example_2: restore_a_b_c(input_list_example_2) = [20; 20; 20].
@@ -113,7 +116,10 @@ Qed.
 Definition input_list_example_3 : input_list :=
   {|
     value := [201; 101; 101; 200];
-    constraints := ltac:(valid_input_list_tactic 1 100 100)
+    inner_a := 1;
+    inner_b := 100;
+    inner_c := 100;
+    constraints := ltac:(valid_input_list_tactic)
   |}.
 
 Example restore_a_b_c_example_3: restore_a_b_c(input_list_example_3) = [100; 100; 1].
@@ -121,22 +127,15 @@ Proof.
   reflexivity.
 Qed.
 
-
 (* Prove the algorithm *)
 
 Definition is_answer_valid(l : input_list): Prop :=
-  let answer := restore_a_b_c(l) in
-  (length answer) = (Z.to_nat 3)
-  /\
-  let opt_a := answer !! Z.to_nat 0 in
-  let opt_b := answer !! Z.to_nat 1 in
-  let opt_c := answer !! Z.to_nat 2 in
-  match opt_a, opt_b, opt_c with 
-  | Some(a), Some(b), Some(c) =>
-    let sums := [a+b; a+c; b+c; a+b+c] in
-    Permutation sums (value l)
-  | _, _, _ => False
-  end.
+  let a := inner_a l in
+  let b := inner_b l in
+  let c := inner_c l in
+  (* This condition is sufficient but it not proven to be necessary
+  (although it is, we don't need to prove it)*)
+  Permutation (restore_a_b_c l) [a; b; c].
 
 Lemma sum_elements_lemma : forall (l : list Z) (a b c : Z),
   Permutation [a+b; a+c; b+c; a+b+c] l ->
@@ -167,11 +166,10 @@ Qed.
 Theorem solution_is_correct: forall input_l : input_list, is_answer_valid(input_l).
 Proof.
   intro l'.
-  destruct l' as [l H].
-  destruct H as [H1 H2].
-  destruct H2 as [a [b [c H2]]].
-  destruct H2 as [H2 [H3 [H4 H5]]].
+  destruct l' as [l a b c H].
+  destruct H as [H1 [H2 [H3 [H4 H5]]]].
   unfold is_answer_valid.
+  simpl.
   unfold restore_a_b_c.
   simpl.
   assert (Hfoldr: foldr Z.add 0 l = (a + b + c) * 3).
@@ -195,21 +193,21 @@ Proof.
       assert (Hc : negb (c =? 0) = true).
       {
         destruct (c =? 0) eqn:E.
-        - lia. 
+        - lia.
         - simpl.
           lia.
       }
       assert (Hb : negb (b =? 0) = true).
       {
         destruct (b =? 0) eqn:E.
-        - lia. 
+        - lia.
         - simpl.
           lia.
       }
       assert (Ha : negb (a =? 0) = true).
       {
         destruct (a =? 0) eqn:E.
-        - lia. 
+        - lia.
         - simpl.
           lia.
       }
@@ -224,18 +222,10 @@ Proof.
       unfold filter.
       simpl.
       rewrite Ha.
-      reflexivity.      
-    }
-    split.
-    + rewrite <- Hmap.
-      rewrite Hfilter.
       reflexivity.
-    + rewrite <- Hmap.
-    rewrite filter_permutation.
-    
-  apply (Permutation_map (fun x => a+b+c -x) H5 ).
-    apply map_subtract_lemma.
-  unfold restore_a_b_c_aux.
-  
-  
+    }
+    rewrite <- Hmap.
+    rewrite Hfilter.
+    apply Permutation_rev.
+  - lia.
 Qed.
