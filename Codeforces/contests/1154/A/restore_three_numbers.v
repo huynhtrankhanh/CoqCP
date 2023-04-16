@@ -105,27 +105,63 @@ Proof.
   reflexivity.
 Qed.
 
+
 (* Prove the algorithm *)
 
-Definition is_answer_valid(l : option input_list): Prop :=
-  
-  let answer := restore_a_b_c(l) in
-  let a := l !! 1 in
-  let b := l !! 2 in
-  let c := l !! 3 in
-  let sums := [a+b; a+c; b+c; a+b+c] in
-  length answer = Z.to_nat 3 
-  /\ Permutation sums (value l).
+Definition is_answer_valid(l : input_list): Prop :=
+  let opt_answer := restore_a_b_c(l) in
+  match opt_answer with
+  | None => False
+  | Some (answer) =>
+    if Nat.eqb (length answer) (Z.to_nat 3) then
+      let opt_a := answer !! Z.to_nat 0 in
+      let opt_b := answer !! Z.to_nat 1 in
+      let opt_c := answer !! Z.to_nat 2 in
+      match opt_a, opt_b, opt_c with 
+      | Some(a), Some(b), Some(c) =>
+        let sums := [a+b; a+c; b+c; a+b+c] in
+        Permutation sums (value l)
+      | _, _, _ => False
+      end
+    else False
+  end.
+
+
+Lemma sum_permutation (l1 l2 : list Z) :
+  Permutation l1 l2 -> foldr Z.add 0 l1 = foldr Z.add 0 l2.
+Proof.
+  apply foldr_permutation.
+Qed.
+
+
+
+
+Lemma sum_elements_lemma : forall (l : list Z) (a b c : Z),
+  Permutation [a+b; a+c; b+c; a+b+c] l ->
+  foldr Z.add 0 l = 3 * (a + b + c).
+Proof.
+  intros l a b c H_permutation.
+  assert (H_sum: foldr Z.add 0 [a+b; a+c; b+c; a+b+c] = 3 * (a + b + c)). {
+    simpl.
+    lia.
+  }
+
+  rewrite <- H_sum.
+  apply Permutation_foldr_Z_add.
+  assumption.
+Qed.
+
 
 Theorem solution_is_correct: forall input_l : input_list, is_answer_valid(input_l).
 Proof.
   intro l'.
   destruct l' as [l H].
   destruct H as [H1 H2].
+  destruct H2 as [a [b [c H2]]].
   unfold is_answer_valid.
-  split.
-  - reflexivity.
-  -  
+  unfold restore_a_b_c.
+  simpl.
+  unfold restore_a_b_c_aux.
   
   
 Qed.
