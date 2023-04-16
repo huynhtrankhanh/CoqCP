@@ -22,6 +22,26 @@ Proof.
   apply (Permutation_trans Hx Hy).
 Qed.
 
+Lemma eq_sum_for_permutation (l1 l2 : list Z) :
+  Permutation l1 l2 -> foldr Z.add 0 l1 = foldr Z.add 0 l2.
+Proof.
+  apply (foldr_permutation Z.eq Z.add 0).
+  intros j1 a1 j2 a2 b.
+  assert (H: (a1 + (a2 + b)) = (a2 + (a1 + b))).
+  {
+    lia.
+  }
+  auto.
+Qed.
+
+Lemma filter_permutation : forall (A : Type) (P : A -> bool) (l1 l2 : list A),
+  Permutation l1 l2 -> Permutation (filter P l1) (filter P l2).
+Proof.
+  intros A P l1 l2 Hperm.
+  rewrite Hperm.
+  reflexivity.
+Qed.
+
 (* Define the inputs *)
 
 Definition valid_input_list(l : list Z) : Prop :=
@@ -41,16 +61,12 @@ Record input_list : Type := {
 }.
 
 (* Define the algorithm *)
-Definition restore_a_b_c_aux(l : list Z): option (list Z) :=
+Definition restore_a_b_c_aux(l : list Z): list Z :=
   let total := (foldr Z.add 0 l)/3 in
   let modified_l := map (fun x => total - x) l in
-  let index_of_zero := list_find (fun x => x =? 0) modified_l in
-  match index_of_zero with
-  | Some (index, _) => Some(list_delete index modified_l)
-  | None => None
-  end.
+  filter (fun x => negb(x =? 0)) modified_l.
 
-Definition restore_a_b_c (l : input_list) : option(list Z) :=
+Definition restore_a_b_c (l : input_list) : list Z :=
   restore_a_b_c_aux(value l).
 
 (* Test with input examples *)
@@ -76,7 +92,7 @@ Definition input_list_example_1 : input_list :=
     constraints := ltac:(valid_input_list_tactic 2 1 3)
   |}.
 
-Example restore_a_b_c_example_1: restore_a_b_c(input_list_example_1) = Some([3; 1; 2]).
+Example restore_a_b_c_example_1: restore_a_b_c(input_list_example_1) = [3; 1; 2].
 Proof.
   reflexivity.
 Qed.
@@ -88,7 +104,7 @@ Definition input_list_example_2 : input_list :=
     constraints := ltac:(valid_input_list_tactic 20 20 20)
   |}.
 
-Example restore_a_b_c_example_2: restore_a_b_c(input_list_example_2) = Some([20; 20; 20]).
+Example restore_a_b_c_example_2: restore_a_b_c(input_list_example_2) = [20; 20; 20].
 Proof.
   reflexivity.
 Qed.
@@ -100,7 +116,7 @@ Definition input_list_example_3 : input_list :=
     constraints := ltac:(valid_input_list_tactic 1 100 100)
   |}.
 
-Example restore_a_b_c_example_3: restore_a_b_c(input_list_example_3) = Some([100; 100; 1]).
+Example restore_a_b_c_example_3: restore_a_b_c(input_list_example_3) = [100; 100; 1].
 Proof.
   reflexivity.
 Qed.
@@ -109,48 +125,44 @@ Qed.
 (* Prove the algorithm *)
 
 Definition is_answer_valid(l : input_list): Prop :=
-  let opt_answer := restore_a_b_c(l) in
-  match opt_answer with
-  | None => False
-  | Some (answer) =>
-    if Nat.eqb (length answer) (Z.to_nat 3) then
-      let opt_a := answer !! Z.to_nat 0 in
-      let opt_b := answer !! Z.to_nat 1 in
-      let opt_c := answer !! Z.to_nat 2 in
-      match opt_a, opt_b, opt_c with 
-      | Some(a), Some(b), Some(c) =>
-        let sums := [a+b; a+c; b+c; a+b+c] in
-        Permutation sums (value l)
-      | _, _, _ => False
-      end
-    else False
+  let answer := restore_a_b_c(l) in
+  (length answer) = (Z.to_nat 3)
+  /\
+  let opt_a := answer !! Z.to_nat 0 in
+  let opt_b := answer !! Z.to_nat 1 in
+  let opt_c := answer !! Z.to_nat 2 in
+  match opt_a, opt_b, opt_c with 
+  | Some(a), Some(b), Some(c) =>
+    let sums := [a+b; a+c; b+c; a+b+c] in
+    Permutation sums (value l)
+  | _, _, _ => False
   end.
-
-
-Lemma sum_permutation (l1 l2 : list Z) :
-  Permutation l1 l2 -> foldr Z.add 0 l1 = foldr Z.add 0 l2.
-Proof.
-  apply foldr_permutation.
-Qed.
-
-
-
 
 Lemma sum_elements_lemma : forall (l : list Z) (a b c : Z),
   Permutation [a+b; a+c; b+c; a+b+c] l ->
-  foldr Z.add 0 l = 3 * (a + b + c).
+  foldr Z.add 0 l = (a + b + c) * 3.
 Proof.
-  intros l a b c H_permutation.
-  assert (H_sum: foldr Z.add 0 [a+b; a+c; b+c; a+b+c] = 3 * (a + b + c)). {
+  intros l a b c H.
+  assert (H1: foldr Z.add 0 [a+b; a+c; b+c; a+b+c] = foldr Z.add 0 l).
+  {
+    apply eq_sum_for_permutation.
+    assumption.
+  }
+  assert (H2: foldr Z.add 0 [a+b; a+c; b+c; a+b+c] = (a+b+c)*3).
+  {
     simpl.
     lia.
   }
-
-  rewrite <- H_sum.
-  apply Permutation_foldr_Z_add.
-  assumption.
+  lia.
 Qed.
 
+Lemma map_subtract_lemma: forall (l : list Z) (a b c : Z),
+  (map (fun x => a+b+c - x) [a+b; a+c; b+c; a+b+c]) = [c;b;a;0].
+Proof.
+  intros l a b c.
+  simpl.
+  repeat (f_equal; try lia).
+Qed.
 
 Theorem solution_is_correct: forall input_l : input_list, is_answer_valid(input_l).
 Proof.
@@ -158,9 +170,71 @@ Proof.
   destruct l' as [l H].
   destruct H as [H1 H2].
   destruct H2 as [a [b [c H2]]].
+  destruct H2 as [H2 [H3 [H4 H5]]].
   unfold is_answer_valid.
   unfold restore_a_b_c.
   simpl.
+  assert (Hfoldr: foldr Z.add 0 l = (a + b + c) * 3).
+  {
+    apply sum_elements_lemma.
+    assumption.
+  }
+  unfold restore_a_b_c_aux.
+  rewrite Hfoldr.
+  clear Hfoldr.
+  rewrite Z.div_mul.
+  - assert (Hmap : Permutation [c;b;a;0] (map (fun x => a+b+c-x) l)).
+    {
+      rewrite <- map_subtract_lemma.
+      - apply Permutation_map.
+        assumption.
+      - auto.
+    }
+    assert (Hfilter : (filter (fun x => negb(x =? 0)) [c;b;a;0]) = [c;b;a]).
+    {
+      assert (Hc : negb (c =? 0) = true).
+      {
+        destruct (c =? 0) eqn:E.
+        - lia. 
+        - simpl.
+          lia.
+      }
+      assert (Hb : negb (b =? 0) = true).
+      {
+        destruct (b =? 0) eqn:E.
+        - lia. 
+        - simpl.
+          lia.
+      }
+      assert (Ha : negb (a =? 0) = true).
+      {
+        destruct (a =? 0) eqn:E.
+        - lia. 
+        - simpl.
+          lia.
+      }
+      unfold filter.
+      simpl.
+      rewrite Hc.
+      simpl.
+      unfold filter.
+      simpl.
+      rewrite Hb.
+      simpl.
+      unfold filter.
+      simpl.
+      rewrite Ha.
+      reflexivity.      
+    }
+    split.
+    + rewrite <- Hmap.
+      rewrite Hfilter.
+      reflexivity.
+    + rewrite <- Hmap.
+    rewrite filter_permutation.
+    
+  apply (Permutation_map (fun x => a+b+c -x) H5 ).
+    apply map_subtract_lemma.
   unfold restore_a_b_c_aux.
   
   
