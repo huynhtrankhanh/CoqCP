@@ -17,13 +17,13 @@ def lint_coq_file(filename, spaces, max_line_length):
 
     
     operators = ['->', '<->', '/\\', '\\/', '=', '<', '>', '<=', '>=', '<>',
-                 '&&', '||', '<=?', '>=?', '<?', '>?', '*', '/', ':=']
+                 '&&', '||', '<=?', '>=?', '<?', '>?', '+', '-', '*', '/', ':=']
 
     operator_regexes = {
         op : [
-            rf'(\d|[A-Za-z]){re.escape(op)}\s',
-            rf'\s{re.escape(op)}(\d|[A-Za-z])',
-            rf'(\d|[A-Za-z]){re.escape(op)}(\d|[A-Za-z])'
+            rf'(\d|[A-Za-z]|\)){re.escape(op)}\s',
+            rf'\s{re.escape(op)}(\d|[A-Za-z]|\()',
+            rf'(\d|[A-Za-z]|\)){re.escape(op)}(\d|[A-Za-z]|\()'
          ]
         for op in operators
     }
