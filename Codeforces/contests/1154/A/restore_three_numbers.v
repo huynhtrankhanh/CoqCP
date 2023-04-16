@@ -41,7 +41,7 @@ Definition valid_input_list(l : list Z) (a b c : Z) : Prop :=
   /\ (a >= 1)
   /\ (b >= 1)
   /\ (c >= 1)
-  /\ Permutation [a+b; a+c; b+c; a+b+c] l.
+  /\ Permutation [a + b; a + c; b + c; a + b + c] l.
 
 Record input_list : Type := {
     value : list Z;
@@ -53,7 +53,7 @@ Record input_list : Type := {
 
 (* Define the algorithm *)
 Definition restore_a_b_c_aux(l : list Z): list Z :=
-  let total := (foldr Z.add 0 l)/3 in
+  let total := (foldr Z.add 0 l) / 3 in
   let modified_l := map (fun x => total - x) l in
   filter (fun x => negb(x =? 0)) modified_l.
 
@@ -130,16 +130,16 @@ Definition is_answer_valid(l : input_list): Prop :=
   Permutation (restore_a_b_c l) [a; b; c].
 
 Lemma sum_elements_lemma : forall (l : list Z) (a b c : Z),
-  Permutation [a+b; a+c; b+c; a+b+c] l ->
+  Permutation [a + b; a + c; b + c; a + b + c] l ->
   foldr Z.add 0 l = (a + b + c) * 3.
 Proof.
   intros l a b c H.
-  assert (H1: foldr Z.add 0 [a+b; a+c; b+c; a+b+c] = foldr Z.add 0 l).
+  assert (H1: foldr Z.add 0 [a + b; a + c; b + c; a + b + c] = foldr Z.add 0 l).
   {
     apply eq_sum_for_permutation.
     assumption.
   }
-  assert (H2: foldr Z.add 0 [a+b; a+c; b+c; a+b+c] = (a+b+c)*3).
+  assert (H2: foldr Z.add 0 [a + b; a + c; b + c; a + b + c] = (a + b + c) * 3).
   {
     simpl.
     lia.
@@ -148,7 +148,7 @@ Proof.
 Qed.
 
 Lemma map_subtract_lemma: forall (l : list Z) (a b c : Z),
-  (map (fun x => a+b+c - x) [a+b; a+c; b+c; a+b+c]) = [c;b;a;0].
+  (map (fun x => a + b + c - x) [a + b; a + c; b + c; a + b + c]) = [c; b; a; 0].
 Proof.
   intros l a b c.
   simpl.
@@ -173,7 +173,7 @@ Proof.
   rewrite Hfoldr.
   clear Hfoldr.
   rewrite Z.div_mul.
-  - assert (Hmap : Permutation [c;b;a;0] (map (fun x => a+b+c-x) l)).
+  - assert (Hmap : Permutation [c;b;a;0] (map (fun x => a + b + c - x) l)).
     {
       rewrite <- map_subtract_lemma.
       - apply Permutation_map.

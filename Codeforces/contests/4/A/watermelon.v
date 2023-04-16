@@ -51,7 +51,7 @@ Proof.
     destruct H as [H1 H2].
     apply Nat.leb_le in H1.
     apply Nat.even_spec in H2.
-    exists 2, ((value total_weight)-2).
+    exists 2, ((value total_weight) - 2).
     unfold valid_division.
     split.
     * unfold is_positive.
@@ -105,7 +105,7 @@ Proof.
     apply Nat.leb_le in Psum.
     apply Nat.even_spec in Peven.
     assert (H: ((4 <=? value total_weight) &&
-    Nat.even (value total_weight))=true).
+    Nat.even (value total_weight)) = true).
     {
       apply andb_true_iff.
       split.
