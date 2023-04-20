@@ -60,3 +60,5 @@ Now this is identical to $$(m + 1) \times a + b < b + (m + 1) \times a$$
 `repeatB`: $$\forall a\forall b\forall m, 0 < m \rightarrow a + b < b + a \rightarrow a + m \times b < m \times b + a$$
 
 Using a similar argument to the one used in `repeatA`, we can prove this lemma. In the inductive step, however, we need to add \$b\$ to the right of both sides of the induction hypothesis instead.
+
+Both `repeatA` and `repeatB` have the precondition of \$0 < m\$. Before proceeding further, we need to separately handle the cases where either \$a\$ or \$b\$ is an empty string.
