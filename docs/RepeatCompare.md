@@ -64,3 +64,7 @@ Both `repeatA` and `repeatB` have the precondition \$0 < m\$. Before proceeding 
 
 - If \$a\$ is empty, \$a + b < b + a\$ turns into \$b < b\$, which is a false statement.
 - Similarly, \$b\$ can't be empty.
+
+Applying `repeatA` on \$a\$, \$b\$ and \$|b|\$, along with the fact that \$a + b < b + a\$, we have \$|b| \times a + b < b + |b| \times a\$.
+
+Applying `repeatB` on \$|b| \times a\$, \$b\$ and \$|a|\$, along with the fact that \$|b| \times a + b < b + |b| \times a\$, we have \$|b| \times a + |a| \times b < |a| \times b + |b| \times a\$.
