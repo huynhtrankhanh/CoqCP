@@ -69,6 +69,6 @@ Applying `repeatA` on \$a\$, \$b\$ and \$|b|\$, along with the fact that \$a + b
 
 Applying `repeatB` on \$|b| \times a\$, \$b\$ and \$|a|\$, along with the fact that \$|b| \times a + b < b + |b| \times a\$, we have \$|b| \times a + |a| \times b < |a| \times b + |b| \times a\$.
 
-We consider two cases.
-- \$|b| \times a = |a| \times b\$
-- \$|b| \times a \ne |a| \times b\$
+For the sake of contradiction, let's suppose \$|b| \times a = |a| \times b\$. We rewrite this into \$|b| \times a + |a| \times b < |a| \times b + |b| \times a\$ and get \$|b| \times a + |b| \times a < |b| \times a + |b| \times a\$. This is false.
+
+Therefore, \$|b| \times a \ne |a| \times b\$.
