@@ -20,5 +20,6 @@ theories/SortedProperties.v
 theories/Options.v
 theories/Completion.v
 theories/TwoWaysToFill.v
+theories/RepeatCompare.v
 Codeforces/contests/4/A/watermelon.v
 Codeforces/contests/1154/A/restore_three_numbers.v
