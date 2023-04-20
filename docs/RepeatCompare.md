@@ -5,6 +5,8 @@ Approach: check if \$a + b < b + a\$, where \$+\$ denotes concatenation.
 
 Proof:
 
+Source: https://codegolf.stackexchange.com/a/259989/
+
 Lexicographical less (\$<\$) satisfies the trichotomy condition. For all strings \$a\$ and \$b\$, exactly one of three things is true: \$a < b\$, \$b < a\$ and \$a = b\$.
 
 When we say \$m \times a\$, we mean repeat string \$a\$ \$m\$ times. When we say \$|a|\$, we mean the length of string \$a\$.
