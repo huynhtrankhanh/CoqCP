@@ -38,8 +38,7 @@ Before proceeding, here is an explanation of how \$a + b < b + a \leftrightarrow
 
     By substituting variables in the first fact, we have \$b + a < a + b \rightarrow |a| \times b < |b| \times a\$. From there we conclude \$|b| \times a < |a| \times b\$ is false, thus the whole statement is true.
 
-Now we can start proving the two facts. We'll only prove \$a + b < b + a \rightarrow |b| \times a < |a| \times b\$
- as a very slight modification of the argument can be used to prove the second fact.
+Now we can start proving the two facts. We'll prove \$a + b < b + a \rightarrow |b| \times a < |a| \times b\$ first.
 
 To prove this fact, we need to prove two intermediary lemmas: `repeatA` and `repeatB`.
 
@@ -61,4 +60,7 @@ Now this is identical to $$(m + 1) \times a + b < b + (m + 1) \times a$$
 
 Using a similar argument to the one used in `repeatA`, we can prove this lemma. In the inductive step, however, we need to add \$b\$ to the right of both sides of the induction hypothesis instead.
 
-Both `repeatA` and `repeatB` have the precondition of \$0 < m\$. Before proceeding further, we need to separately handle the cases where either \$a\$ or \$b\$ is an empty string.
+Both `repeatA` and `repeatB` have the precondition \$0 < m\$. Before proceeding further, we need to separately handle the cases where either \$a\$ or \$b\$ is an empty string.
+
+- If \$a\$ is empty, \$a + b < b + a\$ turns into \$b < b\$, which is a false statement.
+- Similarly, \$b\$ can't be empty.
