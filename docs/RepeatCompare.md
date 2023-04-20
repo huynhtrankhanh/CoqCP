@@ -38,4 +38,25 @@ Before proceeding, here is an explanation of how \$a + b < b + a \leftrightarrow
 
     By substituting variables in the first fact, we have \$b + a < a + b \rightarrow |a| \times b < |b| \times a\$. From there we conclude \$|b| \times a < |a| \times b\$ is false, thus the whole statement is true.
 
-Now we can start proving the two facts.
+Now we can start proving the two facts. We'll only prove \$a + b < b + a \rightarrow |b| \times a < |a| \times b\$
+ as a very slight modification of the argument can be used to prove the second fact.
+
+To prove this fact, we need to prove two intermediary lemmas: `repeatA` and `repeatB`.
+
+`repeatA`: $$\forall a\forall b\forall m, 0 < m \rightarrow a + b < b + a \rightarrow m \times a + b < b + m \times a$$
+
+This lemma can be proved by doing induction on \$m\$.
+
+Base case: \$m = 1\$. Substituting \$m\$, we get \$a + b < b + a\$, which is already true.
+
+Induction step: We already have \$m \times a + b < b + m \times a\$, now we have to prove \$(m + 1) \times a + b < b + (m + 1) \times a\$.
+
+To pull this off, we add \$a\$ to the left of both sides of the induction hypothesis. We now have
+
+$$a + m \times a + b < a + b + m \times a < b + a + m \times a$$
+
+Now this is identical to $$(m + 1) \times a + b < b + (m + 1) \times a$$
+
+`repeatB`: $$\forall a\forall b\forall m, 0 < m \rightarrow a + b < b + a \rightarrow a + m \times b < m \times b + a$$
+
+Using a similar argument to the one used in `repeatA`, we can prove this lemma. In the inductive step, however, we need to add \$b\$ to the right of both sides of the induction hypothesis instead.
