@@ -22,6 +22,7 @@ Documentation:
 
 - [Regular bracket strings](docs/RegularBracketString.md)
 - [Selection sort](docs/SelectionSort.md)
+- [Repeat and compare](docs/RepeatCompare.md)
 
 Tasks:
 
