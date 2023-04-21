@@ -73,7 +73,7 @@ For the sake of contradiction, let's suppose \$|b| \times a = |a| \times b\$. We
 
 Therefore, \$|b| \times a \ne |a| \times b\$.
 
-As \$|b| \times a \ne |a| \times b\$, from \$|b| \times a + |a| \times b < |a| \times b + |b| \times a\$ we get \$|b| \times a < |a| \times b\$.
+As \$|b| \times a \ne |a| \times b\$ and \$|b| \times a\$ and \$|a| \times b\$ are of the same length, from \$|b| \times a + |a| \times b < |a| \times b + |b| \times a\$ we get \$|b| \times a < |a| \times b\$.
 
 Now we prove \$a + b = b + a \rightarrow |b| \times a = |a| \times b\$.
 
