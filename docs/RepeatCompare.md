@@ -72,3 +72,21 @@ Applying `repeatB` on \$|b| \times a\$, \$b\$ and \$|a|\$, along with the fact t
 For the sake of contradiction, let's suppose \$|b| \times a = |a| \times b\$. We rewrite this into \$|b| \times a + |a| \times b < |a| \times b + |b| \times a\$ and get \$|b| \times a + |b| \times a < |b| \times a + |b| \times a\$. This is false.
 
 Therefore, \$|b| \times a \ne |a| \times b\$.
+
+As \$|b| \times a \ne |a| \times b\$, from \$|b| \times a + |a| \times b < |a| \times b + |b| \times a\$ we get \$|b| \times a < |a| \times b\$.
+
+Now we prove \$a + b = b + a \rightarrow |b| \times a = |a| \times b\$.
+
+We also need to prove these two facts:
+
+`repeatAEqual`: $$\forall a\forall b\forall m, 0 < m \rightarrow a + b = b + a \rightarrow m \times a + b = b + m \times a$$
+
+`repeatBEqual`: $$\forall a\forall b\forall m, 0 < m \rightarrow a + b = b + a \rightarrow a + m \times b = m \times b + a$$
+
+We can use the same argument as the argument we used for `repeatA` and `repeatB`.
+
+Before proceeding further, we consider two cases.
+- If \$a\$ is empty, \$|b| \times a + |a| \times b = |a| \times b + |b| \times a\$ reduces to \$\text{“”} = \text{“”}\$, which is true.
+- Similarly, if \$b\$ is empty then \$|b| \times a + |a| \times b = |a| \times b + |b| \times a\$ is true.
+
+Now we only need to consider the case where both \$a\$ and \$b\$ are non-empty.
