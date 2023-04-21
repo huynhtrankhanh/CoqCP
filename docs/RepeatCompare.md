@@ -90,3 +90,11 @@ Before proceeding further, we consider two cases.
 - Similarly, if \$b\$ is empty then \$|b| \times a + |a| \times b = |a| \times b + |b| \times a\$ is true.
 
 Now we only need to consider the case where both \$a\$ and \$b\$ are non-empty.
+
+Applying `repeatAEqual` on \$a\$, \$b\$ and \$|b|\$, along with the fact that \$a + b = b + a\$, we have \$|b| \times a + b = b + |b| \times a\$.
+
+Applying `repeatBEqual` on \$|b| \times a\$, \$b\$ and \$|a|\$, along with the fact that \$|b| \times a + b = b + |b| \times a\$, we have \$|b| \times a + |a| \times b = |a| \times b + |b| \times a\$.
+
+Taking a prefix of length \$|a||b|\$ on both sides, we get \$|b| \times a = |a| \times b\$.
+
+The result is proved in [`RepeatCompare.v`](../theories/RepeatCompare.v).
