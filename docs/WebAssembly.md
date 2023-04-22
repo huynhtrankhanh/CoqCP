@@ -21,3 +21,4 @@ style D stroke:#B22222, stroke-width:2px;
 
 With the power of WebAssembly, you can tackle even the toughest problems.
 
+**Task:** Formalize WebAssembly now
