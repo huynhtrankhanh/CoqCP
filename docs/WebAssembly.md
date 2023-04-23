@@ -21,4 +21,13 @@ style D stroke:#B22222, stroke-width:2px;
 
 With the power of WebAssembly, you can tackle even the toughest problems.
 
+## Workflow
+```mermaid
+graph TD;
+  A[Write WebAssembly source code] --> B[Formalize and check correctness in Coq];
+  B --> C[Compile WebAssembly to machine assembly that the judge can run];
+  C --> D[Wrap the assembly in an inline asm statement in C++];
+  D --> E[Submit the wrapped code];
+```
+
 **Task:** Formalize WebAssembly now
