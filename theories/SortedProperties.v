@@ -24,7 +24,7 @@ Proof.
       * constructor 2. tauto.
 Qed.
 
-Lemma sortedArraysEqual [A : Type] [default : A] [l1 l2 : list A] [comparator : Comparator A] (hPermutation : Permutation l1 l2) (hL1Sorted : sorted default (compare _ comparator) l1) (hL2Sorted : sorted default (compare _ comparator) l2) (comparatorStrict : forall a b, compare _ comparator a b \/ compare _ comparator b a \/ a = b) : l1 = l2.
+Lemma sortedArraysEqual [A : Type] [default : A] [l1 l2 : list A] [comparator : Comparator A] (hPermutation : Permutation l1 l2) (hL1Sorted : sorted default (compare _ comparator) l1) (hL2Sorted : sorted default (compare _ comparator) l2) (trichotomy : forall a b, compare _ comparator a b \/ compare _ comparator b a \/ a = b) : l1 = l2.
 Proof.
   revert l2 hPermutation hL2Sorted.
   induction l1 as [| a0 l1 IHl1]; intros l2 hPermutation hL2Sorted.
@@ -42,7 +42,7 @@ Proof.
         pose proof hL1Sorted 0 (S i1) ltac:(lia) ltac:(lia) as ineq1.
         pose proof hL2Sorted 0 (S i2) ltac:(lia) ltac:(lia) as ineq2.
         rewrite hnthi1 in ineq1. rewrite hnthi2 in ineq2.
-        simpl in ineq1, ineq2. destruct (comparatorStrict a a0) as [hSplit | [hSplit | hSplit]]; tauto. }
+        simpl in ineq1, ineq2. destruct (trichotomy a a0) as [hSplit | [hSplit | hSplit]]; tauto. }
       rewrite hEq in *.
       rewrite (IHl1 (sortedCons hL1Sorted) l2 (Permutation_cons_inv hPermutation) (sortedCons hL2Sorted)). reflexivity.
 Qed.
