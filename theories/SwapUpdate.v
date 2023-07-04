@@ -296,3 +296,20 @@ Proof.
   - simpl in *. now rewrite Nat.sub_0_r.
   - destruct i; try easy. simpl in *. rewrite IH; (done || lia).
 Qed.
+
+Lemma swapPermutation {A : Type} (default : A) (l : list A) (i j : nat) (hIJ : i <= j) (hJ : j < length l) : Permutation l (swap l i j default).
+Proof.
+  destruct (decide (i = j)) as [hCase | hCase].
+  - subst j. now rewrite swapSelf.
+  - rewrite (swapDecomposition l default i j ltac:(lia) ltac:(lia)).
+    pose proof listDecomposition l i j ltac:(lia) ltac:(lia) default as reduce.
+    remember (take i l) as F.
+    remember [nth i l default] as B.
+    remember (drop (S i) (take j l)) as C.
+    remember [nth j l default] as D.
+    remember (drop (j + 1) l) as E.
+    rewrite reduce.
+    assert (hI : Permutation (B ++ C ++ D) (D ++ C ++ B)).
+    { now rewrite (Permutation_app_comm C B), (app_assoc D B C), (Permutation_app_comm D B), <- !app_assoc, (Permutation_app_comm D C). }
+    now rewrite (ltac:(listsEqual) : F ++ D ++ C ++ B ++ E = F ++ (D ++ C ++ B) ++ E), <- hI, <- !app_assoc.
+Qed.
