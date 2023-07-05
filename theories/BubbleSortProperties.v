@@ -25,30 +25,20 @@ Proof.
   congruence.
 Qed.
 
-Lemma bubbleSortAuxInvariant {A : Type} (default : A) (comparator : Comparator A) (l : list A) (i : nat) (hLt : i < length l) : prefixSorted default (compare _ comparator) (bubbleSortAux default (compare _ comparator) (S i) l) (S i) /\ partitioned default (compare _ comparator) (bubbleSortAux default (compare _ comparator) (S i) l) i.
+Lemma bubbleSortAuxPreservesLength {A : Type} (default : A) (compare : A -> A -> bool) (l : list A) (iterationCount : nat) : length l = length (bubbleSortAux default compare iterationCount l).
 Proof.
-  induction i as [| i IH].
-  - simpl. split.
-    + intros i j hIJ hJ. lia.
-    + intros toTheLeft toTheRight hToTheLeft hToTheRight hLength.
-      assert (hToTheLeftEq : toTheLeft = 0). { lia. }
-      subst toTheLeft.
-      rewrite bubbleSortPassPreservesLength in *.
-      destruct (decide (toTheRight = 0)) as [hCase | hCase].
-      * subst toTheRight. destruct comparator. easy.
-      * admit.
-Admitted.
-
-Lemma bubbleSortCorrect {A : Type} (default : A) (comparator : Comparator A) (l : list A) : sorted default (compare _ comparator) (bubbleSort default (compare _ comparator) l).
-Proof.
-  destruct l as [| a l].
-  - intros a b h1 h2. simpl in *. lia.
-  - pose proof proj1 (bubbleSortAuxInvariant default comparator (a :: l) (length l) ltac:(simpl; lia)) as H.
-    intros i j h1 h2.
-    apply H.
-    + assumption.
-    + rewrite bubbleSortPreservesLength in h2. simpl in h2. assumption.
+  induction iterationCount as [| n IH] in l |- *; try easy.
+  simpl. now rewrite <- IH, bubbleSortPassPreservesLength.
 Qed.
+
+Lemma bubbleSortAuxInvariant {A : Type} (default : A) (comparator : Comparator A) (l : list A) (iterationCount : nat) (hIterationCount : iterationCount <= length l) : suffixSorted default (compare _ comparator) (bubbleSortAux default (compare _ comparator) iterationCount l) iterationCount /\ partitioned default (compare _ comparator) (bubbleSortAux default (compare _ comparator) iterationCount l) (length l - iterationCount).
+Proof.
+  induction iterationCount as [| iterationCount IHiterationCount] in l |- *.
+  - split.
+    + intros i j hIJ hI hJ. rewrite <- bubbleSortAuxPreservesLength in *. lia.
+    + intros i j hI hJ hLength. rewrite <- bubbleSortAuxPreservesLength in *. lia.
+   - split.
+    + simpl in *. pose proof IHiterationCount (bubbleSortPass default (compare A comparator) l) as [hS _].
 
 Lemma bubbleSortPermutation {A : Type} (default : A) (compare : A -> A -> bool) (l : list A) : Permutation l (bubbleSort default compare l).
 Proof.
