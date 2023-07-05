@@ -9,6 +9,8 @@ Definition compareAndSwap (l : list A) i :=
 
 Definition bubbleSortPass (l : list A) := foldl compareAndSwap l (seq 0 (length l - 1)).
 
+Definition bubbleSortPassPartial (l : list A) (n : nat) := foldl compareAndSwap l (seq 0 n).
+
 Fixpoint bubbleSortAux (n : nat) (l : list A) :=
   match n with
   | 0 => l
