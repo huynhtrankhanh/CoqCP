@@ -37,14 +37,23 @@ Proof.
   - split.
     + intros i j hIJ hI hJ. rewrite <- bubbleSortAuxPreservesLength in *. lia.
     + intros i j hI hJ hLength. rewrite <- bubbleSortAuxPreservesLength in *. lia.
-   - split.
-    + simpl in *. pose proof IHiterationCount (bubbleSortPass default (compare A comparator) l) as [hS hP].
+  - pose proof IHiterationCount (bubbleSortPass default (compare A comparator) l) as [hS hP].
+    split.
+    + simpl in *.
       intros i j hIJ hI hJ. pose proof hS i j ltac:(lia) as partial.
       rewrite <- !bubbleSortAuxPreservesLength, !bubbleSortPassPreservesLength in *.
       destruct (decide (length l - iterationCount = i + 1)) as [hSplit | hSplit].
       * pose proof hP (length l - iterationCount - 1) j ltac:(lia) ltac:(lia) as partial2.
         rewrite <- !bubbleSortAuxPreservesLength, !bubbleSortPassPreservesLength in *.
         pose proof partial2 ltac:(lia) as close. rewrite (ltac:(lia) : length l - iterationCount - 1 = i) in close. easy.
+      * exact (partial ltac:(lia) ltac:(lia)).
+    + intros i j hI hJ hLength.
+      rewrite <- ?bubbleSortAuxPreservesLength, ?bubbleSortPassPreservesLength in *.
+      simpl.
+      pose proof hP i j ltac:(lia) as partial.
+      rewrite <- !bubbleSortAuxPreservesLength, !bubbleSortPassPreservesLength in *.
+      destruct (decide (j = length l - S iterationCount)) as [hSplit | hSplit].
+      * admit.
       * exact (partial ltac:(lia) ltac:(lia)).
 Admitted.
 
