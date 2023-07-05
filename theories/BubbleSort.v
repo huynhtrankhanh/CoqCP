@@ -5,7 +5,7 @@ Section bubbleSort.
 Context {A : Type} (default : A) (compare : A -> A -> bool).
 
 Definition compareAndSwap (l : list A) i :=
-  if compare (nth (i + 1) l default) (nth i l default) then swap l i (i+1) default else l.
+  if compare (nth (i + 1) l default) (nth i l default) then swap l i (i + 1) default else l.
 
 Definition bubbleSortPass (l : list A) := foldl compareAndSwap l (seq 0 (length l - 1)).
 
