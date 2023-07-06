@@ -31,7 +31,21 @@ Proof.
   simpl. now rewrite <- IH, bubbleSortPassPreservesLength.
 Qed.
 
-Lemma bubblingUp {A : Type} (default : A) (comparator : Comparator A) (l : list A) (iterationCount : nat) (i : nat) (hI : i <= iterationCount) : ~compare _ comparator (nth i (bubbleSortPassPartial default (compare _ comparator) l iterationCount) default) (nth iterationCount (bubbleSortPassPartial default (compare _ comparator) l iterationCount) default).
+Lemma compareAndSwapPreservesLength {A : Type} (default : A) (compare : A -> A -> bool) (l : list A) (i : nat) : length (compareAndSwap default compare l i) = length l.
+Proof.
+  unfold compareAndSwap.
+  remember (compare _ _) as x.
+  destruct x; now rewrite ?swapPreservesLength.
+Qed.
+
+Lemma bubbleSortPassPartialPreservesLength {A : Type} (default : A) (compare : A -> A -> bool) (l : list A) (iterationCount : nat) : length (bubbleSortPassPartial default compare l iterationCount) = length l.
+Proof.
+  induction iterationCount as [| n IH].
+  - easy.
+  - unfold bubbleSortPassPartial in *. now rewrite seq_S, Nat.add_0_l, foldl_app, foldlSingleton, compareAndSwapPreservesLength. 
+Qed.
+
+Lemma bubblingUp {A : Type} (default : A) (comparator : Comparator A) (l : list A) (iterationCount : nat) (i : nat) (hI : i <= iterationCount) (hCap : iterationCount + 1 < length l) : ~compare _ comparator (nth iterationCount (bubbleSortPassPartial default (compare _ comparator) l iterationCount) default) (nth i (bubbleSortPassPartial default (compare _ comparator) l iterationCount) default).
 Proof.
   induction iterationCount as [| n IH].
   - rewrite (ltac:(lia) : i = 0). apply irreflexive.
@@ -43,8 +57,24 @@ Proof.
       unfold compareAndSwap.
       remember (compare _ _ (nth (n + 1) _ _) _) as x eqn:hX.
       symmetry in hX. destruct x; rewrite <- ?Is_true_true, <- ?Is_true_false in *.
-      { pose proof nthSwap (bubbleSortPassPartial default (compare A comparator) l n) default n (n + 1).
-Admitted.
+      { pose proof nthSwapVariant (bubbleSortPassPartial default (compare A comparator) l n) default (S n) n as partial.
+        rewrite bubbleSortPassPartialPreservesLength in *.
+        pose proof (partial ltac:(lia) ltac:(lia)) as close.
+        rewrite ?(ltac:(lia) : S n = n + 1) in *. rewrite close.
+        clear partial close.
+        destruct (decide (i = n)).
+        { subst i.
+          pose proof nthSwap (bubbleSortPassPartial default (compare A comparator) l n) default n (n + 1) as partial.
+          rewrite bubbleSortPassPartialPreservesLength in *.
+          rewrite (partial ltac:(lia) ltac:(lia)).
+          now apply asymmetry. }
+        { pose proof nthSwapExcept (bubbleSortPassPartial default (compare A comparator) l n) default n (n + 1) i as partial.
+          rewrite bubbleSortPassPartialPreservesLength in *.
+          rewrite (partial ltac:(lia) ltac:(lia) ltac:(lia) ltac:(lia)). apply step. lia. } }
+      { pose proof step ltac:(lia) as close.
+        rewrite (ltac:(lia) : S n = n + 1) in *.
+        exact (negativelyTransitive _ _ _ _ hX close). }
+Qed.
 
 Lemma bubbleSortAuxInvariant {A : Type} (default : A) (comparator : Comparator A) (l : list A) (iterationCount : nat) (hIterationCount : iterationCount <= length l) : suffixSorted default (compare _ comparator) (bubbleSortAux default (compare _ comparator) iterationCount l) iterationCount /\ partitioned default (compare _ comparator) (bubbleSortAux default (compare _ comparator) iterationCount l) (length l - iterationCount).
 Proof.
