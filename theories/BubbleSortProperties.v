@@ -53,8 +53,10 @@ Proof.
   rewrite nthSwapExcept; (done || lia).
 Qed.
 
-Lemma nthBubbleSortPassPartial {A : Type} (default : A) (compare : A -> A -> bool) (l : list A) (i j : nat) (hIJ : S i < j) (hJ : j < length l) : nth i (bubbleSortPassPartial default compare l (S i)) default = nth i (bubbleSortPassPartial default compare l j) default.
+Lemma nthBubbleSortPassPartial {A : Type} (default : A) (compare : A -> A -> bool) (l : list A) (i j : nat) (hIJRelaxed : S i <= j) (hJ : j < length l) : nth i (bubbleSortPassPartial default compare l (S i)) default = nth i (bubbleSortPassPartial default compare l j) default.
 Proof.
+  destruct (decide (S i = j)); try now subst j.
+  pose proof (ltac:(lia) : S i < j) as hIJ.
   induction j as [| j IH] in l, i, hIJ, hJ |- *.
   - pose proof (ltac:(lia) : i = 0). now subst i.
   - unfold bubbleSortPassPartial. rewrite (seq_S j 0), foldl_app, Nat.add_0_l, foldlSingleton, !(ltac:(easy) : foldl _ _ _ = bubbleSortPassPartial _ _ _ _), nthCompareAndSwapExcept; try (done || lia). 
