@@ -93,10 +93,6 @@ Proof.
         exact (negativelyTransitive _ _ _ _ hX close). }
 Qed.
 
-Lemma bubblingUp2 {A : Type} (default : A) (comparator : Comparator A) (l : list A) (iterationCount : nat) (i : nat) (hI : i <= iterationCount) (hCap : S iterationCount < length l) : ~compare _ comparator (nth iterationCount (bubbleSortPassPartial default (compare _ comparator) l (S iterationCount)) default) (nth i (bubbleSortPassPartial default (compare _ comparator) l (S iterationCount)) default).
-Proof.
-Qed.
-
 Lemma moveBubbleSortPassOut {A : Type} (default : A) (compare : A -> A -> bool) (l : list A) (iterationCount : nat) : bubbleSortAux default compare iterationCount (bubbleSortPass default compare l) = bubbleSortPass default compare (bubbleSortAux default compare iterationCount l).
 Proof.
   induction iterationCount as [| n IH] in l |- *; try easy.
