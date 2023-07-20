@@ -121,6 +121,35 @@ Proof.
   - rewrite Is_true_false in hSplit. rewrite hSplit. apply irreflexive.
 Qed.
 
+Lemma compareAndSwapPreservesPartition {A : Type} (default : A) (comparator : Comparator A) (l : list A) (partitionPoint i : nat) (hPartitioned : partitioned default (compare A comparator) l partitionPoint) (hPartitionPoint : partitionPoint < length l) (hI : S i < length l) : partitioned default (compare A comparator) (compareAndSwap default (compare A comparator) l i) partitionPoint.
+Proof.
+  intros left right hLeft hRight hCap.
+  destruct (decide (left = right)) as [hEq | hEq].
+  { subst left. apply irreflexive. }
+  destruct (decide (left = i)) as [hLeftI | hLeftI].
+  - pose proof (ltac:(lia) : right = i + 1 \/ right > i + 1) as [h1 | h1].
+    + subst left right. unfold compareAndSwap.
+      remember (compare _ _ (nth (i + 1) l default) _) as expr eqn:hExpr.
+      symmetry in hExpr. destruct expr; rewrite <- ?Is_true_true, <- ?Is_true_false in *; try easy.
+      rewrite !nthSwap, !nthSwapVariant; now (lia || apply asymmetry).
+    + subst left. unfold compareAndSwap.
+      remember (compare _ _ (nth (i + 1) l default) _) as expr eqn:hExpr.
+      symmetry in hExpr. destruct expr; rewrite <- ?Is_true_true, <- ?Is_true_false in *.
+      * rewrite nthSwap; try lia. rewrite nthSwapExcept; try lia.
+        pose proof hPartitioned (i + 1) right.
+Admitted.
+
+Lemma bubbleSortPassPartialPreservesPartition {A : Type} (default : A) (comparator : Comparator A) (l : list A) (partitionPoint i : nat) (hPartitioned : partitioned default (compare A comparator) l partitionPoint) (hPartitionPoint : partitionPoint < length l) (hI : S i < length l) : partitioned default (compare A comparator) (bubbleSortPassPartial default (compare A comparator) l i) partitionPoint.
+Proof.
+  induction i as [| i IH].
+  - easy.
+  - pose proof IH ltac:(lia) as past.
+    unfold bubbleSortPassPartial. rewrite seq_S, foldl_app, Nat.add_0_l, foldlSingleton, (ltac:(easy) : foldl _ _ _ = bubbleSortPassPartial _ _ _ _).
+    intros left right hLeft hRight hCap.
+Admitted.
+
+(* actually it's preserve BOTH partitioned and sorted, not just partitioned. the lemma is not strong enough *)
+
 Lemma bubbleSortAuxInvariant {A : Type} (default : A) (comparator : Comparator A) (l : list A) (iterationCount : nat) (hIterationCount : iterationCount <= length l) : suffixSorted default (compare _ comparator) (bubbleSortAux default (compare _ comparator) iterationCount l) iterationCount /\ partitioned default (compare _ comparator) (bubbleSortAux default (compare _ comparator) iterationCount l) (length l - iterationCount).
 Proof.
   induction iterationCount as [| iterationCount IHiterationCount] in l, hIterationCount |- *.
@@ -137,7 +166,26 @@ Proof.
         rewrite <- !bubbleSortAuxPreservesLength, !bubbleSortPassPreservesLength in *.
         pose proof partial2 ltac:(lia) as close. rewrite (ltac:(lia) : length l - iterationCount - 1 = i) in close. easy.
       * exact (partial ltac:(lia) ltac:(lia)).
-    + admit.
+    + intros i j hI hJ hL. rewrite <- bubbleSortAuxPreservesLength in *.
+      destruct (decide (i = j)) as [hDiff | hDiff].
+      { subst i. apply irreflexive. }
+      destruct (decide (j <> length l - S iterationCount)).
+      { simpl. rewrite bubbleSortPassPreservesLength in *.
+        apply hP; rewrite <- ?bubbleSortAuxPreservesLength, ?bubbleSortPassPreservesLength; lia. }
+      assert (hJEq : j = length l - S iterationCount). { lia. }
+      subst j.
+      simpl. rewrite moveBubbleSortPassOut.
+      destruct (decide (iterationCount = 0)) as [hZ | hZ].
+      { subst iterationCount. simpl.
+        now pose proof bubblingUp default comparator l (length l - 1) i ltac:(lia) ltac:(lia). }
+      pose proof bubblingUp default comparator (bubbleSortAux default (compare A comparator) iterationCount l) (length l - S iterationCount) i ltac:(lia) ltac:(rewrite <- bubbleSortAuxPreservesLength; lia) as half.
+      pose proof (nthBubbleSortPassPartial default (compare _ comparator) (bubbleSortAux default (compare A comparator) iterationCount l) i (length (bubbleSortAux default (compare A comparator) iterationCount l) - 1) ltac:(rewrite <- bubbleSortAuxPreservesLength; lia) ltac:(rewrite <- bubbleSortAuxPreservesLength; lia)) as s1.
+      rewrite !(ltac:(easy) : bubbleSortPassPartial _ _ _ _ = bubbleSortPass _ _ _) in s1.
+      rewrite <- s1. clear s1.
+      rewrite <- (nthBubbleSortPassPartial default (compare _ comparator) (bubbleSortAux default (compare A comparator) iterationCount l) i (length l - S iterationCount) ltac:(lia) ltac:(rewrite <- bubbleSortAuxPreservesLength; lia)) in half.
+      pose proof nthBubbleSortPassPartial default (compare _ comparator) (bubbleSortAux default (compare A comparator) iterationCount l) (length l - S iterationCount) (length (bubbleSortAux default (compare A comparator) iterationCount l) - 1) ltac:(rewrite <- bubbleSortAuxPreservesLength; lia) ltac:(rewrite <- bubbleSortAuxPreservesLength; lia) as s1.
+      rewrite (ltac:(easy) : bubbleSortPassPartial _ _ _ _ = bubbleSortPass _ _ _) in s1.
+      rewrite <- s1. clear s1.
 Admitted.
 
 Lemma bubbleSortPermutation {A : Type} (default : A) (compare : A -> A -> bool) (l : list A) : Permutation l (bubbleSort default compare l).
