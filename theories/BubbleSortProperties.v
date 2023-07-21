@@ -163,7 +163,7 @@ Proof.
     remember (compare _ _ (nth (i + 1) l default) _) as expr eqn:hExpr.
     symmetry in hExpr. destruct expr; rewrite <- ?Is_true_true, <- ?Is_true_false in *.
     - rewrite nthSwapVariant, nthSwapExcept; try lia.
-    rewrite compareAndSwapPreservesLength in *.
+      rewrite compareAndSwapPreservesLength in *.
       pose proof hPartitioned left (i + 1) ltac:(lia) ltac:(lia) ltac:(lia) as step.
       exact (negativelyTransitive _ _ _ _ (asymmetry _ _ _ _ hExpr) step).
     - apply hPartitioned; lia. }
@@ -216,7 +216,14 @@ Proof.
       pose proof nthBubbleSortPassPartial default (compare _ comparator) (bubbleSortAux default (compare A comparator) iterationCount l) (length l - S iterationCount) (length (bubbleSortAux default (compare A comparator) iterationCount l) - 1) ltac:(rewrite <- bubbleSortAuxPreservesLength; lia) ltac:(rewrite <- bubbleSortAuxPreservesLength; lia) as s1.
       rewrite (ltac:(easy) : bubbleSortPassPartial _ _ _ _ = bubbleSortPass _ _ _) in s1.
       rewrite <- s1. clear s1.
-Admitted.
+      assert (hFin : (nth (length l - S iterationCount) (bubbleSortPassPartial default (compare A comparator) (bubbleSortAux default (compare A comparator) iterationCount l) (length l - S iterationCount)) default) = (nth (length l - S iterationCount) (bubbleSortPassPartial default (compare A comparator) (bubbleSortAux default (compare A comparator) iterationCount l) (S (length l - S iterationCount))) default)).
+      { clear hJ. remember (length l - S iterationCount) as j eqn:hJ.
+        unfold bubbleSortPassPartial. rewrite seq_S, foldl_app, foldlSingleton, Nat.add_0_l, (ltac:(easy) : foldl _ _ _ = bubbleSortPassPartial _ _ _ _).
+        pose proof proj2 (IHiterationCount l ltac:(lia)) as e.
+        pose proof bubbleSortPassPartialPreservesPartitioned default comparator _ _ j e ltac:(rewrite <- bubbleSortAuxPreservesLength; lia) ltac:(rewrite <- bubbleSortAuxPreservesLength; lia) j (j + 1) ltac:(lia) ltac:(lia) ltac:(rewrite bubbleSortPassPartialPreservesLength, <- bubbleSortAuxPreservesLength; lia) as f.
+        unfold compareAndSwap. rewrite Is_true_false in f. now rewrite f. }
+      now rewrite hFin in half.
+Qed.
 
 Lemma bubbleSortPermutation {A : Type} (default : A) (compare : A -> A -> bool) (l : list A) : Permutation l (bubbleSort default compare l).
 Proof.
