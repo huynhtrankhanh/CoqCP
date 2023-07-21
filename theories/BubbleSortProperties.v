@@ -150,9 +150,28 @@ Proof.
       exact (hPartitioned i right ltac:(lia) ltac:(lia) ltac:(lia)).
     - rewrite compareAndSwapPreservesLength in *.
       now pose proof hPartitioned (i + 1) right ltac:(lia) ltac:(lia) ltac:(lia) as step. }
-Admitted.
+  destruct (decide (right = i)) as [hRightI | hRightI].
+  { subst right. unfold compareAndSwap.
+    remember (compare _ _ (nth (i + 1) l default) _) as expr eqn:hExpr.
+    symmetry in hExpr. destruct expr; rewrite <- ?Is_true_true, <- ?Is_true_false in *.
+    - rewrite compareAndSwapPreservesLength in *.
+      rewrite !nthSwap, !nthSwapExcept; try lia.
+      apply hPartitioned; lia.
+    - rewrite compareAndSwapPreservesLength in *. apply hPartitioned; lia. }
+  destruct (decide (right = i + 1)) as [hRightSI | hRightSI].
+  { subst right. unfold compareAndSwap.
+    remember (compare _ _ (nth (i + 1) l default) _) as expr eqn:hExpr.
+    symmetry in hExpr. destruct expr; rewrite <- ?Is_true_true, <- ?Is_true_false in *.
+    - rewrite nthSwapVariant, nthSwapExcept; try lia.
+    rewrite compareAndSwapPreservesLength in *.
+      pose proof hPartitioned left (i + 1) ltac:(lia) ltac:(lia) ltac:(lia) as step.
+      exact (negativelyTransitive _ _ _ _ (asymmetry _ _ _ _ hExpr) step).
+    - apply hPartitioned; lia. }
+  rewrite compareAndSwapPreservesLength in *.
+  rewrite !nthCompareAndSwapExcept; try lia. apply hPartitioned; lia.
+Qed.
 
-Lemma bubbleSortPassPartialPreservesPartition {A : Type} (default : A) (comparator : Comparator A) (l : list A) (partitionPoint i : nat) (hPartitioned : partitioned default (compare A comparator) l partitionPoint) (hPartitionPoint : partitionPoint < length l) (hI : S i < length l) : partitioned default (compare A comparator) (bubbleSortPassPartial default (compare A comparator) l i) partitionPoint.
+Lemma bubbleSortPassPartialPreservesPartitioned {A : Type} (default : A) (comparator : Comparator A) (l : list A) (partitionPoint i : nat) (hPartitioned : partitioned default (compare A comparator) l partitionPoint) (hPartitionPoint : partitionPoint < length l) (hI : S i < length l) : partitioned default (compare A comparator) (bubbleSortPassPartial default (compare A comparator) l i) partitionPoint.
 Proof.
   induction i as [| i IH].
   - easy.
