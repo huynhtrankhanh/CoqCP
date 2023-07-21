@@ -59,7 +59,7 @@ Proof.
   pose proof (ltac:(lia) : S i < j) as hIJ.
   induction j as [| j IH] in l, i, hIJ, hJ |- *.
   - pose proof (ltac:(lia) : i = 0). now subst i.
-  - unfold bubbleSortPassPartial. rewrite (seq_S j 0), foldl_app, Nat.add_0_l, foldlSingleton, !(ltac:(easy) : foldl _ _ _ = bubbleSortPassPartial _ _ _ _), nthCompareAndSwapExcept; try (done || lia). 
+  - unfold bubbleSortPassPartial. rewrite (seq_S j 0), foldl_app, Nat.add_0_l, foldlSingleton, !(ltac:(easy) : foldl _ _ _ = bubbleSortPassPartial _ _ _ _), nthCompareAndSwapExcept; try (done || lia).
     + destruct (decide (j = S i)); try now subst j. rewrite IH; (done || lia).
     + rewrite bubbleSortPassPartialPreservesLength; lia.
 Qed.
