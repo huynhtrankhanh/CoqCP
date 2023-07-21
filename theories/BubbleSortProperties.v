@@ -121,22 +121,35 @@ Proof.
   - rewrite Is_true_false in hSplit. rewrite hSplit. apply irreflexive.
 Qed.
 
-Lemma compareAndSwapPreservesPartition {A : Type} (default : A) (comparator : Comparator A) (l : list A) (partitionPoint i : nat) (hPartitioned : partitioned default (compare A comparator) l partitionPoint) (hPartitionPoint : partitionPoint < length l) (hI : S i < length l) : partitioned default (compare A comparator) (compareAndSwap default (compare A comparator) l i) partitionPoint.
+Lemma compareAndSwapPreservesPartitioned {A : Type} (default : A) (comparator : Comparator A) (l : list A) (partitionPoint i : nat) (hPartitioned : partitioned default (compare A comparator) l partitionPoint) (hPartitionPoint : partitionPoint < length l) (hI : S i < length l) : partitioned default (compare A comparator) (compareAndSwap default (compare A comparator) l i) partitionPoint.
 Proof.
   intros left right hLeft hRight hCap.
   destruct (decide (left = right)) as [hEq | hEq].
   { subst left. apply irreflexive. }
   destruct (decide (left = i)) as [hLeftI | hLeftI].
-  - pose proof (ltac:(lia) : right = i + 1 \/ right > i + 1) as [h1 | h1].
-    + subst left right. unfold compareAndSwap.
+  { pose proof (ltac:(lia) : right = i + 1 \/ right > i + 1) as [h1 | h1].
+    - subst left right. unfold compareAndSwap.
       remember (compare _ _ (nth (i + 1) l default) _) as expr eqn:hExpr.
       symmetry in hExpr. destruct expr; rewrite <- ?Is_true_true, <- ?Is_true_false in *; try easy.
       rewrite !nthSwap, !nthSwapVariant; now (lia || apply asymmetry).
-    + subst left. unfold compareAndSwap.
+    - subst left. unfold compareAndSwap.
       remember (compare _ _ (nth (i + 1) l default) _) as expr eqn:hExpr.
       symmetry in hExpr. destruct expr; rewrite <- ?Is_true_true, <- ?Is_true_false in *.
-      * rewrite nthSwap; try lia. rewrite nthSwapExcept; try lia.
-        pose proof hPartitioned (i + 1) right.
+      + rewrite nthSwap; try lia. rewrite nthSwapExcept; try lia.
+        rewrite compareAndSwapPreservesLength in *.
+        pose proof hPartitioned i right ltac:(lia) ltac:(lia) ltac:(lia) as step.
+        exact (negativelyTransitive _ _ _ _ step (asymmetry _ _ _ _ hExpr)).
+      + rewrite compareAndSwapPreservesLength in *.
+        exact (hPartitioned i right ltac:(lia) ltac:(lia) ltac:(lia)). }
+  destruct (decide (left = i + 1)) as [hLeftSI | hLeftSI].
+  { subst left. unfold compareAndSwap.
+    remember (compare _ _ (nth (i + 1) l default) _) as expr eqn:hExpr.
+    symmetry in hExpr. destruct expr; rewrite <- ?Is_true_true, <- ?Is_true_false in *.
+    - rewrite !nthSwapVariant, !nthSwapExcept; try lia.
+      rewrite compareAndSwapPreservesLength in *.
+      exact (hPartitioned i right ltac:(lia) ltac:(lia) ltac:(lia)).
+    - rewrite compareAndSwapPreservesLength in *.
+      now pose proof hPartitioned (i + 1) right ltac:(lia) ltac:(lia) ltac:(lia) as step. }
 Admitted.
 
 Lemma bubbleSortPassPartialPreservesPartition {A : Type} (default : A) (comparator : Comparator A) (l : list A) (partitionPoint i : nat) (hPartitioned : partitioned default (compare A comparator) l partitionPoint) (hPartitionPoint : partitionPoint < length l) (hI : S i < length l) : partitioned default (compare A comparator) (bubbleSortPassPartial default (compare A comparator) l i) partitionPoint.
@@ -145,10 +158,8 @@ Proof.
   - easy.
   - pose proof IH ltac:(lia) as past.
     unfold bubbleSortPassPartial. rewrite seq_S, foldl_app, Nat.add_0_l, foldlSingleton, (ltac:(easy) : foldl _ _ _ = bubbleSortPassPartial _ _ _ _).
-    intros left right hLeft hRight hCap.
-Admitted.
-
-(* actually it's preserve BOTH partitioned and sorted, not just partitioned. the lemma is not strong enough *)
+    apply compareAndSwapPreservesPartitioned; rewrite ?bubbleSortPassPartialPreservesLength; (done || lia).
+Qed.
 
 Lemma bubbleSortAuxInvariant {A : Type} (default : A) (comparator : Comparator A) (l : list A) (iterationCount : nat) (hIterationCount : iterationCount <= length l) : suffixSorted default (compare _ comparator) (bubbleSortAux default (compare _ comparator) iterationCount l) iterationCount /\ partitioned default (compare _ comparator) (bubbleSortAux default (compare _ comparator) iterationCount l) (length l - iterationCount).
 Proof.
