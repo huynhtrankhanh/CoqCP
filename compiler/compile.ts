@@ -16,6 +16,26 @@ interface Variable {
   type: string;
 }
 
+type BinaryOp =
+  | "add"
+  | "subtract"
+  | "multiply"
+  | "divide"
+  | "modulus"
+  | "equal"
+  | "noteq"
+  | "less"
+  | "greater"
+  | "lesseq"
+  | "greatereq";
+
+interface BinaryOperationInstruction {
+  type: "binaryOp";
+  operator: BinaryOp;
+  left: string | number | Instruction;
+  right: string | number | Instruction;
+}
+
 type Instruction =
   | { type: "get"; name: string }
   | { type: "set"; name: string; value: string | number | Instruction }
@@ -33,7 +53,9 @@ type Instruction =
       loopBody: Instruction[];
     }
   | { type: "operation"; operator: string; operands: (string | Instruction)[] }
-  | { type: "readInt32" };
+  | { type: "readInt32" }
+  | BinaryOperationInstruction
+  | { type: "subscript"; value: Instruction; index: number };
 
 class ParseError extends Error {
   constructor(...args: string[] | undefined[]) {
@@ -303,7 +325,9 @@ class CoqCPASTTransformer {
     return this.result;
   }
 
-  private processNode(node: ExtendNode<ESTree.Node>): Instruction | string | number {
+  private processNode(
+    node: ExtendNode<ESTree.Node>
+  ): Instruction | string | number {
     if (node.type === "CallExpression" && node.callee.type === "Identifier") {
       const name = node.callee.name;
       switch (name) {
@@ -313,13 +337,16 @@ class CoqCPASTTransformer {
         case "retrieve":
         case "range":
         case "readInt32":
-          return this.processInstruction(name, node.arguments.map(x => {
-            if (x.type === "SpreadElement") {
-              throw new Error("spread syntax not supported");
-            }
+          return this.processInstruction(
+            name,
+            node.arguments.map((x) => {
+              if (x.type === "SpreadElement") {
+                throw new Error("spread syntax not supported");
+              }
 
-            return x;
-          }));
+              return x;
+            })
+          );
         default:
           throw new ParseError("Unknown function call: " + name);
       }
@@ -327,8 +354,54 @@ class CoqCPASTTransformer {
       return node.name;
     } else if (node.type === "Literal" && typeof node.value === "number") {
       return node.value;
+    } else if (node.type === "BinaryExpression") {
+      return this.processBinaryExpression(node);
+    } else if (node.type === "MemberExpression") {
+      const instruction = this.processNode(node.object);
+      if (node.property.type !== "Literal") {
+        throw new ParseError("only literal indices allowed");
+      }
+      const index = node.property.raw;
     } else {
       throw new ParseError("Unrecognized node type: " + node.type);
+    }
+  }
+
+  private processBinaryExpression(
+    node: ExtendNode<ESTree.BinaryExpression>
+  ): BinaryOperationInstruction {
+    const operator = this.getBinaryOperator(node.operator);
+    const left = this.processNode(node.left);
+    const right = this.processNode(node.right);
+    return { type: "binaryOp", operator, left, right };
+  }
+
+  private getBinaryOperator(operator: string): BinaryOp {
+    switch (operator) {
+      case "+":
+        return "add";
+      case "-":
+        return "subtract";
+      case "*":
+        return "multiply";
+      case "/":
+        return "divide";
+      case "%":
+        return "modulus";
+      case "==":
+        return "equal";
+      case "!=":
+        return "noteq";
+      case "<":
+        return "less";
+      case ">":
+        return "greater";
+      case "<=":
+        return "lesseq";
+      case ">=":
+        return "greatereq";
+      default:
+        throw new ParseError("Invalid binary operator: " + operator);
     }
   }
 
@@ -425,7 +498,7 @@ class CoqCPASTTransformer {
         const end = this.processNode(args[0]) as number;
         const funcNode = args[1];
 
-        if (funcNode.params.length === 1) {
+        if (funcNode.params.length !== 1) {
           throw new ParseError("arrow function must take exactly 1 argument");
         }
 
@@ -452,9 +525,7 @@ class CoqCPASTTransformer {
       }
 
       case "readInt32": {
-        if (
-          args.length !== 0
-        ) {
+        if (args.length !== 0) {
           throw new ParseError(
             "readInt32() function accepts exactly 0 argument"
           );
@@ -470,7 +541,9 @@ class CoqCPASTTransformer {
     return instruction;
   }
 
-  private transformBodyNode(bodyNode: ExtendNode<ESTree.BlockStatement>): Instruction[] {
+  private transformBodyNode(
+    bodyNode: ExtendNode<ESTree.BlockStatement>
+  ): Instruction[] {
     let instructions: Instruction[] = [];
 
     for (const statement of bodyNode.body) {
@@ -497,7 +570,7 @@ const code = `environment({
     anotherArray: array([int8, int64], 3) // Example of an array where each element can hold multiple values
 });
 
-procedure("fibonacci", { n: int32, a: int32, b: int32, i: int32 }, () => {
+procedure("fibonacci", { n: int32, a: int32, b: int32, i: int32 }, _ => {
     set("n", readInt32());  // Reading the term 'n' to which Fibonacci sequence is to be calculated
     set("a", 0);
     set("b", 1);
@@ -507,9 +580,8 @@ procedure("fibonacci", { n: int32, a: int32, b: int32, i: int32 }, () => {
     store("fibSeq", 1, [get("b")]);
 
     range(get("n") - 2, x => {  
-        let index = x + 2;  
         set("i", retrieve("fibSeq", x)[0] + retrieve("fibSeq", x + 1)[0]);  // Getting sum of last two fibonacci numbers
-        store("fibSeq", index, [get("i")]);  // Storing the newly calculated fibonacci term
+        store("fibSeq", x + 2, [get("i")]);  // Storing the newly calculated fibonacci term
     })
 });`;
 const transformer = new CoqCPASTTransformer(code);
