@@ -1,28 +1,6 @@
 import * as acorn from "acorn";
 import { simple as walkSimple } from "acorn-walk";
 
-interface Variable {
-  type: string;
-}
-
-interface Instruction {
-  type: 'set' | 'get' | 'store' | 'retrieve' | 'range' | 'operation';
-  name?: string;
-  value?: string | number;
-  operator?: string;
-  operands?: (string | Instruction)[];
-  index?: number;
-  tuples?: (string | number)[];
-  loopVariable?: string;
-  loopBody?: Instruction[];
-}
-
-interface Procedure {
-  name: string;
-  variables: Record<string, Variable>;
-  body: Instruction[];
-}
-
 interface ArrayDeclaration {
   itemTypes: string[];
   length: number;
@@ -30,6 +8,24 @@ interface ArrayDeclaration {
 
 interface Environment {
   arrays: Record<string, ArrayDeclaration>;
+}
+
+interface Variable {
+  type: string;
+}
+
+type Instruction =
+  | { type: 'get', name: string }
+  | { type: 'set', name: string, value: string | number }
+  | { type: 'store', name: string, index: number, tuples: (string | number)[] }
+  | { type: 'retrieve', name: string, index: number }
+  | { type: 'range', name: string, loopVariable: string, loopBody: Instruction[] }
+  | { type: 'operation', operator: string, operands: (string | Instruction)[] };
+
+interface Procedure {
+  name: string;
+  variables: Record<string, Variable>;
+  body: Instruction[];
 }
 
 class CoqCPAST {
@@ -43,7 +39,7 @@ class CoqCPASTTransformer {
   result: CoqCPAST;
 
   constructor(code: string) {
-    this.ast = this.parser.parse(code, {sourceType: "module"});
+    this.ast = this.parser.parse(code, { sourceType: "module" });
     this.result = new CoqCPAST();
   }
 
@@ -67,16 +63,12 @@ class CoqCPASTTransformer {
   }
 
   transformEnvironmentDeclaration(node): Environment {
-    let arrays: Record<string, ArrayDeclaration> = {};
+    const arrays: Record<string, ArrayDeclaration> = {};
     node.properties.forEach((prop) => {
       const name = prop.key.name;
+      const itemTypes = prop.value.elements[0].elements.map((el) => el.name);
+      const length = prop.value.elements[1].value;
 
-      const arraySpec = prop.value.callee.object.callee.name === "array"
-                      ? prop.value.callee.object.arguments
-                      : prop.value.arguments;
-
-      const itemTypes: string[] = arraySpec[0].elements.map((t: any) => t.name);
-      const length: number = arraySpec[1].value;
       arrays[name] = { itemTypes, length };
     });
 
@@ -85,21 +77,22 @@ class CoqCPASTTransformer {
 
   transformProcedure(nodes): Procedure {
     const name = nodes[0].value;
-    let variables: Record<string, Variable> = {};
+    const variables: Record<string, Variable> = {};
     nodes[1].properties.forEach((prop: any) => {
       const variableName = prop.key.name;
-      const variable: Variable = { 
-        type: prop.value.name
+
+      variables[variableName] = {
+        type: prop.value.name,
       };
-      variables[variableName] = variable;
     });
-    const body = this.transformInstructions(nodes[2].body);
+
+    const body = this.transformInstructions(nodes[2]);
     return { name, variables, body };
   }
 
   transformInstructions(node): Instruction[] {
-    let instructions: Instruction[] = [];
-    walkSimple(node.body, {
+    const instructions: Instruction[] = [];
+    walkSimple(node, {
       CallExpression: (n) => {
         instructions.push(this.transformInstruction(n));
       },
@@ -111,36 +104,48 @@ class CoqCPASTTransformer {
         });
       },
     });
+
     return instructions;
   }
 
   transformInstruction(node): Instruction {
-    let type = node.callee.name;
-    let instruction: Instruction = { type: type };
+    const type = node.callee.name;
+
     switch (type) {
       case 'set':
-        instruction.name = node.arguments[0].value;
-        instruction.value = node.arguments[1].value;
-        break;
+        return {
+          type: 'set',
+          name: node.arguments[0].value,
+          value: node.arguments[1].value
+        };
       case 'get':
-        instruction.name = node.arguments[0].value;
-        break;
+        return {
+          type: 'get',
+          name: node.arguments[0].value,
+        };
       case 'store':
-        instruction.name = node.arguments[0].value;
-        instruction.index = node.arguments[1].value;
-        instruction.tuples = node.arguments[2].elements.map((el: any) => el.value);
-        break;
+        return {
+          type: 'store',
+          name: node.arguments[0].value,
+          index: node.arguments[1].value,
+          tuples: node.arguments[2].elements.map((el: any) => el.value),
+        };
       case 'retrieve':
-        instruction.name = node.arguments[0].value;
-        instruction.index = node.arguments[1].value;
-        break;
+        return {
+          type: 'retrieve',
+          name: node.arguments[0].value,
+          index: node.arguments[1].value,
+        };
       case 'range':
-        instruction.name = node.arguments[0].value;
-        instruction.loopVariable = node.arguments[1].params[0].name;
-        instruction.loopBody = this.transformInstructions(node.arguments[1].body);
-        break;
+        return {
+          type: 'range',
+          name: node.arguments[0].value,
+          loopVariable: node.arguments[1].params[0].name,
+          loopBody: this.transformInstructions(node.arguments[1].body),
+        };
+      default:
+        throw new Error(`Invalid instruction type: ${type}`);
     }
-    return instruction;
   }
 }
 
