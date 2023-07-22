@@ -1,8 +1,10 @@
-import * as acorn from "acorn";
-import { simple as walkSimple } from "acorn-walk";
+import acorn from "acorn";
+import * as ESTree from "estree";
+
+type PrimitiveType = "int8" | "int16" | "int32" | "int64";
 
 interface ArrayDeclaration {
-  itemTypes: string[];
+  itemTypes: PrimitiveType[];
   length: number;
 }
 
@@ -15,12 +17,24 @@ interface Variable {
 }
 
 type Instruction =
-  | { type: 'get', name: string }
-  | { type: 'set', name: string, value: string | number }
-  | { type: 'store', name: string, index: number, tuples: (string | number)[] }
-  | { type: 'retrieve', name: string, index: number }
-  | { type: 'range', name: string, loopVariable: string, loopBody: Instruction[] }
-  | { type: 'operation', operator: string, operands: (string | Instruction)[] };
+  | { type: "get"; name: string }
+  | { type: "set"; name: string; value: string | number }
+  | { type: "store"; name: string; index: number; tuples: (string | number)[] }
+  | { type: "retrieve"; name: string; index: number }
+  | {
+      type: "range";
+      name: string;
+      loopVariable: string;
+      loopBody: Instruction[];
+    }
+  | { type: "operation"; operator: string; operands: (string | Instruction)[] };
+
+class ParseError extends Error {
+  constructor(...args: string[] | undefined[]) {
+    super(...args);
+    this.name = "ParseError";
+  }
+}
 
 interface Procedure {
   name: string;
@@ -34,121 +48,180 @@ class CoqCPAST {
 }
 
 class CoqCPASTTransformer {
-  private parser = acorn.Parser;
-  ast: any;
+  ast: acorn.ExtendNode<ESTree.Program>;
   result: CoqCPAST;
 
   constructor(code: string) {
-    this.ast = this.parser.parse(code, { sourceType: "module" });
+    this.ast = acorn.parse(code, { sourceType: "module", ecmaVersion: 2023 });
     this.result = new CoqCPAST();
   }
 
   transform() {
-    walkSimple(this.ast, {
-      CallExpression: (node) => {
-        const nodeName = node.callee.name;
+    let seenEnvironmentBlock = false;
+    for (const node of this.ast.body) {
+      if (
+        node.type !== "ExpressionStatement" ||
+        node.expression.type !== "CallExpression" ||
+        node.expression.callee.type !== "Identifier" ||
+        (node.expression.callee.name !== "environment" &&
+          node.expression.callee.name !== "procedure")
+      ) {
+        throw new ParseError(
+          'only "environment" and "procedure" expressions allowed. range: ' +
+            node.start +
+            " to " +
+            node.end
+        );
+      }
 
-        if (nodeName === 'environment') {
-          if (this.result.environment) {
-            throw new Error('Duplicate declaration for "environment"');
-          }
-          this.result.environment = this.transformEnvironmentDeclaration(node.arguments[0]);
+      if (node.expression.callee.name === "environment") {
+        if (seenEnvironmentBlock) {
+          throw new ParseError(
+            "duplicate environment block. range: " +
+              node.start +
+              " to " +
+              node.end
+          );
+        }
+        seenEnvironmentBlock = true;
+
+        if (node.expression.arguments.length !== 1) {
+          throw new ParseError(
+            "environment block accepts exactly 1 argument. range: " +
+              node.start +
+              " to " +
+              node.end
+          );
         }
 
-        else if (nodeName === 'procedure') {
-          this.result.procedures.push(this.transformProcedure(node.arguments));
+        const argumentNode = node.expression.arguments[0];
+        if (argumentNode.type !== "ObjectExpression") {
+          throw new ParseError(
+            "the argument must be an object. range: " +
+              argumentNode.start +
+              " to " +
+              argumentNode.end
+          );
+        }
+
+        for (const property of argumentNode.properties) {
+          if (property.type === "SpreadElement") {
+            throw new ParseError(
+              "spread syntax isn't recognized. range: " +
+                property.start +
+                " to " +
+                property.end
+            );
+          }
+
+          if (property.key.type !== "Identifier") {
+            throw new ParseError(
+              "unrecognized key type. range: " +
+                property.key.start +
+                " to " +
+                property.key.end
+            );
+          }
+
+          const arrayDescription = property.value;
+          if (
+            arrayDescription.type !== "CallExpression" ||
+            arrayDescription.callee.type !== "Identifier" ||
+            arrayDescription.callee.name !== "array"
+          ) {
+            throw new ParseError(
+              "expecting an array expression. range: " +
+                arrayDescription.start +
+                " to " +
+                arrayDescription.end
+            );
+          }
+
+          if (arrayDescription.arguments.length !== 2) {
+            throw new ParseError(
+              "array() accepts exactly two arguments. range: " +
+                arrayDescription.start +
+                " to " +
+                arrayDescription.end
+            );
+          }
+          
+          const typesArrayNode = arrayDescription.arguments[0];
+          const lengthNode = arrayDescription.arguments[1];
+          
+          if (typesArrayNode.type !== "ArrayExpression") {
+            throw new ParseError(
+              "First argument of array() must be an array. range: " +
+                typesArrayNode.start +
+                " to " +
+                typesArrayNode.end
+            );
+          }
+          
+          if (lengthNode.type !== "Literal" || typeof lengthNode.value !== 'number') {
+            throw new ParseError(
+              "Second argument of array() must be a numeric literal. range: " +
+                lengthNode.start +
+                " to " +
+                lengthNode.end
+            );
+          }
+          
+          let itemTypes: PrimitiveType[] = [];
+          for (const itemType of typesArrayNode.elements) {
+            if (
+              itemType === null ||
+              itemType.type !== "Identifier" ||
+              (itemType.name !== "int8" &&
+                itemType.name !== "int16" &&
+                itemType.name !== "int32" &&
+                itemType.name !== "int64")
+            ) {
+              throw new ParseError(
+                "Invalid array item type. range: " +
+                  typesArrayNode.start +
+                  " to " +
+                  typesArrayNode.end
+              );
+            }
+            
+            itemTypes.push(itemType.name);
+          }
+          
+          if (!this.result.environment) {
+            this.result.environment = { arrays: {} };
+          }
+          this.result.environment.arrays[property.key.name] = { itemTypes, length: lengthNode.value };
         }
       }
-    });
-  }
 
-  transformEnvironmentDeclaration(node): Environment {
-    const arrays: Record<string, ArrayDeclaration> = {};
-    node.properties.forEach((prop) => {
-      const name = prop.key.name;
-      const itemTypes = prop.value.elements[0].elements.map((el) => el.name);
-      const length = prop.value.elements[1].value;
-
-      arrays[name] = { itemTypes, length };
-    });
-
-    return { arrays };
-  }
-
-  transformProcedure(nodes): Procedure {
-    const name = nodes[0].value;
-    const variables: Record<string, Variable> = {};
-    nodes[1].properties.forEach((prop: any) => {
-      const variableName = prop.key.name;
-
-      variables[variableName] = {
-        type: prop.value.name,
-      };
-    });
-
-    const body = this.transformInstructions(nodes[2]);
-    return { name, variables, body };
-  }
-
-  transformInstructions(node): Instruction[] {
-    const instructions: Instruction[] = [];
-    walkSimple(node, {
-      CallExpression: (n) => {
-        instructions.push(this.transformInstruction(n));
-      },
-      BinaryExpression: (n) => {
-        instructions.push({
-          type: 'operation',
-          operator: n.operator,
-          operands: [n.left.raw, n.right.raw],
-        });
-      },
-    });
-
-    return instructions;
-  }
-
-  transformInstruction(node): Instruction {
-    const type = node.callee.name;
-
-    switch (type) {
-      case 'set':
-        return {
-          type: 'set',
-          name: node.arguments[0].value,
-          value: node.arguments[1].value
-        };
-      case 'get':
-        return {
-          type: 'get',
-          name: node.arguments[0].value,
-        };
-      case 'store':
-        return {
-          type: 'store',
-          name: node.arguments[0].value,
-          index: node.arguments[1].value,
-          tuples: node.arguments[2].elements.map((el: any) => el.value),
-        };
-      case 'retrieve':
-        return {
-          type: 'retrieve',
-          name: node.arguments[0].value,
-          index: node.arguments[1].value,
-        };
-      case 'range':
-        return {
-          type: 'range',
-          name: node.arguments[0].value,
-          loopVariable: node.arguments[1].params[0].name,
-          loopBody: this.transformInstructions(node.arguments[1].body),
-        };
-      default:
-        throw new Error(`Invalid instruction type: ${type}`);
+      if (node.expression.callee.name === "procedure") {
+        // that's tomorrow's task
+      }
     }
+    return this.result;
   }
 }
 
-const code = `<Your JavaScript/CoqCP code here>`;
+const code = `environment({
+    fibSeq: array([int32], 100),  // Memory to hold Fibonacci sequence up to the 100th term
+    anotherArray: array([int8, int64], 3) // Example of an array where each element can hold multiple values
+});
+
+procedure("fibonacci", { n: int32, a: int32, b: int32, i: int32 }, () => {
+    set("n", readInt32());  // Reading the term 'n' to which Fibonacci sequence is to be calculated
+    set("a", 0);
+    set("b", 1);
+    
+    // Initialize first two numbers in fibonacci series
+    store("fibSeq", 0, [get("a")]);
+    store("fibSeq", 1, [get("b")]);
+
+    range(get("n") - 2, x => {  
+        let index = x + 2;  
+        set("i", retrieve("fibSeq", x)[0] + retrieve("fibSeq", x + 1)[0]);  // Getting sum of last two fibonacci numbers
+        store("fibSeq", index, [get("i")]);  // Storing the newly calculated fibonacci term
+    })
+});`;
 const transformer = new CoqCPASTTransformer(code);
-transformer.transform();
+console.log(JSON.stringify(transformer.transform(), null, 4));
