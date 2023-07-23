@@ -311,6 +311,11 @@ class CoqCPASTTransformer {
                 bodyNode.end
             );
           }
+
+	  if (bodyNode.params.length !== 0) {
+		  throw new ParseError("inner function can't take arguments");
+	  }
+
           const body: Instruction[] = this.transformBodyNode(bodyNode.body);
 
           // adding the procedure to the result
@@ -362,6 +367,13 @@ class CoqCPASTTransformer {
         throw new ParseError("only literal indices allowed");
       }
       const index = node.property.raw;
+      if (index === undefined) {
+	      throw new ParseError("index must be defined");
+      }
+      if (typeof instruction === "string" || typeof instruction === "number") {
+	      throw new ParseError("left hand side can't be a literal");
+      }
+      return { type: "subscript", value: instruction, index: Number(index) };
     } else {
       throw new ParseError("Unrecognized node type: " + node.type);
     }
@@ -570,7 +582,7 @@ const code = `environment({
     anotherArray: array([int8, int64], 3) // Example of an array where each element can hold multiple values
 });
 
-procedure("fibonacci", { n: int32, a: int32, b: int32, i: int32 }, _ => {
+procedure("fibonacci", { n: int32, a: int32, b: int32, i: int32 }, () => {
     set("n", readInt32());  // Reading the term 'n' to which Fibonacci sequence is to be calculated
     set("a", 0);
     set("b", 1);
