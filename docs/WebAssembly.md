@@ -1,4 +1,5 @@
 # WebAssembly
+
 If we want to formalize real-world programs in Coq, we need to have a way to represent them in a formal language that Coq can understand. WebAssembly provides a natural way to do this, as it is a well-defined bytecode format with a formal specification that can be used to encode a wide range of programs.
 
 ```mermaid
@@ -22,6 +23,7 @@ style D stroke:#B22222, stroke-width:2px;
 With the power of WebAssembly, you can tackle even the toughest problems.
 
 ## Workflow
+
 ```mermaid
 graph TD;
   A[Write WebAssembly source code] --> B[Formalize and check correctness in Coq];

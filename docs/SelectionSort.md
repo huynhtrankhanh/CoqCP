@@ -1,4 +1,5 @@
 # Selection sort
+
 **Note:** ChatGPT generated this file. I read through this proof and it looks correct. This proof is the same as the argument used in [`SelectionSortProperties.v`](../theories/SelectionSortProperties.v).
 
 Selection sort is a simple sorting algorithm that works by repeatedly selecting the minimum element from the unsorted part of the array and swapping it with the first element of the unsorted part. The algorithm then moves the boundary of the unsorted part of the array one element to the right and repeats the process until the entire array is sorted.

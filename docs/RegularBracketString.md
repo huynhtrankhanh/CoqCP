@@ -1,5 +1,7 @@
 # Regular bracket strings
+
 Regular bracket strings, also called Dyck words, are defined as follows:
+
 - An empty string is a regular bracket string
 - If you have a regular bracket string, you can put a `(` in front and `)` at the end of the string to make another regular bracket string
 - If you have two regular bracket strings, you can concatenate them together to make another regular bracket string
@@ -49,16 +51,19 @@ We handle several special cases first.
 First, if the string `s` is empty, it already satisfies `isBalanced`.
 
 Second, if the string `s` consists of a single character, we have two cases.
+
 - If `s = "("`, `countOpen(s) = 1` and `countClose(s) = 0`, therefore `countOpen(s)` is not equal to `countClose(s)`. Therefore the string does not satisfy `balanceFactorBasedDefinition`. We can ignore this case.
 - If `s = "("`, `countOpen(s) = 0` and `countClose(s) = 1`, therefore `countOpen(s)` is not equal to `countClose(s)`. Therefore the string does not satisfy `balanceFactorBasedDefinition`. We can ignore this case.
 
 Now we need to consider the case where the length of `s` is at least 2 and satisfies `balanceFactorBasedDefinition`.
 
 We need to prove a small fact: `s` can always be decomposed as `"(" + s1 + ")"`. `s1` might not necessarily satisfy `balanceFactorBasedDefinition`.
+
 - First character: We consider the case where the first character is `)`. We take a prefix of length 1 of the string. Since `countOpen(")") = 0`, and `countClose(")") = 1`, this means `countOpen(")") < countClose(")")`, which is a contradiction. The first character is always `(`.
 - Last character: `s` is equal to `s' + a`, where `a` is a single character. We have `countOpen(s') >= countClose(s')`, and `countOpen(s' + a) = countClose(s' + a)`. We consider the case where `a` is `(`. We have `countOpen(s' + "(") = countOpen(s') + 1`. Also, we have `countClose(s' + "(") = countClose(s')`. Therefore `countOpen(s') + 1 = countClose(s')`, which means `countOpen(s') < countClose(s')`, which is a contradiction. The last character is always `)`.
 
 We now consider two cases.
+
 - For all prefixes `s'` of length from 1 to `length(s) - 1` (inclusive), `countOpen(s') > countClose(s')`. We decompose `s` as `"(" + s1 + ")"`. As `countOpen(s) = countClose(s)`, and `countOpen(s) = countOpen(s1) + 1`, `countClose(s) = countClose(s1) + 1`, we have `countOpen(s1) = countClose(s1)`. This means `s1` satisfies the first condition of `balanceFactorBasedDefinition`. For all prefixes `s'` of `s1`, we take a prefix `t` of length `length(s') + 1` of the string `s`. We have `countOpen(t) > countClose(t)` and as `t = "(" + s'`, we have `countOpen(s') + 1 > countClose(s')`. Therefore, `countOpen(s') >= countClose(s')`. Now the string `s1` satisfies the second condition of `balanceFactorBasedDefinition`. As `s1` satisfies `balanceFactorBasedDefinition`, and the length of `s1` is less than the length of `s`, we can apply the induction hypothesis to deduce that `s1` satisfies `isBalanced`. As `s1` satisfies `isBalanced`, `"(" + s1 + ")"` satisfies `isBalanced` and thus `s` satisfies `isBalanced`.
 - There exists a prefix `s1` of length from `1` to `length(s) - 1` (inclusive) where `countOpen(s1) = countClose(s1)`. Every prefix of `s1` is also a prefix of `s`, so `s'` satisfies `balanceFactorBasedDefinition`. As the length of `s1` is less than the length of `s` and `s1` satisfies `balanceFactorBasedDefinition`, we can apply the induction hypothesis to deduce that `s1` satisfies `isBalanced`. The string `s` can be decomposed as `s1 + s2`. As `countOpen(s) = countClose(s)` and `countOpen(s1) + countClose(s1)`, we deduce that `countOpen(s2) = countClose(s2)`. For every prefix `s'` of `s2`, we take a prefix `t` of length `length(s1) + length(s')` from `s`. We have `countOpen(t) >= countClose(t)`. We have `t = s1 + s'`, and as `countOpen(s1) = countClose(s1)`, we have `countOpen(s2) >= countClose(s2)`. Now `s2` satisfies `balanceFactorBasedDefinition`. As `s2` satisfies `balanceFactorBasedDefinition` and the length of `s2` is less than the length of `s`, we can apply the induction hypothesis to deduce that `s2` satisfies `isBalanced`. As both `s1` and `s2` satisfy `isBalanced`, the concatenation also satisfies `isBalanced` and thus `s` satisfies `isBalanced`.
 
@@ -102,6 +107,7 @@ After these preprocessing steps, `witness1` and `witness2` are still two distinc
 As `witness1` and `witness2` are different, there is at least one character that is different.
 
 There are two cases.
+
 - The different character is in the first segment. In `witness1`, the character is `(`. In `witness2`, the character is `)`. We have no information about other characters in `witness2`. In order to proceed, we create another witness that is easier to inspect. We keep the different character, but for the other characters, we erase them and then fill them according to our construction.
 
   Let's take the string `(????)`. And for example, our `witness1` is `(())`, and our `witness2` is `()()`. The first different character is the second character in `witness2`. Let's apply `witness2` to the string, we then get `(()())`. Now, let's empty all the characters except the different character. We then get `(?)??)`. And then we can fill the question marks again with our construction and get a new witness that is easier to inspect.

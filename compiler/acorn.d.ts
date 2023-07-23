@@ -1,7 +1,7 @@
-import { Options } from 'acorn';
-import * as ESTree from 'estree';
+import { Options } from "acorn";
+import * as ESTree from "estree";
 
-declare module 'acorn' {
+declare module "acorn" {
   type ExtendNode<T> = {
     [K in keyof T]: T[K] extends object ? ExtendNode<T[K]> : T[K];
   } & (T extends ESTree.Node
