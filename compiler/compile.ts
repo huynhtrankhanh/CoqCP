@@ -1,7 +1,7 @@
 import acorn, { ExtendNode } from "acorn";
 import * as ESTree from "estree";
 
-type PrimitiveType = "int8" | "int16" | "int32" | "int64";
+type PrimitiveType = "bool" | "int8" | "int16" | "int32" | "int64";
 
 interface ArrayDeclaration {
   itemTypes: PrimitiveType[];
