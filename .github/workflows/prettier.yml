@@ -20,9 +20,6 @@ jobs:
       with:
         node-version: 'latest'
 
-    - name: Install dependencies
-      run: npm install
-
     - name: Prettify code
       uses: creyD/prettier_action@v4.3
       with:
