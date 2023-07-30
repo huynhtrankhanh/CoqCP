@@ -29,21 +29,23 @@ type BinaryOp =
   | "lesseq"
   | "greatereq";
 
+type LocalBinder = { type: "local binder"; name: string };
+
 interface BinaryOperationInstruction {
   type: "binaryOp";
   operator: BinaryOp;
-  left: string | number | Instruction;
-  right: string | number | Instruction;
+  left: LocalBinder | number | Instruction;
+  right: LocalBinder | number | Instruction;
 }
 
 type Instruction =
   | { type: "get"; name: string }
-  | { type: "set"; name: string; value: string | number | Instruction }
+  | { type: "set"; name: string; value: LocalBinder | number | Instruction }
   | {
       type: "store";
       name: string;
       index: number;
-      tuples: (string | number | Instruction)[];
+      tuples: (LocalBinder | number | Instruction)[];
     }
   | { type: "retrieve"; name: string; index: number }
   | {
@@ -52,10 +54,9 @@ type Instruction =
       loopVariable: string;
       loopBody: Instruction[];
     }
-  | { type: "operation"; operator: string; operands: (string | Instruction)[] }
   | { type: "readInt32" }
   | BinaryOperationInstruction
-  | { type: "subscript"; value: Instruction; index: number };
+  | { type: "subscript"; value: Instruction | LocalBinder; index: number };
 
 class ParseError extends Error {
   constructor(...args: string[] | undefined[]) {
@@ -304,7 +305,7 @@ class CoqCPASTTransformer {
 
   private processNode(
     node: ExtendNode<ESTree.Node>,
-  ): Instruction | string | number {
+  ): Instruction | LocalBinder | number {
     if (node.type === "CallExpression" && node.callee.type === "Identifier") {
       const name = node.callee.name;
       switch (name) {
@@ -331,7 +332,7 @@ class CoqCPASTTransformer {
           );
       }
     } else if (node.type === "Identifier") {
-      return node.name;
+      return { type: "local binder", name: node.name };
     } else if (node.type === "Literal" && typeof node.value === "number") {
       return node.value;
     } else if (node.type === "BinaryExpression") {
