@@ -564,7 +564,7 @@ class CoqCPASTTransformer {
         if (args.length !== 0) {
           throw new ParseError(
             "readInt8() function accepts exactly 0 argument. " +
-              formatLocation(location)
+              formatLocation(location),
           );
         }
         instruction = { type: "readInt8" };
