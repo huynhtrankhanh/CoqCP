@@ -315,7 +315,8 @@ class CoqCPASTTransformer {
         case "store":
         case "retrieve":
         case "range":
-        case "readInt32":
+        case "readInt8":
+        case "writeInt8":
           return this.processInstruction(
             name,
             node.arguments.map((x) => {
@@ -619,7 +620,7 @@ const code = `environment({
 });
 
 procedure("fibonacci", { n: int32, a: int32, b: int32, i: int32 }, () => {
-    set("n", readInt32());  // Reading the term 'n' to which Fibonacci sequence is to be calculated
+    set("n", readInt8());  // Reading the term 'n' to which Fibonacci sequence is to be calculated
     set("a", 0);
     set("b", 1);
     
