@@ -54,7 +54,8 @@ type Instruction =
       loopVariable: string;
       loopBody: Instruction[];
     }
-  | { type: "readInt32" }
+  | { type: "readInt8" }
+  | { type: "writeInt8"; value: Instruction | LocalBinder | number }
   | BinaryOperationInstruction
   | { type: "subscript"; value: Instruction | LocalBinder; index: number };
 
@@ -559,14 +560,26 @@ class CoqCPASTTransformer {
         break;
       }
 
-      case "readInt32": {
+      case "readInt8": {
         if (args.length !== 0) {
           throw new ParseError(
-            "readInt32() function accepts exactly 0 argument. " +
+            "readInt8() function accepts exactly 0 argument. " +
+              formatLocation(location)
+          );
+        }
+        instruction = { type: "readInt8" };
+        break;
+      }
+
+      case "writeInt8": {
+        if (args.length !== 1) {
+          throw new ParseError(
+            "writeInt8() function accepts exactly 1 argument. " +
               formatLocation(location),
           );
         }
-        instruction = { type: "readInt32" };
+        const value = this.processNode(args[0]);
+        instruction = { type: "writeInt8", value };
         break;
       }
 
