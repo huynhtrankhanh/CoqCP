@@ -34,18 +34,22 @@ type LocalBinder = { type: "local binder"; name: string };
 interface BinaryOperationInstruction {
   type: "binaryOp";
   operator: BinaryOp;
-  left: LocalBinder | number | Instruction;
-  right: LocalBinder | number | Instruction;
+  left: LocalBinder | number | Instruction | boolean;
+  right: LocalBinder | number | Instruction | boolean;
 }
 
 type Instruction =
   | { type: "get"; name: string }
-  | { type: "set"; name: string; value: LocalBinder | number | Instruction }
+  | {
+      type: "set";
+      name: string;
+      value: LocalBinder | number | Instruction | boolean;
+    }
   | {
       type: "store";
       name: string;
       index: number;
-      tuples: (LocalBinder | number | Instruction)[];
+      tuples: (LocalBinder | number | Instruction | boolean)[];
     }
   | { type: "retrieve"; name: string; index: number }
   | {
@@ -61,7 +65,7 @@ type Instruction =
   | { type: "subscript"; value: Instruction | LocalBinder; index: number }
   | {
       type: "condition";
-      condition: Instruction | LocalBinder | number;
+      condition: Instruction | LocalBinder | number | boolean;
       body: Instruction[];
       alternate: Instruction[];
     };
@@ -309,7 +313,7 @@ class CoqCPASTTransformer {
 
   private processNode(
     node: ExtendNode<ESTree.Node>,
-  ): Instruction | LocalBinder | number {
+  ): Instruction | LocalBinder | number | boolean {
     if (node.type === "CallExpression" && node.callee.type === "Identifier") {
       return this.processInstruction(
         node.callee.name,
@@ -324,7 +328,10 @@ class CoqCPASTTransformer {
       );
     } else if (node.type === "Identifier") {
       return { type: "local binder", name: node.name };
-    } else if (node.type === "Literal" && typeof node.value === "number") {
+    } else if (
+      node.type === "Literal" &&
+      (typeof node.value === "number" || typeof node.value === "boolean")
+    ) {
       return node.value;
     } else if (node.type === "BinaryExpression") {
       return this.processBinaryExpression(node);
