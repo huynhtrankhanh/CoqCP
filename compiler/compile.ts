@@ -312,9 +312,7 @@ class CoqCPASTTransformer {
     return this.result;
   }
 
-  private processNode(
-    node: ExtendNode<ESTree.Node>,
-  ): ValueType {
+  private processNode(node: ExtendNode<ESTree.Node>): ValueType {
     if (node.type === "CallExpression" && node.callee.type === "Identifier") {
       return this.processInstruction(
         node.callee.name,
