@@ -39,6 +39,12 @@ interface BinaryOperationInstruction {
   right: ValueType;
 }
 
+interface UnaryOperationInstruction {
+  type: "unaryOp";
+  operator: UnaryOp;
+  value: ValueType;
+}
+
 type Instruction =
   | { type: "get"; name: string }
   | {
@@ -392,22 +398,20 @@ class CoqCPASTTransformer {
         return "subtract";
       case "*":
         return "multiply";
-      case "/":
-        return "divide";
-      case "%":
-        return "modulus";
       case "==":
         return "equal";
       case "!=":
         return "noteq";
-      case "<":
-        return "less";
-      case ">":
-        return "greater";
-      case "<=":
-        return "lesseq";
-      case ">=":
-        return "greatereq";
+      case "|":
+        return "bitwise or";
+      case "^":
+        return "bitwise xor";
+      case "&":
+        return "bitwise and";
+      case ">>":
+        return "shift right";
+      case "<<":
+        return "shift left";
       default:
         throw new ParseError(
           "invalid binary operator: " +
