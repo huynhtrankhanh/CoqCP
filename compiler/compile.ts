@@ -624,6 +624,7 @@ class CoqCPASTTransformer {
             alternate as ExtendNode<ESTree.BlockStatement>,
           ),
         });
+        continue;
       }
       if (
         statement.type !== "ExpressionStatement" ||
@@ -661,7 +662,7 @@ procedure("fibonacci", { n: int32, a: int32, b: int32, i: int32 }, () => {
 
     if (get("n") > 100) {
       writeInt8(32);
-    } else writeInt8(64);
+    } else {writeInt8(64);}
 });`;
 const transformer = new CoqCPASTTransformer(code);
 console.log(JSON.stringify(transformer.transform(), null, 4));
