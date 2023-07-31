@@ -354,7 +354,7 @@ class CoqCPASTTransformer {
       }
       return { type: "subscript", value: instruction, index: Number(index) };
     } else {
-      throw new ParseError("Unrecognized node type: " + node.type);
+      throw new ParseError("unrecognized node type: " + node.type + ". " + formatLocation(node.loc));
     }
   }
 
