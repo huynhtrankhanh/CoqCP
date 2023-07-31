@@ -63,6 +63,7 @@ type Instruction =
       type: "condition";
       condition: Instruction | LocalBinder | number;
       body: Instruction[];
+      alternate: Instruction[];
     };
 
 class ParseError extends Error {
@@ -225,86 +226,82 @@ class CoqCPASTTransformer {
       }
 
       if (node.expression.callee.name === "procedure") {
-        if (node.expression.callee.name === "procedure") {
-          // Parsing the procedure block
-          if (node.expression.arguments.length !== 3) {
-            throw new ParseError(
-              "procedure block accepts exactly 3 arguments. " +
-                formatLocation(node.loc),
-            );
-          }
-
-          const procedureNameNode = node.expression.arguments[0];
-          const variableListNode = node.expression.arguments[1];
-          const bodyNode = node.expression.arguments[2];
-
-          if (
-            procedureNameNode.type !== "Literal" ||
-            typeof procedureNameNode.value !== "string"
-          ) {
-            throw new ParseError(
-              "first argument of procedure() must be a string literal. " +
-                formatLocation(procedureNameNode.loc),
-            );
-          }
-
-          if (variableListNode.type !== "ObjectExpression") {
-            throw new ParseError(
-              "second argument of procedure() must be an object. " +
-                formatLocation(variableListNode.loc),
-            );
-          }
-
-          // building the variables object
-          let variables: Record<string, Variable> = {};
-          for (const property of variableListNode.properties) {
-            if (property.type === "SpreadElement") {
-              throw new ParseError(
-                "spread syntax isn't recognized. " +
-                  formatLocation(property.loc),
-              );
-            }
-
-            if (property.key.type !== "Identifier") {
-              throw new ParseError(
-                "unrecognized key type. " + formatLocation(property.key.loc),
-              );
-            }
-
-            if (property.value.type !== "Identifier") {
-              throw new ParseError(
-                "unrecognized value type. " +
-                  formatLocation(property.value.loc),
-              );
-            }
-
-            variables[property.key.name] = { type: property.value.name };
-          }
-
-          // transforming bodyNode into Instruction[]
-          if (
-            bodyNode.type !== "ArrowFunctionExpression" ||
-            bodyNode.body.type !== "BlockStatement"
-          ) {
-            throw new ParseError(
-              "third argument of procedure() must be an arrow function expression. " +
-                formatLocation(bodyNode.loc),
-            );
-          }
-
-          if (bodyNode.params.length !== 0) {
-            throw new ParseError("inner function can't take arguments");
-          }
-
-          const body: Instruction[] = this.transformBodyNode(bodyNode.body);
-
-          // adding the procedure to the result
-          this.result.procedures.push({
-            name: procedureNameNode.value,
-            variables,
-            body,
-          });
+        // Parsing the procedure block
+        if (node.expression.arguments.length !== 3) {
+          throw new ParseError(
+            "procedure block accepts exactly 3 arguments. " +
+              formatLocation(node.loc)
+          );
         }
+
+        const procedureNameNode = node.expression.arguments[0];
+        const variableListNode = node.expression.arguments[1];
+        const bodyNode = node.expression.arguments[2];
+
+        if (
+          procedureNameNode.type !== "Literal" ||
+          typeof procedureNameNode.value !== "string"
+        ) {
+          throw new ParseError(
+            "first argument of procedure() must be a string literal. " +
+              formatLocation(procedureNameNode.loc)
+          );
+        }
+
+        if (variableListNode.type !== "ObjectExpression") {
+          throw new ParseError(
+            "second argument of procedure() must be an object. " +
+              formatLocation(variableListNode.loc)
+          );
+        }
+
+        // building the variables object
+        let variables: Record<string, Variable> = {};
+        for (const property of variableListNode.properties) {
+          if (property.type === "SpreadElement") {
+            throw new ParseError(
+              "spread syntax isn't recognized. " + formatLocation(property.loc)
+            );
+          }
+
+          if (property.key.type !== "Identifier") {
+            throw new ParseError(
+              "unrecognized key type. " + formatLocation(property.key.loc)
+            );
+          }
+
+          if (property.value.type !== "Identifier") {
+            throw new ParseError(
+              "unrecognized value type. " + formatLocation(property.value.loc)
+            );
+          }
+
+          variables[property.key.name] = { type: property.value.name };
+        }
+
+        // transforming bodyNode into Instruction[]
+        if (
+          bodyNode.type !== "ArrowFunctionExpression" ||
+          bodyNode.body.type !== "BlockStatement"
+        ) {
+          throw new ParseError(
+            "third argument of procedure() must be an arrow function expression. " +
+              formatLocation(bodyNode.loc)
+          );
+        }
+
+        if (bodyNode.params.length !== 0) {
+          throw new ParseError("inner function can't take arguments");
+        }
+
+        const body: Instruction[] = this.transformBodyNode(bodyNode.body);
+
+        // adding the procedure to the result
+        this.result.procedures.push({
+          name: procedureNameNode.value,
+          variables,
+          body,
+        });
       }
     }
     return this.result;
@@ -554,42 +551,6 @@ class CoqCPASTTransformer {
         break;
       }
 
-      case "condition": {
-        if (
-          args.length !== 2 ||
-          args[1].type !== "ArrowFunctionExpression" ||
-          args[1].body.type !== "BlockStatement"
-        ) {
-          throw new ParseError(
-            "condition() function accepts exactly 2 arguments, second one being an arrow function. " +
-              formatLocation(location),
-          );
-        }
-        const condition = this.processNode(args[0]);
-        const funcNode = args[1];
-
-        if (funcNode.params.length !== 0) {
-          throw new ParseError(
-            "arrow function must take exactly 0 arguments. " +
-              formatLocation(funcNode.loc),
-          );
-        }
-
-        if (funcNode.body.type !== "BlockStatement") {
-          throw new ParseError(
-            "block statement expected. " + formatLocation(funcNode.loc),
-          );
-        }
-
-        const body = this.transformBodyNode(funcNode.body);
-        instruction = {
-          type: "condition",
-          condition,
-          body,
-        };
-        break;
-      }
-
       case "readInt8": {
         if (args.length !== 0) {
           throw new ParseError(
@@ -628,12 +589,48 @@ class CoqCPASTTransformer {
     let instructions: Instruction[] = [];
 
     for (const statement of bodyNode.body) {
+      if (statement.type === "IfStatement") {
+        const test = this.processNode(statement.test);
+        if (statement.consequent.type !== "BlockStatement") {
+          throw new Error(
+            "must be a block statement. " +
+              formatLocation(statement.consequent.loc)
+          );
+        }
+        const consequent = this.transformBodyNode(statement.consequent);
+        const alternate = statement.alternate;
+        if (alternate === null || alternate === undefined) {
+          instructions.push({
+            type: "condition",
+            condition: test,
+            body: consequent,
+            alternate: [],
+          });
+          continue;
+        }
+        if (alternate.type !== "BlockStatement") {
+          if (alternate.loc === undefined || alternate.loc === null) {
+            throw new Error("must be a block statement. " + statement.loc);
+          }
+          throw new Error(
+            "must be a block statement. " + formatLocation(alternate.loc)
+          );
+        }
+        instructions.push({
+          type: "condition",
+          condition: test,
+          body: consequent,
+          alternate: this.transformBodyNode(
+            alternate as ExtendNode<ESTree.BlockStatement>
+          ),
+        });
+      }
       if (
         statement.type !== "ExpressionStatement" ||
         statement.expression.type !== "CallExpression"
       ) {
         throw new ParseError(
-          "Invalid statement type. " + formatLocation(statement.loc),
+          "invalid statement type. " + formatLocation(statement.loc)
         );
       }
       instructions.push(this.processNode(statement.expression) as Instruction);
@@ -661,6 +658,10 @@ procedure("fibonacci", { n: int32, a: int32, b: int32, i: int32 }, () => {
         set("i", retrieve("fibSeq", x)[0] + retrieve("fibSeq", x + 1)[0]);  // Getting sum of last two fibonacci numbers
         store("fibSeq", x + 2, [get("i")]);  // Storing the newly calculated fibonacci term
     })
+
+    if (get("n") > 100) {
+      writeInt8(32);
+    } else writeInt8(64);
 });`;
 const transformer = new CoqCPASTTransformer(code);
 console.log(JSON.stringify(transformer.transform(), null, 4));
