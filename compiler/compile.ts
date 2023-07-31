@@ -318,7 +318,7 @@ class CoqCPASTTransformer {
         node.callee.name,
         node.arguments.map((x) => {
           if (x.type === "SpreadElement") {
-            throw new Error("spread syntax not supported");
+            throw new ParseError("spread syntax not supported");
           }
 
           return x;
@@ -481,13 +481,16 @@ class CoqCPASTTransformer {
           );
         }
         const arrayName = args[0].value;
-        const index = this.processNode(args[1]) as number;
+        const index = this.processNode(args[1]);
+        if (typeof index !== "number") {
+          throw new ParseError("index must be a literal number. " + formatLocation(args[1].loc));
+        }
         const tuples = args[2].elements.map((node) => {
           if (node === null) {
-            throw new Error("node can't be null. " + formatLocation(location));
+            throw new ParseError("node can't be null. " + formatLocation(location));
           }
           if (node.type === "SpreadElement") {
-            throw new Error(
+            throw new ParseError(
               "spread syntax not supported, " + formatLocation(location),
             );
           }
@@ -603,7 +606,7 @@ class CoqCPASTTransformer {
       if (statement.type === "IfStatement") {
         const test = this.processNode(statement.test);
         if (statement.consequent.type !== "BlockStatement") {
-          throw new Error(
+          throw new ParseError(
             "must be a block statement. " +
               formatLocation(statement.consequent.loc),
           );
@@ -621,9 +624,9 @@ class CoqCPASTTransformer {
         }
         if (alternate.type !== "BlockStatement") {
           if (alternate.loc === undefined || alternate.loc === null) {
-            throw new Error("must be a block statement. " + statement.loc);
+            throw new ParseError("must be a block statement. " + statement.loc);
           }
-          throw new Error(
+          throw new ParseError(
             "must be a block statement. " + formatLocation(alternate.loc),
           );
         }
