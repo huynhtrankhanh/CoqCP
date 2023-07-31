@@ -30,12 +30,13 @@ type BinaryOp =
   | "greatereq";
 
 type LocalBinder = { type: "local binder"; name: string };
+type ValueType = LocalBinder | number | Instruction | boolean;
 
 interface BinaryOperationInstruction {
   type: "binaryOp";
   operator: BinaryOp;
-  left: LocalBinder | number | Instruction | boolean;
-  right: LocalBinder | number | Instruction | boolean;
+  left: ValueType;
+  right: ValueType;
 }
 
 type Instruction =
@@ -43,29 +44,29 @@ type Instruction =
   | {
       type: "set";
       name: string;
-      value: LocalBinder | number | Instruction | boolean;
+      value: ValueType;
     }
   | {
       type: "store";
       name: string;
       index: number;
-      tuples: (LocalBinder | number | Instruction | boolean)[];
+      tuples: ValueType[];
     }
   | { type: "retrieve"; name: string; index: number }
   | {
       type: "range";
       name: string;
-      end: number | LocalBinder | Instruction;
+      end: ValueType;
       loopVariable: string;
       loopBody: Instruction[];
     }
   | { type: "readInt8" }
-  | { type: "writeInt8"; value: Instruction | LocalBinder | number }
+  | { type: "writeInt8"; value: ValueType }
   | BinaryOperationInstruction
   | { type: "subscript"; value: Instruction | LocalBinder; index: number }
   | {
       type: "condition";
-      condition: Instruction | LocalBinder | number | boolean;
+      condition: ValueType;
       body: Instruction[];
       alternate: Instruction[];
     };
@@ -313,7 +314,7 @@ class CoqCPASTTransformer {
 
   private processNode(
     node: ExtendNode<ESTree.Node>,
-  ): Instruction | LocalBinder | number | boolean {
+  ): ValueType {
     if (node.type === "CallExpression" && node.callee.type === "Identifier") {
       return this.processInstruction(
         node.callee.name,
@@ -348,7 +349,7 @@ class CoqCPASTTransformer {
           "index must be defined. " + formatLocation(node.loc),
         );
       }
-      if (typeof instruction === "string" || typeof instruction === "number") {
+      if (typeof instruction === "number" || typeof instruction === "boolean") {
         throw new ParseError(
           "left hand side can't be a literal. " + formatLocation(node.loc),
         );
