@@ -483,11 +483,15 @@ class CoqCPASTTransformer {
         const arrayName = args[0].value;
         const index = this.processNode(args[1]);
         if (typeof index !== "number") {
-          throw new ParseError("index must be a literal number. " + formatLocation(args[1].loc));
+          throw new ParseError(
+            "index must be a literal number. " + formatLocation(args[1].loc),
+          );
         }
         const tuples = args[2].elements.map((node) => {
           if (node === null) {
-            throw new ParseError("node can't be null. " + formatLocation(location));
+            throw new ParseError(
+              "node can't be null. " + formatLocation(location),
+            );
           }
           if (node.type === "SpreadElement") {
             throw new ParseError(
