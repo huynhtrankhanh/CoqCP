@@ -1,4 +1,5 @@
 # Compiler Development
+
 The CoqCP project now includes a compiler. The compiler compiles a custom language to both Coq and C++.
 
 To work on the compiler, you will need to have Node.js installed. After that, switch to the `compiler` directory, and run `npm` to install the dependencies.
