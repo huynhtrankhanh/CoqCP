@@ -28,11 +28,11 @@ type BinaryOp =
   | 'equal'
   | 'noteq'
 
-type LocalBinder = { type: 'local binder'; name: string }
-type ValueType = {
-  value: LocalBinder | number | Instruction | boolean
-  location: Location
-}
+type LocalBinder = { type: 'local binder'; name: string; location: Location }
+type ValueType =
+  | LocalBinder
+  | { type: 'literal'; value: number | boolean; location: Location }
+  | Instruction
 
 interface BinaryOperationInstruction {
   type: 'binaryOp'
@@ -62,7 +62,7 @@ type Instruction = (
       index: number
       tuples: ValueType[]
     }
-  | { type: 'retrieve'; name: string; index: number }
+  | { type: 'retrieve'; name: string; index: ValueType }
   | {
       type: 'range'
       name: string
@@ -74,15 +74,14 @@ type Instruction = (
   | { type: 'writeInt8'; value: ValueType }
   | BinaryOperationInstruction
   | UnaryOperationInstruction
-  | { type: 'subscript'; value: Instruction | LocalBinder; index: number }
+  | { type: 'subscript'; value: ValueType; index: number }
   | {
       type: 'condition'
       condition: ValueType
       body: Instruction[]
       alternate: Instruction[]
     }
-) &
-  Location
+) & { location: Location }
 
 class ParseError extends Error {
   constructor(...args: string[] | undefined[]) {
@@ -339,12 +338,12 @@ class CoqCPASTTransformer {
         node.loc
       )
     } else if (node.type === 'Identifier') {
-      return { type: 'local binder', name: node.name }
+      return { type: 'local binder', name: node.name, location: node.loc }
     } else if (
       node.type === 'Literal' &&
       (typeof node.value === 'number' || typeof node.value === 'boolean')
     ) {
-      return node.value
+      return { type: 'literal', value: node.value, location: node.loc }
     } else if (node.type === 'BinaryExpression') {
       return this.processBinaryExpression(node)
     } else if (node.type === 'UnaryExpression') {
@@ -352,13 +351,33 @@ class CoqCPASTTransformer {
       const value = this.processNode(argument)
       switch (operator) {
         case '!':
-          return { type: 'unaryOp', operator: 'boolean not', value }
+          return {
+            type: 'unaryOp',
+            operator: 'boolean not',
+            value,
+            location: node.loc,
+          }
         case '+':
-          return { type: 'unaryOp', operator: 'plus', value }
+          return {
+            type: 'unaryOp',
+            operator: 'plus',
+            value,
+            location: node.loc,
+          }
         case '-':
-          return { type: 'unaryOp', operator: 'minus', value }
+          return {
+            type: 'unaryOp',
+            operator: 'minus',
+            value,
+            location: node.loc,
+          }
         case '~':
-          return { type: 'unaryOp', operator: 'bitwise not', value }
+          return {
+            type: 'unaryOp',
+            operator: 'bitwise not',
+            value,
+            location: node.loc,
+          }
         default:
           throw new ParseError(
             'operator not recognized. ' + formatLocation(argument.loc)
@@ -386,6 +405,7 @@ class CoqCPASTTransformer {
         type: 'subscript',
         value: instruction,
         index: Number(index),
+        location: node.loc,
       }
     } else {
       throw new ParseError(
@@ -396,11 +416,11 @@ class CoqCPASTTransformer {
 
   private processBinaryExpression(
     node: ExtendNode<ESTree.BinaryExpression>
-  ): BinaryOperationInstruction {
+  ): BinaryOperationInstruction & { location: Location } {
     const operator = this.getBinaryOperator(node.operator, node.loc)
     const left = this.processNode(node.left)
     const right = this.processNode(node.right)
-    return { type: 'binaryOp', operator, left, right }
+    return { type: 'binaryOp', operator, left, right, location: node.loc }
   }
 
   private getBinaryOperator(
@@ -476,7 +496,7 @@ class CoqCPASTTransformer {
           )
         }
         const varName = args[0].value
-        instruction = { type: 'get', name: varName }
+        instruction = { type: 'get', name: varName, location }
         break
       }
 
@@ -493,7 +513,7 @@ class CoqCPASTTransformer {
         }
         const varName = args[0].value
         const value = this.processNode(args[1])
-        instruction = { type: 'set', name: varName, value }
+        instruction = { type: 'set', name: varName, value, location }
         break
       }
 
@@ -529,7 +549,13 @@ class CoqCPASTTransformer {
           }
           return this.processNode(node as ExtendNode<ESTree.Expression>)
         })
-        instruction = { type: 'store', name: arrayName, index, tuples }
+        instruction = {
+          type: 'store',
+          name: arrayName,
+          index,
+          tuples,
+          location,
+        }
         break
       }
 
@@ -545,8 +571,8 @@ class CoqCPASTTransformer {
           )
         }
         const arrayName = args[0].value
-        const index = this.processNode(args[1]) as number
-        instruction = { type: 'retrieve', name: arrayName, index }
+        const index = this.processNode(args[1])
+        instruction = { type: 'retrieve', name: arrayName, index, location }
         break
       }
 
@@ -594,6 +620,7 @@ class CoqCPASTTransformer {
           loopVariable,
           loopBody,
           end,
+          location,
         }
         break
       }
@@ -605,7 +632,7 @@ class CoqCPASTTransformer {
               formatLocation(location)
           )
         }
-        instruction = { type: 'readInt8' }
+        instruction = { type: 'readInt8', location }
         break
       }
 
@@ -617,7 +644,7 @@ class CoqCPASTTransformer {
           )
         }
         const value = this.processNode(args[0])
-        instruction = { type: 'writeInt8', value }
+        instruction = { type: 'writeInt8', value, location }
         break
       }
 
@@ -652,6 +679,7 @@ class CoqCPASTTransformer {
             condition: test,
             body: consequent,
             alternate: [],
+            location: statement.loc,
           })
           continue
         }
@@ -670,6 +698,7 @@ class CoqCPASTTransformer {
           alternate: this.transformBodyNode(
             alternate as ExtendNode<ESTree.BlockStatement>
           ),
+          location: statement.loc,
         })
         continue
       }
