@@ -8,11 +8,11 @@ You are given an array A with length N. There are Q queries that you need to pro
 
 The input consists of the following:
 
--   The first line contains three integers N, K, and Q (1 <= N, Q <= 2 \* 10^5, 1 <= K <= N), where N is the length of the array, K is the index of the element to output, and Q is the number of queries.
+- The first line contains three integers N, K, and Q (1 <= N, Q <= 2 \* 10^5, 1 <= K <= N), where N is the length of the array, K is the index of the element to output, and Q is the number of queries.
 
--   The second line contains N integers A[1], A[2], ..., A[N] (1 <= A[i] <= 10^9), representing the elements of the array.
+- The second line contains N integers A[1], A[2], ..., A[N] (1 <= A[i] <= 10^9), representing the elements of the array.
 
--   Each of the next Q lines contains two integers L[i] and R[i] (1 <= L[i] <= R[i] <= N), representing a query.
+- Each of the next Q lines contains two integers L[i] and R[i] (1 <= L[i] <= R[i] <= N), representing a query.
 
 **Output**
 
@@ -37,8 +37,8 @@ Output:
 
 Explanation:
 
--   After processing the first query, the array becomes [1, 2, 4, 3, 5].
--   After processing the second query, the array becomes [1, 2, 3, 4, 5].
--   The value of A[3] after processing all the queries is 3.
+- After processing the first query, the array becomes [1, 2, 4, 3, 5].
+- After processing the second query, the array becomes [1, 2, 3, 4, 5].
+- The value of A[3] after processing all the queries is 3.
 
 **Your job:** find out the solution to this problem and code a formally verified solution.

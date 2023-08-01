@@ -18,10 +18,10 @@ Note: Whenever you create a new file, remember to import `Options` with the `Fro
 
 Documentation:
 
--   [Regular bracket strings](docs/RegularBracketString.md)
--   [Selection sort](docs/SelectionSort.md)
--   [Repeat and compare](docs/RepeatCompare.md)
+- [Regular bracket strings](docs/RegularBracketString.md)
+- [Selection sort](docs/SelectionSort.md)
+- [Repeat and compare](docs/RepeatCompare.md)
 
 Tasks:
 
--   [Sorting subarrays](docs/SortingSubarrays.md)
+- [Sorting subarrays](docs/SortingSubarrays.md)
