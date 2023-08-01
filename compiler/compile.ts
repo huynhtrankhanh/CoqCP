@@ -346,16 +346,18 @@ class CoqCPASTTransformer {
       const { operator, argument } = node;
       const value = this.processNode(argument);
       switch (operator) {
-        case "!": 
-          return {type: "unaryOp", operator: "boolean not", value}
-        case "+": 
-        return {type: "unaryOp", operator: "plus", value}
+        case "!":
+          return { type: "unaryOp", operator: "boolean not", value };
+        case "+":
+          return { type: "unaryOp", operator: "plus", value };
         case "-":
-          return {type:"unaryOp", operator: "minus", value}
+          return { type: "unaryOp", operator: "minus", value };
         case "~":
-          return {type:"unaryOp", operator:"bitwise not", value}
+          return { type: "unaryOp", operator: "bitwise not", value };
         default:
-          throw new ParseError("operator not recognized. " + formatLocation(argument.loc))
+          throw new ParseError(
+            "operator not recognized. " + formatLocation(argument.loc),
+          );
       }
     } else if (node.type === "MemberExpression") {
       const instruction = this.processNode(node.object);
