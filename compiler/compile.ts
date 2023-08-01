@@ -20,14 +20,13 @@ type BinaryOp =
   | "add"
   | "subtract"
   | "multiply"
-  | "divide"
-  | "modulus"
+  | "bitwise or"
+  | "bitwise xor"
+  | "bitwise and"
+  | "shift right"
+  | "shift left"
   | "equal"
-  | "noteq"
-  | "less"
-  | "greater"
-  | "lesseq"
-  | "greatereq";
+  | "noteq";
 
 type LocalBinder = { type: "local binder"; name: string };
 type ValueType = LocalBinder | number | Instruction | boolean;
@@ -38,6 +37,11 @@ interface BinaryOperationInstruction {
   left: ValueType;
   right: ValueType;
 }
+
+type UnaryOp = {
+  type: "minus" | "plus" | "bitwise not";
+  value: ValueType;
+};
 
 interface UnaryOperationInstruction {
   type: "unaryOp";
@@ -128,14 +132,14 @@ class CoqCPASTTransformer {
       ) {
         throw new ParseError(
           'only "environment" and "procedure" expressions allowed. ' +
-            formatLocation(node.loc),
+            formatLocation(node.loc)
         );
       }
 
       if (node.expression.callee.name === "environment") {
         if (seenEnvironmentBlock) {
           throw new ParseError(
-            "duplicate environment block. " + formatLocation(node.loc),
+            "duplicate environment block. " + formatLocation(node.loc)
           );
         }
         seenEnvironmentBlock = true;
@@ -143,7 +147,7 @@ class CoqCPASTTransformer {
         if (node.expression.arguments.length !== 1) {
           throw new ParseError(
             "environment block accepts exactly 1 argument. " +
-              formatLocation(node.loc),
+              formatLocation(node.loc)
           );
         }
 
@@ -151,20 +155,20 @@ class CoqCPASTTransformer {
         if (argumentNode.type !== "ObjectExpression") {
           throw new ParseError(
             "the argument must be an object. " +
-              formatLocation(argumentNode.loc),
+              formatLocation(argumentNode.loc)
           );
         }
 
         for (const property of argumentNode.properties) {
           if (property.type === "SpreadElement") {
             throw new ParseError(
-              "spread syntax isn't recognized. " + formatLocation(property.loc),
+              "spread syntax isn't recognized. " + formatLocation(property.loc)
             );
           }
 
           if (property.key.type !== "Identifier") {
             throw new ParseError(
-              "unrecognized key type. " + formatLocation(property.key.loc),
+              "unrecognized key type. " + formatLocation(property.key.loc)
             );
           }
 
@@ -176,14 +180,14 @@ class CoqCPASTTransformer {
           ) {
             throw new ParseError(
               "expecting an array expression. " +
-                formatLocation(arrayDescription.loc),
+                formatLocation(arrayDescription.loc)
             );
           }
 
           if (arrayDescription.arguments.length !== 2) {
             throw new ParseError(
               "array() accepts exactly two arguments. " +
-                formatLocation(arrayDescription.loc),
+                formatLocation(arrayDescription.loc)
             );
           }
 
@@ -193,7 +197,7 @@ class CoqCPASTTransformer {
           if (typesArrayNode.type !== "ArrayExpression") {
             throw new ParseError(
               "first argument of array() must be an array." +
-                formatLocation(typesArrayNode.loc),
+                formatLocation(typesArrayNode.loc)
             );
           }
 
@@ -203,7 +207,7 @@ class CoqCPASTTransformer {
           ) {
             throw new ParseError(
               "second argument of array() must be a numeric literal." +
-                formatLocation(lengthNode.loc),
+                formatLocation(lengthNode.loc)
             );
           }
 
@@ -219,7 +223,7 @@ class CoqCPASTTransformer {
             ) {
               throw new ParseError(
                 "invalid array item type. range: " +
-                  formatLocation(typesArrayNode.loc),
+                  formatLocation(typesArrayNode.loc)
               );
             }
 
@@ -241,7 +245,7 @@ class CoqCPASTTransformer {
         if (node.expression.arguments.length !== 3) {
           throw new ParseError(
             "procedure block accepts exactly 3 arguments. " +
-              formatLocation(node.loc),
+              formatLocation(node.loc)
           );
         }
 
@@ -255,14 +259,14 @@ class CoqCPASTTransformer {
         ) {
           throw new ParseError(
             "first argument of procedure() must be a string literal. " +
-              formatLocation(procedureNameNode.loc),
+              formatLocation(procedureNameNode.loc)
           );
         }
 
         if (variableListNode.type !== "ObjectExpression") {
           throw new ParseError(
             "second argument of procedure() must be an object. " +
-              formatLocation(variableListNode.loc),
+              formatLocation(variableListNode.loc)
           );
         }
 
@@ -271,19 +275,19 @@ class CoqCPASTTransformer {
         for (const property of variableListNode.properties) {
           if (property.type === "SpreadElement") {
             throw new ParseError(
-              "spread syntax isn't recognized. " + formatLocation(property.loc),
+              "spread syntax isn't recognized. " + formatLocation(property.loc)
             );
           }
 
           if (property.key.type !== "Identifier") {
             throw new ParseError(
-              "unrecognized key type. " + formatLocation(property.key.loc),
+              "unrecognized key type. " + formatLocation(property.key.loc)
             );
           }
 
           if (property.value.type !== "Identifier") {
             throw new ParseError(
-              "unrecognized value type. " + formatLocation(property.value.loc),
+              "unrecognized value type. " + formatLocation(property.value.loc)
             );
           }
 
@@ -297,7 +301,7 @@ class CoqCPASTTransformer {
         ) {
           throw new ParseError(
             "third argument of procedure() must be an arrow function expression. " +
-              formatLocation(bodyNode.loc),
+              formatLocation(bodyNode.loc)
           );
         }
 
@@ -329,7 +333,7 @@ class CoqCPASTTransformer {
 
           return x;
         }),
-        node.loc,
+        node.loc
       );
     } else if (node.type === "Identifier") {
       return { type: "local binder", name: node.name };
@@ -344,33 +348,30 @@ class CoqCPASTTransformer {
       const instruction = this.processNode(node.object);
       if (node.property.type !== "Literal") {
         throw new ParseError(
-          "only literal indices allowed. " + formatLocation(node.loc),
+          "only literal indices allowed. " + formatLocation(node.loc)
         );
       }
       const index = node.property.raw;
       if (index === undefined) {
         throw new ParseError(
-          "index must be defined. " + formatLocation(node.loc),
+          "index must be defined. " + formatLocation(node.loc)
         );
       }
       if (typeof instruction === "number" || typeof instruction === "boolean") {
         throw new ParseError(
-          "left hand side can't be a literal. " + formatLocation(node.loc),
+          "left hand side can't be a literal. " + formatLocation(node.loc)
         );
       }
       return { type: "subscript", value: instruction, index: Number(index) };
     } else {
       throw new ParseError(
-        "unrecognized node type: " +
-          node.type +
-          ". " +
-          formatLocation(node.loc),
+        "unrecognized node type: " + node.type + ". " + formatLocation(node.loc)
       );
     }
   }
 
   private processBinaryExpression(
-    node: ExtendNode<ESTree.BinaryExpression>,
+    node: ExtendNode<ESTree.BinaryExpression>
   ): BinaryOperationInstruction {
     const operator = this.getBinaryOperator(node.operator, node.loc);
     const left = this.processNode(node.left);
@@ -389,7 +390,7 @@ class CoqCPASTTransformer {
         line: number;
         column: number;
       };
-    },
+    }
   ): BinaryOp {
     switch (operator) {
       case "+":
@@ -417,7 +418,7 @@ class CoqCPASTTransformer {
           "invalid binary operator: " +
             operator +
             ". " +
-            formatLocation(location),
+            formatLocation(location)
         );
     }
   }
@@ -434,7 +435,7 @@ class CoqCPASTTransformer {
         line: number;
         column: number;
       };
-    },
+    }
   ): Instruction {
     let instruction: Instruction;
 
@@ -447,7 +448,7 @@ class CoqCPASTTransformer {
         ) {
           throw new ParseError(
             "get() function accepts exactly 1 string argument. " +
-              formatLocation(location),
+              formatLocation(location)
           );
         }
         const varName = args[0].value;
@@ -463,7 +464,7 @@ class CoqCPASTTransformer {
         ) {
           throw new ParseError(
             "set() function accepts exactly 2 arguments, first one being a string. " +
-              formatLocation(location),
+              formatLocation(location)
           );
         }
         const varName = args[0].value;
@@ -481,25 +482,25 @@ class CoqCPASTTransformer {
         ) {
           throw new ParseError(
             "store() function accepts exactly 3 arguments, first one being a string and last one being an array. " +
-              formatLocation(location),
+              formatLocation(location)
           );
         }
         const arrayName = args[0].value;
         const index = this.processNode(args[1]);
         if (typeof index !== "number") {
           throw new ParseError(
-            "index must be a literal number. " + formatLocation(args[1].loc),
+            "index must be a literal number. " + formatLocation(args[1].loc)
           );
         }
         const tuples = args[2].elements.map((node) => {
           if (node === null) {
             throw new ParseError(
-              "node can't be null. " + formatLocation(location),
+              "node can't be null. " + formatLocation(location)
             );
           }
           if (node.type === "SpreadElement") {
             throw new ParseError(
-              "spread syntax not supported, " + formatLocation(location),
+              "spread syntax not supported, " + formatLocation(location)
             );
           }
           return this.processNode(node as ExtendNode<ESTree.Expression>);
@@ -516,7 +517,7 @@ class CoqCPASTTransformer {
         ) {
           throw new ParseError(
             "retrieve() function accepts exactly 2 arguments, first one being a string. " +
-              formatLocation(location),
+              formatLocation(location)
           );
         }
         const arrayName = args[0].value;
@@ -533,7 +534,7 @@ class CoqCPASTTransformer {
         ) {
           throw new ParseError(
             "range() function accepts exactly 2 arguments, second one being an arrow function. " +
-              formatLocation(location),
+              formatLocation(location)
           );
         }
         const end = this.processNode(args[0]);
@@ -542,7 +543,7 @@ class CoqCPASTTransformer {
         if (funcNode.params.length !== 1) {
           throw new ParseError(
             "arrow function must take exactly 1 argument. " +
-              formatLocation(funcNode.loc),
+              formatLocation(funcNode.loc)
           );
         }
 
@@ -550,7 +551,7 @@ class CoqCPASTTransformer {
 
         if (parameter.type !== "Identifier") {
           throw new ParseError(
-            "this parameter isn't recognized. " + formatLocation(parameter.loc),
+            "this parameter isn't recognized. " + formatLocation(parameter.loc)
           );
         }
 
@@ -558,7 +559,7 @@ class CoqCPASTTransformer {
 
         if (funcNode.body.type !== "BlockStatement") {
           throw new ParseError(
-            "block statement expected. " + formatLocation(funcNode.loc),
+            "block statement expected. " + formatLocation(funcNode.loc)
           );
         }
 
@@ -577,7 +578,7 @@ class CoqCPASTTransformer {
         if (args.length !== 0) {
           throw new ParseError(
             "readInt8() function accepts exactly 0 argument. " +
-              formatLocation(location),
+              formatLocation(location)
           );
         }
         instruction = { type: "readInt8" };
@@ -588,7 +589,7 @@ class CoqCPASTTransformer {
         if (args.length !== 1) {
           throw new ParseError(
             "writeInt8() function accepts exactly 1 argument. " +
-              formatLocation(location),
+              formatLocation(location)
           );
         }
         const value = this.processNode(args[0]);
@@ -598,7 +599,7 @@ class CoqCPASTTransformer {
 
       default:
         throw new ParseError(
-          "unknown instruction: " + name + ". " + formatLocation(location),
+          "unknown instruction: " + name + ". " + formatLocation(location)
         );
     }
 
@@ -606,7 +607,7 @@ class CoqCPASTTransformer {
   }
 
   private transformBodyNode(
-    bodyNode: ExtendNode<ESTree.BlockStatement>,
+    bodyNode: ExtendNode<ESTree.BlockStatement>
   ): Instruction[] {
     let instructions: Instruction[] = [];
 
@@ -616,7 +617,7 @@ class CoqCPASTTransformer {
         if (statement.consequent.type !== "BlockStatement") {
           throw new ParseError(
             "must be a block statement. " +
-              formatLocation(statement.consequent.loc),
+              formatLocation(statement.consequent.loc)
           );
         }
         const consequent = this.transformBodyNode(statement.consequent);
@@ -635,7 +636,7 @@ class CoqCPASTTransformer {
             throw new ParseError("must be a block statement. " + statement.loc);
           }
           throw new ParseError(
-            "must be a block statement. " + formatLocation(alternate.loc),
+            "must be a block statement. " + formatLocation(alternate.loc)
           );
         }
         instructions.push({
@@ -643,7 +644,7 @@ class CoqCPASTTransformer {
           condition: test,
           body: consequent,
           alternate: this.transformBodyNode(
-            alternate as ExtendNode<ESTree.BlockStatement>,
+            alternate as ExtendNode<ESTree.BlockStatement>
           ),
         });
         continue;
@@ -653,7 +654,7 @@ class CoqCPASTTransformer {
         statement.expression.type !== "CallExpression"
       ) {
         throw new ParseError(
-          "invalid statement type. " + formatLocation(statement.loc),
+          "invalid statement type. " + formatLocation(statement.loc)
         );
       }
       instructions.push(this.processNode(statement.expression) as Instruction);
