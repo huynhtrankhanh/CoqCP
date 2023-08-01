@@ -18,6 +18,9 @@ Note: Whenever you create a new file, remember to import `Options` with the `Fro
 
 Documentation:
 
+- [Compiler development](docs/CompilerDevelopment.md)
+<hr>
+
 - [Regular bracket strings](docs/RegularBracketString.md)
 - [Selection sort](docs/SelectionSort.md)
 - [Repeat and compare](docs/RepeatCompare.md)

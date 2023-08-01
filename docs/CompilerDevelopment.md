@@ -1,4 +1,4 @@
-# Compiler Development
+# Compiler development
 
 The CoqCP project now includes a compiler. The compiler compiles a custom language to both Coq and C++.
 
