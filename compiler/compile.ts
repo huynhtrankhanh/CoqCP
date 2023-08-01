@@ -59,7 +59,7 @@ type Instruction = (
   | {
       type: 'store'
       name: string
-      index: number
+      index: ValueType
       tuples: ValueType[]
     }
   | { type: 'retrieve'; name: string; index: ValueType }
@@ -531,11 +531,6 @@ class CoqCPASTTransformer {
         }
         const arrayName = args[0].value
         const index = this.processNode(args[1])
-        if (typeof index !== 'number') {
-          throw new ParseError(
-            'index must be a literal number. ' + formatLocation(args[1].loc)
-          )
-        }
         const tuples = args[2].elements.map((node) => {
           if (node === null) {
             throw new ParseError(
@@ -736,7 +731,7 @@ procedure("fibonacci", { n: int32, a: int32, b: int32, i: int32 }, () => {
         store("fibSeq", x + 2, [get("i")]);  // Storing the newly calculated fibonacci term
     })
 
-    if (get("n") > 100) {
+    if (get("n") == 100) {
       writeInt8(32);
     } else {writeInt8(64);}
 });`
