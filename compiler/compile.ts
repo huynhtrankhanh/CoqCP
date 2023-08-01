@@ -38,10 +38,7 @@ interface BinaryOperationInstruction {
   right: ValueType;
 }
 
-type UnaryOp = {
-  type: "minus" | "plus" | "bitwise not";
-  value: ValueType;
-};
+type UnaryOp = "minus" | "plus" | "bitwise not" | "boolean not";
 
 interface UnaryOperationInstruction {
   type: "unaryOp";
@@ -73,6 +70,7 @@ type Instruction =
   | { type: "readInt8" }
   | { type: "writeInt8"; value: ValueType }
   | BinaryOperationInstruction
+  | UnaryOperationInstruction
   | { type: "subscript"; value: Instruction | LocalBinder; index: number }
   | {
       type: "condition";
@@ -344,6 +342,21 @@ class CoqCPASTTransformer {
       return node.value;
     } else if (node.type === "BinaryExpression") {
       return this.processBinaryExpression(node);
+    } else if (node.type === "UnaryExpression") {
+      const { operator, argument } = node;
+      const value = this.processNode(argument);
+      switch (operator) {
+        case "!": 
+          return {type: "unaryOp", operator: "boolean not", value}
+        case "+": 
+        return {type: "unaryOp", operator: "plus", value}
+        case "-":
+          return {type:"unaryOp", operator: "minus", value}
+        case "~":
+          return {type:"unaryOp", operator:"bitwise not", value}
+        default:
+          throw new ParseError("operator not recognized. " + formatLocation(argument.loc))
+      }
     } else if (node.type === "MemberExpression") {
       const instruction = this.processNode(node.object);
       if (node.property.type !== "Literal") {
