@@ -113,6 +113,8 @@ type Instruction = (
       type: 'coerceInt64'
       value: ValueType
     }
+  | { type: 'less', left: ValueType, right: ValueType}
+  | {type: 'sLess', left: ValueType, right: ValueType}
 ) & { location: Location }
 
 class ParseError extends Error {
@@ -753,6 +755,32 @@ class CoqCPASTTransformer {
         }
         const value = this.processNode(args[0])
         instruction = { type: 'coerceInt64', value, location }
+        break
+      }
+
+      case 'less': {
+        if (args.length !== 2) {
+          throw new ParseError(
+            'less() function accepts exactly 2 arguments. ' +
+              formatLocation(location)
+          )
+        }
+        const left = this.processNode(args[0])
+        const right = this.processNode(args[1])
+        instruction = { type: 'less', left, right, location }
+        break
+      }
+
+      case 'sLess': {
+        if (args.length !== 2) {
+          throw new ParseError(
+            'sLess() function accepts exactly 2 arguments. ' +
+              formatLocation(location)
+          )
+        }
+        const left = this.processNode(args[0])
+        const right = this.processNode(args[1])
+        instruction = { type: 'sLess', left, right, location }
         break
       }
 
