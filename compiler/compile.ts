@@ -30,7 +30,11 @@ export type BinaryOp =
   | 'equal'
   | 'noteq'
 
-export type LocalBinder = { type: 'local binder'; name: string; location: Location }
+export type LocalBinder = {
+  type: 'local binder'
+  name: string
+  location: Location
+}
 export type ValueType =
   | LocalBinder
   | { type: 'literal'; value: number | boolean; location: Location }

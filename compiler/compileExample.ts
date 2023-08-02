@@ -1,4 +1,4 @@
-import { CoqCPASTTransformer } from "./compile"
+import { CoqCPASTTransformer } from './compile'
 
 const code = `environment({
     fibSeq: array([int32], 100),  // Memory to hold Fibonacci sequence up to the 100th term
