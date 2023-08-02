@@ -1,23 +1,23 @@
 import acorn, { ExtendNode } from 'acorn'
 import * as ESTree from 'estree'
 
-type PrimitiveType = 'bool' | 'int8' | 'int16' | 'int32' | 'int64'
+export type PrimitiveType = 'bool' | 'int8' | 'int16' | 'int32' | 'int64'
 
-interface ArrayDeclaration {
+export interface ArrayDeclaration {
   itemTypes: PrimitiveType[]
   length: number
   lengthNodeLocation: Location
 }
 
-interface Environment {
+export interface Environment {
   arrays: Record<string, ArrayDeclaration>
 }
 
-interface Variable {
+export interface Variable {
   type: string
 }
 
-type BinaryOp =
+export type BinaryOp =
   | 'add'
   | 'subtract'
   | 'multiply'
@@ -30,28 +30,28 @@ type BinaryOp =
   | 'equal'
   | 'noteq'
 
-type LocalBinder = { type: 'local binder'; name: string; location: Location }
-type ValueType =
+export type LocalBinder = { type: 'local binder'; name: string; location: Location }
+export type ValueType =
   | LocalBinder
   | { type: 'literal'; value: number | boolean; location: Location }
   | Instruction
 
-interface BinaryOperationInstruction {
+export interface BinaryOperationInstruction {
   type: 'binaryOp'
   operator: BinaryOp
   left: ValueType
   right: ValueType
 }
 
-type UnaryOp = 'minus' | 'plus' | 'bitwise not' | 'boolean not'
+export type UnaryOp = 'minus' | 'plus' | 'bitwise not' | 'boolean not'
 
-interface UnaryOperationInstruction {
+export interface UnaryOperationInstruction {
   type: 'unaryOp'
   operator: UnaryOp
   value: ValueType
 }
 
-type Instruction = (
+export type Instruction = (
   | { type: 'get'; name: string }
   | {
       type: 'set'
@@ -117,14 +117,14 @@ type Instruction = (
   | { type: 'sLess'; left: ValueType; right: ValueType }
 ) & { location: Location }
 
-class ParseError extends Error {
+export class ParseError extends Error {
   constructor(...args: string[] | undefined[]) {
     super(...args)
     this.name = 'ParseError'
   }
 }
 
-type Location = {
+export type Location = {
   start: { line: number; column: number }
   end: { line: number; column: number }
 }
@@ -132,18 +132,18 @@ type Location = {
 const formatLocation = ({ start, end }: Location): string =>
   `${start.line}:${start.column}-${end.line}:${end.column}`
 
-interface Procedure {
+export interface Procedure {
   name: string
   variables: Record<string, Variable>
   body: Instruction[]
 }
 
-class CoqCPAST {
+export class CoqCPAST {
   environment: Environment | null = null
   procedures: Procedure[] = []
 }
 
-class CoqCPASTTransformer {
+export class CoqCPASTTransformer {
   ast: acorn.ExtendNode<ESTree.Program>
   result: CoqCPAST
 
@@ -852,29 +852,3 @@ class CoqCPASTTransformer {
     return instructions
   }
 }
-
-const code = `environment({
-    fibSeq: array([int32], 100),  // Memory to hold Fibonacci sequence up to the 100th term
-    anotherArray: array([int8, int64], 3) // Example of an array where each element can hold multiple values
-});
-
-procedure("fibonacci", { n: int32, a: int32, b: int32, i: int32 }, () => {
-    set("n", readInt8());  // Reading the term 'n' to which Fibonacci sequence is to be calculated
-    set("a", 0);
-    set("b", 1);
-    
-    // Initialize first two numbers in fibonacci series
-    store("fibSeq", 0, [get("a")]);
-    store("fibSeq", 1, [get("b")]);
-
-    range(get("n") - 2, x => {  
-        set("i", retrieve("fibSeq", x)[0] + retrieve("fibSeq", x + 1)[0]);  // Getting sum of last two fibonacci numbers
-        store("fibSeq", x + 2, [get("i")]);  // Storing the newly calculated fibonacci term
-    })
-
-    if (get("n") == 100) {
-      writeInt8(32);
-    } else {writeInt8(64);}
-});`
-const transformer = new CoqCPASTTransformer(code)
-console.log(JSON.stringify(transformer.transform(), null, 4))
