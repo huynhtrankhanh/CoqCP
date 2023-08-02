@@ -113,8 +113,8 @@ type Instruction = (
       type: 'coerceInt64'
       value: ValueType
     }
-  | { type: 'less', left: ValueType, right: ValueType}
-  | {type: 'sLess', left: ValueType, right: ValueType}
+  | { type: 'less'; left: ValueType; right: ValueType }
+  | { type: 'sLess'; left: ValueType; right: ValueType }
 ) & { location: Location }
 
 class ParseError extends Error {
