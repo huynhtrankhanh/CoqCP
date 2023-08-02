@@ -6,6 +6,7 @@ type PrimitiveType = 'bool' | 'int8' | 'int16' | 'int32' | 'int64'
 interface ArrayDeclaration {
   itemTypes: PrimitiveType[]
   length: number
+  lengthNodeLocation: Location
 }
 
 interface Environment {
@@ -20,6 +21,7 @@ type BinaryOp =
   | 'add'
   | 'subtract'
   | 'multiply'
+  | 'mod'
   | 'bitwise or'
   | 'bitwise xor'
   | 'bitwise and'
@@ -74,12 +76,42 @@ type Instruction = (
   | { type: 'writeInt8'; value: ValueType }
   | BinaryOperationInstruction
   | UnaryOperationInstruction
-  | { type: 'subscript'; value: ValueType; index: number }
+  | {
+      type: 'subscript'
+      value: ValueType
+      index: { type: 'literal'; value: number; location: Location }
+    }
   | {
       type: 'condition'
       condition: ValueType
       body: Instruction[]
       alternate: Instruction[]
+    }
+  | {
+      type: 'sDivide'
+      left: ValueType
+      right: ValueType
+    }
+  | {
+      type: 'divide'
+      left: ValueType
+      right: ValueType
+    }
+  | {
+      type: 'coerceInt8'
+      value: ValueType
+    }
+  | {
+      type: 'coerceInt16'
+      value: ValueType
+    }
+  | {
+      type: 'coerceInt32'
+      value: ValueType
+    }
+  | {
+      type: 'coerceInt64'
+      value: ValueType
     }
 ) & { location: Location }
 
@@ -238,6 +270,7 @@ class CoqCPASTTransformer {
           this.result.environment.arrays[property.key.name] = {
             itemTypes,
             length: lengthNode.value,
+            lengthNodeLocation: lengthNode.loc,
           }
         }
       }
@@ -404,7 +437,11 @@ class CoqCPASTTransformer {
       return {
         type: 'subscript',
         value: instruction,
-        index: Number(index),
+        index: {
+          type: 'literal',
+          value: Number(index),
+          location: node.property.loc,
+        },
         location: node.loc,
       }
     } else {
@@ -457,6 +494,8 @@ class CoqCPASTTransformer {
         return 'shift right'
       case '<<':
         return 'shift left'
+      case '%':
+        return 'mod'
       default:
         throw new ParseError(
           'invalid binary operator: ' +
@@ -640,6 +679,80 @@ class CoqCPASTTransformer {
         }
         const value = this.processNode(args[0])
         instruction = { type: 'writeInt8', value, location }
+        break
+      }
+
+      case 'sDivide': {
+        if (args.length !== 2) {
+          throw new ParseError(
+            'sDivide() function accepts exactly 2 arguments. ' +
+              formatLocation(location)
+          )
+        }
+        const left = this.processNode(args[0])
+        const right = this.processNode(args[1])
+        instruction = { type: 'sDivide', left, right, location }
+        break
+      }
+
+      case 'divide': {
+        if (args.length !== 2) {
+          throw new ParseError(
+            'divide() function accepts exactly 2 arguments. ' +
+              formatLocation(location)
+          )
+        }
+        const left = this.processNode(args[0])
+        const right = this.processNode(args[1])
+        instruction = { type: 'divide', left, right, location }
+        break
+      }
+
+      case 'coerceInt8': {
+        if (args.length !== 1) {
+          throw new ParseError(
+            'coerceInt8() function accepts exactly 1 argument. ' +
+              formatLocation(location)
+          )
+        }
+        const value = this.processNode(args[0])
+        instruction = { type: 'coerceInt8', value, location }
+        break
+      }
+
+      case 'coerceInt16': {
+        if (args.length !== 1) {
+          throw new ParseError(
+            'coerceInt16() function accepts exactly 1 argument. ' +
+              formatLocation(location)
+          )
+        }
+        const value = this.processNode(args[0])
+        instruction = { type: 'coerceInt16', value, location }
+        break
+      }
+
+      case 'coerceInt32': {
+        if (args.length !== 1) {
+          throw new ParseError(
+            'coerceInt32() function accepts exactly 1 argument. ' +
+              formatLocation(location)
+          )
+        }
+        const value = this.processNode(args[0])
+        instruction = { type: 'coerceInt32', value, location }
+        break
+      }
+
+      case 'coerceInt64': {
+        if (args.length !== 1) {
+          throw new ParseError(
+            'coerceInt8() function accepts exactly 1 argument. ' +
+              formatLocation(location)
+          )
+        }
+        const value = this.processNode(args[0])
+        instruction = { type: 'coerceInt64', value, location }
         break
       }
 
