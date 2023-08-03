@@ -62,7 +62,18 @@ describe('CoqCPASTTransformer', () => {
     });`
 
     const transformer = new CoqCPASTTransformer(invalidCode)
-    expect(() => transformer.transform()).toThrow(ParseError)
+
+    expect.assertions(3)
+
+    try {
+      transformer.transform()
+    } catch (error) {
+      expect(error).toBeInstanceOf(ParseError)
+      expect(error).toHaveProperty('message')
+      expect(error.message).toMatch(
+        /^first argument of procedure\(\) must be a string literal\./
+      )
+    }
   })
 
   it('should parse valid code and produce correct structure', () => {
@@ -112,9 +123,15 @@ describe('CoqCPASTTransformer', () => {
 
     const transformer = new CoqCPASTTransformer(code)
 
-    expect(() => transformer.transform()).toThrow(
-      expect.objectContaining({ name: 'ParseError' })
-    )
+    expect.assertions(3)
+
+    try {
+      transformer.transform()
+    } catch (error) {
+      expect(error).toBeInstanceOf(ParseError)
+      expect(error).toHaveProperty('message')
+      expect(error.message).toMatch(/^duplicate environment block/)
+    }
   })
 
   it('throws ParseError when environment block has incorrect syntax', () => {
@@ -126,9 +143,15 @@ describe('CoqCPASTTransformer', () => {
 
     const transformer = new CoqCPASTTransformer(code)
 
-    expect(() => transformer.transform()).toThrow(
-      expect.objectContaining({ name: 'ParseError' })
-    )
+    expect.assertions(3)
+
+    try {
+      transformer.transform()
+    } catch (error) {
+      expect(error).toBeInstanceOf(ParseError)
+      expect(error).toHaveProperty('message')
+      expect(error.message).toMatch(/^the argument must be an object/)
+    }
   })
 
   it('should parse sDivide instruction correctly', () => {
@@ -234,13 +257,23 @@ describe('CoqCPASTTransformer', () => {
             procedure("myProcedure", { i: int32 }, () => {
                 range(10);})`
 
-      expect(() => {
-        const transformer = new CoqCPASTTransformer(codeWithFaultyRange)
+      const transformer = new CoqCPASTTransformer(codeWithFaultyRange)
+
+      expect.assertions(3)
+
+      try {
         transformer.transform()
-      }).toThrow(/^range\(\) function accepts exactly 2 arguments,/)
+      } catch (error) {
+        expect(error).toBeInstanceOf(ParseError)
+        expect(error).toHaveProperty('message')
+        expect(error.message).toMatch(
+          /^range\(\) function accepts exactly 2 arguments,/
+        )
+      }
     })
   })
 
+  test('Error: If expression without {}', async () => {
   test('Error: If expression without {}', async () => {
     const code = `
       environment({
@@ -255,12 +288,21 @@ describe('CoqCPASTTransformer', () => {
       });
     `
 
-    expect(() => {
-      const transformer = new CoqCPASTTransformer(code)
+    const transformer = new CoqCPASTTransformer(code)
+
+    expect.assertions(3)
+
+    try {
       transformer.transform()
-    }).toThrow(/^must be a block statement/)
+    } catch (error) {
+      expect(error).toBeInstanceOf(ParseError)
+      expect(error).toHaveProperty('message')
+      expect(error.message).toMatch(/^must be a block statement/)
+    }
   })
 
+  describe('If instruction parsing', () => {
+    test('Happy path', async () => {
   describe('If instruction parsing', () => {
     test('Happy path', async () => {
       const code = `
@@ -294,6 +336,25 @@ describe('CoqCPASTTransformer', () => {
     })
 
     test('Error: Condition not supplied', async () => {
+      `
+
+      const transformer = new CoqCPASTTransformer(code)
+      const transformedAST = transformer.transform()
+
+      expect(transformedAST.procedures.length).toBe(1)
+
+      const procedure = transformedAST.procedures[0]
+
+      expect(procedure.body[0].type).toBe('condition')
+      expect(procedure.body[0].condition.type).toBe('less')
+      expect(procedure.body[0].condition.left.type).toBe('get')
+      expect(procedure.body[0].condition.left.name).toBe('x')
+      expect(procedure.body[0].condition.right.value).toBe(10)
+      expect(procedure.body[0].body.length).toBe(1)
+      expect(procedure.body[0].alternate.length).toBe(1)
+    })
+
+    test('Error: Condition not supplied', async () => {
       const code = `
         environment({
           testArray: array([int32], 100)
@@ -306,10 +367,16 @@ describe('CoqCPASTTransformer', () => {
         });
       `
 
-      expect(() => {
+        expect.assertions(3)
+
+      try {
         const transformer = new CoqCPASTTransformer(code)
         transformer.transform()
-      }).toThrow(/^Unexpected token/)
+      } catch (error) {
+        expect(error).toBeInstanceOf(SyntaxError)
+        expect(error).toHaveProperty('message')
+        expect(error.message).toMatch(/^Unexpected token/)
+      }
     })
 
     test('Error: Invalid condition type', async () => {
@@ -325,10 +392,90 @@ describe('CoqCPASTTransformer', () => {
         });
       `
 
-      expect(() => {
-        const transformer = new CoqCPASTTransformer(code)
+      const transformer = new CoqCPASTTransformer(code)
+
+      expect.assertions(3)
+
+      try {
         transformer.transform()
-      }).toThrow(/^unknown instruction/)
+      } catch (error) {
+        expect(error).toBeInstanceOf(ParseError)
+        expect(error).toHaveProperty('message')
+        expect(error.message).toMatch(/^unknown instruction/)
+      }
     })
+  })
+
+  test('Reject duplicate identifiers in the environment block', () => {
+    const sourceCode = `
+      environment({
+        a: array([int8], 4),
+        a: array([int16], 5),
+      })
+  
+      procedure("example", {}, () => [])
+    `
+
+    const transformer = new CoqCPASTTransformer(sourceCode)
+
+    expect.assertions(3)
+
+    try {
+      transformer.transform()
+    } catch (error) {
+      expect(error).toBeInstanceOf(ParseError)
+      expect(error).toHaveProperty('message')
+      expect(error.message).toMatch(
+        /^duplicate identifier in environment block\./
+      )
+    }
+  })
+
+  test('illegal procedure block', () => {
+    const sourceCode = `
+      environment({
+        a: array([int8], 4),
+      })
+  
+      procedure("example", {x: int16, x: int8}, () => [])
+    `
+
+    const transformer = new CoqCPASTTransformer(sourceCode)
+
+    expect.assertions(3)
+
+    try {
+      transformer.transform()
+    } catch (error) {
+      expect(error).toBeInstanceOf(ParseError)
+      expect(error).toHaveProperty('message')
+      expect(error.message).toMatch(
+        /^third argument of procedure\(\) must be an arrow function expression\./
+      )
+    }
+  })
+
+  test('Reject duplicate identifiers in procedure variables', () => {
+    const sourceCode = `
+      environment({
+        a: array([int8], 4),
+      })
+  
+      procedure("example", {x: int16, x: int8}, () => {})
+    `
+
+    const transformer = new CoqCPASTTransformer(sourceCode)
+
+    expect.assertions(3);
+
+    try {
+      transformer.transform()
+    } catch (error) {
+      expect(error).toBeInstanceOf(ParseError)
+      expect(error).toHaveProperty('message')
+      expect(error.message).toMatch(
+        /^duplicate identifier in procedure variables\./
+      )
+    }
   })
 })

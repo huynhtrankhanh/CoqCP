@@ -273,6 +273,16 @@ export class CoqCPASTTransformer {
           if (!this.result.environment) {
             this.result.environment = { arrays: {} }
           }
+
+          console.log(property.key.name);
+
+          if (this.result.environment.arrays[property.key.name] !== undefined) {
+            throw new ParseError(
+              'duplicate identifier in environment block. ' +
+                formatLocation(property.key.loc)
+            )
+          }
+
           this.result.environment.arrays[property.key.name] = {
             itemTypes,
             length: lengthNode.value,
