@@ -345,7 +345,7 @@ describe('CoqCPASTTransformer', () => {
         });
       `
 
-        expect.assertions(3)
+      expect.assertions(3)
 
       try {
         const transformer = new CoqCPASTTransformer(code)
@@ -444,7 +444,7 @@ describe('CoqCPASTTransformer', () => {
 
     const transformer = new CoqCPASTTransformer(sourceCode)
 
-    expect.assertions(3);
+    expect.assertions(3)
 
     try {
       transformer.transform()
