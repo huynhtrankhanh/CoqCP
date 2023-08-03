@@ -274,7 +274,6 @@ describe('CoqCPASTTransformer', () => {
   })
 
   test('Error: If expression without {}', async () => {
-  test('Error: If expression without {}', async () => {
     const code = `
       environment({
         testArray: array([int32], 100)
@@ -303,8 +302,6 @@ describe('CoqCPASTTransformer', () => {
 
   describe('If instruction parsing', () => {
     test('Happy path', async () => {
-  describe('If instruction parsing', () => {
-    test('Happy path', async () => {
       const code = `
         environment({
           testArray: array([int32], 100)
@@ -317,25 +314,6 @@ describe('CoqCPASTTransformer', () => {
             writeInt8(64);
           }
         });
-      `
-
-      const transformer = new CoqCPASTTransformer(code)
-      const transformedAST = transformer.transform()
-
-      expect(transformedAST.procedures.length).toBe(1)
-
-      const procedure = transformedAST.procedures[0]
-
-      expect(procedure.body[0].type).toBe('condition')
-      expect(procedure.body[0].condition.type).toBe('less')
-      expect(procedure.body[0].condition.left.type).toBe('get')
-      expect(procedure.body[0].condition.left.name).toBe('x')
-      expect(procedure.body[0].condition.right.value).toBe(10)
-      expect(procedure.body[0].body.length).toBe(1)
-      expect(procedure.body[0].alternate.length).toBe(1)
-    })
-
-    test('Error: Condition not supplied', async () => {
       `
 
       const transformer = new CoqCPASTTransformer(code)
