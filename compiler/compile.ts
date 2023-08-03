@@ -343,7 +343,10 @@ export class CoqCPASTTransformer {
           }
 
           if (variables[property.key.name] !== undefined) {
-            throw new ParseError('duplicate identifier in procedure variables. ' + formatLocation(property.key.loc))
+            throw new ParseError(
+              'duplicate identifier in procedure variables. ' +
+                formatLocation(property.key.loc)
+            )
           }
 
           variables[property.key.name] = { type: property.value.name }
