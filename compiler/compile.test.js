@@ -415,7 +415,7 @@ describe('CoqCPASTTransformer', () => {
         a: array([int8], 4),
       })
   
-      procedure("example", {x: int16, x: int8}, () => [])
+      procedure("example", {x: int16}, () => [])
     `
 
     const transformer = new CoqCPASTTransformer(sourceCode)
