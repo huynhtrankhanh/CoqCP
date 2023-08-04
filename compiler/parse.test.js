@@ -1,4 +1,4 @@
-import { CoqCPASTTransformer, ParseError } from './compile'
+import { CoqCPASTTransformer, ParseError } from './parse'
 
 describe('CoqCPASTTransformer', () => {
   it('should parse valid code correctly', () => {

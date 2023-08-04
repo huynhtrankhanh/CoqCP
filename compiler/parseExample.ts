@@ -1,4 +1,4 @@
-import { CoqCPASTTransformer } from './compile'
+import { CoqCPASTTransformer } from './parse'
 
 const code = `environment({
     fibSeq: array([int32], 100),  // Memory to hold Fibonacci sequence up to the 100th term
@@ -28,4 +28,20 @@ procedure("fibonacci", { n: int32, a: int32, b: int32, i: int32 }, () => {
     }
 });`
 const transformer = new CoqCPASTTransformer(code)
-console.log(JSON.stringify(transformer.transform(), null, 4))
+console.log(
+  JSON.stringify(
+    transformer.transform(),
+    function replacer(key, value) {
+      if (value instanceof Map) {
+        // Handle Map types
+        return {
+          dataType: 'Map',
+          value: Array.from(value.entries()), // converting Map to a nested Array
+        }
+      } else {
+        return value
+      }
+    },
+    4
+  )
+)
