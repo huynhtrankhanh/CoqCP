@@ -89,8 +89,8 @@ describe('CoqCPASTTransformer', () => {
     const result = transformer.transform()
 
     expect(result.environment).toBeDefined()
-    expect(result.environment?.arrays).toHaveProperty('fibSeq')
-    expect(result.environment?.arrays['fibSeq']).toEqual({
+    expect(result.environment?.arrays.has('fibSeq')).toEqual(true)
+    expect(result.environment?.arrays.get('fibSeq')).toEqual({
       itemTypes: ['int32'],
       length: 100,
       lengthNodeLocation: expect.any(Object),
@@ -98,7 +98,7 @@ describe('CoqCPASTTransformer', () => {
 
     expect(result.procedures).toHaveLength(1)
     expect(result.procedures[0].name).toEqual('fibonacci')
-    expect(result.procedures[0].variables).toHaveProperty('n')
+    expect(result.procedures[0].variables.has('n')).toEqual(true)
     expect(result.procedures[0].body).toHaveLength(1)
     expect(result.procedures[0].body[0].type).toEqual('set')
     expect(result.procedures[0].body[0].name).toEqual('n')
@@ -481,18 +481,22 @@ describe('CoqCPASTTransformer', () => {
     expect(procedure1.body[0]).toMatchObject({
       type: 'call',
       procedure: 'myProcedure2',
-      presetVariables: {
-        x: {
-          type: 'literal',
-          value: 10,
-          location: expect.any(Object),
-        },
+    })
+    expect(
+      [...procedure1.body[0].presetVariables].reduce(
+        (acc, [key, value]) => ((acc[key] = value), acc),
+        {}
+      )
+    ).toEqual({
+      x: {
+        type: 'literal',
+        value: 10,
+        location: expect.any(Object),
       },
     })
 
     expect(procedure2).toMatchObject({
       name: 'myProcedure2',
-      variables: { x: { type: 'int8' } },
       body: [
         {
           type: 'set',
@@ -506,6 +510,12 @@ describe('CoqCPASTTransformer', () => {
         },
       ],
     })
+    expect(
+      [...procedure2.variables].reduce(
+        (acc, [key, value]) => ((acc[key] = value), acc),
+        {}
+      )
+    ).toEqual({ x: { type: 'int8' } })
   })
 
   describe('Call instruction parsing', () => {
@@ -539,14 +549,20 @@ describe('CoqCPASTTransformer', () => {
       expect(callInstruction).toMatchObject({
         type: 'call',
         procedure: 'exampleOne',
-        presetVariables: {
-          x: {
-            type: 'literal',
-            value: 100,
-            location: expect.any(Object),
-          },
-        },
         location: expect.any(Object),
+      })
+
+      expect(
+        [...callInstruction.presetVariables].reduce(
+          (acc, [key, value]) => ((acc[key] = value), acc),
+          {}
+        )
+      ).toEqual({
+        x: {
+          type: 'literal',
+          value: 100,
+          location: expect.any(Object),
+        },
       })
     })
 
