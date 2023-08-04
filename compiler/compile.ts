@@ -279,8 +279,6 @@ export class CoqCPASTTransformer {
             this.result.environment = { arrays: {} }
           }
 
-          console.log(property.key.name)
-
           if (this.result.environment.arrays[property.key.name] !== undefined) {
             throw new ParseError(
               'duplicate identifier in environment block. ' +
