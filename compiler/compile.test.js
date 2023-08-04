@@ -456,4 +456,126 @@ describe('CoqCPASTTransformer', () => {
       )
     }
   })
+
+  it('parses the "call" instruction correctly', () => {
+    const code = `
+      environment({
+          myArray: array([int8], 3)
+      });
+
+      procedure("myProcedure1", { x: int8 }, () => {
+          call("myProcedure2", { x: 10 });
+      });
+
+      procedure("myProcedure2", { x: int8 }, () => {
+          set("x", 8);
+      });
+    `
+
+    const transformer = new CoqCPASTTransformer(code)
+    const result = transformer.transform()
+
+    const procedure1 = result.procedures[0]
+    const procedure2 = result.procedures[1]
+
+    expect(procedure1.body[0]).toMatchObject({
+      type: 'call',
+      procedure: 'myProcedure2',
+      presetVariables: {
+        x: {
+          type: 'literal',
+          value: 10,
+          location: expect.any(Object),
+        },
+      },
+    })
+
+    expect(procedure2).toMatchObject({
+      name: 'myProcedure2',
+      variables: { x: { type: 'int8' } },
+      body: [
+        {
+          type: 'set',
+          name: 'x',
+          value: {
+            type: 'literal',
+            value: 8,
+            location: expect.any(Object),
+          },
+          location: expect.any(Object),
+        },
+      ],
+    })
+  })
+
+  describe('Call instruction parsing', () => {
+    test('Happy path', async () => {
+      const code = `
+        environment({
+          testArray: array([int32], 100)
+        });
+  
+        procedure("exampleOne", { x: int32 }, () => {
+          set("x", 1);
+        });
+  
+        procedure("exampleTwo", { }, () => {
+          call("exampleOne", { x: 100 });
+        });
+      `
+  
+      const transformer = new CoqCPASTTransformer(code)
+      const transformedAST = transformer.transform()
+  
+      expect(transformedAST.procedures.length).toBe(2)
+  
+      const exampleTwoProcedure = transformedAST.procedures.find(
+        (proc) => proc.name === 'exampleTwo'
+      )
+      expect(exampleTwoProcedure).toBeDefined()
+  
+      const callInstruction = exampleTwoProcedure?.body[0]
+  
+      expect(callInstruction).toMatchObject({
+        type: 'call',
+        procedure: 'exampleOne',
+        presetVariables: {
+          x: {
+            type: 'literal',
+            value: 100,
+            location: expect.any(Object),
+          },
+        },
+        location: expect.any(Object),
+      })
+    })
+  
+    test('Reject duplicate identifiers in preset variables', () => {
+      const sourceCode = `
+        environment({
+          a: array([int8], 4),
+        })
+    
+        procedure("exampleOne", {x: int16}, () => { set("x", 1); })
+  
+        procedure("exampleTwo", { }, () => { 
+          call("exampleOne", {x: 100, x: 200}); 
+        })
+      `
+  
+      const transformer = new CoqCPASTTransformer(sourceCode)
+  
+      expect.assertions(3)
+  
+      try {
+        transformer.transform()
+      } catch (error) {
+        expect(error).toBeInstanceOf(ParseError)
+        expect(error).toHaveProperty('message')
+        expect(error.message).toMatch(
+          /^duplicate identifier in preset variables./
+        )
+      }
+    })
+  })
 })
