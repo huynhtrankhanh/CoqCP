@@ -523,19 +523,19 @@ describe('CoqCPASTTransformer', () => {
           call("exampleOne", { x: 100 });
         });
       `
-  
+
       const transformer = new CoqCPASTTransformer(code)
       const transformedAST = transformer.transform()
-  
+
       expect(transformedAST.procedures.length).toBe(2)
-  
+
       const exampleTwoProcedure = transformedAST.procedures.find(
         (proc) => proc.name === 'exampleTwo'
       )
       expect(exampleTwoProcedure).toBeDefined()
-  
+
       const callInstruction = exampleTwoProcedure?.body[0]
-  
+
       expect(callInstruction).toMatchObject({
         type: 'call',
         procedure: 'exampleOne',
@@ -549,7 +549,7 @@ describe('CoqCPASTTransformer', () => {
         location: expect.any(Object),
       })
     })
-  
+
     test('Reject duplicate identifiers in preset variables', () => {
       const sourceCode = `
         environment({
@@ -562,11 +562,11 @@ describe('CoqCPASTTransformer', () => {
           call("exampleOne", {x: 100, x: 200}); 
         })
       `
-  
+
       const transformer = new CoqCPASTTransformer(sourceCode)
-  
+
       expect.assertions(3)
-  
+
       try {
         transformer.transform()
       } catch (error) {
