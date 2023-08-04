@@ -119,6 +119,11 @@ export type Instruction = (
     }
   | { type: 'less'; left: ValueType; right: ValueType }
   | { type: 'sLess'; left: ValueType; right: ValueType }
+  | {
+      type: 'call'
+      procedure: string
+      presetVariables: Record<string, ValueType>
+    }
 ) & { location: Location }
 
 export class ParseError extends Error {
@@ -802,6 +807,65 @@ export class CoqCPASTTransformer {
         const left = this.processNode(args[0])
         const right = this.processNode(args[1])
         instruction = { type: 'sLess', left, right, location }
+        break
+      }
+
+      case 'call': {
+        if (args.length !== 2) {
+          throw new ParseError(
+            'call() function accepts exactly 2 arguments. ' +
+              formatLocation(location)
+          )
+        }
+        if (args[0].type !== 'Literal' || typeof args[0].value !== 'string') {
+          throw new ParseError(
+            'first argument to call() must be a procedure name. ' +
+              formatLocation(args[0].loc)
+          )
+        }
+
+        const procedureName = args[0].value
+        if (args[1].type !== 'ObjectExpression') {
+          throw new ParseError(
+            'second argument to call() must be an object denoting preset variables. ' +
+              formatLocation(args[1].loc)
+          )
+        }
+
+        const presetVariables: Record<string, ValueType> = {}
+
+        for (const property of args[1].properties) {
+          if (property.type === 'SpreadElement') {
+            throw new ParseError(
+              'spread syntax not allowed. ' + formatLocation(property.loc)
+            )
+          }
+
+          if (property.key.type !== 'Identifier') {
+            throw new ParseError(
+              'unrecognized key type. ' + formatLocation(property.key.loc)
+            )
+          }
+
+          const name = property.key.name
+          const value = this.processNode(property.value)
+
+          if (presetVariables[name] !== undefined) {
+            throw new ParseError(
+              'duplicate identifier in preset variables. ' +
+                formatLocation(property.key.loc)
+            )
+          }
+
+          presetVariables[name] = value
+        }
+
+        instruction = {
+          type: 'call',
+          procedure: procedureName,
+          presetVariables,
+          location,
+        }
         break
       }
 
