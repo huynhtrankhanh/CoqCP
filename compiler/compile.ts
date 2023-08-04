@@ -10,7 +10,7 @@ export interface ArrayDeclaration {
 }
 
 export interface Environment {
-  arrays: Record<string, ArrayDeclaration>
+  arrays: Map<string, ArrayDeclaration>
 }
 
 export interface Variable {
@@ -122,7 +122,7 @@ export type Instruction = (
   | {
       type: 'call'
       procedure: string
-      presetVariables: Record<string, ValueType>
+      presetVariables: Map<string, ValueType>
     }
 ) & { location: Location }
 
@@ -143,7 +143,7 @@ const formatLocation = ({ start, end }: Location): string =>
 
 export interface Procedure {
   name: string
-  variables: Record<string, Variable>
+  variables: Map<string, Variable>
   body: Instruction[]
 }
 
@@ -276,21 +276,23 @@ export class CoqCPASTTransformer {
           }
 
           if (!this.result.environment) {
-            this.result.environment = { arrays: {} }
+            this.result.environment = { arrays: new Map() }
           }
 
-          if (this.result.environment.arrays[property.key.name] !== undefined) {
+          if (
+            this.result.environment.arrays.get(property.key.name) !== undefined
+          ) {
             throw new ParseError(
               'duplicate identifier in environment block. ' +
                 formatLocation(property.key.loc)
             )
           }
 
-          this.result.environment.arrays[property.key.name] = {
+          this.result.environment.arrays.set(property.key.name, {
             itemTypes,
             length: lengthNode.value,
             lengthNodeLocation: lengthNode.loc,
-          }
+          })
         }
       }
 
@@ -325,7 +327,7 @@ export class CoqCPASTTransformer {
         }
 
         // building the variables object
-        let variables: Record<string, Variable> = {}
+        let variables: Map<string, Variable> = new Map()
         for (const property of variableListNode.properties) {
           if (property.type === 'SpreadElement') {
             throw new ParseError(
@@ -345,14 +347,14 @@ export class CoqCPASTTransformer {
             )
           }
 
-          if (variables[property.key.name] !== undefined) {
+          if (variables.get(property.key.name) !== undefined) {
             throw new ParseError(
               'duplicate identifier in procedure variables. ' +
                 formatLocation(property.key.loc)
             )
           }
 
-          variables[property.key.name] = { type: property.value.name }
+          variables.set(property.key.name, { type: property.value.name })
         }
 
         // transforming bodyNode into Instruction[]
@@ -830,7 +832,7 @@ export class CoqCPASTTransformer {
           )
         }
 
-        const presetVariables: Record<string, ValueType> = {}
+        const presetVariables: Map<string, ValueType> = new Map()
 
         for (const property of args[1].properties) {
           if (property.type === 'SpreadElement') {
@@ -848,14 +850,14 @@ export class CoqCPASTTransformer {
           const name = property.key.name
           const value = this.processNode(property.value)
 
-          if (presetVariables[name] !== undefined) {
+          if (presetVariables.get(name) !== undefined) {
             throw new ParseError(
               'duplicate identifier in preset variables. ' +
                 formatLocation(property.key.loc)
             )
           }
 
-          presetVariables[name] = value
+          presetVariables.set(name, value)
         }
 
         instruction = {
