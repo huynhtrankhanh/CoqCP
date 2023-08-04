@@ -36,7 +36,7 @@ describe('cppCodegen function', () => {
     const ast = transformer.transform()
     const cppCode = cppCodegen(ast)
     expect(cppCode).toEqual(
-`#include <iostream>
+      `#include <iostream>
 namespace environment {
   std::tuple<uint32_t> fibSeq[100];
   std::tuple<uint8_t, uint64_t> anotherArray[3];
