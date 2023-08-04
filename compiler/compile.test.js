@@ -589,7 +589,7 @@ describe('CoqCPASTTransformer', () => {
         expect(error).toBeInstanceOf(ParseError)
         expect(error).toHaveProperty('message')
         expect(error.message).toMatch(
-          /^duplicate identifier in preset variables./
+          /^duplicate identifier in preset variables\./
         )
       }
     })
