@@ -40,6 +40,8 @@ export type ValueType =
   | { type: 'literal'; value: number | boolean; location: Location }
   | Instruction
 
+const castToInstruction = (x : ValueType): Instruction|undefined => (x.type === 'local binder' || x.type === 'literal') ? undefined : x;
+
 export interface BinaryOperationInstruction {
   type: 'binaryOp'
   operator: BinaryOp
@@ -124,6 +126,9 @@ export type Instruction = (
       procedure: string
       presetVariables: Map<string, ValueType>
     }
+  | {
+    type: 'break' | 'continue' | 'flush'
+  }
 ) & { location: Location }
 
 export class ParseError extends Error {
@@ -931,7 +936,13 @@ export class CoqCPASTTransformer {
           'invalid statement type. ' + formatLocation(statement.loc)
         )
       }
-      instructions.push(this.processNode(statement.expression) as Instruction)
+      const processed = castToInstruction(this.processNode(statement.expression));
+      if (processed === undefined) {
+        throw new ParseError(
+          'invalid statement type. ' + formatLocation(statement.loc)
+        )
+      }
+      instructions.push(processed)
     }
 
     return instructions
