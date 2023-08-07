@@ -1,5 +1,3 @@
-**Call for contributors:** I'm bad at proofs. If you're good with proofs, email qcdz9r6wpcbh59@gmail.com and we'll talk.
-
 **You can't bluff a computer.**
 
 This is a repository of formally verified competitive programming code. Formal verification is very important.
