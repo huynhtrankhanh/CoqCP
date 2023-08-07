@@ -61,75 +61,75 @@ export interface UnaryOperationInstruction {
 export type Instruction = (
   | { type: 'get'; name: string }
   | {
-    type: 'set'
-    name: string
-    value: ValueType
-  }
+      type: 'set'
+      name: string
+      value: ValueType
+    }
   | {
-    type: 'store'
-    name: string
-    index: ValueType
-    tuples: ValueType[]
-  }
+      type: 'store'
+      name: string
+      index: ValueType
+      tuples: ValueType[]
+    }
   | { type: 'retrieve'; name: string; index: ValueType }
   | {
-    type: 'range'
-    name: string
-    end: ValueType
-    loopVariable: string
-    loopBody: Instruction[]
-  }
+      type: 'range'
+      name: string
+      end: ValueType
+      loopVariable: string
+      loopBody: Instruction[]
+    }
   | { type: 'readInt8' }
   | { type: 'writeInt8'; value: ValueType }
   | BinaryOperationInstruction
   | UnaryOperationInstruction
   | {
-    type: 'subscript'
-    value: ValueType
-    index: { type: 'literal'; value: number; location: Location }
-  }
+      type: 'subscript'
+      value: ValueType
+      index: { type: 'literal'; value: number; location: Location }
+    }
   | {
-    type: 'condition'
-    condition: ValueType
-    body: Instruction[]
-    alternate: Instruction[]
-  }
+      type: 'condition'
+      condition: ValueType
+      body: Instruction[]
+      alternate: Instruction[]
+    }
   | {
-    type: 'sDivide'
-    left: ValueType
-    right: ValueType
-  }
+      type: 'sDivide'
+      left: ValueType
+      right: ValueType
+    }
   | {
-    type: 'divide'
-    left: ValueType
-    right: ValueType
-  }
+      type: 'divide'
+      left: ValueType
+      right: ValueType
+    }
   | {
-    type: 'coerceInt8'
-    value: ValueType
-  }
+      type: 'coerceInt8'
+      value: ValueType
+    }
   | {
-    type: 'coerceInt16'
-    value: ValueType
-  }
+      type: 'coerceInt16'
+      value: ValueType
+    }
   | {
-    type: 'coerceInt32'
-    value: ValueType
-  }
+      type: 'coerceInt32'
+      value: ValueType
+    }
   | {
-    type: 'coerceInt64'
-    value: ValueType
-  }
+      type: 'coerceInt64'
+      value: ValueType
+    }
   | { type: 'less'; left: ValueType; right: ValueType }
   | { type: 'sLess'; left: ValueType; right: ValueType }
   | {
-    type: 'call'
-    procedure: string
-    presetVariables: Map<string, ValueType>
-  }
+      type: 'call'
+      procedure: string
+      presetVariables: Map<string, ValueType>
+    }
   | {
-    type: 'break' | 'continue' | 'flush'
-  }
+      type: 'break' | 'continue' | 'flush'
+    }
 ) & { location: Location }
 
 export class ParseError extends Error {
@@ -183,7 +183,7 @@ export class CoqCPASTTransformer {
       ) {
         throw new ParseError(
           'only "environment" and "procedure" expressions allowed. ' +
-          formatLocation(node.loc)
+            formatLocation(node.loc)
         )
       }
 
@@ -198,7 +198,7 @@ export class CoqCPASTTransformer {
         if (node.expression.arguments.length !== 1) {
           throw new ParseError(
             'environment block accepts exactly 1 argument. ' +
-            formatLocation(node.loc)
+              formatLocation(node.loc)
           )
         }
 
@@ -206,7 +206,7 @@ export class CoqCPASTTransformer {
         if (argumentNode.type !== 'ObjectExpression') {
           throw new ParseError(
             'the argument must be an object. ' +
-            formatLocation(argumentNode.loc)
+              formatLocation(argumentNode.loc)
           )
         }
 
@@ -231,14 +231,14 @@ export class CoqCPASTTransformer {
           ) {
             throw new ParseError(
               'expecting an array expression. ' +
-              formatLocation(arrayDescription.loc)
+                formatLocation(arrayDescription.loc)
             )
           }
 
           if (arrayDescription.arguments.length !== 2) {
             throw new ParseError(
               'array() accepts exactly two arguments. ' +
-              formatLocation(arrayDescription.loc)
+                formatLocation(arrayDescription.loc)
             )
           }
 
@@ -248,7 +248,7 @@ export class CoqCPASTTransformer {
           if (typesArrayNode.type !== 'ArrayExpression') {
             throw new ParseError(
               'first argument of array() must be an array.' +
-              formatLocation(typesArrayNode.loc)
+                formatLocation(typesArrayNode.loc)
             )
           }
 
@@ -258,7 +258,7 @@ export class CoqCPASTTransformer {
           ) {
             throw new ParseError(
               'second argument of array() must be a numeric literal.' +
-              formatLocation(lengthNode.loc)
+                formatLocation(lengthNode.loc)
             )
           }
 
@@ -274,7 +274,7 @@ export class CoqCPASTTransformer {
             ) {
               throw new ParseError(
                 'invalid array item type. range: ' +
-                formatLocation(typesArrayNode.loc)
+                  formatLocation(typesArrayNode.loc)
               )
             }
 
@@ -290,7 +290,7 @@ export class CoqCPASTTransformer {
           ) {
             throw new ParseError(
               'duplicate identifier in environment block. ' +
-              formatLocation(property.key.loc)
+                formatLocation(property.key.loc)
             )
           }
 
@@ -307,7 +307,7 @@ export class CoqCPASTTransformer {
         if (node.expression.arguments.length !== 3) {
           throw new ParseError(
             'procedure block accepts exactly 3 arguments. ' +
-            formatLocation(node.loc)
+              formatLocation(node.loc)
           )
         }
 
@@ -321,14 +321,14 @@ export class CoqCPASTTransformer {
         ) {
           throw new ParseError(
             'first argument of procedure() must be a string literal. ' +
-            formatLocation(procedureNameNode.loc)
+              formatLocation(procedureNameNode.loc)
           )
         }
 
         if (variableListNode.type !== 'ObjectExpression') {
           throw new ParseError(
             'second argument of procedure() must be an object. ' +
-            formatLocation(variableListNode.loc)
+              formatLocation(variableListNode.loc)
           )
         }
 
@@ -356,7 +356,7 @@ export class CoqCPASTTransformer {
           if (variables.get(property.key.name) !== undefined) {
             throw new ParseError(
               'duplicate identifier in procedure variables. ' +
-              formatLocation(property.key.loc)
+                formatLocation(property.key.loc)
             )
           }
 
@@ -370,7 +370,7 @@ export class CoqCPASTTransformer {
         ) {
           throw new ParseError(
             'third argument of procedure() must be an arrow function expression. ' +
-            formatLocation(bodyNode.loc)
+              formatLocation(bodyNode.loc)
           )
         }
 
@@ -533,9 +533,9 @@ export class CoqCPASTTransformer {
       default:
         throw new ParseError(
           'invalid binary operator: ' +
-          operator +
-          '. ' +
-          formatLocation(location)
+            operator +
+            '. ' +
+            formatLocation(location)
         )
     }
   }
@@ -565,7 +565,7 @@ export class CoqCPASTTransformer {
         ) {
           throw new ParseError(
             'get() function accepts exactly 1 string argument. ' +
-            formatLocation(location)
+              formatLocation(location)
           )
         }
         const varName = args[0].value
@@ -581,7 +581,7 @@ export class CoqCPASTTransformer {
         ) {
           throw new ParseError(
             'set() function accepts exactly 2 arguments, first one being a string. ' +
-            formatLocation(location)
+              formatLocation(location)
           )
         }
         const varName = args[0].value
@@ -599,7 +599,7 @@ export class CoqCPASTTransformer {
         ) {
           throw new ParseError(
             'store() function accepts exactly 3 arguments, first one being a string and last one being an array. ' +
-            formatLocation(location)
+              formatLocation(location)
           )
         }
         const arrayName = args[0].value
@@ -635,7 +635,7 @@ export class CoqCPASTTransformer {
         ) {
           throw new ParseError(
             'retrieve() function accepts exactly 2 arguments, first one being a string. ' +
-            formatLocation(location)
+              formatLocation(location)
           )
         }
         const arrayName = args[0].value
@@ -652,7 +652,7 @@ export class CoqCPASTTransformer {
         ) {
           throw new ParseError(
             'range() function accepts exactly 2 arguments, second one being an arrow function. ' +
-            formatLocation(location)
+              formatLocation(location)
           )
         }
         const end = this.processNode(args[0])
@@ -661,7 +661,7 @@ export class CoqCPASTTransformer {
         if (funcNode.params.length !== 1) {
           throw new ParseError(
             'arrow function must take exactly 1 argument. ' +
-            formatLocation(funcNode.loc)
+              formatLocation(funcNode.loc)
           )
         }
 
@@ -697,7 +697,7 @@ export class CoqCPASTTransformer {
         if (args.length !== 0) {
           throw new ParseError(
             'readInt8() function accepts exactly 0 argument. ' +
-            formatLocation(location)
+              formatLocation(location)
           )
         }
         instruction = { type: 'readInt8', location }
@@ -708,7 +708,7 @@ export class CoqCPASTTransformer {
         if (args.length !== 1) {
           throw new ParseError(
             'writeInt8() function accepts exactly 1 argument. ' +
-            formatLocation(location)
+              formatLocation(location)
           )
         }
         const value = this.processNode(args[0])
@@ -720,7 +720,7 @@ export class CoqCPASTTransformer {
         if (args.length !== 2) {
           throw new ParseError(
             'sDivide() function accepts exactly 2 arguments. ' +
-            formatLocation(location)
+              formatLocation(location)
           )
         }
         const left = this.processNode(args[0])
@@ -733,7 +733,7 @@ export class CoqCPASTTransformer {
         if (args.length !== 2) {
           throw new ParseError(
             'divide() function accepts exactly 2 arguments. ' +
-            formatLocation(location)
+              formatLocation(location)
           )
         }
         const left = this.processNode(args[0])
@@ -746,7 +746,7 @@ export class CoqCPASTTransformer {
         if (args.length !== 1) {
           throw new ParseError(
             'coerceInt8() function accepts exactly 1 argument. ' +
-            formatLocation(location)
+              formatLocation(location)
           )
         }
         const value = this.processNode(args[0])
@@ -758,7 +758,7 @@ export class CoqCPASTTransformer {
         if (args.length !== 1) {
           throw new ParseError(
             'coerceInt16() function accepts exactly 1 argument. ' +
-            formatLocation(location)
+              formatLocation(location)
           )
         }
         const value = this.processNode(args[0])
@@ -770,7 +770,7 @@ export class CoqCPASTTransformer {
         if (args.length !== 1) {
           throw new ParseError(
             'coerceInt32() function accepts exactly 1 argument. ' +
-            formatLocation(location)
+              formatLocation(location)
           )
         }
         const value = this.processNode(args[0])
@@ -782,7 +782,7 @@ export class CoqCPASTTransformer {
         if (args.length !== 1) {
           throw new ParseError(
             'coerceInt8() function accepts exactly 1 argument. ' +
-            formatLocation(location)
+              formatLocation(location)
           )
         }
         const value = this.processNode(args[0])
@@ -794,7 +794,7 @@ export class CoqCPASTTransformer {
         if (args.length !== 2) {
           throw new ParseError(
             'less() function accepts exactly 2 arguments. ' +
-            formatLocation(location)
+              formatLocation(location)
           )
         }
         const left = this.processNode(args[0])
@@ -807,7 +807,7 @@ export class CoqCPASTTransformer {
         if (args.length !== 2) {
           throw new ParseError(
             'sLess() function accepts exactly 2 arguments. ' +
-            formatLocation(location)
+              formatLocation(location)
           )
         }
         const left = this.processNode(args[0])
@@ -820,13 +820,13 @@ export class CoqCPASTTransformer {
         if (args.length !== 2) {
           throw new ParseError(
             'call() function accepts exactly 2 arguments. ' +
-            formatLocation(location)
+              formatLocation(location)
           )
         }
         if (args[0].type !== 'Literal' || typeof args[0].value !== 'string') {
           throw new ParseError(
             'first argument to call() must be a procedure name. ' +
-            formatLocation(args[0].loc)
+              formatLocation(args[0].loc)
           )
         }
 
@@ -834,7 +834,7 @@ export class CoqCPASTTransformer {
         if (args[1].type !== 'ObjectExpression') {
           throw new ParseError(
             'second argument to call() must be an object denoting preset variables. ' +
-            formatLocation(args[1].loc)
+              formatLocation(args[1].loc)
           )
         }
 
@@ -859,7 +859,7 @@ export class CoqCPASTTransformer {
           if (presetVariables.get(name) !== undefined) {
             throw new ParseError(
               'duplicate identifier in preset variables. ' +
-              formatLocation(property.key.loc)
+                formatLocation(property.key.loc)
             )
           }
 
@@ -895,7 +895,7 @@ export class CoqCPASTTransformer {
         if (statement.consequent.type !== 'BlockStatement') {
           throw new ParseError(
             'must be a block statement. ' +
-            formatLocation(statement.consequent.loc)
+              formatLocation(statement.consequent.loc)
           )
         }
         const consequent = this.transformBodyNode(statement.consequent)
