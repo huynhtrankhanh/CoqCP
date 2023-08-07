@@ -3,7 +3,7 @@ import * as ESTree from 'estree'
 
 declare module 'acorn' {
   type ExtendNode<T> = {
-    [K in keyof T]: T[K] extends object ? ExtendNode<T[K]> : T[K]
+    [K in keyof T]: T[K] extends (object | null | undefined) ? ExtendNode<T[K]> : T[K]
   } & (T extends ESTree.Node
     ? {
         start: number
@@ -13,7 +13,7 @@ declare module 'acorn' {
           end: { line: number; column: number }
         }
       }
-    : unknown)
+    : T)
 
   export function parse(s: string, o: Options): ExtendNode<ESTree.Program>
 }
