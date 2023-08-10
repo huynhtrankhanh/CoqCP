@@ -594,4 +594,59 @@ describe('CoqCPASTTransformer', () => {
       }
     })
   })
+
+  describe('Parsing break, continue and flush statements', () => {
+    const code = `
+    environment({
+      myArray: array([int32], 10)
+    });
+
+    procedure("testProcedure", { i: int32 }, () => {
+      range(10, x => {
+        if (x == 5) {
+          "break";
+        }
+        if (x == 3) {
+          "continue";
+        }
+        "flush";
+      })
+    });`
+
+    it('parses the "break" statement correctly', () => {
+      const transformer = new CoqCPASTTransformer(code)
+      const result = transformer.transform()
+
+      const instr = result.procedures[0].body[0].loopBody[0].body
+
+      expect(instr[0]).toMatchObject({
+        type: 'break',
+        location: expect.any(Object),
+      })
+    })
+
+    it('parses the "continue" statement correctly', () => {
+      const transformer = new CoqCPASTTransformer(code)
+      const result = transformer.transform()
+
+      const instr = result.procedures[0].body[0].loopBody[1].body
+
+      expect(instr[0]).toMatchObject({
+        type: 'continue',
+        location: expect.any(Object),
+      })
+    })
+
+    it('parses the "flush" statement correctly', () => {
+      const transformer = new CoqCPASTTransformer(code)
+      const result = transformer.transform()
+
+      const instr = result.procedures[0].body[0].loopBody[2]
+
+      expect(instr).toMatchObject({
+        type: 'flush',
+        location: expect.any(Object),
+      })
+    })
+  })
 })

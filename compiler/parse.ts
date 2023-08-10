@@ -928,6 +928,25 @@ export class CoqCPASTTransformer {
         continue
       }
       if (
+        statement.type === 'ExpressionStatement' &&
+        statement.expression.type === 'Literal'
+      ) {
+        if (
+          statement.expression.value === 'break' ||
+          statement.expression.value === 'continue' ||
+          statement.expression.value === 'flush'
+        ) {
+          instructions.push({
+            type: statement.expression.value as 'break' | 'continue' | 'flush',
+            location: statement.loc,
+          })
+          continue
+        }
+        throw new ParseError(
+          'invalid statement type. ' + formatLocation(statement.loc)
+        )
+      }
+      if (
         statement.type !== 'ExpressionStatement' ||
         statement.expression.type !== 'CallExpression'
       ) {
