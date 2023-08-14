@@ -24,5 +24,5 @@ export const cppCodegen = ({ environment, procedures }: CoqCPAST): string => {
     )
   })()
 
-  return '#include <iostream>\n#include <tuple>\n'+environmentCode
+  return '#include <iostream>\n#include <tuple>\n' + environmentCode
 }
