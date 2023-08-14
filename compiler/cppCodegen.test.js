@@ -32,11 +32,12 @@ procedure("fibonacci", { n: int32, a: int32, b: int32, i: int32 }, () => {
 const transformer = new CoqCPASTTransformer(code)
 
 describe('cppCodegen function', () => {
-  it('should produce correct C++ include statement', () => {
+  it('should produce correct C++ code', () => {
     const ast = transformer.transform()
     const cppCode = cppCodegen(ast)
     expect(cppCode).toEqual(
       `#include <iostream>
+#include <tuple>
 namespace environment {
   std::tuple<uint32_t> fibSeq[100];
   std::tuple<uint8_t, uint64_t> anotherArray[3];
@@ -48,7 +49,7 @@ int main() {
     local_b = 1;
     environment::fibSeq[0] = { local_a };
     environment::fibSeq[1] = { local_b };
-    for (uint32 counter_x = 0; counter_x < local_n - 2; counter_x++) {
+    for (uint64_t counter_x = 0; counter_x < local_n - 2; counter_x++) {
       local_i = std::get<0>(environment::fibSeq[counter_x])
       environment::fibSeq[counter_x + 2] = { local_i };
     }
