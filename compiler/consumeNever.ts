@@ -1,1 +1,1 @@
-export const consumeNever = <T>(x: never): T => x;
+export const consumeNever = <T>(x: never): T => x

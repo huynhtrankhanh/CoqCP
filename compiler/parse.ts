@@ -416,11 +416,13 @@ export class CoqCPASTTransformer {
       (typeof node.value === 'number' || typeof node.value === 'boolean')
     ) {
       if (node.raw === undefined) {
-        throw new ParseError("raw value of literal can't be undefined. " + formatLocation(node.loc))
+        throw new ParseError(
+          "raw value of literal can't be undefined. " + formatLocation(node.loc)
+        )
       }
       return {
         type: 'literal',
-        valueType: typeof node.value === "number" ? "number" : "boolean",
+        valueType: typeof node.value === 'number' ? 'number' : 'boolean',
         raw: node.raw,
         location: node.loc,
       }

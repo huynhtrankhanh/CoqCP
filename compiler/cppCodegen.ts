@@ -215,10 +215,10 @@ export const cppCodegen = ({ environment, procedures }: CoqCPAST): string => {
                 if (instruction.valueType === 'boolean') return instruction.raw
                 else return 'uint64_t(' + instruction.raw + ')'
               }
-              if (instruction.type === "flush") {
-                return "flushSTDOUT()"
+              if (instruction.type === 'flush') {
+                return 'flushSTDOUT()'
               }
-              
+
               return consumeNever(instruction.type)
             }
             return print(instruction) + ';\n'
