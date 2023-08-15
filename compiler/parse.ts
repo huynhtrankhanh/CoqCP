@@ -37,7 +37,12 @@ export type LocalBinder = {
 }
 export type ValueType =
   | LocalBinder
-  | { type: 'literal'; value: number | boolean; location: Location }
+  | {
+      type: 'literal'
+      valueType: 'number' | 'boolean'
+      raw: string
+      location: Location
+    }
   | Instruction
 
 const castToInstruction = (x: ValueType): Instruction | undefined =>
@@ -410,7 +415,15 @@ export class CoqCPASTTransformer {
       node.type === 'Literal' &&
       (typeof node.value === 'number' || typeof node.value === 'boolean')
     ) {
-      return { type: 'literal', value: node.value, location: node.loc }
+      if (node.raw === undefined) {
+        throw new ParseError("raw value of literal can't be undefined. " + formatLocation(node.loc))
+      }
+      return {
+        type: 'literal',
+        valueType: typeof node.value === "number" ? "number" : "boolean",
+        raw: node.raw,
+        location: node.loc,
+      }
     } else if (node.type === 'BinaryExpression') {
       return this.processBinaryExpression(node)
     } else if (node.type === 'UnaryExpression') {
