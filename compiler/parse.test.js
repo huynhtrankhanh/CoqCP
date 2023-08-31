@@ -201,7 +201,7 @@ describe('CoqCPASTTransformer', () => {
         type: 'binaryOp',
         operator: 'equal',
         left: { type: 'get', name: 'a' },
-        right: { type: 'literal', value: 10 },
+        right: { type: 'literal', raw: "10", valueType: "number" },
       },
       body: [{ type: 'get', name: 'a' }],
       alternate: [],
@@ -226,7 +226,7 @@ describe('CoqCPASTTransformer', () => {
       const expectedInstruction = {
         type: 'range',
         name: 'x',
-        end: { type: 'literal', value: 10, location: expect.any(Object) },
+        end: { type: 'literal', raw: "10", valueType: "number", location: expect.any(Object) },
         loopVariable: 'x',
         loopBody: [
           {
@@ -327,7 +327,8 @@ describe('CoqCPASTTransformer', () => {
       expect(procedure.body[0].condition.type).toBe('less')
       expect(procedure.body[0].condition.left.type).toBe('get')
       expect(procedure.body[0].condition.left.name).toBe('x')
-      expect(procedure.body[0].condition.right.value).toBe(10)
+      expect(procedure.body[0].condition.right.raw).toBe("10")
+      expect(procedure.body[0].condition.right.valueType).toBe("number")
       expect(procedure.body[0].body.length).toBe(1)
       expect(procedure.body[0].alternate.length).toBe(1)
     })
@@ -490,7 +491,8 @@ describe('CoqCPASTTransformer', () => {
     ).toEqual({
       x: {
         type: 'literal',
-        value: 10,
+        valueType: "number",
+        raw: "10",
         location: expect.any(Object),
       },
     })
@@ -503,7 +505,8 @@ describe('CoqCPASTTransformer', () => {
           name: 'x',
           value: {
             type: 'literal',
-            value: 8,
+            valueType: "number",
+            raw: "8",
             location: expect.any(Object),
           },
           location: expect.any(Object),
@@ -560,7 +563,8 @@ describe('CoqCPASTTransformer', () => {
       ).toEqual({
         x: {
           type: 'literal',
-          value: 100,
+          raw: "100",
+          valueType: "number",
           location: expect.any(Object),
         },
       })
