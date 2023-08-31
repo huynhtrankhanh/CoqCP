@@ -221,13 +221,14 @@ export const cppCodegen = ({ environment, procedures }: CoqCPAST): string => {
 
               return consumeNever(instruction.type)
             }
-            return print(instruction) + ';\n'
+            return indent.repeat(2) + print(instruction) + ';\n'
           })
           .join('') +
-        '};'
+        indent +
+        '};\n'
       )
     })
-    .join('\n')
+    .join('')
 
   const toSigned = [8, 16, 32, 64]
     .map((x) => 'int' + x + '_t toSigned(uint' + x + '_t x) { return x; }\n')
