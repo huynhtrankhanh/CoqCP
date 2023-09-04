@@ -300,12 +300,12 @@ export const cppCodegen = ({ environment, procedures }: CoqCPAST): string => {
                 }
                 return constructed
               }
-              if (instruction.type === "local binder") {
+              if (instruction.type === 'local binder') {
                 const index = localBinderMap.get(instruction.name)
                 if (index === undefined) {
-                  throw new Error("you forgot to validate")
+                  throw new Error('you forgot to validate')
                 }
-                return adorn("binder_" + index)
+                return adorn('binder_' + index)
               }
 
               return consumeNever(instruction.type)
