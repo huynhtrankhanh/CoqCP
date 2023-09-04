@@ -54,7 +54,20 @@ export const cppCodegen = ({ environment, procedures }: CoqCPAST): string => {
         ') {\n' +
         body
           .map((instruction) => {
-            const print = (instruction: ValueType): string => {
+            const localBinderMap = new Map<string, number>()
+            const print = (
+              instruction: ValueType,
+              state:
+                | { type: 'not inside block' }
+                | { type: 'inside block'; indentationLevel: number } = {
+                type: 'not inside block',
+              }
+            ): string => {
+              const adorn = (x: string) => {
+                if (state.type === 'not inside block') return x
+                return indent.repeat(state.indentationLevel) + x + ';\n'
+              }
+
               if (instruction.type === 'binaryOp') {
                 const operator = ((): string => {
                   if (instruction.operator === 'add') return '+'
@@ -70,14 +83,14 @@ export const cppCodegen = ({ environment, procedures }: CoqCPAST): string => {
                   if (instruction.operator === 'noteq') return '!='
                   return consumeNever(instruction.operator)
                 })()
-                return (
+                return adorn(
                   '(' +
-                  print(instruction.left) +
-                  ' ' +
-                  operator +
-                  ' ' +
-                  print(instruction.right) +
-                  ')'
+                    print(instruction.left) +
+                    ' ' +
+                    operator +
+                    ' ' +
+                    print(instruction.right) +
+                    ')'
                 )
               }
               if (instruction.type === 'unaryOp') {
@@ -88,101 +101,101 @@ export const cppCodegen = ({ environment, procedures }: CoqCPAST): string => {
                   if (instruction.operator === 'boolean not') return '!'
                   return consumeNever(instruction.operator)
                 })()
-                return '(' + operator + print(instruction.value) + ')'
+                return adorn('(' + operator + print(instruction.value) + ')')
               }
               if (instruction.type === 'get') {
-                return 'local_' + localNameMap.get(instruction.name)
+                return adorn('local_' + localNameMap.get(instruction.name))
               }
               if (instruction.type === 'set') {
-                return (
+                return adorn(
                   'local_' +
-                  localNameMap.get(instruction.name) +
-                  ' = ' +
-                  print(instruction.value)
+                    localNameMap.get(instruction.name) +
+                    ' = ' +
+                    print(instruction.value)
                 )
               }
               if (instruction.type === 'store') {
-                return (
+                return adorn(
                   'environment_' +
-                  environmentNameMap.get(instruction.name) +
-                  '[' +
-                  print(instruction.index) +
-                  '] = ' +
-                  '{ ' +
-                  instruction.tuples.map(print).join(', ') +
-                  ' }'
+                    environmentNameMap.get(instruction.name) +
+                    '[' +
+                    print(instruction.index) +
+                    '] = ' +
+                    '{ ' +
+                    instruction.tuples.map((x) => print(x)).join(', ') +
+                    ' }'
                 )
               }
               if (instruction.type === 'retrieve') {
-                return (
+                return adorn(
                   'environment_' +
-                  environmentNameMap.get(instruction.name) +
-                  '[' +
-                  print(instruction.index) +
-                  ']'
+                    environmentNameMap.get(instruction.name) +
+                    '[' +
+                    print(instruction.index) +
+                    ']'
                 )
               }
               if (instruction.type === 'readInt8') {
-                return 'readInt8()'
+                return adorn('readInt8()')
               }
               if (instruction.type === 'writeInt8') {
-                return 'writeInt8(' + print(instruction.value) + ')'
+                return adorn('writeInt8(' + print(instruction.value) + ')')
               }
               if (instruction.type === 'subscript') {
-                return (
+                return adorn(
                   'get<' +
-                  instruction.index.value +
-                  '>(' +
-                  print(instruction.value) +
-                  ')'
+                    instruction.index.value +
+                    '>(' +
+                    print(instruction.value) +
+                    ')'
                 )
               }
               if (instruction.type === 'sDivide') {
-                return (
+                return adorn(
                   '(toSigned(' +
-                  print(instruction.left) +
-                  ') / toSigned(' +
-                  print(instruction.right) +
-                  '))'
+                    print(instruction.left) +
+                    ') / toSigned(' +
+                    print(instruction.right) +
+                    '))'
                 )
               }
               if (instruction.type === 'divide') {
-                return (
+                return adorn(
                   '(' +
-                  print(instruction.left) +
-                  ' / ' +
-                  print(instruction.right) +
-                  ')'
+                    print(instruction.left) +
+                    ' / ' +
+                    print(instruction.right) +
+                    ')'
                 )
               }
               if (instruction.type === 'coerceInt8') {
-                return 'uint8_t(' + print(instruction.value) + ')'
+                return adorn('uint8_t(' + print(instruction.value) + ')')
               }
               if (instruction.type === 'coerceInt16') {
-                return 'uint16_t(' + print(instruction.value) + ')'
+                return adorn('uint16_t(' + print(instruction.value) + ')')
               }
               if (instruction.type === 'coerceInt32') {
-                return 'uint32_t(' + print(instruction.value) + ')'
+                return adorn('uint32_t(' + print(instruction.value) + ')')
               }
               if (instruction.type === 'coerceInt64') {
-                return 'uint64_t(' + print(instruction.value) + ')'
+                return adorn('uint64_t(' + print(instruction.value) + ')')
               }
               if (instruction.type === 'less') {
-                return (
+                return adorn(
                   '(' +
-                  print(instruction.left) +
-                  ' < ' +
-                  print(instruction.right) +
-                  ')'
+                    print(instruction.left) +
+                    ' < ' +
+                    print(instruction.right) +
+                    ')'
                 )
               }
               if (instruction.type === 'sLess') {
-                return (
+                return adorn(
                   '(toSigned(' +
-                  print(instruction.left) +
-                  ') < toSigned(' +
-                  print(instruction.right) +
-                  '))'
+                    print(instruction.left) +
+                    ') < toSigned(' +
+                    print(instruction.right) +
+                    '))'
                 )
               }
               if (instruction.type === 'call') {
@@ -192,36 +205,115 @@ export const cppCodegen = ({ environment, procedures }: CoqCPAST): string => {
                 }
                 const { variables } = procedures[index]
                 const supplied = instruction.presetVariables
-                return (
+                return adorn(
                   'procedure_' +
-                  index +
-                  '(' +
-                  [...variables.keys()]
-                    .map((x) => {
-                      const value = supplied.get(x)
-                      if (value === undefined) return '0'
-                      else return print(value)
-                    })
-                    .join(', ') +
-                  ')'
+                    index +
+                    '(' +
+                    [...variables.keys()]
+                      .map((x) => {
+                        const value = supplied.get(x)
+                        if (value === undefined) return '0'
+                        else return print(value)
+                      })
+                      .join(', ') +
+                    ')'
                 )
               }
               if (
                 instruction.type === 'break' ||
                 instruction.type === 'continue'
               )
-                return instruction.type
+                return adorn(instruction.type)
               if (instruction.type === 'literal') {
-                if (instruction.valueType === 'boolean') return instruction.raw
-                else return 'uint64_t(' + instruction.raw + ')'
+                if (instruction.valueType === 'boolean')
+                  return adorn(instruction.raw)
+                else return adorn('uint64_t(' + instruction.raw + ')')
               }
               if (instruction.type === 'flush') {
-                return 'flushSTDOUT()'
+                return adorn('flushSTDOUT()')
+              }
+              if (instruction.type === 'condition') {
+                const { condition, body, alternate } = instruction
+                if (state.type === 'not inside block') {
+                  throw new Error('condition must be inside block')
+                }
+                const { indentationLevel } = state
+                const baseIndent = indent.repeat(indentationLevel)
+                return (
+                  baseIndent +
+                  'if (' +
+                  print(condition) +
+                  ') {\n' +
+                  body
+                    .map((x) =>
+                      print(x, {
+                        type: 'inside block',
+                        indentationLevel: indentationLevel + 1,
+                      })
+                    )
+                    .join('') +
+                  baseIndent +
+                  '}\n'
+                )
+              }
+              if (instruction.type === 'range') {
+                const { name, end, loopVariable, loopBody } = instruction
+                const previousIndex = localBinderMap.get(name)
+
+                const index = localBinderMap.size
+                localBinderMap.set(name, index)
+
+                if (state.type === 'not inside block') {
+                  throw new Error('range must be inside block')
+                }
+                const { indentationLevel } = state
+
+                const baseIndent = indent.repeat(indentationLevel)
+
+                const constructed =
+                  baseIndent +
+                  'for (uint64_t binder_' +
+                  index +
+                  ' = 0; binder_' +
+                  index +
+                  ' < ' +
+                  print(end) +
+                  '; binder_' +
+                  index +
+                  '++) {\n' +
+                  loopBody
+                    .map(
+                      (x) =>
+                        print(x, {
+                          type: 'inside block',
+                          indentationLevel: indentationLevel + 1,
+                        }) + '\n'
+                    )
+                    .join('') +
+                  baseIndent +
+                  '}\n'
+
+                if (previousIndex === undefined) {
+                  localBinderMap.delete(name)
+                } else {
+                  localBinderMap.set(name, previousIndex)
+                }
+                return constructed
+              }
+              if (instruction.type === "local binder") {
+                const index = localBinderMap.get(instruction.name)
+                if (index === undefined) {
+                  throw new Error("you forgot to validate")
+                }
+                return adorn("binder_" + index)
               }
 
               return consumeNever(instruction.type)
             }
-            return indent.repeat(2) + print(instruction) + ';\n'
+            return print(instruction, {
+              type: 'inside block',
+              indentationLevel: 2,
+            })
           })
           .join('') +
         indent +
