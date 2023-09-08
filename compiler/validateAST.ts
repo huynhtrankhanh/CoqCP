@@ -1,98 +1,191 @@
-type ValidationError =
-  | { type: 'UnaryOperatorTypeMismatch'; operator: UnaryOp; valueType: ValueType }
-  | { type: 'BinaryOperatorTypeMismatch'; operator: BinaryOp; leftType: ValueType; rightType: ValueType }
-  | { type: 'BinaryOperatorTypeMismatch'; operator: BinaryOp; leftType: ValueType; rightType: ValueType; location: Location }
-  | { type: 'InvalidExpressionType'; expectedType: string; actualType: ValueType; location: Location }
-  | { type: 'UnknownValueType'; valueType: ValueType }
-  | { type: 'ConditionValueTypeMismatch'; conditionType: ValueType; location: Location }
-  | { type: 'InvalidTypeForCoercion'; valueType: ValueType; targetPrimitiveType: PrimitiveType };
+import {
+  UnaryOp,
+  ValueType,
+  BinaryOp,
+  Procedure,
+  PrimitiveType,
+  Instruction,
+  Environment,
+  BinaryOperationInstruction,
+  UnaryOperationInstruction,
+  CoqCPAST,
+  Location,
+} from './parse'
 
-function validateAST(node: Instruction, environment: Environment): ValidationError[] {
-  const errors: ValidationError[] = [];
+type ValidationError = (
+  | {
+      type: 'binary expression expects numeric'
+      actualType1: 'int8' | 'int16' | 'int32' | 'int64' | 'boolean'
+      actualType2: 'int8' | 'int16' | 'int32' | 'int64' | 'boolean'
+    }
+  | {
+      type: 'binary expression expects boolean'
+      actualType1: 'int8' | 'int16' | 'int32' | 'int64' | 'boolean'
+      actualType2: 'int8' | 'int16' | 'int32' | 'int64' | 'boolean'
+    }
+  | {
+      type: 'binary expression type mismatch'
+      actualType1: 'int8' | 'int16' | 'int32' | 'int64' | 'boolean'
+      actualType2: 'int8' | 'int16' | 'int32' | 'int64' | 'boolean'
+    }
+  | { type: 'expression no statement' }
+) & { location: Location }
 
-  function validateBinaryOp(node: BinaryOperationInstruction) {
-    const { operator, left, right } = node;
-
-    if (operator === 'add' || operator === 'subtract' || operator === 'multiply' || operator === 'divide') {
-      const leftType = validateExpressionType(left);
-      const rightType = validateExpressionType(right);
-      if (leftType !== rightType) {
-        errors.push({ type: 'BinaryOperatorTypeMismatch', operator, leftType, rightType });
+const validateAST = ({
+  procedures,
+  environment,
+}: CoqCPAST): ValidationError[] => {
+  const errors: ValidationError[] = []
+  const procedureMap = new Map<string, Procedure>()
+  for (const procedure of procedures) {
+    type Type =
+      | 'int8'
+      | 'int16'
+      | 'int32'
+      | 'int64'
+      | 'boolean'
+      | 'statement'
+      | 'illegal'
+    const isNumeric = (
+      x: string
+    ): x is 'int8' | 'int16' | 'int32' | 'int64' => {
+      return x === 'int8' || x === 'int16' || x === 'int32' || x === 'int64'
+    }
+    const dfs = (instruction: ValueType): Type => {
+      switch (instruction.type) {
+        case 'binaryOp': {
+          switch (instruction.operator) {
+            case 'add':
+            case 'subtract':
+            case 'multiply':
+            case 'mod':
+            case 'bitwise or':
+            case 'bitwise xor':
+            case 'bitwise and':
+            case 'shift left':
+            case 'shift right': {
+              const leftType = dfs(instruction.left)
+              const rightType = dfs(instruction.right)
+              if (leftType === rightType && isNumeric(leftType)) return leftType
+              else {
+                if (leftType === 'illegal' || rightType === 'illegal')
+                  return 'illegal'
+                if (leftType === 'statement') {
+                  errors.push({
+                    type: 'expression no statement',
+                    location: instruction.left.location,
+                  })
+                  return 'illegal'
+                }
+                if (rightType === 'statement') {
+                  errors.push({
+                    type: 'expression no statement',
+                    location: instruction.right.location,
+                  })
+                  return 'illegal'
+                }
+                if (!isNumeric(leftType) || !isNumeric(rightType)) {
+                  errors.push({
+                    type: 'binary expression expects numeric',
+                    actualType1: leftType,
+                    actualType2: rightType,
+                    location: instruction.location,
+                  })
+                  return 'illegal'
+                }
+                if (leftType !== rightType) {
+                  errors.push({
+                    type: 'binary expression type mismatch',
+                    actualType1: leftType,
+                    actualType2: rightType,
+                    location: instruction.location,
+                  })
+                  return 'illegal'
+                }
+                return 'illegal'
+              }
+            }
+            case 'equal':
+            case 'noteq': {
+              const leftType = dfs(instruction.left)
+              const rightType = dfs(instruction.right)
+              if (
+                leftType === rightType &&
+                (isNumeric(leftType) || leftType === 'boolean')
+              )
+                return leftType
+              else {
+                if (leftType === 'illegal' || rightType === 'illegal')
+                  return 'illegal'
+                if (leftType === 'statement') {
+                  errors.push({
+                    type: 'expression no statement',
+                    location: instruction.left.location,
+                  })
+                  return 'illegal'
+                }
+                if (rightType === 'statement') {
+                  errors.push({
+                    type: 'expression no statement',
+                    location: instruction.right.location,
+                  })
+                  return 'illegal'
+                }
+                if (leftType !== rightType) {
+                  errors.push({
+                    type: 'binary expression type mismatch',
+                    actualType1: leftType,
+                    actualType2: rightType,
+                    location: instruction.location,
+                  })
+                  return 'illegal'
+                }
+                return 'illegal'
+              }
+            }
+            case 'boolean and':
+            case 'boolean or': {
+              const leftType = dfs(instruction.left)
+              const rightType = dfs(instruction.right)
+              if (leftType === rightType && leftType === 'boolean')
+                return leftType
+              else {
+                if (leftType === 'illegal' || rightType === 'illegal')
+                  return 'illegal'
+                if (leftType === 'statement') {
+                  errors.push({
+                    type: 'expression no statement',
+                    location: instruction.left.location,
+                  })
+                  return 'illegal'
+                }
+                if (rightType === 'statement') {
+                  errors.push({
+                    type: 'expression no statement',
+                    location: instruction.right.location,
+                  })
+                  return 'illegal'
+                }
+                if (leftType !== 'boolean' || rightType !== 'boolean') {
+                  errors.push({
+                    type: 'binary expression expects boolean',
+                    actualType1: leftType,
+                    actualType2: rightType,
+                    location: instruction.location,
+                  })
+                  return 'illegal'
+                }
+                return 'illegal'
+              }
+            }
+          }
+        }
+        case 'break':
+          return 'statement'
+        case 'call': {
+        }
       }
     }
-
-    // Handle other binary operators in a similar manner.
+    procedureMap.set(procedure.name, procedure)
   }
-
-  function validateUnaryOp(node: UnaryOperationInstruction) {
-    const { operator, value } = node;
-
-    if (operator === 'minus' || operator === 'plus') {
-      const valueType = validateExpressionType(value);
-      if (valueType !== 'int8' && valueType !== 'int16' && valueType !== 'int32' && valueType !== 'int64') {
-        errors.push({ type: 'UnaryOperatorTypeMismatch', operator, valueType });
-      }
-    }
-
-    // Handle other unary operators in a similar manner.
-  }
-
-  function validateExpressionType(expression: ValueType): string {
-    if (expression.type === 'local binder') {
-      const variable = environment.arrays.get(expression.name);
-      if (variable) {
-        return variable.type;
-      }
-    } else if (expression.type === 'literal') {
-      return expression.valueType;
-    } else if (expression.type === 'binaryOp') {
-      validateBinaryOp(expression);
-    } else if (expression.type === 'unaryOp') {
-      validateUnaryOp(expression);
-    }
-
-    errors.push({ type: 'UnknownValueType', valueType: expression });
-    return '';
-  }
-
-  validateExpressionType(node);
-
-  return errors;
-}
-
-function emitErrorMessage(error: ValidationError): string {
-  switch (error.type) {
-    case 'UnaryOperatorTypeMismatch':
-      return `Unary operator '${error.operator}' is applied to an incompatible type: ${error.valueType}`;
-    case 'BinaryOperatorTypeMismatch':
-      return `Binary operator '${error.operator}' is applied to incompatible types: ${error.leftType} and ${error.rightType}`;
-    case 'InvalidExpressionType':
-      return `Invalid expression type. Expected: ${error.expectedType}, Actual: ${error.actualType}`;
-    case 'UnknownValueType':
-      return `Unknown value type: ${error.valueType}`;
-    case 'ConditionValueTypeMismatch':
-      return `Condition value type mismatch. Expected: boolean, Actual: ${error.conditionType}`;
-    case 'InvalidTypeForCoercion':
-      return `Invalid type for coercion. Value type: ${error.valueType}, Target primitive type: ${error.targetPrimitiveType}`;
-    default:
-      return 'Unknown error';
-  }
-}
-
-// Example usage:
-const environment: Environment = {
-  arrays: new Map(),
-};
-
-const astNode: Instruction = /* Your AST root node here */;
-
-const validationErrors = validateAST(astNode, environment);
-
-if (validationErrors.length > 0) {
-  console.error("Validation Errors:");
-  for (const error of validationErrors) {
-    console.error(emitErrorMessage(error));
-  }
-} else {
-  console.log("AST is valid.");
 }
