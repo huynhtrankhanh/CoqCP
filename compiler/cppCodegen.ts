@@ -284,12 +284,11 @@ export const cppCodegen = ({ environment, procedures }: CoqCPAST): string => {
                   index +
                   '++) {\n' +
                   loopBody
-                    .map(
-                      (x) =>
-                        print(x, {
-                          type: 'inside block',
-                          indentationLevel: indentationLevel + 1,
-                        })
+                    .map((x) =>
+                      print(x, {
+                        type: 'inside block',
+                        indentationLevel: indentationLevel + 1,
+                      })
                     )
                     .join('') +
                   baseIndent +
