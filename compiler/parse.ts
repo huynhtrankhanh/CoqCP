@@ -500,7 +500,7 @@ export class CoqCPASTTransformer {
       const left = this.processNode(node.left)
       const right = this.processNode(node.right)
       const operator = this.getBinaryOperator(node.operator, node.loc)
-      return { type: "binaryOp", operator, left, right, location: node.loc }
+      return { type: 'binaryOp', operator, left, right, location: node.loc }
     } else {
       throw new ParseError(
         'unrecognized node type: ' + node.type + '. ' + formatLocation(node.loc)
