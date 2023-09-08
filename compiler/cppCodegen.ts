@@ -289,7 +289,7 @@ export const cppCodegen = ({ environment, procedures }: CoqCPAST): string => {
                         print(x, {
                           type: 'inside block',
                           indentationLevel: indentationLevel + 1,
-                        }) + '\n'
+                        })
                     )
                     .join('') +
                   baseIndent +
