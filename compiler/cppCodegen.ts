@@ -81,6 +81,8 @@ export const cppCodegen = ({ environment, procedures }: CoqCPAST): string => {
                   if (instruction.operator === 'shift left') return '<<'
                   if (instruction.operator === 'equal') return '=='
                   if (instruction.operator === 'noteq') return '!='
+                  if (instruction.operator === 'boolean and') return '&&'
+                  if (instruction.operator === 'boolean or') return '||'
                   return consumeNever(instruction.operator)
                 })()
                 return adorn(

@@ -31,7 +31,7 @@ procedure("fibonacci", { n: int32, a: int32, b: int32, i: int32 }, () => {
       writeInt8(32);
     } else {writeInt8(64);}
 
-    if (less(get("n"), 200)) {
+    if (less(get("n"), 200) || true && !false) {
       writeInt8(100);
     }
 });`
@@ -73,7 +73,7 @@ int main() {
     if ((local_0 == uint64_t(100))) {
       writeInt8(uint64_t(32));
     }
-    if ((local_0 < uint64_t(200))) {
+    if (((local_0 < uint64_t(200)) || (true && (!false)))) {
       writeInt8(uint64_t(100));
     }
   };
