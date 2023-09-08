@@ -64,9 +64,7 @@ int main() {
     environment_0[uint64_t(1)] = { local_2 };
     for (uint64_t binder_0 = 0; binder_0 < (local_0 - uint64_t(2)); binder_0++) {
       local_3 = (get<0>(environment_0[binder_0]) + get<0>(environment_0[(binder_0 + uint64_t(1))]));
-
       environment_0[(binder_0 + uint64_t(2))] = { local_3 };
-
     }
     procedure_0(uint64_t(100));
     procedure_0(0);

@@ -225,7 +225,6 @@ describe('CoqCPASTTransformer', () => {
 
       const expectedInstruction = {
         type: 'range',
-        name: 'x',
         end: {
           type: 'literal',
           raw: '10',

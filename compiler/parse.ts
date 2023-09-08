@@ -81,7 +81,6 @@ export type Instruction = (
   | { type: 'retrieve'; name: string; index: ValueType }
   | {
       type: 'range'
-      name: string
       end: ValueType
       loopVariable: string
       loopBody: Instruction[]
@@ -711,7 +710,6 @@ export class CoqCPASTTransformer {
         const loopBody = this.transformBodyNode(funcNode.body)
         instruction = {
           type: 'range',
-          name: loopVariable,
           loopVariable,
           loopBody,
           end,

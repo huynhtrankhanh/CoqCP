@@ -259,11 +259,11 @@ export const cppCodegen = ({ environment, procedures }: CoqCPAST): string => {
                 )
               }
               if (instruction.type === 'range') {
-                const { name, end, loopVariable, loopBody } = instruction
-                const previousIndex = localBinderMap.get(name)
+                const { end, loopVariable, loopBody } = instruction
+                const previousIndex = localBinderMap.get(loopVariable)
 
                 const index = localBinderMap.size
-                localBinderMap.set(name, index)
+                localBinderMap.set(loopVariable, index)
 
                 if (state.type === 'not inside block') {
                   throw new Error('range must be inside block')
@@ -296,9 +296,9 @@ export const cppCodegen = ({ environment, procedures }: CoqCPAST): string => {
                   '}\n'
 
                 if (previousIndex === undefined) {
-                  localBinderMap.delete(name)
+                  localBinderMap.delete(loopVariable)
                 } else {
-                  localBinderMap.set(name, previousIndex)
+                  localBinderMap.set(loopVariable, previousIndex)
                 }
                 return constructed
               }
