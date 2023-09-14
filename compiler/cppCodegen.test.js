@@ -22,6 +22,9 @@ procedure("fibonacci", { n: int32, a: int32, b: int32, i: int32 }, () => {
     range(get("n") - 2, x => {  
         set("i", retrieve("fibSeq", x)[0] + retrieve("fibSeq", x + 1)[0]);  // Getting sum of last two fibonacci numbers
         store("fibSeq", x + 2, [get("i")]);  // Storing the newly calculated fibonacci term
+        "break"
+        "continue"
+        "flush"
     })
 
     call("pointless", { preset: 100 })
@@ -65,6 +68,9 @@ int main() {
     for (uint64_t binder_0 = 0; binder_0 < (local_0 - uint64_t(2)); binder_0++) {
       local_3 = (get<0>(environment_0[binder_0]) + get<0>(environment_0[(binder_0 + uint64_t(1))]));
       environment_0[(binder_0 + uint64_t(2))] = { local_3 };
+      break;
+      continue;
+      flushSTDOUT();
     }
     procedure_0(uint64_t(100));
     procedure_0(0);
