@@ -1,3 +1,4 @@
+import { consumeNever } from './consumeNever'
 import {
   UnaryOp,
   ValueType,
@@ -15,32 +16,35 @@ import {
 type ValidationError = (
   | {
       type: 'binary expression expects numeric' | 'instruction expects numeric'
-      actualType1: 'int8' | 'int16' | 'int32' | 'int64' | 'boolean'
-      actualType2: 'int8' | 'int16' | 'int32' | 'int64' | 'boolean'
+      actualType1: PrimitiveType | PrimitiveType[]
+      actualType2: PrimitiveType | PrimitiveType[]
     }
   | {
       type: 'binary expression expects boolean'
-      actualType1: 'int8' | 'int16' | 'int32' | 'int64' | 'boolean'
-      actualType2: 'int8' | 'int16' | 'int32' | 'int64' | 'boolean'
+      actualType1: PrimitiveType | PrimitiveType[]
+      actualType2: PrimitiveType | PrimitiveType[]
     }
   | {
       type: 'binary expression type mismatch' | 'instruction type mismatch'
-      actualType1: 'int8' | 'int16' | 'int32' | 'int64' | 'boolean'
-      actualType2: 'int8' | 'int16' | 'int32' | 'int64' | 'boolean'
+      actualType1: PrimitiveType | PrimitiveType[]
+      actualType2: PrimitiveType | PrimitiveType[]
     }
   | { type: 'expression no statement' }
   | { type: 'procedure not found'; name: string }
   | { type: 'preset variable not present'; variables: string[] }
   | {
       type: 'preset variable type mismatch'
-      expectedType: string
-      actualType: string
+      expectedType: PrimitiveType | PrimitiveType[]
+      actualType: PrimitiveType | PrimitiveType[]
     }
-  | { type: 'condition must be boolean'; actualType: string }
+  | { type: 'condition must be boolean'; actualType: PrimitiveType | PrimitiveType[] }
   | { type: 'no surrounding range command' }
-  | { type: 'undefined variable' }
+  | { type: 'undefined variable' | 'undefined binder' }
   | { type: 'not representable int64' }
   | { type: 'bad number literal' }
+  | { type: 'range end must be int64' }
+  | { type: 'instruction expects int8' | 'instruction expects int64' }
+  | { type: 'undefined array' }
 ) & { location: Location }
 
 const validateAST = ({
@@ -51,20 +55,17 @@ const validateAST = ({
   const procedureMap = new Map<string, Procedure>()
   for (const procedure of procedures) {
     type Type =
-      | 'int8'
-      | 'int16'
-      | 'int32'
-      | 'int64'
-      | 'boolean'
+      | PrimitiveType
       | 'statement'
       | 'illegal'
+      | PrimitiveType[]
     const isNumeric = (
-      x: string
+      x: string | PrimitiveType[]
     ): x is 'int8' | 'int16' | 'int32' | 'int64' => {
       return x === 'int8' || x === 'int16' || x === 'int32' || x === 'int64'
     }
     let hasSurroundingRangeCommand = false
-    const binderType = new Map<string, string>()
+    const presentBinders = new Set<string>()
     const dfs = (instruction: ValueType): Type => {
       switch (instruction.type) {
         case 'binaryOp': {
@@ -125,7 +126,7 @@ const validateAST = ({
               const rightType = dfs(instruction.right)
               if (
                 leftType === rightType &&
-                (isNumeric(leftType) || leftType === 'boolean')
+                (isNumeric(leftType) || leftType === 'bool')
               )
                 return leftType
               else {
@@ -161,7 +162,7 @@ const validateAST = ({
             case 'boolean or': {
               const leftType = dfs(instruction.left)
               const rightType = dfs(instruction.right)
-              if (leftType === rightType && leftType === 'boolean')
+              if (leftType === rightType && leftType === 'bool')
                 return leftType
               else {
                 if (leftType === 'illegal' || rightType === 'illegal')
@@ -180,7 +181,7 @@ const validateAST = ({
                   })
                   return 'illegal'
                 }
-                if (leftType !== 'boolean' || rightType !== 'boolean') {
+                if (leftType !== 'bool' || rightType !== 'bool') {
                   errors.push({
                     type: 'binary expression expects boolean',
                     actualType1: leftType,
@@ -290,7 +291,8 @@ const validateAST = ({
             errors.push({ type: 'expression no statement', location })
             return 'illegal'
           }
-          if (conditionType !== 'boolean') {
+          if (conditionType === "illegal") return "illegal"
+          if (conditionType !== 'bool') {
             errors.push({
               type: 'condition must be boolean',
               actualType: conditionType,
@@ -350,7 +352,7 @@ const validateAST = ({
             return 'illegal'
           }
           if (instruction.type === 'divide') return leftType
-          else if (instruction.type === 'less') return 'boolean'
+          else if (instruction.type === 'less') return 'bool'
         }
         case 'flush':
           return 'statement'
@@ -364,14 +366,14 @@ const validateAST = ({
             })
             return 'illegal'
           }
-          if (!isNumeric(variable.type) && variable.type !== 'boolean')
+          if (!isNumeric(variable.type) && variable.type !== 'bool')
             throw new Error(
               'unexpected! variable type not checked during parsing stage'
             )
           return variable.type
         }
         case 'literal': {
-          if (instruction.valueType === 'boolean') return 'boolean'
+          if (instruction.valueType === 'boolean') return 'bool'
           else if (instruction.valueType === 'number') {
             if (
               instruction.raw !== '0' &&
@@ -393,8 +395,92 @@ const validateAST = ({
             }
             return 'int64'
           }
+          return consumeNever(instruction.valueType)
         }
         case 'local binder': {
+          const { name } = instruction
+          if (!presentBinders.has(name)) {
+            errors.push({
+              type: 'undefined binder',
+              location: instruction.location,
+            })
+            return 'illegal'
+          }
+          return 'int64'
+        }
+        case 'range': {
+          const { end, loopBody, loopVariable } = instruction
+          const endType = dfs(end)
+          if (endType === 'illegal') return 'illegal'
+          if (endType === 'statement') {
+            errors.push({
+              type: 'expression no statement',
+              location: instruction.location,
+            })
+            return 'illegal'
+          }
+          if (endType !== 'int64') {
+            errors.push({
+              type: 'range end must be int64',
+              location: instruction.location,
+            })
+            return 'illegal'
+          }
+          const binderPresentBefore = presentBinders.has(loopVariable)
+          presentBinders.add(loopVariable)
+          const result = loopBody.map(dfs).includes('illegal')
+            ? 'illegal'
+            : 'statement'
+          if (!binderPresentBefore) presentBinders.delete(loopVariable)
+          return result
+        }
+        case 'readInt8':
+          return 'int8'
+        case 'writeInt8': {
+          const type = dfs(instruction.value)
+          if (type === 'illegal') return 'illegal'
+          if (type === 'statement') {
+            errors.push({
+              type: 'expression no statement',
+              location: instruction.location,
+            })
+            return 'illegal'
+          }
+          if (type !== 'int8') {
+            errors.push({
+              type: 'instruction expects int8',
+              location: instruction.location,
+            })
+            return 'illegal'
+          }
+          return 'statement'
+        }
+        case 'retrieve': {
+          const { index, name } = instruction
+          const type = dfs(index)
+          if (type === 'illegal') return 'illegal'
+          if (type === 'statement') {
+            errors.push({
+              type: 'expression no statement',
+              location: instruction.location,
+            })
+            return 'illegal'
+          }
+          if (type !== 'int64') {
+            errors.push({
+              type: 'instruction expects int64',
+              location: instruction.location,
+            })
+            return 'illegal'
+          }
+          const array = environment?.arrays.get(name)
+          if (array === undefined) {
+            errors.push({ type: "undefined array", location: instruction.location })
+            return "illegal"
+          }
+          // unfortunately, this step isn't too concerned with bounds checking
+          // please fire up Coq
+          return array.itemTypes
         }
       }
     }

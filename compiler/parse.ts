@@ -14,7 +14,7 @@ export interface Environment {
 }
 
 export interface Variable {
-  type: string
+  type: PrimitiveType
 }
 
 export type BinaryOp =
@@ -366,7 +366,19 @@ export class CoqCPASTTransformer {
             )
           }
 
-          variables.set(property.key.name, { type: property.value.name })
+          const declaredType = property.value.name
+          if (
+            declaredType !== 'int8' &&
+            declaredType !== 'int16' &&
+            declaredType !== 'int32' &&
+            declaredType !== 'int64' &&
+            declaredType !== 'bool'
+          )
+            throw new ParseError(
+              'invalid variable type. ' + formatLocation(property.value.loc)
+            )
+
+          variables.set(property.key.name, { type: declaredType })
         }
 
         // transforming bodyNode into Instruction[]
