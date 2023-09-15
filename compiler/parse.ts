@@ -76,7 +76,7 @@ export type Instruction = (
       type: 'store'
       name: string
       index: ValueType
-      tuples: ValueType[]
+      tuple: ValueType[]
     }
   | { type: 'retrieve'; name: string; index: ValueType }
   | {
@@ -659,7 +659,7 @@ export class CoqCPASTTransformer {
           type: 'store',
           name: arrayName,
           index,
-          tuples,
+          tuple: tuples,
           location,
         }
         break

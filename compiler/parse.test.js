@@ -241,7 +241,7 @@ describe('CoqCPASTTransformer', () => {
               name: 'x',
               location: expect.any(Object),
             },
-            tuples: [
+            tuple: [
               { type: 'local binder', name: 'x', location: expect.any(Object) },
             ],
             location: expect.any(Object),

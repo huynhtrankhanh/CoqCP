@@ -124,7 +124,7 @@ export const cppCodegen = ({ environment, procedures }: CoqCPAST): string => {
                     print(instruction.index) +
                     '] = ' +
                     '{ ' +
-                    instruction.tuples.map((x) => print(x)).join(', ') +
+                    instruction.tuple.map((x) => print(x)).join(', ') +
                     ' }'
                 )
               }
