@@ -1,14 +1,8 @@
 import { consumeNever } from './consumeNever'
 import {
-  UnaryOp,
   ValueType,
-  BinaryOp,
   Procedure,
   PrimitiveType,
-  Instruction,
-  Environment,
-  BinaryOperationInstruction,
-  UnaryOperationInstruction,
   CoqCPAST,
   Location,
 } from './parse'
@@ -31,9 +25,9 @@ type ValidationError = (
     }
   | { type: 'expression no statement' }
   | { type: 'procedure not found'; name: string }
-  | { type: 'preset variable not present'; variables: string[] }
+  | { type: 'variable not present'; variables: string[] }
   | {
-      type: 'preset variable type mismatch'
+      type: 'variable type mismatch'
       expectedType: PrimitiveType | PrimitiveType[]
       actualType: PrimitiveType | PrimitiveType[]
     }
@@ -46,8 +40,20 @@ type ValidationError = (
   | { type: 'not representable int64' }
   | { type: 'bad number literal' }
   | { type: 'range end must be int64' }
-  | { type: 'instruction expects int8' | 'instruction expects int64' }
+  | {
+      type:
+        | 'instruction expects int8'
+        | 'instruction expects int64'
+        | 'instruction expects tuple'
+    }
   | { type: 'undefined array' }
+  | { type: 'index out of bounds' }
+  | {
+      type:
+        | 'unary operator expects numeric'
+        | "unary operator can't operate on tuples"
+        | 'unary operator expects boolean'
+    }
 ) & { location: Location }
 
 const validateAST = ({
@@ -225,7 +231,7 @@ const validateAST = ({
           )
           if (notPresent.length !== 0) {
             errors.push({
-              type: 'preset variable not present',
+              type: 'variable not present',
               variables: notPresent,
               location,
             })
@@ -247,7 +253,7 @@ const validateAST = ({
                 })
               } else if (actualType !== 'illegal') {
                 errors.push({
-                  type: 'preset variable type mismatch',
+                  type: 'variable type mismatch',
                   actualType,
                   expectedType: type,
                   location: presetValue.location,
@@ -311,7 +317,9 @@ const validateAST = ({
           return 'statement'
         }
         case 'divide':
-        case 'less': {
+        case 'sDivide':
+        case 'less':
+        case 'sLess': {
           const { left, right } = instruction
           const leftType = dfs(left)
           const rightType = dfs(right)
@@ -349,8 +357,10 @@ const validateAST = ({
             })
             return 'illegal'
           }
-          if (instruction.type === 'divide') return leftType
-          else if (instruction.type === 'less') return 'bool'
+          if (instruction.type === 'divide' || instruction.type === 'sDivide')
+            return leftType
+          else if (instruction.type === 'less' || instruction.type === 'sLess')
+            return 'bool'
         }
         case 'flush':
           return 'statement'
@@ -375,7 +385,7 @@ const validateAST = ({
           else if (instruction.valueType === 'number') {
             if (
               instruction.raw !== '0' &&
-              !/^[1-9]\d*$/.test(instruction.raw)
+              !/^[+-]?[1-9]\d*$/.test(instruction.raw)
             ) {
               errors.push({
                 type: 'bad number literal',
@@ -482,6 +492,149 @@ const validateAST = ({
           // unfortunately, this step isn't too concerned with bounds checking
           // please fire up Coq
           return array.itemTypes
+        }
+        case 'set': {
+          const { name, value } = instruction
+          const actualType = dfs(value)
+          const expectedType = procedure.variables.get(name)?.type
+          if (expectedType === undefined) {
+            errors.push({
+              type: 'undefined variable',
+              location: instruction.location,
+            })
+            return 'illegal'
+          }
+          if (actualType === 'illegal') return 'illegal'
+          if (actualType === 'statement') {
+            errors.push({
+              type: 'expression no statement',
+              location: instruction.location,
+            })
+            return 'illegal'
+          }
+          if (expectedType !== actualType) {
+            errors.push({
+              type: 'variable type mismatch',
+              expectedType,
+              actualType,
+              location: instruction.location,
+            })
+            return 'illegal'
+          }
+          return 'statement'
+        }
+        case 'store': {
+          const { index, name, tuple } = instruction
+          const elementType = environment?.arrays.get(name)?.itemTypes
+          if (elementType === undefined) {
+            errors.push({
+              type: 'undefined array',
+              location: instruction.location,
+            })
+            return 'illegal'
+          }
+          const indexType = dfs(index)
+          if (indexType === 'illegal') return 'illegal'
+          if (indexType === 'statement') {
+            errors.push({
+              type: 'expression no statement',
+              location: instruction.location,
+            })
+            return 'illegal'
+          }
+          if (indexType !== 'int64') {
+            errors.push({
+              type: 'instruction expects int64',
+              location: instruction.location,
+            })
+            return 'illegal'
+          }
+          // no bounds check
+          return 'statement'
+        }
+        case 'subscript': {
+          const { index, value } = instruction
+          const type = dfs(value)
+          if (type === 'illegal') return 'illegal'
+          if (type === 'statement') {
+            errors.push({
+              type: 'expression no statement',
+              location: instruction.location,
+            })
+            return 'illegal'
+          }
+          if (!Array.isArray(type)) {
+            errors.push({
+              type: 'instruction expects tuple',
+              location: instruction.location,
+            })
+            return 'illegal'
+          }
+          const indexType = dfs(index)
+          if (indexType === 'illegal') return 'illegal'
+          // now indexType is int64
+          // sure, TypeScript can't infer this but it is true
+          const lengthInt = BigInt(type.length)
+          const indexInt = BigInt(index.raw)
+          if (indexInt >= lengthInt || indexInt < 0n) {
+            errors.push({
+              type: 'index out of bounds',
+              location: instruction.location,
+            })
+            return 'illegal'
+          }
+          const returnedType = type[Number(index.raw)]
+          return returnedType
+        }
+        case 'unaryOp': {
+          const { operator, value } = instruction
+          const valueType = dfs(value)
+          if (valueType === 'illegal') return 'illegal'
+          if (valueType === 'statement') {
+            errors.push({
+              type: 'expression no statement',
+              location: instruction.location,
+            })
+            return 'illegal'
+          }
+          if (isNumeric(valueType)) {
+            switch (operator) {
+              case 'bitwise not':
+              case 'minus':
+              case 'plus':
+                return valueType
+              case 'boolean not': {
+                errors.push({
+                  type: 'unary operator expects numeric',
+                  location: instruction.location,
+                })
+                return 'illegal'
+              }
+            }
+          }
+          if (Array.isArray(valueType)) {
+            errors.push({
+              type: "unary operator can't operate on tuples",
+              location: instruction.location,
+            })
+            return 'illegal'
+          }
+          if (valueType === 'bool') {
+            switch (operator) {
+              case 'bitwise not':
+              case 'minus':
+              case 'plus': {
+                errors.push({
+                  type: 'unary operator expects boolean',
+                  location: instruction.location,
+                })
+                return 'illegal'
+              }
+              case 'boolean not':
+                return 'bool'
+            }
+          }
+          return consumeNever(valueType)
         }
       }
     }

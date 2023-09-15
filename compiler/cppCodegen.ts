@@ -146,7 +146,7 @@ export const cppCodegen = ({ environment, procedures }: CoqCPAST): string => {
               if (instruction.type === 'subscript') {
                 return adorn(
                   'get<' +
-                    instruction.index.value +
+                    instruction.index.raw +
                     '>(' +
                     print(instruction.value) +
                     ')'

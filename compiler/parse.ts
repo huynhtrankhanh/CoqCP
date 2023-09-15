@@ -92,7 +92,7 @@ export type Instruction = (
   | {
       type: 'subscript'
       value: ValueType
-      index: { type: 'literal'; value: number; location: Location }
+      index: { type: 'literal'; valueType: "number"; raw: string; location: Location }
     }
   | {
       type: 'condition'
@@ -491,7 +491,7 @@ export class CoqCPASTTransformer {
           'index must be defined. ' + formatLocation(node.loc)
         )
       }
-      if (typeof instruction === 'number' || typeof instruction === 'boolean') {
+      if (instruction.type === "literal") {
         throw new ParseError(
           "left hand side can't be a literal. " + formatLocation(node.loc)
         )
@@ -501,7 +501,8 @@ export class CoqCPASTTransformer {
         value: instruction,
         index: {
           type: 'literal',
-          value: Number(index),
+          valueType: "number",
+          raw: index,
           location: node.property.loc,
         },
         location: node.loc,
