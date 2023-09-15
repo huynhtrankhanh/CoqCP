@@ -37,7 +37,10 @@ type ValidationError = (
       expectedType: PrimitiveType | PrimitiveType[]
       actualType: PrimitiveType | PrimitiveType[]
     }
-  | { type: 'condition must be boolean'; actualType: PrimitiveType | PrimitiveType[] }
+  | {
+      type: 'condition must be boolean'
+      actualType: PrimitiveType | PrimitiveType[]
+    }
   | { type: 'no surrounding range command' }
   | { type: 'undefined variable' | 'undefined binder' }
   | { type: 'not representable int64' }
@@ -54,11 +57,7 @@ const validateAST = ({
   const errors: ValidationError[] = []
   const procedureMap = new Map<string, Procedure>()
   for (const procedure of procedures) {
-    type Type =
-      | PrimitiveType
-      | 'statement'
-      | 'illegal'
-      | PrimitiveType[]
+    type Type = PrimitiveType | 'statement' | 'illegal' | PrimitiveType[]
     const isNumeric = (
       x: string | PrimitiveType[]
     ): x is 'int8' | 'int16' | 'int32' | 'int64' => {
@@ -162,8 +161,7 @@ const validateAST = ({
             case 'boolean or': {
               const leftType = dfs(instruction.left)
               const rightType = dfs(instruction.right)
-              if (leftType === rightType && leftType === 'bool')
-                return leftType
+              if (leftType === rightType && leftType === 'bool') return leftType
               else {
                 if (leftType === 'illegal' || rightType === 'illegal')
                   return 'illegal'
@@ -291,7 +289,7 @@ const validateAST = ({
             errors.push({ type: 'expression no statement', location })
             return 'illegal'
           }
-          if (conditionType === "illegal") return "illegal"
+          if (conditionType === 'illegal') return 'illegal'
           if (conditionType !== 'bool') {
             errors.push({
               type: 'condition must be boolean',
@@ -475,8 +473,11 @@ const validateAST = ({
           }
           const array = environment?.arrays.get(name)
           if (array === undefined) {
-            errors.push({ type: "undefined array", location: instruction.location })
-            return "illegal"
+            errors.push({
+              type: 'undefined array',
+              location: instruction.location,
+            })
+            return 'illegal'
           }
           // unfortunately, this step isn't too concerned with bounds checking
           // please fire up Coq
