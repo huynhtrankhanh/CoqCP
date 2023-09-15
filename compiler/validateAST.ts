@@ -434,14 +434,14 @@ const validateAST = ({
             })
             return 'illegal'
           }
-          const previousHasSurroundingRangeCommand = hasSurroundingRangeCommand;
+          const previousHasSurroundingRangeCommand = hasSurroundingRangeCommand
           hasSurroundingRangeCommand = true
           const binderPresentBefore = presentBinders.has(loopVariable)
           presentBinders.add(loopVariable)
           const result = loopBody.map(dfs).includes('illegal')
             ? 'illegal'
             : 'statement'
-          hasSurroundingRangeCommand=previousHasSurroundingRangeCommand
+          hasSurroundingRangeCommand = previousHasSurroundingRangeCommand
           if (!binderPresentBefore) presentBinders.delete(loopVariable)
           return result
         }
