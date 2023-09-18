@@ -7,7 +7,7 @@ import {
   Location,
 } from './parse'
 
-type ValidationError = (
+export type ValidationError = (
   | {
       type: 'binary expression expects numeric' | 'instruction expects numeric'
       actualType1: PrimitiveType | PrimitiveType[]
@@ -56,7 +56,7 @@ type ValidationError = (
     }
 ) & { location: Location }
 
-const validateAST = ({
+export const validateAST = ({
   procedures,
   environment,
 }: CoqCPAST): ValidationError[] => {
