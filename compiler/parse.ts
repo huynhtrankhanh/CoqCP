@@ -625,7 +625,7 @@ export class CoqCPASTTransformer {
           typeof args[0].value !== 'string'
         ) {
           throw new ParseError(
-            'set() function accepts exactly 2 arguments, first one being a string. ' +
+            'set() function accepts exactly 2 arguments: array name, index. ' +
               formatLocation(location)
           )
         }
@@ -643,7 +643,7 @@ export class CoqCPASTTransformer {
           args[2].type !== 'ArrayExpression'
         ) {
           throw new ParseError(
-            'store() function accepts exactly 3 arguments, first one being a string and last one being an array. ' +
+            'store() function accepts exactly 3 arguments: array name, index, tuple. ' +
               formatLocation(location)
           )
         }
