@@ -23,7 +23,9 @@ export const cppCodegen = ({ environment, procedures }: CoqCPAST): string => {
           const { itemTypes, length } = description
           return (
             'std::tuple<' +
-            itemTypes.map((x) => x === "bool" ? x : 'u' + x + '_t').join(', ') +
+            itemTypes
+              .map((x) => (x === 'bool' ? x : 'u' + x + '_t'))
+              .join(', ') +
             '> environment_' +
             get(name) +
             '[' +
