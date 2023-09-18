@@ -92,8 +92,12 @@ describe('CoqCPASTTransformer', () => {
     expect(result.environment?.arrays.has('fibSeq')).toEqual(true)
     expect(result.environment?.arrays.get('fibSeq')).toEqual({
       itemTypes: ['int32'],
-      length: 100,
-      lengthNodeLocation: expect.any(Object),
+      length: {
+        type: 'literal',
+        valueType: 'number',
+        raw: '100',
+        location: expect.any(Object),
+      },
     })
 
     expect(result.procedures).toHaveLength(1)

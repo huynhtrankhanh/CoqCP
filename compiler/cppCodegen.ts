@@ -29,7 +29,7 @@ export const cppCodegen = ({ environment, procedures }: CoqCPAST): string => {
             '> environment_' +
             get(name) +
             '[' +
-            length +
+            length.raw +
             '];\n'
           )
         })

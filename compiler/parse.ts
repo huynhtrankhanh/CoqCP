@@ -5,8 +5,12 @@ export type PrimitiveType = 'bool' | 'int8' | 'int16' | 'int32' | 'int64'
 
 export interface ArrayDeclaration {
   itemTypes: PrimitiveType[]
-  length: number
-  lengthNodeLocation: Location
+  length: {
+    type: 'literal'
+    valueType: 'number'
+    raw: string
+    location: Location
+  }
 }
 
 export interface Environment {
@@ -263,16 +267,6 @@ export class CoqCPASTTransformer {
             )
           }
 
-          if (
-            lengthNode.type !== 'Literal' ||
-            typeof lengthNode.value !== 'number'
-          ) {
-            throw new ParseError(
-              'second argument of array() must be a numeric literal.' +
-                formatLocation(lengthNode.loc)
-            )
-          }
-
           let itemTypes: PrimitiveType[] = []
           for (const itemType of typesArrayNode.elements) {
             if (
@@ -306,11 +300,26 @@ export class CoqCPASTTransformer {
             )
           }
 
-          this.result.environment.arrays.set(property.key.name, {
-            itemTypes,
-            length: lengthNode.value,
-            lengthNodeLocation: lengthNode.loc,
-          })
+          const lengthLiteral = this.processNode(lengthNode)
+          if (
+            lengthLiteral.type === 'literal' &&
+            lengthLiteral.valueType === 'number'
+          ) {
+            this.result.environment.arrays.set(property.key.name, {
+              itemTypes,
+              length: {
+                type: 'literal',
+                valueType: 'number',
+                location: lengthLiteral.location,
+                raw: lengthLiteral.raw,
+              },
+            })
+          } else {
+            throw new ParseError(
+              'second argument of array() must be a numeric literal.' +
+                formatLocation(lengthNode.loc)
+            )
+          }
         }
       }
 

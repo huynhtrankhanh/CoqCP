@@ -54,6 +54,7 @@ export type ValidationError = (
         | "unary operator can't operate on tuples"
         | 'unary operator expects boolean'
     }
+  | { type: "array length can't be negative" }
 ) & { location: Location }
 
 export const validateAST = ({
@@ -61,6 +62,36 @@ export const validateAST = ({
   environment,
 }: CoqCPAST): ValidationError[] => {
   const errors: ValidationError[] = []
+  if (environment !== null) {
+    for (const [key, array] of (environment?.arrays || new Map()).entries()) {
+      const raw = array.length.raw
+      if (raw !== '0' && !/^[+-]?[1-9]\d*$/.test(raw)) {
+        errors.push({
+          type: 'bad number literal',
+          location: array.length.location,
+        })
+        environment.arrays.delete(key)
+        continue
+      }
+      const evaluated = BigInt(raw)
+      if (evaluated < -(2n ** 63n) || evaluated >= 2n ** 64n) {
+        errors.push({
+          type: 'not representable int64',
+          location: array.length.location,
+        })
+        environment.arrays.delete(key)
+        continue
+      }
+      if (evaluated < 0n) {
+        errors.push({
+          type: "array length can't be negative",
+          location: array.length.location,
+        })
+        environment.arrays.delete(key)
+        continue
+      }
+    }
+  }
   const procedureMap = new Map<string, Procedure>()
   for (const procedure of procedures) {
     type Type = PrimitiveType | 'statement' | 'illegal' | PrimitiveType[]
