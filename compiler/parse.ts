@@ -281,7 +281,7 @@ export class CoqCPASTTransformer {
               (itemType.name !== 'int8' &&
                 itemType.name !== 'int16' &&
                 itemType.name !== 'int32' &&
-                itemType.name !== 'int64')
+                itemType.name !== 'int64' && itemType.name !== "bool")
             ) {
               throw new ParseError(
                 'invalid array item type. range: ' +

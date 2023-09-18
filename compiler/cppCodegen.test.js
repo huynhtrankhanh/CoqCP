@@ -3,7 +3,8 @@ import { cppCodegen } from './cppCodegen' // replace with actual path to module
 
 const code = `environment({
     fibSeq: array([int32], 100),  // Memory to hold Fibonacci sequence up to the 100th term
-    anotherArray: array([int8, int64], 3) // Example of an array where each element can hold multiple values
+    anotherArray: array([int8, int64], 3), // Example of an array where each element can hold multiple values
+    visited: array([bool], 0)
 });
 
 procedure("pointless", { preset: int32 }, () => {
@@ -54,6 +55,7 @@ int32_t toSigned(uint32_t x) { return x; }
 int64_t toSigned(uint64_t x) { return x; }
 std::tuple<uint32_t> environment_0[100];
 std::tuple<uint8_t, uint64_t> environment_1[3];
+std::tuple<bool> environment_2[0];
 
 int main() {
   auto procedure_0 = [&](uint32_t local_0) {
