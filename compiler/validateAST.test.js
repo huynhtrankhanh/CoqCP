@@ -44,9 +44,9 @@ const hasValidationErrorsOnly = (code) => {
  * @param {string} code
  * @returns {boolean}
  */
-const hasParseErrorsOnly = code => {
+const hasParseErrorsOnly = (code) => {
   const error = getCombinedError(code)
-  return error.type === "parse error"
+  return error.type === 'parse error'
 }
 
 describe('validateAST', () => {
@@ -71,9 +71,7 @@ procedure("hello", { a: bool }, () => {
     }
   })
   it('rejects invalid code (validate error)', () => {
-    const programs = [
-      `environment({ fractionalLength: array([int64], 10.5) })`
-    ]
+    const programs = [`environment({ fractionalLength: array([int64], 10.5) })`]
     for (const program of programs) {
       if (!hasValidationErrorsOnly(program)) {
         console.log('failing program:', program)
@@ -82,9 +80,8 @@ procedure("hello", { a: bool }, () => {
       }
     }
   })
-  it("rejects invalid code (parse error)", () => {
-    const programs = [
-    ]
+  it('rejects invalid code (parse error)', () => {
+    const programs = []
     for (const program of programs) {
       if (!hasParseErrorsOnly(program)) {
         console.log('failing program:', program)
