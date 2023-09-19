@@ -164,7 +164,7 @@ export const validateAST = ({
                 leftType === rightType &&
                 (isNumeric(leftType) || leftType === 'bool')
               )
-                return "bool"
+                return 'bool'
               else {
                 if (leftType === 'illegal' || rightType === 'illegal')
                   return 'illegal'
