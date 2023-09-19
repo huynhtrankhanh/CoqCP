@@ -164,7 +164,7 @@ export const validateAST = ({
                 leftType === rightType &&
                 (isNumeric(leftType) || leftType === 'bool')
               )
-                return leftType
+                return "bool"
               else {
                 if (leftType === 'illegal' || rightType === 'illegal')
                   return 'illegal'
@@ -672,6 +672,7 @@ export const validateAST = ({
         }
       }
     }
+    procedure.body.forEach(dfs)
     procedureMap.set(procedure.name, procedure)
   }
   return errors
