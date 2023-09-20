@@ -105,16 +105,16 @@ procedure("hello", { a: bool }, () => {
       `procedure("hello", {}, () => { writeInt8(coerceInt8(coerceInt8(10) + 64))})`,
       `procedure("hello", {}, () => { if (100) {if (200) {if (300){}}} })`,
       `procedure("hello", {}, () => {
-        range(200, x => {
-          range(300, x => {
-            "break"
-            if (x == 300) {
-              "break"
-            }
-          })
-        })
+  range(200, x => {
+    range(300, x => {
+      "break"
+      if (x == 300) {
         "break"
-      })`,
+      }
+    })
+  })
+  "break"
+})`,
     ]
     for (const program of programs) {
       if (!hasValidationErrorsOnly(program)) {
