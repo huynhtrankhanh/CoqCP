@@ -102,9 +102,10 @@ procedure("hello", { a: bool }, () => {
     })
     writeInt8(coerceInt8(x))
   })
-})`,`procedure('hello', {}, () => {
+})`,
+      `procedure('hello', {}, () => {
   range(3, x => {})
-})`
+})`,
     ]
     for (const program of programs) {
       if (!noErrors(program)) {
@@ -164,9 +165,10 @@ procedure("hello", { a: bool }, () => {
     })
     writeInt8(coerceInt8(y))
   })
-})`,`procedure('hello', {}, () => {
+})`,
+      `procedure('hello', {}, () => {
   range(74829387492847492947392874928473974929748293737, x => {})
-})`
+})`,
     ]
     for (const program of programs) {
       if (!hasValidationErrorsOnly(program)) {
