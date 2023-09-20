@@ -114,7 +114,7 @@ procedure("hello", { a: bool }, () => {
           })
         })
         "break"
-      })`
+      })`,
     ]
     for (const program of programs) {
       if (!hasValidationErrorsOnly(program)) {
