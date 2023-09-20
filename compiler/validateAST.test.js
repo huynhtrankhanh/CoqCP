@@ -79,6 +79,29 @@ procedure("hello", { a: bool }, () => {
 })`,
       `procedure("hello", {}, () => { writeInt8(coerceInt8(100)) })`,
       `procedure("hello", {}, () => { writeInt8(coerceInt8(100 + 200)) })`,
+      `procedure("hello", {}, () => {
+  range(30, x => {
+    writeInt8(coerceInt8(x))
+    range(60, x => {
+      writeInt8(coerceInt8(x))
+      range(90, y => {
+        writeInt8(coerceInt8(x))
+      })
+    })
+  })
+})`,`procedure("hello", {}, () => {
+  range(30, x => {
+    writeInt8(coerceInt8(x))
+    range(60, x => {
+      writeInt8(coerceInt8(x))
+      range(90, y => {
+        writeInt8(coerceInt8(x))
+        writeInt8(coerceInt8(y))
+      })
+    })
+    writeInt8(coerceInt8(x))
+  })
+})`
     ]
     for (const program of programs) {
       if (!noErrors(program)) {
@@ -114,7 +137,29 @@ procedure("hello", { a: bool }, () => {
     })
   })
   "break"
-})`,
+})`,`procedure("hello", {}, () => {
+  range(30, x => {
+    writeInt8(coerceInt8(x))
+    range(60, x => {
+      writeInt8(coerceInt8(x))
+      range(90, y => {
+        writeInt8(coerceInt8(x))
+      })
+    })
+  })
+  writeInt8(coerceInt8(x))
+})`,`procedure("hello", {}, () => {
+  range(30, x => {
+    writeInt8(coerceInt8(x))
+    range(60, x => {
+      writeInt8(coerceInt8(x))
+      range(90, y => {
+        writeInt8(coerceInt8(x))
+      })
+    })
+    writeInt8(coerceInt8(y))
+  })
+})`
     ]
     for (const program of programs) {
       if (!hasValidationErrorsOnly(program)) {
