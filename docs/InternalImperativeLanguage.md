@@ -16,8 +16,8 @@ Here is an example of an `environment` block.
 
 ```js
 environment({
-    fibSeq: array([int32], 100),
-    anotherArray: array([int8, int64], 3)
+  fibSeq: array([int32], 100),
+  anotherArray: array([int8, int64], 3),
 })
 ```
 
