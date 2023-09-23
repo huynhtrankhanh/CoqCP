@@ -16,7 +16,7 @@ Note: Whenever you create a new file, remember to import `Options` with the `Fro
 
 Documentation:
 
-- [Compiler development](docs/CompilerDevelopment.md)
+- [Internal imperative language](docs/InternalImperativeLanguage.md)
 <hr>
 
 - [Regular bracket strings](docs/RegularBracketString.md)
