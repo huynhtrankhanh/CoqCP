@@ -16,4 +16,5 @@ Inductive Action (environment : Environment) (locals : Locals) :=
 | BooleanLocalGet (variableName : string) (value : bool) : (Action _ _) -> (Action _ _)
 | BooleanLocalSet (variableName : string) : (bool -> (Action _ _)) -> (Action _ _)
 | WriteInt8 (output : Z) : (Action _ _) -> (Action _ _)
-| ReadInt8 : (Z -> (Action _ _)) -> (Action _ _).
+| ReadInt8 : (Z -> (Action _ _)) -> (Action _ _)
+| Flush : (Action _ _) -> (Action _ _).
