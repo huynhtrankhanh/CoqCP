@@ -2,8 +2,6 @@ From CoqCP Require Import Options.
 From stdpp Require Import strings.
 Require Import ZArith.
 Open Scope Z_scope.
-Definition plus8 (a b : Z) := (a + b) mod (256 : Z).
-Compute (plus8 100 200).
 
 Record Environment := { arrayType: string -> Type; arrays: forall (name : string), list (arrayType name) }.
 
