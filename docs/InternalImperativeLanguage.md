@@ -100,3 +100,17 @@ You can coerce any boolean or number to a numeric type.
 **Booleans:** If you coerce `false`, you get `0`. If you coerce `true`, you get `1`.
 
 The coercion commands are `coerceInt8`, `coerceInt16`, `coerceInt32` and `coerceInt64`.
+
+## Get global array element
+```js
+retrieve("array_name", /* array index */)[/* tuple index */]
+```
+
+Tuple index must be a literal number. Array index must be an `int64`.
+
+## Set global array element
+```js
+set("array_name", /* array index */, [tupleElement1, tupleElement2, /* ... */])
+```
+
+Array index must be an int64.
