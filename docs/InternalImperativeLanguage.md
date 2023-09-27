@@ -115,4 +115,4 @@ Tuple index must be a literal number. Array index must be an `int64`.
 set("array_name", /* array index */, [tupleElement1, tupleElement2, /* ... */])
 ```
 
-Array index must be an int64.
+Array index must be an `int64`.
