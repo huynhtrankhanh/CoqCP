@@ -155,3 +155,13 @@ range(endValue, (counter) => {
   ;('continue')
 })
 ```
+
+## Procedure call
+```js
+call("procedure_name", {
+  a: 5,
+  b, 6
+})
+```
+
+When calling a procedure, you can preset some of its local variables. The remaining local variables are initialized to 0. A procedure call is a statement and doesn't have a return value.
