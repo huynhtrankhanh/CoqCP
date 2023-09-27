@@ -8,6 +8,8 @@ Then, you will need to run the `tsc` compiler in watch mode. To do this, run `np
 
 The internal imperative language steals JavaScript syntax and interprets the parsed AST differently. As JavaScript syntax is stolen, the internal language is subject to every single JavaScript syntactic rule, including automatic semicolon insertion.
 
+The documentation for this language isn't very precise. I hope you can fill in the gaps by reading the generated Coq and C++ code.
+
 A source file consists of 0 or 1 `environment` block and any number of `procedure` blocks.
 
 The `environment` block can be placed at the top, at the bottom or between procedures.
