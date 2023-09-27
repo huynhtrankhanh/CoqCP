@@ -48,7 +48,7 @@ Within a procedure, there are several commands.
 ```
 
 ```js
--1
+;-1
 ```
 
 ```js
