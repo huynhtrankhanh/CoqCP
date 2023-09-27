@@ -133,6 +133,8 @@ if (condition) {
 
 Same syntax as JavaScript. `{}` (curly brackets) are mandatory.
 
+`else if` isn't supported.
+
 ## Loop
 
 ```js
