@@ -24,3 +24,59 @@ environment({
 In the above example, we declare two arrays `fibSeq` and `anotherArray`. `fibSeq` is an array of 100 elements, each element has a type of `[int32]`. `anotherArray` is an array of 3 elements, each element has a type of `[int8, int64]`.
 
 The permitted primitive types are `int8`, `int16`, `int32`, `int64` and `bool`.
+
+Here is an example of a procedure.
+
+```js
+procedure("hello", { var1: int8 }, () => {
+    // ...
+})
+```
+
+The first argument is the procedure name. The second argument is an object literal representing local variables for the procedure. The key represents the variable name, and the value represents the primitive type.
+
+Within a procedure, there are several commands.
+
+## Number literal
+```js
+0
+```
+```js
+1
+```
+```js
+-1
+```
+```js
+998244353
+```
+Only integers are allowed. Number literals are always interpreted as `int64`.
+
+## Set a local variable
+```js
+set("variable_name", /* value */)
+```
+This is a statement and doesn't return.
+
+## Get a local variable
+```js
+get("variable_name")
+```
+The return type depends on the variable type.
+
+## Arithmetic
+These operators are supported: `+`, `-`, `*`, `|`, `^`, `&`, `~`.
+
+To divide, you can use `divide(x, y)` (unsigned) or `sDivide(x, y)` (signed).
+
+Numbers aren't intrinsically signed or unsigned in the language, instead this is determined by the operation you're using. For `+`, `-`, `*`, `|`, `^`, `&` and `~`, signedness doesn't really matter.
+
+Overflow doesn't exist in this language. This language uses wraparound arithmetic.
+
+## Boolean Operators
+These operators are allowed: `||`, `&&` and `!`.
+
+## Comparison
+`==` and `!=` can be used on both numbers and booleans, provided that the values on both sides are of the same type.
+
+You can use `less(x, y)` (unsigned) and `sLess(x, y)` to check whether x is less than y. Both x and y must be numbers and of the same type.
