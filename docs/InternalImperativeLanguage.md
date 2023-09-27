@@ -120,6 +120,7 @@ store("array_name", /* array index */, [tupleElement1, tupleElement2, /* ... */]
 Array index must be an `int64`.
 
 ## `if`/`else`
+
 ```js
 if (condition) {
   // ...
@@ -131,8 +132,9 @@ if (condition) {
 Same syntax as JavaScript. `{}` (curly brackets) are mandatory.
 
 ## Loop
+
 ```js
-range(endValue, counter => {
+range(endValue, (counter) => {
   // ...
 })
 ```
@@ -144,10 +146,10 @@ Within a `range` command, you can use `"break"` (**not `break`**) and `"continue
 Example:
 
 ```js
-range(endValue, counter => {
+range(endValue, (counter) => {
   if (less(counter, 5)) {
-    "break"
+    ;('break')
   }
-  "continue"
+  ;('continue')
 })
 ```
