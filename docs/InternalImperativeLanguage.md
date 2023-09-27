@@ -165,4 +165,4 @@ call('procedure_name', {
 })
 ```
 
-When calling a procedure, you can preset some of its local variables. The remaining local variables are initialized to 0. A procedure call is a statement and doesn't have a return value.
+When calling a procedure, you can preset some of its local variables. The remaining local variables are initialized to 0 if the variable is numeric and false if the variable is boolean. A procedure call is a statement and doesn't have a return value.
