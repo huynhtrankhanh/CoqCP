@@ -85,7 +85,7 @@ To divide, you can use `divide(x, y)` (unsigned) or `sDivide(x, y)` (signed).
 
 **In general, numbers are treated as unsigned unless you use a command specifically for signed numbers.**
 
-Overflow doesn't exist in this language. This language uses wraparound arithmetic.
+Only the `sDivide` command has overflow. All other commands use wraparound arithmetic.
 
 ## Boolean Operators
 
