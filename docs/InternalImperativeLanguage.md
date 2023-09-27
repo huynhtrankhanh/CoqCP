@@ -91,4 +91,11 @@ These operators are allowed: `||`, `&&` and `!`.
 
 `==` and `!=` can be used on both numbers and booleans, provided that the values on both sides are of the same type.
 
-You can use `less(x, y)` (unsigned) and `sLess(x, y)` to check whether x is less than y. Both x and y must be numbers and of the same type.
+You can use `less(x, y)` (unsigned) and `sLess(x, y)` (signed) to check whether x is less than y. Both x and y must be numbers and of the same type.
+
+## Coercion
+You can coerce any boolean or number to a numeric type.
+
+**Booleans:** If you coerce `false`, you get `0`. If you coerce `true`, you get `1`.
+
+The coercion commands are `coerceInt8`, `coerceInt16`, `coerceInt32` and `coerceInt64`.
