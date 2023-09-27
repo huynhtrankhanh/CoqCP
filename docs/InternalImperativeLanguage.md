@@ -118,3 +118,36 @@ store("array_name", /* array index */, [tupleElement1, tupleElement2, /* ... */]
 ```
 
 Array index must be an `int64`.
+
+## `if`/`else`
+```js
+if (condition) {
+  // ...
+} else {
+  // ...
+}
+```
+
+Same syntax as JavaScript. `{}` (curly brackets) are mandatory.
+
+## Loop
+```js
+range(endValue, counter => {
+  // ...
+})
+```
+
+`endValue` is an `int64`. The `counter` is also an `int64`. The counter goes from 0 to endValue - 1, similar to `for i in range(x)` in Python.
+
+Within a `range` command, you can use `"break"` (**not `break`**) and `"continue"` (**not `continue`**).
+
+Example:
+
+```js
+range(endValue, counter => {
+  if (less(counter, 5)) {
+    "break"
+  }
+  "continue"
+})
+```
