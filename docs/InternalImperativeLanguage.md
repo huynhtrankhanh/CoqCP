@@ -112,7 +112,7 @@ Tuple index must be a literal number. Array index must be an `int64`.
 ## Set global array element
 
 ```js
-set("array_name", /* array index */, [tupleElement1, tupleElement2, /* ... */])
+store("array_name", /* array index */, [tupleElement1, tupleElement2, /* ... */])
 ```
 
 Array index must be an `int64`.
