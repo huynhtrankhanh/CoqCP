@@ -59,6 +59,8 @@ Within a procedure, there are several commands.
 
 Only integers are allowed. Number literals are always interpreted as `int64`.
 
+**In general, numbers are treated as unsigned unless you use a command specifically for signed numbers.** If you write a negative number, it will be silently converted to its unsigned equivalent.
+
 ## Set a local variable
 
 ```js
@@ -81,7 +83,7 @@ These operators are supported: `+`, `-`, `*`, `|`, `^`, `&`, `~`.
 
 To divide, you can use `divide(x, y)` (unsigned) or `sDivide(x, y)` (signed).
 
-Numbers aren't intrinsically signed or unsigned in the language, instead this is determined by the operation you're using. For `+`, `-`, `*`, `|`, `^`, `&` and `~`, signedness doesn't really matter.
+**In general, numbers are treated as unsigned unless you use a command specifically for signed numbers.**
 
 Overflow doesn't exist in this language. This language uses wraparound arithmetic.
 
