@@ -161,7 +161,7 @@ range(endValue, (counter) => {
 ```js
 call("procedure_name", {
   a: 5,
-  b, 6
+  b: 6
 })
 ```
 
