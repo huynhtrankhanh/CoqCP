@@ -28,8 +28,8 @@ The permitted primitive types are `int8`, `int16`, `int32`, `int64` and `bool`.
 Here is an example of a procedure.
 
 ```js
-procedure("hello", { var1: int8 }, () => {
-    // ...
+procedure('hello', { var1: int8 }, () => {
+  // ...
 })
 ```
 
@@ -38,33 +38,43 @@ The first argument is the procedure name. The second argument is an object liter
 Within a procedure, there are several commands.
 
 ## Number literal
+
 ```js
 0
 ```
+
 ```js
 1
 ```
+
 ```js
--1
+;-1
 ```
+
 ```js
 998244353
 ```
+
 Only integers are allowed. Number literals are always interpreted as `int64`.
 
 ## Set a local variable
+
 ```js
-set("variable_name", /* value */)
+set('variable_name' /* value */)
 ```
+
 This is a statement and doesn't return.
 
 ## Get a local variable
+
 ```js
-get("variable_name")
+get('variable_name')
 ```
+
 The return type depends on the variable type.
 
 ## Arithmetic
+
 These operators are supported: `+`, `-`, `*`, `|`, `^`, `&`, `~`.
 
 To divide, you can use `divide(x, y)` (unsigned) or `sDivide(x, y)` (signed).
@@ -74,9 +84,11 @@ Numbers aren't intrinsically signed or unsigned in the language, instead this is
 Overflow doesn't exist in this language. This language uses wraparound arithmetic.
 
 ## Boolean Operators
+
 These operators are allowed: `||`, `&&` and `!`.
 
 ## Comparison
+
 `==` and `!=` can be used on both numbers and booleans, provided that the values on both sides are of the same type.
 
 You can use `less(x, y)` (unsigned) and `sLess(x, y)` to check whether x is less than y. Both x and y must be numbers and of the same type.
