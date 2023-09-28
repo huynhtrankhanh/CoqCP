@@ -8,11 +8,11 @@ const code = `environment({
 });
 
 procedure("pointless", { preset: int32 }, () => {
-    writeInt8(coerceInt8(get("preset")))
+    writeChar(coerceInt8(get("preset")))
 })
 
 procedure("fibonacci", { n: int32, a: int32, b: int32, i: int32 }, () => {
-    set("n", readInt8());  // Reading the term 'n' to which Fibonacci sequence is to be calculated
+    set("n", readChar());  // Reading the term 'n' to which Fibonacci sequence is to be calculated
     set("a", 0);
     set("b", 1);
     
@@ -32,11 +32,11 @@ procedure("fibonacci", { n: int32, a: int32, b: int32, i: int32 }, () => {
     call("pointless", {})
 
     if (get("n") == 100) {
-      writeInt8(32);
-    } else {writeInt8(64);}
+      writeChar(32);
+    } else {writeChar(64);}
 
     if (less(get("n"), 200) || true && !false) {
-      writeInt8(100);
+      writeChar(100);
     }
 });`
 
@@ -59,10 +59,10 @@ std::tuple<bool> environment_2[0];
 
 int main() {
   auto procedure_0 = [&](uint32_t local_0) {
-    writeInt8(uint8_t(local_0));
+    writeChar(uint8_t(local_0));
   };
   auto procedure_1 = [&](uint32_t local_0, uint32_t local_1, uint32_t local_2, uint32_t local_3) {
-    local_0 = readInt8();
+    local_0 = readChar();
     local_1 = uint64_t(0);
     local_2 = uint64_t(1);
     environment_0[uint64_t(0)] = { local_1 };
@@ -77,10 +77,10 @@ int main() {
     procedure_0(uint64_t(100));
     procedure_0(0);
     if ((local_0 == uint64_t(100))) {
-      writeInt8(uint64_t(32));
+      writeChar(uint64_t(32));
     }
     if (((local_0 < uint64_t(200)) || (true && (!false)))) {
-      writeInt8(uint64_t(100));
+      writeChar(uint64_t(100));
     }
   };
 }`)

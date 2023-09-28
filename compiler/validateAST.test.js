@@ -61,6 +61,9 @@ procedure("hello", { a: bool }, () => {
   store("a", 0, [get("a")])
   set("a", retrieve("a", 0)[0])
 })`,
+      `procedure("wow", {}, () => {
+  range(readChar(), x => {})
+})`,
       `procedure("hello", {}, () => {
   range(100, x => { "break" })
 })`,
@@ -77,30 +80,30 @@ procedure("hello", { a: bool }, () => {
     })
   })
 })`,
-      `procedure("hello", {}, () => { writeInt8(coerceInt8(100)) })`,
-      `procedure("hello", {}, () => { writeInt8(coerceInt8(100 + 200)) })`,
+      `procedure("hello", {}, () => { writeChar(coerceInt8(100)) })`,
+      `procedure("hello", {}, () => { writeChar(coerceInt8(100 + 200)) })`,
       `procedure("hello", {}, () => {
   range(30, x => {
-    writeInt8(coerceInt8(x))
+    writeChar(coerceInt8(x))
     range(60, x => {
-      writeInt8(coerceInt8(x))
+      writeChar(coerceInt8(x))
       range(90, y => {
-        writeInt8(coerceInt8(x))
+        writeChar(coerceInt8(x))
       })
     })
   })
 })`,
       `procedure("hello", {}, () => {
   range(30, x => {
-    writeInt8(coerceInt8(x))
+    writeChar(coerceInt8(x))
     range(60, x => {
-      writeInt8(coerceInt8(x))
+      writeChar(coerceInt8(x))
       range(90, y => {
-        writeInt8(coerceInt8(x))
-        writeInt8(coerceInt8(y))
+        writeChar(coerceInt8(x))
+        writeChar(coerceInt8(y))
       })
     })
-    writeInt8(coerceInt8(x))
+    writeChar(coerceInt8(x))
   })
 })`,
       `procedure('hello', {}, () => {
@@ -128,8 +131,8 @@ procedure("hello", { a: bool }, () => {
   store("a", 0, [get("a")])
   set("a", retrieve("a", 0)[0])
 })`,
-      `procedure("hello", {}, () => { writeInt8(100) })`,
-      `procedure("hello", {}, () => { writeInt8(coerceInt8(coerceInt8(10) + 64))})`,
+      `procedure("hello", {}, () => { writeChar(100) })`,
+      `procedure("hello", {}, () => { writeChar(coerceInt8(coerceInt8(10) + 64))})`,
       `procedure("hello", {}, () => { if (100) {if (200) {if (300){}}} })`,
       `procedure("hello", {}, () => {
   range(200, x => {
@@ -142,28 +145,31 @@ procedure("hello", { a: bool }, () => {
   })
   "break"
 })`,
-      `procedure("hello", {}, () => {
-  range(30, x => {
-    writeInt8(coerceInt8(x))
-    range(60, x => {
-      writeInt8(coerceInt8(x))
-      range(90, y => {
-        writeInt8(coerceInt8(x))
-      })
-    })
-  })
-  writeInt8(coerceInt8(x))
+`procedure("hello", { k: int64 }, () => {
+  range(k, x => {})
 })`,
       `procedure("hello", {}, () => {
   range(30, x => {
-    writeInt8(coerceInt8(x))
+    writeChar(coerceInt8(x))
     range(60, x => {
-      writeInt8(coerceInt8(x))
+      writeChar(coerceInt8(x))
       range(90, y => {
-        writeInt8(coerceInt8(x))
+        writeChar(coerceInt8(x))
       })
     })
-    writeInt8(coerceInt8(y))
+  })
+  writeChar(coerceInt8(x))
+})`,
+      `procedure("hello", {}, () => {
+  range(30, x => {
+    writeChar(coerceInt8(x))
+    range(60, x => {
+      writeChar(coerceInt8(x))
+      range(90, y => {
+        writeChar(coerceInt8(x))
+      })
+    })
+    writeChar(coerceInt8(y))
   })
 })`,
       `procedure('hello', {}, () => {

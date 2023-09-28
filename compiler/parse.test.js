@@ -8,7 +8,7 @@ describe('CoqCPASTTransformer', () => {
     });
   
     procedure("fibonacci", { n: int32, a: int32, b: int32, i: int32 }, () => {
-        set("n", readInt8());  
+        set("n", readChar());  
         set("a", 0);
         set("b", 1);
 
@@ -21,11 +21,11 @@ describe('CoqCPASTTransformer', () => {
         })
 
         if (get("n") == 100) {
-          writeInt8(32);
-        } else {writeInt8(64);}
+          writeChar(32);
+        } else {writeChar(64);}
   
         if (less(get("n"), 200)) {
-          writeInt8(100);
+          writeChar(100);
         }
     });`
 
@@ -40,7 +40,7 @@ describe('CoqCPASTTransformer', () => {
     });
 
     procedure(100, { n: int32, a: int32, b: int32, i: int32 }, () => {
-        set("n", readInt8());  
+        set("n", readChar());  
         set("a", 0);
         set("b", 1);
 
@@ -53,11 +53,11 @@ describe('CoqCPASTTransformer', () => {
         })
 
         if (get("n") == 100) {
-          writeInt8(32);
-        } else {writeInt8(64);}
+          writeChar(32);
+        } else {writeChar(64);}
 
         if (less(get("n"), 200)) {
-          writeInt8(100);
+          writeChar(100);
         }
     });`
 
@@ -82,7 +82,7 @@ describe('CoqCPASTTransformer', () => {
     });
 
     procedure("fibonacci", { n: int32 }, () => {
-        set("n", readInt8());
+        set("n", readChar());
     });`
 
     const transformer = new CoqCPASTTransformer(code)
@@ -107,7 +107,7 @@ describe('CoqCPASTTransformer', () => {
     expect(result.procedures[0].body[0].type).toEqual('set')
     expect(result.procedures[0].body[0].name).toEqual('n')
     expect(result.procedures[0].body[0].value).toEqual({
-      type: 'readInt8',
+      type: 'readChar',
       location: expect.any(Object),
     })
   })
@@ -122,7 +122,7 @@ describe('CoqCPASTTransformer', () => {
     });
     
     procedure("fibonacci", { n: int32 }, () => {
-        set("n", readInt8());
+        set("n", readChar());
     });`
 
     const transformer = new CoqCPASTTransformer(code)
@@ -142,7 +142,7 @@ describe('CoqCPASTTransformer', () => {
     const code = `environment(10);
     
     procedure("fibonacci", { n: int32 }, () => {
-        set("n", readInt8());
+        set("n", readChar());
     });`
 
     const transformer = new CoqCPASTTransformer(code)
@@ -174,17 +174,17 @@ describe('CoqCPASTTransformer', () => {
     })
   })
 
-  it('should parse readInt8 instruction correctly', () => {
+  it('should parse readChar instruction correctly', () => {
     const program = `
     procedure("exampleProcedure", { }, () => {      
-        readInt8();
+        readChar();
     });`
 
     const transformer = new CoqCPASTTransformer(program)
     const result = transformer.transform()
 
     expect(result.procedures[0].body[0]).toMatchObject({
-      type: 'readInt8',
+      type: 'readChar',
     })
   })
 
@@ -289,9 +289,9 @@ describe('CoqCPASTTransformer', () => {
   
       procedure("test", { x: int32 }, () => {
         if (less(get("x"), 10))
-          writeInt8(32);
+          writeChar(32);
         else
-          writeInt8(64);
+          writeChar(64);
       });
     `
 
@@ -317,9 +317,9 @@ describe('CoqCPASTTransformer', () => {
   
         procedure("test", { x: int32 }, () => {
           if (less(get("x"), 10)) {
-            writeInt8(32);
+            writeChar(32);
           } else {
-            writeInt8(64);
+            writeChar(64);
           }
         });
       `
@@ -349,7 +349,7 @@ describe('CoqCPASTTransformer', () => {
   
         procedure("test", { x: int32 }, () => {
           if () {
-            writeInt8(32);
+            writeChar(32);
           }
         });
       `
@@ -374,7 +374,7 @@ describe('CoqCPASTTransformer', () => {
   
         procedure("test", { x: int32 }, () => {
           if(fetchData()) {
-            writeInt8(32);
+            writeChar(32);
           }
         });
       `

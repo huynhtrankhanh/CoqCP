@@ -6,7 +6,7 @@ const code = `environment({
 });
 
 procedure("fibonacci", { n: int32, a: int32, b: int32, i: int32 }, () => {
-    set("n", readInt8());  // Reading the term 'n' to which Fibonacci sequence is to be calculated
+    set("n", readChar());  // Reading the term 'n' to which Fibonacci sequence is to be calculated
     set("a", 0);
     set("b", 1);
     
@@ -20,11 +20,11 @@ procedure("fibonacci", { n: int32, a: int32, b: int32, i: int32 }, () => {
     })
 
     if (get("n") == 100) {
-      writeInt8(32);
-    } else {writeInt8(64);}
+      writeChar(32);
+    } else {writeChar(64);}
 
     if (less(get("n"), 200)) {
-      writeInt8(100);
+      writeChar(100);
     }
 });`
 const transformer = new CoqCPASTTransformer(code)

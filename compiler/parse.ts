@@ -89,8 +89,8 @@ export type Instruction = (
       loopVariable: string
       loopBody: Instruction[]
     }
-  | { type: 'readInt8' }
-  | { type: 'writeInt8'; value: ValueType }
+  | { type: 'readChar' }
+  | { type: 'writeChar'; value: ValueType }
   | BinaryOperationInstruction
   | UnaryOperationInstruction
   | {
@@ -746,26 +746,26 @@ export class CoqCPASTTransformer {
         break
       }
 
-      case 'readInt8': {
+      case 'readChar': {
         if (args.length !== 0) {
           throw new ParseError(
-            'readInt8() function accepts exactly 0 argument. ' +
+            'readChar() function accepts exactly 0 argument. ' +
               formatLocation(location)
           )
         }
-        instruction = { type: 'readInt8', location }
+        instruction = { type: 'readChar', location }
         break
       }
 
-      case 'writeInt8': {
+      case 'writeChar': {
         if (args.length !== 1) {
           throw new ParseError(
-            'writeInt8() function accepts exactly 1 argument. ' +
+            'writeChar() function accepts exactly 1 argument. ' +
               formatLocation(location)
           )
         }
         const value = this.processNode(args[0])
-        instruction = { type: 'writeInt8', value, location }
+        instruction = { type: 'writeChar', value, location }
         break
       }
 

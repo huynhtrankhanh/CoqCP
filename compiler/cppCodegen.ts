@@ -139,11 +139,11 @@ export const cppCodegen = ({ environment, procedures }: CoqCPAST): string => {
                     ']'
                 )
               }
-              if (instruction.type === 'readInt8') {
-                return adorn('readInt8()')
+              if (instruction.type === 'readChar') {
+                return adorn('readChar()')
               }
-              if (instruction.type === 'writeInt8') {
-                return adorn('writeInt8(' + print(instruction.value) + ')')
+              if (instruction.type === 'writeChar') {
+                return adorn('writeChar(' + print(instruction.value) + ')')
               }
               if (instruction.type === 'subscript') {
                 return adorn(

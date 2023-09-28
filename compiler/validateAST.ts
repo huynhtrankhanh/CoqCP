@@ -476,9 +476,9 @@ export const validateAST = ({
           if (!binderPresentBefore) presentBinders.delete(loopVariable)
           return result
         }
-        case 'readInt8':
-          return 'int8'
-        case 'writeInt8': {
+        case 'readChar':
+          return 'int64'
+        case 'writeChar': {
           const type = dfs(instruction.value)
           if (type === 'illegal') return 'illegal'
           if (type === 'statement') {
