@@ -145,7 +145,7 @@ procedure("hello", { a: bool }, () => {
   })
   "break"
 })`,
-`procedure("hello", { k: int64 }, () => {
+      `procedure("hello", { k: int64 }, () => {
   range(k, x => {})
 })`,
       `procedure("hello", {}, () => {
