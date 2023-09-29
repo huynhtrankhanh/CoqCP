@@ -64,7 +64,7 @@ Only integers are allowed. Number literals are always interpreted as `int64`.
 ## Set a local variable
 
 ```js
-set('variable_name' /* value */)
+set('variable_name', value)
 ```
 
 This is a statement and doesn't return.
