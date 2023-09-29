@@ -32,3 +32,9 @@ Fixpoint join {arrayType} (a z : Action arrayType) :=
   | ReadChar _ next => ReadChar _ (fun x => join (next x) z)
   | Flush _ next => Flush _ (join next z)
   end.
+
+Lemma joinAssoc {arrayType} (a b c :  Action arrayType) : join a (join b c) = join (join a b) c.
+Proof.
+  induction a in b, c |- *.
+  (* so many cases! I could plow through, but what's the most efficient and maintainable way? *)
+Admitted.
