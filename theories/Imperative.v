@@ -1,5 +1,6 @@
 From CoqCP Require Import Options.
 From stdpp Require Import strings.
+Require Import Coq.Logic.FunctionalExtensionality.
 Require Import ZArith.
 Open Scope Z_scope.
 
@@ -33,8 +34,7 @@ Fixpoint join {arrayType} (a z : Action arrayType) :=
   | Flush _ next => Flush _ (join next z)
   end.
 
-Lemma joinAssoc {arrayType} (a b c :  Action arrayType) : join a (join b c) = join (join a b) c.
+Lemma joinAssoc {arrayType} (x y z :  Action arrayType) : join x (join y z) = join (join x y) z.
 Proof.
-  induction a in b, c |- *.
-  (* so many cases! I could plow through, but what's the most efficient and maintainable way? *)
-Admitted.
+  induction x as [| a b c next IH | a b next IH | a b next IH | a next IH | a b next IH | a next IH | a next IH | next IH | next IH] in y, z |- *; try easy; simpl; rewrite ?IH; try reflexivity; pose proof (ltac:(intros; apply functional_extensionality; intros; now rewrite IH) : forall b c : Action arrayType, (fun x => join (next x) (join b c)) = (fun x => join (join (next x) b) c)) as ext; now rewrite ext.
+Qed.
