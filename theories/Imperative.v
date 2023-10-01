@@ -1,6 +1,5 @@
 From CoqCP Require Import Options.
 From stdpp Require Import strings.
-Require Import Coq.Logic.FunctionalExtensionality.
 Require Import ZArith.
 Open Scope Z_scope.
 
@@ -19,6 +18,19 @@ Inductive Action (arrayType : string -> Type) :=
 | WriteChar (output : Z) : Action _ -> Action _
 | ReadChar : (Z -> Action _) -> Action _
 | Flush : Action _ -> Action _.
+
+Fixpoint sameAction {arrayType} (a z : Action arrayType) :=
+  match a with
+  | Done := z = Done
+  | Store a b c act := match z with
+    | Store a' b' c' act' := a = a' /\ b = b' /\ c = c' /\ sameAction act act'
+    | _ := False
+    end.
+  | Retrieve a b f := match z with
+    | Retrieve a' b' f' := a = a' /\ b = b' /\ (forall x, sameAction (f x) (f' x))
+    | _ := False
+    end.
+  ???
 
 Fixpoint join {arrayType} (a z : Action arrayType) :=
   match a with
