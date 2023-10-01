@@ -30,7 +30,35 @@ Fixpoint sameAction {arrayType} (a z : Action arrayType) :=
     | Retrieve a' b' f' := a = a' /\ b = b' /\ (forall x, sameAction (f x) (f' x))
     | _ := False
     end.
-  ???
+  | NumberLocalSet variableName value act := match z with
+    | NumberLocalSet variableName' value' act' := variableName = variableName' /\ value = value' /\ sameAction act act'
+    | _ := False
+    end.
+  | NumberLocalGet variableName f := match z with
+    | NumberLocalGet variableName' f' := variableName = variableName' /\ (forall x, sameAction (f x) (f' x))
+    | _ := False
+    end.
+  | BooleanLocalSet variableName value act := match z with
+    | BooleanLocalSet variableName' value' act' := variableName = variableName' /\ value = value' /\ sameAction act act'
+    | _ := False
+    end.
+  | BooleanLocalGet variableName f := match z with
+    | BooleanLocalGet variableName' f' := variableName = variableName' /\ (forall x, sameAction (f x) (f' x))
+    | _ := False
+    end.
+  | WriteChar output act := match z with
+    | WriteChar output' act' := output = output' /\ sameAction act act'
+    | _ := False
+    end.
+  | ReadChar f := match z with
+    | ReadChar f' := forall x, sameAction (f x) (f' x)
+    | _ := False
+    end.
+  | Flush act := match z with
+    | Flush act' := sameAction act act'
+    | _ := False
+    end.
+  end.
 
 Fixpoint join {arrayType} (a z : Action arrayType) :=
   match a with
