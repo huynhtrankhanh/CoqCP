@@ -39,8 +39,15 @@ Proof.
   induction x as [| a b c next IH | a b next IH | a b next IH | a next IH | a b next IH | a next IH | a next IH | next IH | next IH] in y, z |- *; try easy; simpl; rewrite ?IH; try reflexivity; pose proof (ltac:(intros; apply functional_extensionality; intros; now rewrite IH) : forall b c : Action arrayType, (fun x => join (next x) (join b c)) = (fun x => join (join (next x) b) c)) as ext; now rewrite ext.
 Qed.
 
-Fixpoint rangeLoop {arrayType} (n : nat) (f : nat -> Action arrayType) :=
+Inductive LoopControl :=
+| Break
+| KeepGoing.
+
+Fixpoint rangeLoop {arrayType} (n : nat) (f : nat -> (Action arrayType * LoopControl)) :=
   match n with
   | O => Done arrayType
-  | (S n) => join (f n) (rangeLoop n f)
+  | (S n) => match f n with
+    | (action, Break) => action
+    | (action, KeepGoing) => join action (rangeLoop n f)
+    end
   end.
