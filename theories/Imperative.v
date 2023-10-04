@@ -44,6 +44,13 @@ Inductive LoopBodyAction (arrayType : string -> Type) :=
 | Continue
 | Break.
 
+Fixpoint joinLoopBody {arrayType} (a z : LoopBodyAction) :=
+  match a with
+  | ExecuteAction action next => ExecuteAction action (joinLoopBody next z)
+  | Continue => Continue
+  | Break => Break
+  end.
+
 Inductive LoopControl :=
 | Break
 | KeepGoing.
