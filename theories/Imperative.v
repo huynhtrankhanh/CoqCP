@@ -82,3 +82,8 @@ Fixpoint rangeLoop {arrayType} (n : nat) (f : nat -> LoopBodyAction arrayType) :
     | KeepGoing => join (stringTogether (f n)) (rangeLoop n f)
     end
   end.
+
+Definition readCharLoopExample : Action (fun _ => unit) :=
+  rangeLoop 5 (fun _ =>
+    ExecuteAction _ (ReadChar (fun charValue =>
+      if Z.eqb charValue 100 then Break else Continue)) Continue).
