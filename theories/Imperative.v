@@ -58,14 +58,27 @@ Proof.
 Qed.
 
 Inductive LoopControl :=
-| Break
-| KeepGoing.
+| KeepGoing
+| Stop.
 
-Fixpoint rangeLoop {arrayType} (n : nat) (f : nat -> (Action arrayType * LoopControl)) :=
+Fixpoint stringTogether {arrayType} (x : LoopBodyAction arrayType) : Action arrayType :=
+  match x with
+  | ExecuteAction _ action next => join action (stringTogether next)
+  | _ => Done arrayType
+  end.
+
+Fixpoint getLoopControl {arrayType} (x : LoopBodyAction arrayType) : LoopControl :=
+  match x with
+  | ExecuteAction _ _ next => getLoopControl next
+  | Continue _ => KeepGoing
+  | Break _ => Stop
+  end.
+
+Fixpoint rangeLoop {arrayType} (n : nat) (f : nat -> LoopBodyAction arrayType) :=
   match n with
   | O => Done arrayType
-  | (S n) => match f n with
-    | (action, Break) => action
-    | (action, KeepGoing) => join action (rangeLoop n f)
+  | (S n) => match getLoopControl (f n) with
+    | Stop => (stringTogether (f n))
+    | KeepGoing => join (stringTogether (f n)) (rangeLoop n f)
     end
   end.
