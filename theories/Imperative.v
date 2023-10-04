@@ -44,12 +44,18 @@ Inductive LoopBodyAction (arrayType : string -> Type) :=
 | Continue
 | Break.
 
-Fixpoint joinLoopBody {arrayType} (a z : LoopBodyAction) :=
+Fixpoint joinLoopBody {arrayType} (a z : LoopBodyAction arrayType) :=
   match a with
-  | ExecuteAction action next => ExecuteAction action (joinLoopBody next z)
-  | Continue => Continue
-  | Break => Break
+  | ExecuteAction _ action next => ExecuteAction _ action (joinLoopBody next z)
+  | Continue _ => Continue _
+  | Break _ => Break _
   end.
+
+Lemma joinLoopBodyAssoc {arrayType} (x y z : LoopBodyAction arrayType) : joinLoopBody x (joinLoopBody y z) = joinLoopBody (joinLoopBody x y) z.
+Proof.
+  induction x as [a n IH | |] in x, y, z |- *; try easy.
+  simpl. now rewrite IH.
+Qed.
 
 Inductive LoopControl :=
 | Break
