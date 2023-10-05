@@ -48,3 +48,16 @@ Proof.
   pose proof (ltac:(intros T next h; now apply functional_extensionality): forall T next, (forall x, bind (next x) (fun x => bind (f x) g) = bind (bind (next x) f) g) -> (fun (x : T) => bind (next x) (fun x => bind (f x) g)) = (fun x => bind (bind (next x) f) g)) as H.
   induction x as [| a b c next IH | a b next IH | a b next IH | a next IH | a b next IH | a next IH | a next IH | next IH | next IH]; try easy; simpl; now (rewrite IH || rewrite (H _ _ IH)).
 Qed.
+
+Inductive LoopControl :=
+| KeepGoing
+| Stop.
+
+Fixpoint rangeLoop {arrayType} (n : nat) (f : nat -> Action arrayType LoopControl) : Action arrayType unit :=
+  match n with
+  | O => Done _ _ tt
+  | S n => bind (f n) (fun control => match control with
+    | Stop => Done _ _ tt
+    | KeepGoing => rangeLoop n f
+    end)
+  end.
