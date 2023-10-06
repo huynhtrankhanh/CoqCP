@@ -61,3 +61,15 @@ Fixpoint rangeLoop {arrayType} (n : nat) (f : nat -> Action arrayType LoopContro
     | KeepGoing => rangeLoop n f
     end)
   end.
+
+Definition noArrays := fun (_ : string) => False.
+
+Definition readChar arrayType := ReadChar arrayType Z (fun x => Done arrayType Z x).
+
+Definition retrieve arrayType name index := Retrieve arrayType (arrayType name) name index (fun x => Done _ _ x).
+
+Definition numberLocalGet arrayType name := NumberLocalGet arrayType Z name (fun x => Done _ _ x).
+
+Definition booleanLocalGet arrayType name := BooleanLocalGet arrayType bool name (fun x => Done _ _ x).
+
+Definition exampleLoop := rangeLoop 5 (fun _ => bind (readChar noArrays) (fun value => if Z.eqb value (5 : Z) then Done _ _ Stop else Done _ _ KeepGoing)).
