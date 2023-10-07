@@ -1,5 +1,5 @@
 import { consumeNever } from './consumeNever'
-import { CoqCPAST, Instruction, ValueType } from './parse'
+import { CoqCPAST, ValueType } from './parse'
 
 const indent = '  '
 
