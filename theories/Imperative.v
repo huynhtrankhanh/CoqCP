@@ -18,7 +18,8 @@ Inductive Action (arrayType : string -> Type) (returnType : Type) :=
 | BooleanLocalGet (variableName : string) : (bool -> Action _ _) -> Action _ _
 | WriteChar (output : Z) : Action _ _ -> Action _ _
 | ReadChar : (Z -> Action _ _) -> Action _ _
-| Flush : Action _ _ -> Action _ _.
+| Flush : Action _ _ -> Action _ _
+| Trap : Action _ _.
 
 Fixpoint bind {arrayType A B} (a : Action arrayType A) (f : A -> Action arrayType B) : Action arrayType B :=
   match a with
@@ -32,6 +33,7 @@ Fixpoint bind {arrayType A B} (a : Action arrayType A) (f : A -> Action arrayTyp
   | WriteChar _ _ a next => WriteChar _ _  a (bind next f)
   | ReadChar _ _ next => ReadChar _ _ (fun x => bind (next x) f)
   | Flush _ _ next => Flush _ _ (bind next f)
+  | Trap _ _ => Trap _ _
   end.
 
 Lemma leftIdentity {arrayType A B} (x : A) (f : A -> Action arrayType B) : bind (Done _ _ x) f = f x.
@@ -40,13 +42,13 @@ Proof. easy. Qed.
 Lemma rightIdentity {arrayType A} (x : Action arrayType A) : bind x (Done _ _) = x.
 Proof.
   pose proof (ltac:(intros T next h; now apply functional_extensionality): forall T next, (forall x, bind (next x) (Done arrayType A) = next x) -> (fun (x : T) => bind (next x) (Done arrayType A)) = next) as H.
-  induction x as [| a b c next IH | a b next IH | a b next IH | a next IH | a b next IH | a next IH | a next IH | next IH | next IH]; try easy; simpl; now (rewrite (H _ _ IH) || rewrite IH).
+  induction x as [| a b c next IH | a b next IH | a b next IH | a next IH | a b next IH | a next IH | a next IH | next IH | next IH |]; try easy; simpl; now (rewrite (H _ _ IH) || rewrite IH).
 Qed.
 
 Lemma assoc {arrayType A B C} (x : Action arrayType A) (f : A -> Action arrayType B) (g : B -> Action arrayType C) : bind x (fun x => bind (f x) g) = bind (bind x f) g.
 Proof.
   pose proof (ltac:(intros T next h; now apply functional_extensionality): forall T next, (forall x, bind (next x) (fun x => bind (f x) g) = bind (bind (next x) f) g) -> (fun (x : T) => bind (next x) (fun x => bind (f x) g)) = (fun x => bind (bind (next x) f) g)) as H.
-  induction x as [| a b c next IH | a b next IH | a b next IH | a next IH | a b next IH | a next IH | a next IH | next IH | next IH]; try easy; simpl; now (rewrite IH || rewrite (H _ _ IH)).
+  induction x as [| a b c next IH | a b next IH | a b next IH | a next IH | a b next IH | a next IH | a next IH | next IH | next IH |]; try easy; simpl; now (rewrite IH || rewrite (H _ _ IH)).
 Qed.
 
 Inductive LoopControl :=
