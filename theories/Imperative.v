@@ -75,3 +75,13 @@ Definition numberLocalGet arrayType name := NumberLocalGet arrayType Z name (fun
 Definition booleanLocalGet arrayType name := BooleanLocalGet arrayType bool name (fun x => Done _ _ x).
 
 Definition exampleLoop := rangeLoop 5 (fun _ => bind (readChar noArrays) (fun value => if Z.eqb value (5 : Z) then Done _ _ Stop else Done _ _ KeepGoing)).
+
+Definition shortCircuitAnd arrayType (a b : Action arrayType bool) := bind a (fun x => match x with
+  | false => Done _ _ false
+  | true => b
+  end).
+
+Definition shortCircuitOr arrayType (a b : Action arrayType bool) := bind a (fun x => match x with
+  | true => Done _ _ true
+  | false => b
+  end).
