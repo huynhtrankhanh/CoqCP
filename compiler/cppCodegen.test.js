@@ -28,6 +28,9 @@ procedure("fibonacci", { n: int32, a: int32, b: int32, i: int32 }, () => {
         "flush"
     })
 
+    divide(2, 3)
+    sDivide(1, 2)
+
     call("pointless", { preset: 100 })
     call("pointless", {})
 
@@ -53,6 +56,12 @@ int8_t toSigned(uint8_t x) { return x; }
 int16_t toSigned(uint16_t x) { return x; }
 int32_t toSigned(uint32_t x) { return x; }
 int64_t toSigned(uint64_t x) { return x; }
+auto binaryOp(auto a, auto b, auto f)
+{
+  auto c = a();
+  auto d = b();
+  return f(c, d);
+}
 std::tuple<uint32_t> environment_0[100];
 std::tuple<uint8_t, uint64_t> environment_1[3];
 std::tuple<bool> environment_2[0];
@@ -67,19 +76,21 @@ int main() {
     local_2 = uint64_t(1);
     environment_0[uint64_t(0)] = { local_1 };
     environment_0[uint64_t(1)] = { local_2 };
-    for (uint64_t binder_0 = 0; binder_0 < (local_0 - uint64_t(2)); binder_0++) {
-      local_3 = (get<0>(environment_0[binder_0]) + get<0>(environment_0[(binder_0 + uint64_t(1))]));
-      environment_0[(binder_0 + uint64_t(2))] = { local_3 };
+    for (uint64_t binder_0 = 0; binder_0 < binaryOp([&]() { return local_0; }, [&]() { return uint64_t(2); }, [&](auto a, auto b) { return a - b; }); binder_0++) {
+      local_3 = binaryOp([&]() { return get<0>(environment_0[binder_0]); }, [&]() { return get<0>(environment_0[binaryOp([&]() { return binder_0; }, [&]() { return uint64_t(1); }, [&](auto a, auto b) { return a + b; })]); }, [&](auto a, auto b) { return a + b; });
+      environment_0[binaryOp([&]() { return binder_0; }, [&]() { return uint64_t(2); }, [&](auto a, auto b) { return a + b; })] = { local_3 };
       break;
       continue;
       flushSTDOUT();
     }
+    binaryOp([&]() { return uint64_t(2); }, [&]() { return uint64_t(3); }, [&](auto a, auto b) { return a / b; });
+    binaryOp([&]() { return toSigned(uint64_t(1)); }, [&]() { return toSigned(uint64_t(2)); }, [&](auto a, auto b) { return a / b; });
     procedure_0(uint64_t(100));
     procedure_0(0);
-    if ((local_0 == uint64_t(100))) {
+    if (binaryOp([&]() { return local_0; }, [&]() { return uint64_t(100); }, [&](auto a, auto b) { return a == b; })) {
       writeChar(uint64_t(32));
     }
-    if (((local_0 < uint64_t(200)) || (true && (!false)))) {
+    if (binaryOp([&]() { return local_0; }, [&]() { return uint64_t(200); }, [&](auto a, auto b) { return a < b; }) || true && (!false)) {
       writeChar(uint64_t(100));
     }
   };

@@ -71,6 +71,20 @@ export const cppCodegen = ({ environment, procedures }: CoqCPAST): string => {
               }
 
               if (instruction.type === 'binaryOp') {
+                if (
+                  instruction.operator === 'boolean and' ||
+                  instruction.operator === 'boolean or'
+                ) {
+                  const operator =
+                    instruction.operator === 'boolean and' ? '&&' : '||'
+                  return adorn(
+                    print(instruction.left) +
+                      ' ' +
+                      operator +
+                      ' ' +
+                      print(instruction.right)
+                  )
+                }
                 const operator = ((): string => {
                   if (instruction.operator === 'add') return '+'
                   if (instruction.operator === 'subtract') return '-'
@@ -83,18 +97,16 @@ export const cppCodegen = ({ environment, procedures }: CoqCPAST): string => {
                   if (instruction.operator === 'shift left') return '<<'
                   if (instruction.operator === 'equal') return '=='
                   if (instruction.operator === 'noteq') return '!='
-                  if (instruction.operator === 'boolean and') return '&&'
-                  if (instruction.operator === 'boolean or') return '||'
                   return consumeNever(instruction.operator)
                 })()
                 return adorn(
-                  '(' +
+                  'binaryOp([&]() { return ' +
                     print(instruction.left) +
-                    ' ' +
-                    operator +
-                    ' ' +
+                    '; }, [&]() { return ' +
                     print(instruction.right) +
-                    ')'
+                    '; }, [&](auto a, auto b) { return a ' +
+                    operator +
+                    ' b; })'
                 )
               }
               if (instruction.type === 'unaryOp') {
@@ -156,20 +168,20 @@ export const cppCodegen = ({ environment, procedures }: CoqCPAST): string => {
               }
               if (instruction.type === 'sDivide') {
                 return adorn(
-                  '(toSigned(' +
+                  'binaryOp([&]() { return toSigned(' +
                     print(instruction.left) +
-                    ') / toSigned(' +
+                    '); }, [&]() { return toSigned(' +
                     print(instruction.right) +
-                    '))'
+                    '); }, [&](auto a, auto b) { return a / b; })'
                 )
               }
               if (instruction.type === 'divide') {
                 return adorn(
-                  '(' +
+                  'binaryOp([&]() { return ' +
                     print(instruction.left) +
-                    ' / ' +
+                    '; }, [&]() { return ' +
                     print(instruction.right) +
-                    ')'
+                    '; }, [&](auto a, auto b) { return a / b; })'
                 )
               }
               if (instruction.type === 'coerceInt8') {
@@ -186,20 +198,20 @@ export const cppCodegen = ({ environment, procedures }: CoqCPAST): string => {
               }
               if (instruction.type === 'less') {
                 return adorn(
-                  '(' +
+                  'binaryOp([&]() { return ' +
                     print(instruction.left) +
-                    ' < ' +
+                    '; }, [&]() { return ' +
                     print(instruction.right) +
-                    ')'
+                    '; }, [&](auto a, auto b) { return a < b; })'
                 )
               }
               if (instruction.type === 'sLess') {
                 return adorn(
-                  '(toSigned(' +
+                  'binaryOp([&]() { return toSigned(' +
                     print(instruction.left) +
-                    ') < toSigned(' +
+                    '); }, [&]() { return toSigned(' +
                     print(instruction.right) +
-                    '))'
+                    '); }, [&](auto a, auto b) { return a < b; })'
                 )
               }
               if (instruction.type === 'call') {
@@ -329,9 +341,18 @@ export const cppCodegen = ({ environment, procedures }: CoqCPAST): string => {
     .map((x) => 'int' + x + '_t toSigned(uint' + x + '_t x) { return x; }\n')
     .join('')
 
+  const binaryOp = `auto binaryOp(auto a, auto b, auto f)
+{
+  auto c = a();
+  auto d = b();
+  return f(c, d);
+}
+`
+
   return (
     '#include <iostream>\n#include <tuple>\n' +
     toSigned +
+    binaryOp +
     environmentCode +
     'int main() {\n' +
     mainCode +
