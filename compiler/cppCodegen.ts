@@ -1,4 +1,5 @@
 import { consumeNever } from './consumeNever'
+import isPure from './isPure'
 import { CoqCPAST, ValueType } from './parse'
 
 const indent = '  '
@@ -99,6 +100,16 @@ export const cppCodegen = ({ environment, procedures }: CoqCPAST): string => {
                   if (instruction.operator === 'noteq') return '!='
                   return consumeNever(instruction.operator)
                 })()
+                if (isPure(instruction.left) && isPure(instruction.right))
+                  return adorn(
+                    '(' +
+                      print(instruction.left) +
+                      ' ' +
+                      operator +
+                      ' ' +
+                      print(instruction.right) +
+                      ')'
+                  )
                 return adorn(
                   'binaryOp([&]() { return ' +
                     print(instruction.left) +
@@ -167,6 +178,15 @@ export const cppCodegen = ({ environment, procedures }: CoqCPAST): string => {
                 )
               }
               if (instruction.type === 'sDivide') {
+                if (isPure(instruction.left) && isPure(instruction.right)) {
+                  return adorn(
+                    '(toSigned(' +
+                      print(instruction.left) +
+                      ') / toSigned(' +
+                      print(instruction.right) +
+                      '))'
+                  )
+                }
                 return adorn(
                   'binaryOp([&]() { return toSigned(' +
                     print(instruction.left) +
@@ -176,6 +196,15 @@ export const cppCodegen = ({ environment, procedures }: CoqCPAST): string => {
                 )
               }
               if (instruction.type === 'divide') {
+                if (isPure(instruction.left) && isPure(instruction.right)) {
+                  return adorn(
+                    '(' +
+                      print(instruction.left) +
+                      ' / ' +
+                      print(instruction.right) +
+                      ')'
+                  )
+                }
                 return adorn(
                   'binaryOp([&]() { return ' +
                     print(instruction.left) +
@@ -197,6 +226,15 @@ export const cppCodegen = ({ environment, procedures }: CoqCPAST): string => {
                 return adorn('uint64_t(' + print(instruction.value) + ')')
               }
               if (instruction.type === 'less') {
+                if (isPure(instruction.left) && isPure(instruction.right)) {
+                  return adorn(
+                    '(' +
+                      print(instruction.left) +
+                      ' < ' +
+                      print(instruction.right) +
+                      ')'
+                  )
+                }
                 return adorn(
                   'binaryOp([&]() { return ' +
                     print(instruction.left) +
@@ -206,6 +244,15 @@ export const cppCodegen = ({ environment, procedures }: CoqCPAST): string => {
                 )
               }
               if (instruction.type === 'sLess') {
+                if (isPure(instruction.left) && isPure(instruction.right)) {
+                  return adorn(
+                    '(toSigned(' +
+                      print(instruction.left) +
+                      ') < toSigned(' +
+                      print(instruction.right) +
+                      '))'
+                  )
+                }
                 return adorn(
                   'binaryOp([&]() { return toSigned(' +
                     print(instruction.left) +
