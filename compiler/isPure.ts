@@ -51,8 +51,8 @@ const isPure = (value: ValueType): boolean => {
     case 'unaryOp':
       return isPure(value.value)
     case 'writeChar':
-      return false;
+      return false
   }
 }
 
-export default isPure;
+export default isPure
