@@ -11,6 +11,8 @@ procedure("pointless", { preset: int32 }, () => {
     writeChar(coerceInt8(get("preset")))
 })
 
+procedure("more", { a: int8, b: int8, c: int8 }, () => {})
+
 procedure("fibonacci", { n: int32, a: int32, b: int32, i: int32 }, () => {
     set("n", readChar());  // Reading the term 'n' to which Fibonacci sequence is to be calculated
     set("a", 0);
@@ -36,6 +38,9 @@ procedure("fibonacci", { n: int32, a: int32, b: int32, i: int32 }, () => {
 
     call("pointless", { preset: 100 })
     call("pointless", {})
+
+    call("more", { a: readChar(), c: readChar() })
+    call("more", { a: coerceInt8(0), c: coerceInt8(0) })
 
     if (get("n") == 100) {
       writeChar(32);

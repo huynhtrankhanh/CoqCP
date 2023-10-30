@@ -435,13 +435,13 @@ void writeChar(uint8_t x) {
   std::cout << (char)x;
 }
 
-void flush() {
+void flushSTDOUT() {
   std::cout << std::flush;
 }
 `
 
   return (
-    '#include <iostream>\n#include <tuple>\n#include <cstdlib>\n' +
+    '#include <iostream>\n#include <tuple>\n#include <cstdlib>\nusing std::get;\n' +
     charOps +
     toSigned +
     binaryOp +
