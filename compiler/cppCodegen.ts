@@ -422,13 +422,13 @@ export const cppCodegen = ({ environment, procedures }: CoqCPAST): string => {
  */
 
 inline uint8_t readChar() { // like getchar()
-	static char buf[1 << 16];
-	static size_t bc, be;
-	if (bc >= be) {
-		buf[0] = 0, bc = 0;
-		be = fread(buf, 1, sizeof(buf), stdin);
-	}
-	return buf[bc++]; // returns 0 on EOF
+  static char buf[1 << 16];
+  static size_t bc, be;
+  if (bc >= be) {
+    buf[0] = 0, bc = 0;
+    be = fread(buf, 1, sizeof(buf), stdin);
+  }
+  return buf[bc++]; // returns 0 on EOF
 }
 
 void writeChar(uint8_t x) {
