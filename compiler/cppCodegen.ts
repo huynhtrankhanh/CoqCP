@@ -268,18 +268,32 @@ export const cppCodegen = ({ environment, procedures }: CoqCPAST): string => {
                 }
                 const { variables } = procedures[index]
                 const supplied = instruction.presetVariables
+                const argumentList = [...variables.keys()].map((x) => {
+                  const value = supplied.get(x)
+                  if (value === undefined) return '0'
+                  else return print(value)
+                })
+                if ([...supplied.values()].some((x) => !isPure(x))) {
+                  // emit workaround code
+                  return adorn(
+                    '([&]() {' +
+                      argumentList
+                        .map(
+                          (value, index) =>
+                            `auto workaround_${index} = ${value}; `
+                        )
+                        .join('') +
+                      'procedure_' +
+                      index +
+                      '(' +
+                      argumentList
+                        .map((_, index) => 'workaround_' + index)
+                        .join(', ') +
+                      ');})()'
+                  )
+                }
                 return adorn(
-                  'procedure_' +
-                    index +
-                    '(' +
-                    [...variables.keys()]
-                      .map((x) => {
-                        const value = supplied.get(x)
-                        if (value === undefined) return '0'
-                        else return print(value)
-                      })
-                      .join(', ') +
-                    ')'
+                  'procedure_' + index + '(' + argumentList.join(', ') + ')'
                 )
               }
               if (
@@ -396,12 +410,42 @@ export const cppCodegen = ({ environment, procedures }: CoqCPAST): string => {
 }
 `
 
+const charOps = `/**
+ * Author: chilli
+ * License: CC0
+ * Source: Own work
+ * Description: Read an integer from stdin. Usage requires your program to pipe in
+ * input from file.
+ * Usage: ./a.out < input.txt
+ * Time: About 5x as fast as cin/scanf.
+ * Status: tested on SPOJ INTEST, unit tested
+ */
+
+inline uint8_t readChar() { // like getchar()
+	static char buf[1 << 16];
+	static size_t bc, be;
+	if (bc >= be) {
+		buf[0] = 0, bc = 0;
+		be = fread(buf, 1, sizeof(buf), stdin);
+	}
+	return buf[bc++]; // returns 0 on EOF
+}
+
+void writeChar(uint8_t x) {
+  std::cout << (char)x;
+}
+
+void flush() {
+  std::cout << std::flush;
+}
+`
+
   return (
-    '#include <iostream>\n#include <tuple>\n' +
+    '#include <iostream>\n#include <tuple>\n#include <cstdlib>\n' + charOps + 
     toSigned +
     binaryOp +
     environmentCode +
-    'int main() {\n' +
+    'int main() {\n' + indent + "std::cin.tie(0)->sync_with_stdio(0);\n"+
     mainCode +
     '}'
   )
