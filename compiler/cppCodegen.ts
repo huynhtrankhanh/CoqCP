@@ -410,7 +410,7 @@ export const cppCodegen = ({ environment, procedures }: CoqCPAST): string => {
 }
 `
 
-const charOps = `/**
+  const charOps = `/**
  * Author: chilli
  * License: CC0
  * Source: Own work
@@ -441,11 +441,14 @@ void flush() {
 `
 
   return (
-    '#include <iostream>\n#include <tuple>\n#include <cstdlib>\n' + charOps + 
+    '#include <iostream>\n#include <tuple>\n#include <cstdlib>\n' +
+    charOps +
     toSigned +
     binaryOp +
     environmentCode +
-    'int main() {\n' + indent + "std::cin.tie(0)->sync_with_stdio(0);\n"+
+    'int main() {\n' +
+    indent +
+    'std::cin.tie(0)->sync_with_stdio(0);\n' +
     mainCode +
     '}'
   )
