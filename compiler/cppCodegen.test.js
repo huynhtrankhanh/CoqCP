@@ -1,5 +1,5 @@
 import { transformer } from './exampleCode'
-import { cppCodegen } from './cppCodegen' // replace with actual path to module
+import { cppCodegen } from './cppCodegen'
 
 describe('cppCodegen function', () => {
   it('should produce correct C++ code', () => {
