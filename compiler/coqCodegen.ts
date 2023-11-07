@@ -9,13 +9,50 @@ export const coqCodegen = ({ environment, procedures }: CoqCPAST): string => {
   const procedureNameMap = new Map<string, number>()
   const sanitizedProcedureNameCollisions = new Map<string, number>()
 
-  const preamble = 'From CoqCP Require Import Options Imperative.\n'
+  const preamble =
+    'From CoqCP Require Import Options Imperative.\nFrom stdpp Require Import numbers list strings.\nOpen Scope type_scope.\n'
 
   const environmentCode = (() => {
     if (environment === null) {
       return `Definition environment : Environment := {| arrayType := fun _ => False; arrays := fun _ => [] |}.`
     }
-    for (const [name, array] of environment.arrays) {
-    }
+    const arrayTypeFunction =
+      'fun name => ' +
+      [...environment.arrays.entries()]
+        .map(([name, { itemTypes }]) => {
+          const coqType = itemTypes
+            .map((x) => (x === 'bool' ? 'bool' : 'Z'))
+            .join(' * ')
+          return `if decide (name = "${name}") then ${coqType} else `
+        })
+        .join('') +
+      'False'
+    const arrayFunction =
+      'fun name => ltac:(' +
+      [...environment.arrays.entries()]
+        .map(
+          ([
+            name,
+            {
+              itemTypes,
+              length: { raw: rawLength },
+            },
+          ]) => {
+            const value =
+              '(' +
+              itemTypes
+                .map((x) => (x === 'bool' ? 'false' : '0%Z'))
+                .join(', ') +
+              ')'
+            const list = 'repeat ' + value + ' ' + rawLength
+            return `destruct (decide (name = "${name}")) as [h |]; [(rewrite h; simpl; exact (repeat ${value} ${rawLength})) |]; `
+          }
+        )
+        .join('') +
+      'exact [])'
+    return `Definition environment : Environment := {| arrayType := ${arrayTypeFunction}; arrays := ${arrayFunction} |}.
+`
   })()
+
+  return preamble + environmentCode
 }
