@@ -53,7 +53,7 @@ Inductive BasicEffects (arrayType : string -> Type) :=
 
 Definition basicEffectsReturnValue {arrayType} (effect : BasicEffects arrayType) : Type :=
   match effect with
-  | Trap _ => unit
+  | Trap _ => False
   | Flush _ => unit
   | ReadChar _ => Z
   | WriteChar _ _ => unit
@@ -85,6 +85,6 @@ Inductive WithLoopControl (arrayType : string -> Type) :=
 Definition withLoopControlReturnValue {arrayType} (effect : WithLoopControl arrayType) : Type :=
   match effect with
   | WithLocalVariablesEffect _ effect => withLocalVariablesReturnValue effect
-  | Continue _ => unit
-  | Break _ => unit
+  | Continue _ => False
+  | Break _ => False
   end.
