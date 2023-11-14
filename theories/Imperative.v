@@ -21,7 +21,7 @@ Proof.
   - case b as [| effect2 continuation2].
     + exact False.
     + pose proof (ltac:(intro hEffect; subst effect; exact (forall response, identical _ _ _ (continuation response) (continuation2 response))) : effect = effect2 -> Prop) as rhs.
-    exact (effect = effect2 /\ forall x: effect = effect2, rhs x).
+      exact (effect = effect2 /\ forall x: effect = effect2, rhs x).
 Defined.
 
 Fixpoint bind {effectType effectResponse A B} (a : Action effectType effectResponse A) (f : A -> Action effectType effectResponse B) : Action effectType effectResponse B :=
