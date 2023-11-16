@@ -96,14 +96,30 @@ Definition withLocalVariablesReturnValue {arrayType} (effect : WithLocalVariable
   | NumberLocalSet _ _ _ => unit
   end.
 
-Inductive WithLoopControl (arrayType : string -> Type) :=
-| WithLocalVariablesEffect (effect : WithLocalVariables arrayType)
-| Continue
-| Break.
+Inductive LoopOutcome :=
+| KeepGoing
+| Stop.
 
-Definition withLoopControlReturnValue {arrayType} (effect : WithLoopControl arrayType) : Type :=
-  match effect with
-  | WithLocalVariablesEffect _ effect => withLocalVariablesReturnValue effect
-  | Continue _ => False
-  | Break _ => False
+Fixpoint loop (n : nat) { arrayType } (body : nat -> Action (WithLocalVariables arrayType) withLocalVariablesReturnValue LoopOutcome) : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue unit :=
+  match n with
+  | O => Done _ _ unit tt
+  | S n => bind (body n) (fun outcome => match outcome with
+    | KeepGoing => loop n body
+    | Stop => Done _ _ unit tt
+    end)
   end.
+
+Definition update { A } (map : string -> A) (key : string) (value : A) := fun x => if decide (x = key) then value else map x.
+
+Lemma eliminateLocalVariables { arrayType } (bools : string -> bool) (numbers : string -> Z) (action : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue unit) : Action (BasicEffects arrayType) basicEffectsReturnValue unit.
+Proof.
+  induction action as [x | effect continuation IH] in bools, numbers |- *;
+  [exact (Done _ _ _ x) |].
+  destruct effect as [effect | name | name value | name | name value].
+  - apply (Dispatch (BasicEffects arrayType) basicEffectsReturnValue unit effect).
+    simpl in IH, continuation. intro value. exact (IH value bools numbers).
+  - simpl in IH, continuation. exact (IH (bools name) bools numbers).
+  - simpl in IH, continuation. exact (IH tt (update bools name value) numbers).
+  - simpl in IH, continuation. exact (IH (numbers name) bools numbers).
+  - simpl in IH, continuation. exact (IH tt bools (update numbers name value)).
+Defined.
