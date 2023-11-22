@@ -1,21 +1,26 @@
 import { CoqCPAST, ValueType } from './parse'
 
 const getCoqString = (text: string): string => {
-const encoder = new TextEncoder();
+  const encoder = new TextEncoder()
 
-function getByteCode(string) {
-  const utf8Bytes = encoder.encode(string);
-  return Array.from(utf8Bytes).map(byte => `"${byte.toString().padStart(3, '0')}"`);
-}
+  function getByteCode(string) {
+    const utf8Bytes = encoder.encode(string)
+    return Array.from(utf8Bytes).map(
+      (byte) => `"${byte.toString().padStart(3, '0')}"`
+    )
+  }
 
-function constructCoqString(byteCode) {
-  return byteCode.reduceRight((acc, code) => `String ${code} (${acc})`, 'EmptyString');
-}
+  function constructCoqString(byteCode) {
+    return byteCode.reduceRight(
+      (acc, code) => `String ${code} (${acc})`,
+      'EmptyString'
+    )
+  }
 
-const byteCode = getByteCode(text);
-const coqString = constructCoqString(byteCode);
+  const byteCode = getByteCode(text)
+  const coqString = constructCoqString(byteCode)
 
-return(coqString);
+  return coqString
 }
 
 const indent = '  '
