@@ -46,7 +46,9 @@ export const coqCodegen = ({ environment, procedures }: CoqCPAST): string => {
           const coqType = itemTypes
             .map((x) => (x === 'bool' ? 'bool' : 'Z'))
             .join(' * ')
-          return `if decide (name = ${getCoqString(name)}) then ${coqType} else `
+          return `if decide (name = ${getCoqString(
+            name
+          )}) then ${coqType} else `
         })
         .join('') +
       'False'
@@ -68,7 +70,9 @@ export const coqCodegen = ({ environment, procedures }: CoqCPAST): string => {
                 .join(', ') +
               ')'
             const list = 'repeat ' + value + ' ' + rawLength
-            return `destruct (decide (name = ${getCoqString(name)})) as [h |]; [(rewrite h; simpl; exact (repeat ${value} ${rawLength})) |]; `
+            return `destruct (decide (name = ${getCoqString(
+              name
+            )})) as [h |]; [(rewrite h; simpl; exact (repeat ${value} ${rawLength})) |]; `
           }
         )
         .join('') +
