@@ -41,7 +41,7 @@ export const coqCodegen = ({ environment, procedures }: CoqCPAST): string => {
       sanitizedProcedureNameCollisions.set(sanePart, count + 1)
       return count
     })()
-    const aggregate = "_$" + sanePart + "$" + discriminator
+    const aggregate = '_$' + sanePart + '$' + discriminator
     mapToSanitized.set(name, aggregate)
     return aggregate
   }
@@ -95,10 +95,14 @@ export const coqCodegen = ({ environment, procedures }: CoqCPAST): string => {
 `
   })()
 
-  const generatedCodeForProcedures = procedures.map(({ body, name, variables }) => {
-    const header = 'Definition ' + sanitize(name) + " arrayType (bools : string -> name) (numbers : string -> Z) : Action (BasicEffects returnType) basicEffectsReturnValue := "
-
-  }).join("")
+  const generatedCodeForProcedures = procedures
+    .map(({ body, name, variables }) => {
+      const header =
+        'Definition ' +
+        sanitize(name) +
+        ' arrayType (bools : string -> name) (numbers : string -> Z) : Action (BasicEffects returnType) basicEffectsReturnValue := '
+    })
+    .join('')
 
   return preamble + environmentCode
 }
