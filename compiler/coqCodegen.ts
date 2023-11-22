@@ -29,8 +29,22 @@ const sanitizeName = (name: string): string =>
   [...name].filter((x) => /[0-9a-zA-Z'_]/.test(x)).join('')
 
 export const coqCodegen = ({ environment, procedures }: CoqCPAST): string => {
-  const procedureNameMap = new Map<string, number>()
+  const mapToSanitized = new Map<string, string>()
   const sanitizedProcedureNameCollisions = new Map<string, number>()
+
+  const sanitize = (name: string) => {
+    const existing = mapToSanitized.get(name)
+    if (existing !== undefined) return existing
+    const sanePart = sanitizeName(name)
+    const discriminator = (() => {
+      const count = sanitizedProcedureNameCollisions.get(sanePart) || 0
+      sanitizedProcedureNameCollisions.set(sanePart, count + 1)
+      return count
+    })()
+    const aggregate = "_$" + sanePart + "$" + discriminator
+    mapToSanitized.set(name, aggregate)
+    return aggregate
+  }
 
   const preamble =
     'From CoqCP Require Import Options Imperative.\nFrom stdpp Require Import numbers list strings.\nOpen Scope type_scope.\n'
@@ -80,6 +94,11 @@ export const coqCodegen = ({ environment, procedures }: CoqCPAST): string => {
     return `Definition environment : Environment := {| arrayType := ${arrayTypeFunction}; arrays := ${arrayFunction} |}.
 `
   })()
+
+  const generatedCodeForProcedures = procedures.map(({ body, name, variables }) => {
+    const header = 'Definition ' + sanitize(name) + " arrayType (bools : string -> name) (numbers : string -> Z) : Action (BasicEffects returnType) basicEffectsReturnValue := "
+
+  }).join("")
 
   return preamble + environmentCode
 }
