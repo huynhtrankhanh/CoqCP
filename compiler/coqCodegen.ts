@@ -3,14 +3,14 @@ import { CoqCPAST, ValueType } from './parse'
 const getCoqString = (text: string): string => {
   const encoder = new TextEncoder()
 
-  function getByteCode(string) {
+  function getByteCode(string: string) {
     const utf8Bytes = encoder.encode(string)
     return Array.from(utf8Bytes).map(
       (byte) => `"${byte.toString().padStart(3, '0')}"`
     )
   }
 
-  function constructCoqString(byteCode) {
+  function constructCoqString(byteCode: string[]) {
     return byteCode.reduceRight(
       (acc, code) => `String ${code} (${acc})`,
       'EmptyString'
