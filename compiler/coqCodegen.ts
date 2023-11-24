@@ -100,7 +100,7 @@ export const coqCodegen = ({ environment, procedures }: CoqCPAST): string => {
       const header =
         'Definition ' +
         sanitize(name) +
-        ' arrayType (bools : string -> name) (numbers : string -> Z) : Action (BasicEffects (arrayType environment))) basicEffectsReturnValue returnType := '
+        ' arrayType (bools : string -> name) (numbers : string -> Z) : Action (BasicEffects (arrayType environment)) basicEffectsReturnValue returnType := '
     })
     .join('')
 
