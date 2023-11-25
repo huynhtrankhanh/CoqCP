@@ -1,6 +1,6 @@
 From CoqCP Require Import Options.
 From stdpp Require Import strings.
-Require Import Coq.Program.Equality.
+(* Require Import Coq.Program.Equality. *)
 Require Import ZArith.
 Open Scope Z_scope.
 
@@ -30,15 +30,15 @@ Fixpoint bind {effectType effectResponse A B} (a : Action effectType effectRespo
   | Dispatch _ _ _ effect continuation => Dispatch _ _ _ effect (fun response => bind (continuation response) f)
   end.
 
-Lemma identicalSelf {effectType effectResponse A} (a : Action effectType effectResponse A) : identical a a.
+(* Lemma identicalSelf {effectType effectResponse A} (a : Action effectType effectResponse A) : identical a a.
 Proof.
   induction a as [| effect continuation IH]; simpl; try easy. split; try easy. intro no. unfold eq_rect_r. elim_eq_rect. intro h. apply IH.
-Qed.
+Qed. *)
 
 Lemma leftIdentity {effectType effectResponse A B} (x : A) (f : A -> Action effectType effectResponse B) : bind (Done _ _ _ x) f = f x.
 Proof. easy. Qed.
 
-Lemma rightIdentity {effectType effectResponse A} (x : Action effectType effectResponse A) : identical (bind x (Done _ _ _)) x.
+(* Lemma rightIdentity {effectType effectResponse A} (x : Action effectType effectResponse A) : identical (bind x (Done _ _ _)) x.
 Proof.
   induction x as [| a next IH]; try easy; simpl.
   split; try easy. intros no. unfold eq_rect_r. elim_eq_rect.
@@ -50,7 +50,7 @@ Proof.
   induction x as [| a next IH]; try easy; simpl.
   - apply identicalSelf.
   - split; try easy. intros no. unfold eq_rect_r. elim_eq_rect. intros h. exact (IH h).
-Qed.
+Qed. *)
 
 Definition shortCircuitAnd effectType effectResponse (a b : Action effectType effectResponse bool) := bind a (fun x => match x with
   | false => Done _ _ _ false
@@ -123,3 +123,7 @@ Proof.
   - simpl in IH, continuation. exact (IH (numbers name) bools numbers).
   - simpl in IH, continuation. exact (IH tt bools (update numbers name value)).
 Defined.
+
+(* Print Assumptions leftIdentity.
+Print Assumptions rightIdentity.
+Print Assumptions assoc. *)
