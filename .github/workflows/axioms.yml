@@ -25,7 +25,7 @@ jobs:
 
     - name: Run coqchk and compare result
       run: |
-        s=$( /snap/coq-prover/current/coq-platform/bin/coqchk -silent --output-context -R theories/ CoqCP $(ls **/*.vo | awk -F'/' '{split($NF, a, "."); print "CoqCP."a[1]}') )
+        s=$( /snap/coq-prover/current/coq-platform/bin/coqchk -silent --output-context -R theories/ CoqCP $(ls **/*.vo | awk -F'/' '{split($NF, a, "."); print "CoqCP."a[1]}') 2>&1 )
         expected=$(cat << 'EOF'
         CONTEXT SUMMARY
         ===============
@@ -52,4 +52,3 @@ jobs:
           echo "Error: Context summary does not match the expected result."
           exit 1
         fi
-        
