@@ -1,0 +1,54 @@
+name: Coq Axiom Check
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  coq-check:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Install coq-prover snap
+      run: |
+        sudo snap install coq-prover
+
+    - name: Run coq_makefile
+      run: coq_makefile -f _CoqProject -o Makefile
+
+    - name: Run make
+      run: make
+
+    - name: Run coqchk and save result to variable
+      run: |
+        s=$( /snap/coq-prover/current/coq-platform/bin/coqchk -silent --output-context -R theories/ CoqCP $(ls **/*.vo | awk -F'/' '{split($NF, a, "."); print "CoqCP."a[1]}') )
+
+    - name: Compare results in Bash
+      run: |
+        expected=$(cat << 'EOF'
+CONTEXT SUMMARY
+===============
+
+* Theory: Set is predicative
+
+* Axioms: <none>
+
+* Constants/Inductives relying on type-in-type: <none>
+
+* Constants/Inductives relying on unsafe (co)fixpoints: <none>
+
+* Inductives whose positivity is assumed: <none>
+EOF
+)
+        normalize() {
+          echo "$1" | grep -v '^$' | tr -s '\n'
+        }
+        if [ "$(normalize "$s")" != "$(normalize "$expected")" ]; then
+          echo "Error: Context summary does not match the expected result."
+          exit 1
+        fi
+        
