@@ -1,6 +1,6 @@
 From CoqCP Require Import Options.
 From stdpp Require Import strings.
-(* Require Import Coq.Program.Equality. *)
+Require Import Coq.Logic.Eqdep_dec.
 Require Import ZArith.
 Open Scope Z_scope.
 
@@ -30,27 +30,27 @@ Fixpoint bind {effectType effectResponse A B} (a : Action effectType effectRespo
   | Dispatch _ _ _ effect continuation => Dispatch _ _ _ effect (fun response => bind (continuation response) f)
   end.
 
-(* Lemma identicalSelf {effectType effectResponse A} (a : Action effectType effectResponse A) : identical a a.
+Lemma identicalSelf {effectType effectResponse A} (a : Action effectType effectResponse A) (hEffectType : EqDecision effectType) : identical a a.
 Proof.
-  induction a as [| effect continuation IH]; simpl; try easy. split; try easy. intro no. unfold eq_rect_r. elim_eq_rect. intro h. apply IH.
-Qed. *)
+  induction a as [| effect continuation IH]; simpl; try easy. split; try easy. intro no. unfold eq_rect_r. now rewrite <- (eq_rect_eq_dec hEffectType).
+Qed.
 
 Lemma leftIdentity {effectType effectResponse A B} (x : A) (f : A -> Action effectType effectResponse B) : bind (Done _ _ _ x) f = f x.
 Proof. easy. Qed.
 
-(* Lemma rightIdentity {effectType effectResponse A} (x : Action effectType effectResponse A) : identical (bind x (Done _ _ _)) x.
+Lemma rightIdentity {effectType effectResponse A} (x : Action effectType effectResponse A) (hEffectType : EqDecision effectType) : identical (bind x (Done _ _ _)) x.
 Proof.
   induction x as [| a next IH]; try easy; simpl.
-  split; try easy. intros no. unfold eq_rect_r. elim_eq_rect.
+  split; try easy. intros no. unfold eq_rect_r. rewrite <- (eq_rect_eq_dec hEffectType).
   intros h. exact (IH h).
 Qed.
 
-Lemma assoc {effectType effectResponse A B C} (x : Action effectType effectResponse A) (f : A -> Action effectType effectResponse B) (g : B -> Action effectType effectResponse C) : identical (bind x (fun x => bind (f x) g)) (bind (bind x f) g).
+Lemma assoc {effectType effectResponse A B C} (x : Action effectType effectResponse A) (hEffectType : EqDecision effectType) (f : A -> Action effectType effectResponse B) (g : B -> Action effectType effectResponse C) : identical (bind x (fun x => bind (f x) g)) (bind (bind x f) g).
 Proof.
   induction x as [| a next IH]; try easy; simpl.
-  - apply identicalSelf.
-  - split; try easy. intros no. unfold eq_rect_r. elim_eq_rect. intros h. exact (IH h).
-Qed. *)
+  - now apply identicalSelf.
+  - split; try easy. intros no. unfold eq_rect_r. rewrite <- (eq_rect_eq_dec hEffectType). intros h. exact (IH h).
+Qed.
 
 Definition shortCircuitAnd effectType effectResponse (a b : Action effectType effectResponse bool) := bind a (fun x => match x with
   | false => Done _ _ _ false
@@ -70,6 +70,19 @@ Inductive BasicEffects (arrayType : string -> Type) :=
 | Retrieve (arrayName : string) (index : Z)
 | Store (arrayName : string) (index : Z) (value : arrayType arrayName).
 
+#[export] Instance basicEffectsEqualityDecidable {arrayType} (hArrayType : forall name, EqDecision (arrayType name)) : EqDecision (BasicEffects arrayType).
+Proof.
+  intros a b.
+  destruct a as [| | | v | a i | a i v]; destruct b as [| | | v1 | a1 i1 | a1 i1 v1]; try ((left; easy) || (right; easy)).
+  - destruct (decide (v = v1)) as [h | h].
+    + subst v1. now left.
+    + right. intro x. now inversion x.
+  - destruct (decide (a = a1)) as [h | h]; try subst a1; destruct (decide (i = i1)) as [h1 | h1]; try subst i1; try now left.
+    all: right; intro x; now inversion x.
+  - destruct (decide (a = a1)) as [h | h]; try subst a1; destruct (decide (i = i1)) as [h1 | h1]; try subst i1; try (right; intro x; now inversion x).
+    destruct (hArrayType a v v1) as [h | h]; try (subst v1; now left). right. intro x. inversion x as [x1]. apply inj_pair2_eq_dec in x1; try easy. solve_decision.
+Qed.
+
 Definition basicEffectsReturnValue {arrayType} (effect : BasicEffects arrayType) : Type :=
   match effect with
   | Trap _ => False
@@ -86,6 +99,8 @@ Inductive WithLocalVariables (arrayType : string -> Type) :=
 | BooleanLocalSet (name : string) (value : bool)
 | NumberLocalGet (name : string)
 | NumberLocalSet (name : string) (value : Z).
+
+#[export] Instance withLocalVariablesEqualityDecidable {arrayType} (hArrayType : forall name, EqDecision (arrayType name)) : EqDecision (WithLocalVariables arrayType) := ltac:(solve_decision).
 
 Definition withLocalVariablesReturnValue {arrayType} (effect : WithLocalVariables arrayType) : Type :=
   match effect with
@@ -123,7 +138,3 @@ Proof.
   - simpl in IH, continuation. exact (IH (numbers name) bools numbers).
   - simpl in IH, continuation. exact (IH tt bools (update numbers name value)).
 Defined.
-
-(* Print Assumptions leftIdentity.
-Print Assumptions rightIdentity.
-Print Assumptions assoc. *)
