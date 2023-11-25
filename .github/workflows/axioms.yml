@@ -44,6 +44,10 @@ jobs:
         normalize() {
           echo "$1" | grep -v '^$' | tr -s '\n'
         }
+        echo "NORMALIZED ACTUAL"
+        echo "$(normalize "$s")"
+        echo "NORMALIZED EXPECTED"
+        echo "$(normalize "$expected")"
         if [ "$(normalize "$s")" != "$(normalize "$expected")" ]; then
           echo "Error: Context summary does not match the expected result."
           exit 1
