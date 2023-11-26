@@ -47,11 +47,12 @@ export const coqCodegen = ({ environment, procedures }: CoqCPAST): string => {
   }
 
   const preamble =
-    'From CoqCP Require Import Options Imperative.\nFrom stdpp Require Import numbers list strings.\nOpen Scope type_scope.\n'
+    'From CoqCP Require Import Options Imperative.\nFrom stdpp Require Import numbers list strings.\nRequire Import Coq.Strings.Ascii.\nOpen Scope type_scope.\n'
 
   const environmentCode = (() => {
     if (environment === null) {
-      return `Definition environment : Environment := {| arrayType := fun _ => False; arrays := fun _ => [] |}.`
+      return `Definition environment : Environment := {| arrayType := fun _ => False; arrays := fun _ => [] |}.
+`
     }
     const arrayTypeFunction =
       'fun name => ' +
@@ -95,6 +96,10 @@ export const coqCodegen = ({ environment, procedures }: CoqCPAST): string => {
 `
   })()
 
+  const decidableEquality = `#[export] Instance arrayTypeEqualityDecidable (name : string) : EqDecision (arrayType environment name).
+Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
+`
+
   const generatedCodeForProcedures = procedures
     .map(({ body, name, variables }) => {
       const header =
@@ -104,5 +109,5 @@ export const coqCodegen = ({ environment, procedures }: CoqCPAST): string => {
     })
     .join('')
 
-  return preamble + environmentCode
+  return preamble + environmentCode + decidableEquality
 }
