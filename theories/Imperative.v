@@ -62,39 +62,48 @@ Definition shortCircuitOr effectType effectResponse (a b : Action effectType eff
   | false => b
   end).
 
-Inductive BasicEffects (arrayType : string -> Type) :=
+Inductive BasicEffect :=
 | Trap
 | Flush
 | ReadChar
-| WriteChar (value : Z)
+| WriteChar (value : Z).
+
+#[export] Instance basicEffectEqualityDecidable : EqDecision BasicEffect := ltac:(solve_decision).
+
+Definition basicEffectReturnValue (effect : BasicEffect): Type :=
+  match effect with
+  | Trap => False
+  | Flush => unit
+  | ReadChar => Z
+  | WriteChar _ => unit
+  end.
+
+Inductive WithArrays (arrayType : string -> Type) :=
+| DoBasicEffect (effect : BasicEffect)
 | Retrieve (arrayName : string) (index : Z)
 | Store (arrayName : string) (index : Z) (value : arrayType arrayName).
 
-#[export] Instance basicEffectsEqualityDecidable {arrayType} (hArrayType : forall name, EqDecision (arrayType name)) : EqDecision (BasicEffects arrayType).
+#[export] Instance withArraysEqualityDecidable {arrayType} (hArrayType : forall name, EqDecision (arrayType name)) : EqDecision (WithArrays arrayType).
 Proof.
   intros a b.
-  destruct a as [| | | v | a i | a i v]; destruct b as [| | | v1 | a1 i1 | a1 i1 v1]; try ((left; easy) || (right; easy)).
-  - destruct (decide (v = v1)) as [h | h].
-    + subst v1. now left.
-    + right. intro x. now inversion x.
+  destruct a as [e | a i | a i v]; destruct b as [e1 | a1 i1 | a1 i1 v1]; try ((left; easy) || (right; easy)).
+  - destruct (decide (e = e1)) as [h | h]; try subst e1.
+    { now left. } { right; intro x; now inversion x. }
   - destruct (decide (a = a1)) as [h | h]; try subst a1; destruct (decide (i = i1)) as [h1 | h1]; try subst i1; try now left.
     all: right; intro x; now inversion x.
   - destruct (decide (a = a1)) as [h | h]; try subst a1; destruct (decide (i = i1)) as [h1 | h1]; try subst i1; try (right; intro x; now inversion x).
     destruct (hArrayType a v v1) as [h | h]; try (subst v1; now left). right. intro x. inversion x as [x1]. apply inj_pair2_eq_dec in x1; try easy. solve_decision.
 Qed.
 
-Definition basicEffectsReturnValue {arrayType} (effect : BasicEffects arrayType) : Type :=
+Definition withArraysReturnValue {arrayType} (effect : WithArrays arrayType) : Type :=
   match effect with
-  | Trap _ => False
-  | Flush _ => unit
-  | ReadChar _ => Z
-  | WriteChar _ _ => unit
+  | DoBasicEffect _ effect => basicEffectReturnValue effect
   | Retrieve _ arrayName _ => arrayType arrayName
   | Store _ _ _ _ => unit
   end.
 
 Inductive WithLocalVariables (arrayType : string -> Type) :=
-| BasicEffect (effect : BasicEffects arrayType)
+| DoWithArrays (effect : WithArrays arrayType)
 | BooleanLocalGet (name : string)
 | BooleanLocalSet (name : string) (value : bool)
 | NumberLocalGet (name : string)
@@ -104,7 +113,7 @@ Inductive WithLocalVariables (arrayType : string -> Type) :=
 
 Definition withLocalVariablesReturnValue {arrayType} (effect : WithLocalVariables arrayType) : Type :=
   match effect with
-  | BasicEffect _ effect => basicEffectsReturnValue effect
+  | DoWithArrays _ effect => withArraysReturnValue effect
   | BooleanLocalGet _ _ => bool
   | BooleanLocalSet _ _ _ => unit
   | NumberLocalGet _ _ => Z
@@ -126,12 +135,12 @@ Fixpoint loop (n : nat) { arrayType } (body : nat -> Action (WithLocalVariables 
 
 Definition update { A } (map : string -> A) (key : string) (value : A) := fun x => if decide (x = key) then value else map x.
 
-Lemma eliminateLocalVariables { arrayType } (bools : string -> bool) (numbers : string -> Z) (action : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue unit) : Action (BasicEffects arrayType) basicEffectsReturnValue unit.
+Lemma eliminateLocalVariables { arrayType } (bools : string -> bool) (numbers : string -> Z) (action : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue unit) : Action (WithArrays arrayType) withArraysReturnValue unit.
 Proof.
   induction action as [x | effect continuation IH] in bools, numbers |- *;
   [exact (Done _ _ _ x) |].
   destruct effect as [effect | name | name value | name | name value].
-  - apply (Dispatch (BasicEffects arrayType) basicEffectsReturnValue unit effect).
+  - apply (Dispatch (WithArrays arrayType) withArraysReturnValue unit effect).
     simpl in IH, continuation. intro value. exact (IH value bools numbers).
   - simpl in IH, continuation. exact (IH (bools name) bools numbers).
   - simpl in IH, continuation. exact (IH tt (update bools name value) numbers).
