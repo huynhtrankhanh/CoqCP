@@ -1,0 +1,10 @@
+From CoqCP Require Import Options Imperative.
+From stdpp Require Import numbers list strings.
+Require Import Coq.Strings.Ascii.
+Open Scope type_scope.
+Definition environment : Environment := {| arrayType := fun name => if decide (name = String "102" (String "105" (String "098" (String "083" (String "101" (String "113" (EmptyString))))))) then Z else if decide (name = String "097" (String "110" (String "111" (String "116" (String "104" (String "101" (String "114" (String "065" (String "114" (String "114" (String "097" (String "121" (EmptyString))))))))))))) then Z * Z else if decide (name = String "118" (String "105" (String "115" (String "105" (String "116" (String "101" (String "100" (EmptyString)))))))) then bool else False; arrays := fun name => ltac:(destruct (decide (name = String "102" (String "105" (String "098" (String "083" (String "101" (String "113" (EmptyString)))))))) as [h |]; [(rewrite h; simpl; exact (repeat (0%Z) 100)) |]; destruct (decide (name = String "097" (String "110" (String "111" (String "116" (String "104" (String "101" (String "114" (String "065" (String "114" (String "114" (String "097" (String "121" (EmptyString)))))))))))))) as [h |]; [(rewrite h; simpl; exact (repeat (0%Z, 0%Z) 3)) |]; destruct (decide (name = String "118" (String "105" (String "115" (String "105" (String "116" (String "101" (String "100" (EmptyString))))))))) as [h |]; [(rewrite h; simpl; exact (repeat (false) 0)) |]; exact []) |}.
+
+#[export] Instance arrayTypeEqualityDecidable (name : string) : EqDecision (arrayType environment name).
+Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
+
+Definition game := eliminateLocalVariables (fun x => false) (fun x => 0%Z) (bind (readChar (arrayType environment)) (fun a => bind (readChar (arrayType environment)) (fun b => numberLocalSet (arrayType environment) "stored result" (Z.add a b)))).
