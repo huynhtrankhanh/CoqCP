@@ -109,31 +109,46 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
         ' arrayType (bools : string -> name) (numbers : string -> Z) : Action (BasicEffect (arrayType environment)) basicEffectReturnValue returnType := '
 
       // every element of body is an Action returning unit
-      const statements = body.map(statement => {
-        const dfs = (value : ValueType): { expression: string, type: PrimitiveType | PrimitiveType[]} => {
+      const statements = body.map((statement) => {
+        const dfs = (
+          value: ValueType
+        ): { expression: string; type: PrimitiveType | PrimitiveType[] } => {
           switch (value.type) {
-            case "binaryOp": {
-              const { expression: leftExpression, type: leftType } = dfs(value.left);
-              const { expression: rightExpression, type: rightType } = dfs(value.right);
-              assert(!Array.isArray(leftType));
+            case 'binaryOp': {
+              const { expression: leftExpression, type: leftType } = dfs(
+                value.left
+              )
+              const { expression: rightExpression, type: rightType } = dfs(
+                value.right
+              )
+              assert(!Array.isArray(leftType))
               assert(!Array.isArray(rightType))
               switch (value.operator) {
-                case "add":
-                const xxx = leftType 
+                case 'add':
+                  const xxx = leftType
               }
-              break;
+              break
             }
           }
         }
       })
 
       if (statements.length === 0) {
-        return header + "Done _ _ _ tt.\n";
+        return header + 'Done _ _ _ tt.\n'
       }
 
-      return header + statements.reduce((accumulated, current) => "bind (" + accumulated + ") (fun ignored => " + current + ")") + "\n"
+      return (
+        header +
+        statements.reduce(
+          (accumulated, current) =>
+            'bind (' + accumulated + ') (fun ignored => ' + current + ')'
+        ) +
+        '\n'
+      )
     })
     .join('')
 
-  return preamble + environmentCode + decidableEquality + generatedCodeForProcedures
+  return (
+    preamble + environmentCode + decidableEquality + generatedCodeForProcedures
+  )
 }
