@@ -1,4 +1,5 @@
-import { CoqCPAST, ValueType } from './parse'
+import { assert } from './assert'
+import { CoqCPAST, PrimitiveType, ValueType } from './parse'
 
 const getCoqString = (text: string): string => {
   const encoder = new TextEncoder()
@@ -105,9 +106,34 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
       const header =
         'Definition ' +
         sanitize(name) +
-        ' arrayType (bools : string -> name) (numbers : string -> Z) : Action (BasicEffects (arrayType environment)) basicEffectsReturnValue returnType := '
+        ' arrayType (bools : string -> name) (numbers : string -> Z) : Action (BasicEffect (arrayType environment)) basicEffectReturnValue returnType := '
+
+      // every element of body is an Action returning unit
+      const statements = body.map(statement => {
+        const dfs = (value : ValueType): { expression: string, type: PrimitiveType | PrimitiveType[]} => {
+          switch (value.type) {
+            case "binaryOp": {
+              const { expression: leftExpression, type: leftType } = dfs(value.left);
+              const { expression: rightExpression, type: rightType } = dfs(value.right);
+              assert(!Array.isArray(leftType));
+              assert(!Array.isArray(rightType))
+              switch (value.operator) {
+                case "add":
+                const xxx = leftType 
+              }
+              break;
+            }
+          }
+        }
+      })
+
+      if (statements.length === 0) {
+        return header + "Done _ _ _ tt.\n";
+      }
+
+      return header + statements.reduce((accumulated, current) => "bind (" + accumulated + ") (fun ignored => " + current + ")") + "\n"
     })
     .join('')
 
-  return preamble + environmentCode + decidableEquality
+  return preamble + environmentCode + decidableEquality + generatedCodeForProcedures
 }
