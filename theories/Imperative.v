@@ -147,3 +147,27 @@ Proof.
   - simpl in IH, continuation. exact (IH (numbers name) bools numbers).
   - simpl in IH, continuation. exact (IH tt bools (update numbers name value)).
 Defined.
+
+Definition readChar arrayType := Dispatch (WithLocalVariables arrayType) withLocalVariablesReturnValue Z (DoWithArrays _(DoBasicEffect _ ReadChar)) (fun x => Done _ _ Z x).
+
+Definition writeChar arrayType x := Dispatch (WithLocalVariables arrayType) withLocalVariablesReturnValue _ (DoWithArrays _(DoBasicEffect _ (WriteChar x))) (fun x => Done _ _ _ x).
+
+Definition flush arrayType := Dispatch (WithLocalVariables arrayType) withLocalVariablesReturnValue _ (DoWithArrays _(DoBasicEffect _ Flush)) (fun x => Done _ _ _ x).
+
+Definition trap arrayType := Dispatch (WithLocalVariables arrayType) withLocalVariablesReturnValue _ (DoWithArrays _(DoBasicEffect _ Trap)) (fun x => Done _ _ _ x).
+
+Definition booleanLocalSet arrayType name value := Dispatch (WithLocalVariables arrayType) withLocalVariablesReturnValue _ (BooleanLocalSet _ name value) (fun x => Done _ _ _ x).
+
+Definition booleanLocalGet arrayType name := Dispatch (WithLocalVariables arrayType) withLocalVariablesReturnValue _ (BooleanLocalGet _ name) (fun x => Done _ _ _ x).
+
+Definition numberLocalSet arrayType name value := Dispatch (WithLocalVariables arrayType) withLocalVariablesReturnValue _ (NumberLocalSet _ name value) (fun x => Done _ _ _ x).
+
+Definition numberLocalGet arrayType name := Dispatch (WithLocalVariables arrayType) withLocalVariablesReturnValue _ (NumberLocalGet _ name) (fun x => Done _ _ _ x).
+
+Definition retrieve arrayType name index := Dispatch (WithLocalVariables arrayType) withLocalVariablesReturnValue _ (DoWithArrays _ (Retrieve arrayType name index)) (fun x => Done _ _ _ x).
+
+Definition store arrayType name index (value : arrayType name) := Dispatch (WithLocalVariables arrayType) withLocalVariablesReturnValue _ (DoWithArrays _ (Store arrayType name index value)) (fun x => Done _ _ _ x).
+
+Definition continue arrayType := Done (WithLocalVariables arrayType) withLocalVariablesReturnValue _ KeepGoing.
+
+Definition break arrayType := Done (WithLocalVariables arrayType) withLocalVariablesReturnValue _ Stop.
