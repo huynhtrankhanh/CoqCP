@@ -349,7 +349,7 @@ Proof.
         lia. }
       assert (H1 : (2 * length withBlanks) / 2 = length withBlanks).
       { rewrite Nat.mul_comm. apply Nat.div_mul. easy. }
-      rewrite H. rewrite <- (Nat.divide_div_mul_exact _ _ _).
+      rewrite H. rewrite <- (Lcm0.divide_div_mul_exact _ _ _).
       * rewrite H1. rewrite subtractToCountNone. reflexivity.
       * easy.
       * unfold possibleToFillBool in h.
