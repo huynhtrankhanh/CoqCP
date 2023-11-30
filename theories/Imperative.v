@@ -192,7 +192,7 @@ Definition toSigned64 (n : Z) : Z :=
   if decide (n < 9223372036854775808) then n else n - 18446744073709551616.
 
 Definition divIntUnsigned {arrayType} (a b : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue Z) : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue Z := bind a (fun a => bind b (fun b => if decide (b = 0) then trap arrayType Z else Done _ _ _ (a / b))).
-Definition modIntUnsigned {arrayType} (a b : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue Z) : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue Z := bind a (fun a => bind b (fun b => if decide (b = 0) then trap arrayType Z else Done _ _ _ (Z.mod a b))).
+Definition modIntUnsigned {arrayType} (a b : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue Z) : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue Z := bind a (fun a => bind b (fun b => if decide (b = 0) then trap arrayType Z else Done _ _ _ (a mod b))).
 
 (* Arithmetic operations for 8-bit integers *)
 Definition addInt8 {u v} (a b : Action u v Z) : Action u v Z := bind a (fun a => bind b (fun b => Done _ _ _ (coerceInt8 (a + b)))).
