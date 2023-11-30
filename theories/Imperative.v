@@ -225,12 +225,12 @@ Definition xorBits {u v} (a b : Action u v Z) : Action u v Z := bind a (fun a =>
 Definition notBits {u v} (a : Action u v Z) : Action u v Z := bind a (fun a => Done _ _ _ (Z.lnot a)).
 
 (* Shift operations for specified bit width *)
-  Definition shiftLeft {arrayType} (bitWidth : Z) (a amount : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue Z) : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue Z :=
+Definition shiftLeft {arrayType} (bitWidth : Z) (a amount : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue Z) : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue Z :=
   bind a (fun a => bind amount (fun amount =>
     if decide (amount >= bitWidth) then trap _ Z else Done _ _ _ (Z.land (Z.shiftl a amount) (Z.ones bitWidth))
   )).
 
-      Definition shiftRight {arrayType} (bitWidth : Z) (a amount : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue Z) : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue Z :=
+Definition shiftRight {arrayType} (bitWidth : Z) (a amount : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue Z) : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue Z :=
   bind a (fun a => bind amount (fun amount =>
     if decide (amount >= bitWidth) then trap _ Z else Done _ _ _ (Z.land (Z.shiftr a amount) (Z.ones bitWidth))
   )).
