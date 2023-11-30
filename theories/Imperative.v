@@ -236,5 +236,5 @@ Definition shiftRight {arrayType} (bitWidth : Z) (a amount : Action (WithLocalVa
   )).
 
 Definition coerceBool {u v} (a : Action u v bool) : Action u v Z := bind a (fun a =>
-  if a then 1 else 0
+  if a then Done _ _ _ 1 else Done _ _ _ 0
 ).
