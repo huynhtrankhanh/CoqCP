@@ -234,3 +234,7 @@ Definition shiftRight {arrayType} (bitWidth : Z) (a amount : Action (WithLocalVa
   bind a (fun a => bind amount (fun amount =>
     if decide (amount >= bitWidth) then trap _ Z else Done _ _ _ (Z.land (Z.shiftr a amount) (Z.ones bitWidth))
   )).
+
+Definition coerceBool {u v} (a : Action u v bool) : Action u v Z := bind a (fun a =>
+  if a then 1 else 0
+).
