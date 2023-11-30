@@ -57,6 +57,12 @@ export type ValidationError = (
   | { type: "array length can't be negative" }
 ) & { location: Location }
 
+export     const isNumeric = (
+      x: string | PrimitiveType[]
+    ): x is 'int8' | 'int16' | 'int32' | 'int64' => {
+      return x === 'int8' || x === 'int16' || x === 'int32' || x === 'int64'
+    }
+
 export const validateAST = ({
   procedures,
   environment,
@@ -95,11 +101,6 @@ export const validateAST = ({
   const procedureMap = new Map<string, Procedure>()
   for (const procedure of procedures) {
     type Type = PrimitiveType | 'statement' | 'illegal' | PrimitiveType[]
-    const isNumeric = (
-      x: string | PrimitiveType[]
-    ): x is 'int8' | 'int16' | 'int32' | 'int64' => {
-      return x === 'int8' || x === 'int16' || x === 'int32' || x === 'int64'
-    }
     let hasSurroundingRangeCommand = false
     const presentBinders = new Set<string>()
     const dfs = (instruction: ValueType): Type => {
