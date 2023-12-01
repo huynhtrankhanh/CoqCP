@@ -222,9 +222,8 @@ Definition divInt64Signed {arrayType} (a b : Action (WithLocalVariables arrayTyp
 Definition andBits {u v} (a b : Action u v Z) : Action u v Z := bind a (fun a => bind b (fun b => Done _ _ _ (Z.land a b))).
 Definition orBits {u v} (a b : Action u v Z) : Action u v Z := bind a (fun a => bind b (fun b => Done _ _ _ (Z.lor a b))).
 Definition xorBits {u v} (a b : Action u v Z) : Action u v Z := bind a (fun a => bind b (fun b => Done _ _ _ (Z.lxor a b))).
-Definition notBits {u v} (a : Action u v Z) : Action u v Z := bind a (fun a => Done _ _ _ (Z.lnot a)).
 
-(* Shift operations for specified bit width *)
+(* Operations for specified bit width *)
 Definition shiftLeft {arrayType} (bitWidth : Z) (a amount : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue Z) : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue Z :=
   bind a (fun a => bind amount (fun amount =>
     if decide (amount >= bitWidth) then trap _ Z else Done _ _ _ (Z.land (Z.shiftl a amount) (Z.ones bitWidth))
@@ -234,6 +233,8 @@ Definition shiftRight {arrayType} (bitWidth : Z) (a amount : Action (WithLocalVa
   bind a (fun a => bind amount (fun amount =>
     if decide (amount >= bitWidth) then trap _ Z else Done _ _ _ (Z.land (Z.shiftr a amount) (Z.ones bitWidth))
   )).
+
+Definition notBits {u v} (bitWidth : Z) (a : Action u v Z) : Action u v Z := bind a (fun a => Done _ _ _ (Z.land (Z.lnot a) (Z.ones bitWidth))).
 
 Definition coerceBool {u v} (a : Action u v bool) : Action u v Z := bind a (fun a =>
   if a then Done _ _ _ 1 else Done _ _ _ 0
