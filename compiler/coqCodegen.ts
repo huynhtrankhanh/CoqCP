@@ -372,27 +372,34 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
                 }
               }
             }
-            case "literal": {
+            case 'literal': {
               switch (value.valueType) {
-                case "boolean": {
-                  return { expression: `(Done _ _ _ ${value.raw})`, type: "bool" }
+                case 'boolean': {
+                  return {
+                    expression: `(Done _ _ _ ${value.raw})`,
+                    type: 'bool',
+                  }
                 }
-                case "number": {
+                case 'number': {
                   const number = BigInt(value.raw)
-                  const converted = number < 0n ? (2n ** 64n + number) : number
-                  return { expression: `(Done _ _ _ ${converted}%Z)`, type: "int64" }
+                  const converted = number < 0n ? 2n ** 64n + number : number
+                  return {
+                    expression: `(Done _ _ _ ${converted}%Z)`,
+                    type: 'int64',
+                  }
                 }
               }
             }
-            case "subscript": {
+            case 'subscript': {
               const { expression, type } = dfs(value.value)
               assert(Array.isArray(type))
               const length = type.length
               const index = Number(value.index.raw)
               // because of validation, this is nonnegative and less than length
               const reverseIndex = length - index - 1
-              let finalExpression = expression 
-              for (let i = 0; i < reverseIndex; i++) finalExpression = "fst (" + finalExpression + ")"
+              let finalExpression = expression
+              for (let i = 0; i < reverseIndex; i++)
+                finalExpression = 'fst (' + finalExpression + ')'
               finalExpression = `(snd (${finalExpression}))`
               return { expression: finalExpression, type: type[index] }
             }
