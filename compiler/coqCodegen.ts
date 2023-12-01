@@ -313,10 +313,15 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
             }
             case 'store': {
               const { expression: indexExpression } = dfs(value.index)
-              const tuple = "(" + value.tuple.map(x => dfs(x).expression).join(", ") + ")"
-              return { expression: `(retrieve (arrayType environment) ${value.name} ${indexExpression} ${tuple})`, type: "statement" }
+              const tuple =
+                '(' + value.tuple.map((x) => dfs(x).expression).join(', ') + ')'
+              return {
+                expression: `(retrieve (arrayType environment) ${value.name} ${indexExpression} ${tuple})`,
+                type: 'statement',
+              }
             }
-            case "": {}
+            case '': {
+            }
           }
         }
       })
