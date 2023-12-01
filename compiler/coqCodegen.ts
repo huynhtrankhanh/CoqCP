@@ -278,10 +278,45 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
               return {
                 expression: `(booleanLocalGet (arrayType environment) (${getCoqString(
                   value.name
-                )})`,
+                )}))`,
                 type: variable.type,
               }
             }
+            case 'set': {
+              const variable = variables.get(value.name)
+              assert(variable !== undefined)
+              const { expression } = dfs(value.value)
+              if (isNumeric(variable.type)) {
+                return {
+                  expression: `(numberLocalSet (arrayType environment) (${getCoqString(
+                    value.name
+                  )}) ${expression})`,
+                  type: 'statement',
+                }
+              }
+              return {
+                expression: `(booleanLocalSet (arrayType environment) (${getCoqString(
+                  value.name
+                )}) ${expression})`,
+                type: 'statement',
+              }
+            }
+            case 'retrieve': {
+              assert(environment !== null)
+              const declaration = environment.arrays.get(value.name)
+              assert(declaration !== undefined)
+              const { expression: indexExpression } = dfs(value.index)
+              return {
+                expression: `(retrieve (arrayType environment) ${value.name} ${indexExpression})`,
+                type: declaration.itemTypes,
+              }
+            }
+            case 'store': {
+              const { expression: indexExpression } = dfs(value.index)
+              const tuple = "(" + value.tuple.map(x => dfs(x).expression).join(", ") + ")"
+              return { expression: `(retrieve (arrayType environment) ${value.name} ${indexExpression} ${tuple})`, type: "statement" }
+            }
+            case "": {}
           }
         }
       })
