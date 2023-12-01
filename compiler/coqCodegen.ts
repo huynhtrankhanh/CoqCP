@@ -1,5 +1,6 @@
 import { assert } from './assert'
 import { CoqCPAST, PrimitiveType, ValueType } from './parse'
+import { isNumeric } from './validateAST'
 
 const getCoqString = (text: string): string => {
   const encoder = new TextEncoder()
@@ -112,7 +113,25 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
       const statements = body.map((statement) => {
         const dfs = (
           value: ValueType
-        ): { expression: string; type: PrimitiveType | PrimitiveType[] } => {
+        ): {
+          expression: string
+          type: PrimitiveType | 'statement' | PrimitiveType[]
+        } => {
+          const getBitWidth = (
+            type: 'int8' | 'int16' | 'int32' | 'int64'
+          ): 8 | 16 | 32 | 64 => {
+            switch (type) {
+              case 'int8':
+                return 8
+              case 'int16':
+                return 16
+              case 'int32':
+                return 32
+              case 'int64':
+                return 64
+            }
+          }
+
           switch (value.type) {
             case 'binaryOp': {
               const { expression: leftExpression, type: leftType } = dfs(
@@ -123,11 +142,145 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
               )
               assert(!Array.isArray(leftType))
               assert(!Array.isArray(rightType))
+
               switch (value.operator) {
                 case 'add':
-                  const xxx = leftType
+                case 'subtract':
+                case 'multiply':
+                case 'mod':
+                case 'bitwise or':
+                case 'bitwise xor':
+                case 'bitwise and':
+                case 'shift left':
+                case 'shift right':
+                  assert(isNumeric(leftType))
+                  assert(leftType === rightType)
+                  const bitWidth = getBitWidth(leftType)
+                  const functionName = ((): string => {
+                    switch (value.operator) {
+                      case 'add':
+                        return 'addInt' + bitWidth
+                      case 'subtract':
+                        return 'subInt' + bitWidth
+                      case 'multiply':
+                        return 'multInt' + bitWidth
+                      case 'mod':
+                        return 'modIntUnsigned'
+                      case 'bitwise and':
+                        return 'andBits'
+                      case 'bitwise or':
+                        return 'orBits'
+                      case 'bitwise xor':
+                        return 'xorBits'
+                      case 'shift left':
+                        return 'shiftLeft ' + bitWidth
+                      case 'shift right':
+                        return 'shiftRight ' + bitWidth
+                    }
+                  })()
+                  return {
+                    expression: `(${functionName} ${leftExpression} ${rightExpression})`,
+                    type: leftType,
+                  }
               }
               break
+            }
+            case 'divide': {
+              const { type: leftType, expression: leftExpression } = dfs(
+                value.left
+              )
+              const { type: rightType, expression: rightExpression } = dfs(
+                value.right
+              )
+              assert(leftType === rightType)
+              assert(isNumeric(leftType))
+              return {
+                expression: `(divIntUnsigned ${leftExpression} ${rightExpression})`,
+                type: leftType,
+              }
+            }
+            case 'sDivide': {
+              const { type: leftType, expression: leftExpression } = dfs(
+                value.left
+              )
+              const { type: rightType, expression: rightExpression } = dfs(
+                value.right
+              )
+              assert(leftType === rightType)
+              assert(isNumeric(leftType))
+              const bitWidth = getBitWidth(leftType)
+              return {
+                expression: `(divInt${bitWidth}Signed ${leftExpression} ${rightExpression})`,
+                type: leftType,
+              }
+            }
+            case 'coerceInt8':
+            case 'coerceInt16':
+            case 'coerceInt32':
+            case 'coerceInt64': {
+              const { type, expression } = dfs(value.value)
+              assert(isNumeric(type) || type === 'bool')
+              if (type === 'bool') {
+                return { expression: `(coerceBool ${expression})`, type }
+              }
+              return {
+                expression: `(bind ${expression} (fun x => Done _ _ _ (${value.type} x)))`,
+                type: (() => {
+                  switch (value.type) {
+                    case 'coerceInt8':
+                      return 'int8'
+                    case 'coerceInt16':
+                      return 'int16'
+                    case 'coerceInt32':
+                      return 'int32'
+                    case 'coerceInt64':
+                      return 'int64'
+                  }
+                })(),
+              }
+            }
+            case 'continue': {
+              return { expression: `(Done _ _ _ KeepGoing)`, type: 'statement' }
+            }
+            case 'break': {
+              return { expression: `(Done _ _ _ Stop)`, type: 'statement' }
+            }
+            case 'flush': {
+              return {
+                expression: `(flush (arrayType environment))`,
+                type: 'statement',
+              }
+            }
+            case 'readChar': {
+              return {
+                expression: `(readChar (arrayType environment))`,
+                type: 'int8',
+              }
+            }
+            case 'writeChar': {
+              const { expression } = dfs(value.value)
+              return {
+                expression: `(writeChar (arrayType environment) ${expression})`,
+                type: 'statement',
+              }
+            }
+            case 'get': {
+              const variable = variables.get(value.name)
+              assert(variable !== undefined)
+              if (isNumeric(variable.type)) {
+                return {
+                  expression: `(numberLocalGet (arrayType environment) (${getCoqString(
+                    value.name
+                  )}))`,
+                  type: variable.type,
+                }
+              }
+              return {
+                expression: `(booleanLocalGet (arrayType environment) (${getCoqString(
+                  value.name
+                )})`,
+                type: variable.type,
+              }
             }
           }
         }
