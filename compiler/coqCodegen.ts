@@ -117,6 +117,8 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
           expression: string
           type: PrimitiveType | 'statement' | PrimitiveType[]
         } => {
+          const localBinderMap = new Map<string, number>()
+          let binderCounter = 0
           const getBitWidth = (
             type: 'int8' | 'int16' | 'int32' | 'int64'
           ): 8 | 16 | 32 | 64 => {
@@ -152,7 +154,7 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
                 case 'bitwise xor':
                 case 'bitwise and':
                 case 'shift left':
-                case 'shift right':
+                case 'shift right': {
                   assert(isNumeric(leftType))
                   assert(leftType === rightType)
                   const bitWidth = getBitWidth(leftType)
@@ -182,6 +184,15 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
                     expression: `(${functionName} ${leftExpression} ${rightExpression})`,
                     type: leftType,
                   }
+                }
+                case "boolean and":
+                  return { expression: "(shortCircuitAnd " + leftExpression + " " + rightExpression + ")", type: "bool" }
+                case "boolean or":
+                  return { expression: "(shortCircuitOr " + leftExpression + " " + rightExpression + ")", type: "bool" }
+                case "equal":
+                  return { expression: `(bind ${leftExpression} (fun x => bind ${rightExpression} (fun y => Done _ _ _ (bool_decide (x = y)))))`, type: "bool"}
+                case "noteq":
+                  return { expression: `(bind ${leftExpression} (fun x => bind ${rightExpression} (fun y => Done _ _ _ (bool_decide (x <> y)))))`, type: "bool"}
               }
               break
             }
@@ -357,7 +368,7 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
                 }
                 case 'boolean not': {
                   return {
-                    expression: `(bind ${expression} (fun x => ~x))`,
+                    expression: `(bind ${expression} (fun x => negb x))`,
                     type,
                   }
                 }
@@ -403,22 +414,85 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
               finalExpression = `(snd (${finalExpression}))`
               return { expression: finalExpression, type: type[index] }
             }
+            case 'call': {
+              const { presetVariables, procedure } = value
+              let numberMap = '(Done _ _ _ (fun x => 0%Z))'
+              let booleanMap = '(Done _ _ _ (fun x => ff))'
+              for (const [name, value] of presetVariables.entries()) {
+                const { expression, type } = dfs(value)
+                assert(isNumeric(type) || type === 'bool')
+                if (isNumeric(type)) {
+                  numberMap = `(bind ${numberMap} (fun x => update x ${getCoqString(
+                    name
+                  )} ${expression}))`
+                } else {
+                  booleanMap = `(bind ${booleanMap} (fun x => update x ${getCoqString(
+                    name
+                  )} ${expression}))`
+                }
+              }
+              return {
+                expression: `(bind ${numberMap} (fun x => bind ${booleanMap} (fun y => ${sanitize(
+                  procedure
+                )} (arrayType environment) y x)))`,
+                type: 'statement',
+              }
+            }
+            case 'condition': {
+              const { condition, body, alternate } = value
+              const { expression: conditionExpression } = dfs(condition)
+              const bodyExpression = joinStatements(
+                body.map(dfs).map((x) => x.expression)
+              )
+              const alternateExpression = joinStatements(
+                alternate.map(dfs).map((x) => x.expression)
+              )
+              return {
+                expression: `(bind ${conditionExpression} (fun x => if x then ${bodyExpression} else ${alternateExpression}))`,
+                type: 'statement',
+              }
+            }
+            case 'local binder': {
+              const { name } = value
+              const binder = localBinderMap.get(name)
+              assert(binder !== undefined)
+              return { expression: 'binder_' + binder, type: 'int64' }
+            }
+            case 'range': {
+              const { loopVariable, loopBody, end } = value
+              const previousBinderValue = localBinderMap.get(loopVariable)
+
+              localBinderMap.set(loopVariable, binderCounter++)
+
+              const bodyExpression = joinStatements(
+                loopBody.map(dfs).map((x) => x.expression)
+              )
+
+              if (previousBinderValue === undefined) localBinderMap.delete(name)
+              else localBinderMap.set(loopVariable, previousBinderValue)
+              binderCounter--
+
+              return {
+                expression: `(bind ${end} (fun x => loop x (fun binder_${
+                  binderCounter - 1
+                } => ${bodyExpression})))`,
+                type: 'statement',
+              }
+            }
           }
         }
+        return dfs(statement).expression
       })
 
-      if (statements.length === 0) {
-        return header + 'Done _ _ _ tt.\n'
-      }
+      return header + joinStatements(statements) + '\n'
 
-      return (
-        header +
-        statements.reduce(
+      function joinStatements(statements: string[]) {
+        if (statements.length) return 'Done _ _ _ tt'
+        return statements.reduce(
           (accumulated, current) =>
             'bind (' + accumulated + ') (fun ignored => ' + current + ')'
-        ) +
-        '\n'
-      )
+        )
+      }
     })
     .join('')
 
