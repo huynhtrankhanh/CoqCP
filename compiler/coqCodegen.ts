@@ -43,7 +43,7 @@ export const coqCodegen = ({ environment, procedures }: CoqCPAST): string => {
       sanitizedProcedureNameCollisions.set(sanePart, count + 1)
       return count
     })()
-    const aggregate = '_$' + sanePart + '$' + discriminator
+    const aggregate = 'funcdef_' + discriminator + '_' + sanePart
     mapToSanitized.set(name, aggregate)
     return aggregate
   }
@@ -60,9 +60,10 @@ export const coqCodegen = ({ environment, procedures }: CoqCPAST): string => {
       'fun name => ' +
       [...environment.arrays.entries()]
         .map(([name, { itemTypes }]) => {
-          const coqType = itemTypes
-            .map((x) => (x === 'bool' ? 'bool' : 'Z'))
-            .join(' * ')
+          const coqType =
+            itemTypes.length === 0
+              ? 'unit'
+              : itemTypes.map((x) => (x === 'bool' ? 'bool' : 'Z')).join(' * ')
           return `if decide (name = ${getCoqString(
             name
           )}) then ${coqType} else `
@@ -81,11 +82,13 @@ export const coqCodegen = ({ environment, procedures }: CoqCPAST): string => {
             },
           ]) => {
             const value =
-              '(' +
-              itemTypes
-                .map((x) => (x === 'bool' ? 'false' : '0%Z'))
-                .join(', ') +
-              ')'
+              itemTypes.length === 0
+                ? 'tt'
+                : '(' +
+                  itemTypes
+                    .map((x) => (x === 'bool' ? 'false' : '0%Z'))
+                    .join(', ') +
+                  ')'
             const list = 'repeat ' + value + ' ' + rawLength
             return `destruct (decide (name = ${getCoqString(
               name
@@ -107,9 +110,9 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
       const header =
         'Definition ' +
         sanitize(name) +
-        ' arrayType (bools : string -> name) (numbers : string -> Z) : Action (BasicEffect (arrayType environment)) basicEffectReturnValue returnType := '
+        ' (bools : string -> bool) (numbers : string -> Z) : Action (WithArrays (arrayType environment)) withArraysReturnValue unit := eliminateLocalVariables bools numbers '
 
-      // every element of body is an Action returning unit
+      // every element of body is an Action returning absolutely anything
       const statements = body.map((statement) => {
         const localBinderMap = new Map<string, number>()
         let binderCounter = 0
@@ -132,6 +135,19 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
               case 'int64':
                 return 64
             }
+          }
+
+          const getTuple = (value: ValueType[]) => {
+            let tuple =
+              'Done _ _ _ (' +
+              value.map((_, i) => 'tuple_element_' + i).join(', ') +
+              ')'
+            for (const [index, element] of value.entries()) {
+              tuple = `(bind ${
+                dfs(element).expression
+              } (fun tuple_element_${index} => ${tuple}))`
+            }
+            return tuple
           }
 
           switch (value.type) {
@@ -293,7 +309,7 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
             case 'writeChar': {
               const { expression } = dfs(value.value)
               return {
-                expression: `(writeChar (arrayType environment) ${expression})`,
+                expression: `(bind ${expression} (fun x => writeChar (arrayType environment) x))`,
                 type: 'statement',
               }
             }
@@ -321,9 +337,9 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
               const { expression } = dfs(value.value)
               if (isNumeric(variable.type)) {
                 return {
-                  expression: `(numberLocalSet (arrayType environment) (${getCoqString(
+                  expression: `(bind ${expression} (fun x => numberLocalSet (arrayType environment) (${getCoqString(
                     value.name
-                  )}) ${expression})`,
+                  )}) x))`,
                   type: 'statement',
                 }
               }
@@ -340,16 +356,19 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
               assert(declaration !== undefined)
               const { expression: indexExpression } = dfs(value.index)
               return {
-                expression: `(retrieve (arrayType environment) ${value.name} ${indexExpression})`,
+                expression: `(let x := bind ${indexExpression} (fun x => retrieve (arrayType environment) (${getCoqString(
+                  value.name
+                )}) x) in ltac:(simpl in *; exact x))`,
                 type: declaration.itemTypes,
               }
             }
             case 'store': {
               const { expression: indexExpression } = dfs(value.index)
-              const tuple =
-                '(' + value.tuple.map((x) => dfs(x).expression).join(', ') + ')'
+              let tuple = getTuple(value.tuple)
               return {
-                expression: `(retrieve (arrayType environment) ${value.name} ${indexExpression} ${tuple})`,
+                expression: `(bind ${indexExpression} (fun x => bind ${tuple} (fun y => store (arrayType environment) (${getCoqString(
+                  value.name
+                )}) x ltac:(simpl in *; exact y))))`,
                 type: 'statement',
               }
             }
@@ -429,6 +448,7 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
               const length = type.length
               const index = Number(value.index.raw)
               // because of validation, this is nonnegative and less than length
+              if (type.length === 1) return { expression, type: type[0] }
               const reverseIndex = length - index - 1
               let finalExpression = expression
               for (let i = 0; i < reverseIndex; i++)
@@ -439,24 +459,24 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
             case 'call': {
               const { presetVariables, procedure } = value
               let numberMap = '(Done _ _ _ (fun x => 0%Z))'
-              let booleanMap = '(Done _ _ _ (fun x => ff))'
+              let booleanMap = '(Done _ _ _ (fun x => false))'
               for (const [name, value] of presetVariables.entries()) {
                 const { expression, type } = dfs(value)
                 assert(isNumeric(type) || type === 'bool')
                 if (isNumeric(type)) {
-                  numberMap = `(bind ${numberMap} (fun x => update x ${getCoqString(
+                  numberMap = `(bind ${numberMap} (fun x => bind ${expression} (fun y => Done _ _ _ (update x (${getCoqString(
                     name
-                  )} ${expression}))`
+                  )}) y))))`
                 } else {
-                  booleanMap = `(bind ${booleanMap} (fun x => update x ${getCoqString(
+                  booleanMap = `(bind ${booleanMap} (fun x => bind ${expression} (fun y => Done _ _ _ (update x (${getCoqString(
                     name
-                  )} ${expression}))`
+                  )}) y))))`
                 }
               }
               return {
                 expression: `(bind ${numberMap} (fun x => bind ${booleanMap} (fun y => ${sanitize(
                   procedure
-                )} (arrayType environment) y x)))`,
+                )} y x)))`,
                 type: 'statement',
               }
             }
@@ -490,14 +510,14 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
                 loopBody.map(dfs).map((x) => x.expression)
               )
 
+              const { expression: endExpression } = dfs(end)
+
               if (previousBinderValue === undefined) localBinderMap.delete(name)
               else localBinderMap.set(loopVariable, previousBinderValue)
               binderCounter--
 
               return {
-                expression: `(bind ${end} (fun x => loop x (fun binder_${
-                  binderCounter - 1
-                } => ${bodyExpression})))`,
+                expression: `(bind ${endExpression} (fun x => loop (Z.to_nat x) (fun binder_${binderCounter}_intermediate => let binder_${binderCounter} := Done _ _ _ (Z.sub (Z.sub x (Z.of_nat binder_${binderCounter}_intermediate)) 1%Z) in bind (${bodyExpression}) (fun ignored => Done _ _ _ KeepGoing))))`,
                 type: 'statement',
               }
             }
@@ -506,7 +526,7 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
         return dfs(statement).expression
       })
 
-      return header + joinStatements(statements) + '\n'
+      return header + '(bind (' + joinStatements(statements) + ') (fun ignored => Done _ _ _ tt)).\n'
 
       function joinStatements(statements: string[]) {
         if (statements.length === 0) return 'Done _ _ _ tt'

@@ -21,7 +21,7 @@ procedure("fibonacci", { n: int32, a: int32, b: int32, i: int32 }, () => {
     store("fibSeq", 0, [get("a")]);
     store("fibSeq", 1, [get("b")]);
 
-    range(get("n") - 2, x => {  
+    range(coerceInt64(get("n")) - 2, x => {  
         set("i", retrieve("fibSeq", x)[0] + retrieve("fibSeq", x + 1)[0]);  // Getting sum of last two fibonacci numbers
         store("fibSeq", x + 2, [get("i")]);  // Storing the newly calculated fibonacci term
         "break"

@@ -7,23 +7,23 @@ const code = `environment({
 
 procedure("fibonacci", { n: int32, a: int32, b: int32, i: int32 }, () => {
     set("n", readChar());  // Reading the term 'n' to which Fibonacci sequence is to be calculated
-    set("a", 0);
-    set("b", 1);
+    set("a", coerceInt32(0));
+    set("b", coerceInt32(1));
     
     // Initialize first two numbers in fibonacci series
     store("fibSeq", 0, [get("a")]);
     store("fibSeq", 1, [get("b")]);
 
-    range(get("n") - 2, x => {  
+    range(coerceInt64(get("n")) - 2, x => {  
         set("i", retrieve("fibSeq", x)[0] + retrieve("fibSeq", x + 1)[0]);  // Getting sum of last two fibonacci numbers
         store("fibSeq", x + 2, [get("i")]);  // Storing the newly calculated fibonacci term
     })
 
-    if (get("n") == 100) {
+    if (get("n") == coerceInt32(100)) {
       writeChar(32);
     } else {writeChar(64);}
 
-    if (less(get("n"), 200)) {
+    if (less(get("n"), coerceInt32(200))) {
       writeChar(100);
     }
 });`
