@@ -509,7 +509,7 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
       return header + joinStatements(statements) + '\n'
 
       function joinStatements(statements: string[]) {
-        if (statements.length) return 'Done _ _ _ tt'
+        if (statements.length === 0) return 'Done _ _ _ tt'
         return statements.reduce(
           (accumulated, current) =>
             'bind (' + accumulated + ') (fun ignored => ' + current + ')'
