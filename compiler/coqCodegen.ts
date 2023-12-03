@@ -89,7 +89,6 @@ export const coqCodegen = ({ environment, procedures }: CoqCPAST): string => {
                     .map((x) => (x === 'bool' ? 'false' : '0%Z'))
                     .join(', ') +
                   ')'
-            const list = 'repeat ' + value + ' ' + rawLength
             return `destruct (decide (name = ${getCoqString(
               name
             )})) as [h |]; [(rewrite h; simpl; exact (repeat ${value} ${rawLength})) |]; `
@@ -376,7 +375,7 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
               const { expression: leftExpression } = dfs(value.left)
               const { expression: rightExpression } = dfs(value.right)
               return {
-                expression: `(bind ${leftExpression} (fun a => bind ${rightExpression} (fun b => bool_decide (a < b))))`,
+                expression: `(bind ${leftExpression} (fun a => bind ${rightExpression} (fun b => Done _ _ _ (bool_decide (Z.lt a b)))))`,
                 type: 'bool',
               }
             }
@@ -392,7 +391,7 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
               const bitWidth = getBitWidth(leftType)
               const toSigned = 'toSigned' + bitWidth
               return {
-                expression: `(bind ${leftExpression} (fun a => bind ${rightExpression} (fun b => bool_decide (${toSigned} a < ${toSigned} b))))`,
+                expression: `(bind ${leftExpression} (fun a => bind ${rightExpression} (fun b => Done _ _ _ (bool_decide (Z.lt (${toSigned} a) (${toSigned} b))))))`,
                 type: 'bool',
               }
             }
@@ -409,7 +408,7 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
                 }
                 case 'boolean not': {
                   return {
-                    expression: `(bind ${expression} (fun x => negb x))`,
+                    expression: `(bind ${expression} (fun x => Done _ _ _ (negb x)))`,
                     type,
                   }
                 }
@@ -474,9 +473,9 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
                 }
               }
               return {
-                expression: `(bind ${numberMap} (fun x => bind ${booleanMap} (fun y => ${sanitize(
+                expression: `(bind ${numberMap} (fun x => bind ${booleanMap} (fun y => liftToWithLocalVariables (${sanitize(
                   procedure
-                )} y x)))`,
+                )} y x))))`,
                 type: 'statement',
               }
             }

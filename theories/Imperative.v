@@ -52,12 +52,12 @@ Proof.
   - split; try easy. intros no. unfold eq_rect_r. rewrite <- (eq_rect_eq_dec hEffectType). intros h. exact (IH h).
 Qed.
 
-Definition shortCircuitAnd effectType effectResponse (a b : Action effectType effectResponse bool) := bind a (fun x => match x with
+Definition shortCircuitAnd {effectType effectResponse} (a b : Action effectType effectResponse bool) := bind a (fun x => match x with
   | false => Done _ _ _ false
   | true => b
   end).
 
-Definition shortCircuitOr effectType effectResponse (a b : Action effectType effectResponse bool) := bind a (fun x => match x with
+Definition shortCircuitOr {effectType effectResponse} (a b : Action effectType effectResponse bool) := bind a (fun x => match x with
   | true => Done _ _ _ true
   | false => b
   end).
@@ -239,3 +239,9 @@ Definition notBits {u v} (bitWidth : Z) (a : Action u v Z) : Action u v Z := bin
 Definition coerceBool {u v} (a : Action u v bool) : Action u v Z := bind a (fun a =>
   if a then Done _ _ _ 1 else Done _ _ _ 0
 ).
+
+Fixpoint liftToWithLocalVariables {arrayType r} (x : Action (WithArrays arrayType) withArraysReturnValue r) : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue r :=
+  match x with
+  | Done _ _ _ x => Done _ _ _ x
+  | Dispatch _ _ _ effect continuation => Dispatch _ _ _ (DoWithArrays _ effect) (fun x => liftToWithLocalVariables (continuation x))
+  end.
