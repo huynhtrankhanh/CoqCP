@@ -111,14 +111,14 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
 
       // every element of body is an Action returning unit
       const statements = body.map((statement) => {
+        const localBinderMap = new Map<string, number>()
+        let binderCounter = 0
         const dfs = (
           value: ValueType
         ): {
           expression: string
           type: PrimitiveType | 'statement' | PrimitiveType[]
         } => {
-          const localBinderMap = new Map<string, number>()
-          let binderCounter = 0
           const getBitWidth = (
             type: 'int8' | 'int16' | 'int32' | 'int64'
           ): 8 | 16 | 32 | 64 => {
