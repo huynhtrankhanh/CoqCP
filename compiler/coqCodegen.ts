@@ -185,14 +185,36 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
                     type: leftType,
                   }
                 }
-                case "boolean and":
-                  return { expression: "(shortCircuitAnd " + leftExpression + " " + rightExpression + ")", type: "bool" }
-                case "boolean or":
-                  return { expression: "(shortCircuitOr " + leftExpression + " " + rightExpression + ")", type: "bool" }
-                case "equal":
-                  return { expression: `(bind ${leftExpression} (fun x => bind ${rightExpression} (fun y => Done _ _ _ (bool_decide (x = y)))))`, type: "bool"}
-                case "noteq":
-                  return { expression: `(bind ${leftExpression} (fun x => bind ${rightExpression} (fun y => Done _ _ _ (bool_decide (x <> y)))))`, type: "bool"}
+                case 'boolean and':
+                  return {
+                    expression:
+                      '(shortCircuitAnd ' +
+                      leftExpression +
+                      ' ' +
+                      rightExpression +
+                      ')',
+                    type: 'bool',
+                  }
+                case 'boolean or':
+                  return {
+                    expression:
+                      '(shortCircuitOr ' +
+                      leftExpression +
+                      ' ' +
+                      rightExpression +
+                      ')',
+                    type: 'bool',
+                  }
+                case 'equal':
+                  return {
+                    expression: `(bind ${leftExpression} (fun x => bind ${rightExpression} (fun y => Done _ _ _ (bool_decide (x = y)))))`,
+                    type: 'bool',
+                  }
+                case 'noteq':
+                  return {
+                    expression: `(bind ${leftExpression} (fun x => bind ${rightExpression} (fun y => Done _ _ _ (bool_decide (x <> y)))))`,
+                    type: 'bool',
+                  }
               }
               break
             }
