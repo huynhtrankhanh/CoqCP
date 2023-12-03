@@ -526,7 +526,12 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
         return dfs(statement).expression
       })
 
-      return header + '(bind (' + joinStatements(statements) + ') (fun ignored => Done _ _ _ tt)).\n'
+      return (
+        header +
+        '(bind (' +
+        joinStatements(statements) +
+        ') (fun ignored => Done _ _ _ tt)).\n'
+      )
 
       function joinStatements(statements: string[]) {
         if (statements.length === 0) return 'Done _ _ _ tt'
