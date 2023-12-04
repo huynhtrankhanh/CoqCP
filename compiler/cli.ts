@@ -48,9 +48,7 @@ function transform(
           break
         case 'variable type mismatch':
           console.error(`${error.type} at ${JSON.stringify(error.location)}`)
-          console.error(
-            `Actual Type: ${error.actualType}`
-          )
+          console.error(`Actual Type: ${error.actualType}`)
           break
         case 'expression no statement':
         case 'procedure not found':
@@ -116,7 +114,9 @@ const argv = yargs
 
 // Function to process files based on the provided glob pattern
 function processFiles(globPattern: string) {
-  glob.glob(globPattern).then(files => files.forEach(file => transformFile(file)))
+  glob
+    .glob(globPattern)
+    .then((files) => files.forEach((file) => transformFile(file)))
 }
 
 // Define the transform function for a file
