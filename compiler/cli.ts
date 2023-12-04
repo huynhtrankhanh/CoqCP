@@ -1,32 +1,36 @@
 // Import necessary libraries/modules
-import * as fs from 'fs';
-import * as path from 'path';
-import * as glob from 'glob';
-import * as chokidar from 'chokidar';
+import * as fs from 'fs'
+import * as path from 'path'
+import * as glob from 'glob'
+import * as chokidar from 'chokidar'
 
 // Import necessary modules for transform function
-import { CoqCPASTTransformer, CoqCPAST, PrimitiveType, Location } from './parse';
-import { validateAST } from './validateAST';
-import { coqCodegen } from './coqCodegen';
-import { cppCodegen } from './cppCodegen';
+import { CoqCPASTTransformer, CoqCPAST, PrimitiveType, Location } from './parse'
+import { validateAST } from './validateAST'
+import { coqCodegen } from './coqCodegen'
+import { cppCodegen } from './cppCodegen'
 
 // Define transform function
-function transform(fileContent: string, cppOutputPath: string, coqOutputPath: string) {
-  const transformer = new CoqCPASTTransformer(fileContent);
-  let ast: CoqCPAST | undefined;
+function transform(
+  fileContent: string,
+  cppOutputPath: string,
+  coqOutputPath: string
+) {
+  const transformer = new CoqCPASTTransformer(fileContent)
+  let ast: CoqCPAST | undefined
   try {
-    ast = transformer.transform();
+    ast = transformer.transform()
   } catch (error) {
     // Print error here
-    console.error(`Error transforming file: ${error.message}`);
+    console.error(`Error transforming file: ${error.message}`)
   }
-  if (ast === undefined) return;
+  if (ast === undefined) return
 
-  const errors = validateAST(ast);
+  const errors = validateAST(ast)
 
   // Print errors in a user-friendly format
   if (errors.length !== 0) {
-    console.error('Validation Errors:');
+    console.error('Validation Errors:')
     errors.forEach((error) => {
       switch (error.type) {
         case 'binary expression expects numeric':
@@ -35,9 +39,11 @@ function transform(fileContent: string, cppOutputPath: string, coqOutputPath: st
         case 'binary expression type mismatch':
         case 'instruction type mismatch':
         case 'variable type mismatch':
-          console.error(`${error.type} at ${JSON.stringify(error.location)}`);
-          console.error(`Actual Types: ${error.actualType1}, ${error.actualType2}`);
-          break;
+          console.error(`${error.type} at ${JSON.stringify(error.location)}`)
+          console.error(
+            `Actual Types: ${error.actualType1}, ${error.actualType2}`
+          )
+          break
         case 'expression no statement':
         case 'procedure not found':
         case 'variable not present':
@@ -57,26 +63,28 @@ function transform(fileContent: string, cppOutputPath: string, coqOutputPath: st
         case "unary operator can't operate on tuples":
         case 'unary operator expects boolean':
         case "array length can't be negative":
-          console.error(`${error.type} at ${JSON.stringify(error.location)}`);
-          break;
+          console.error(`${error.type} at ${JSON.stringify(error.location)}`)
+          break
         default:
-          console.error(`Unknown error type: ${error.type}`);
+          console.error(`Unknown error type: ${error.type}`)
       }
-    });
-    return;
+    })
+    return
   }
 
-  const coqCode = coqCodegen(ast);
-  fs.writeFileSync(coqOutputPath, coqCode);
+  const coqCode = coqCodegen(ast)
+  fs.writeFileSync(coqOutputPath, coqCode)
 
-  const cppCode = cppCodegen(ast);
-  fs.writeFileSync(cppOutputPath, cppCode);
+  const cppCode = cppCodegen(ast)
+  fs.writeFileSync(cppOutputPath, cppCode)
 
-  console.log(`Transformation completed for ${cppOutputPath} and ${coqOutputPath}`);
+  console.log(
+    `Transformation completed for ${cppOutputPath} and ${coqOutputPath}`
+  )
 }
 
 // Define CLI options using a library like yargs
-const yargs = require('yargs');
+const yargs = require('yargs')
 const argv = yargs
   .option('input', {
     alias: 'i',
@@ -100,38 +108,38 @@ const argv = yargs
     alias: 'w',
     description: 'Watch mode',
     type: 'boolean',
-  }).argv;
+  }).argv
 
 // Function to process files based on the provided glob pattern
 function processFiles(globPattern: string) {
   glob(globPattern, {}, (err: any, files: string[]) => {
-    if (err) throw err;
+    if (err) throw err
 
-    files.forEach((file) => transformFile(file));
-  });
+    files.forEach((file) => transformFile(file))
+  })
 }
 
 // Define the transform function for a file
 function transformFile(filePath: string) {
-  const fileContent = fs.readFileSync(filePath, 'utf8');
-  const fileName = path.basename(filePath, path.extname(filePath));
+  const fileContent = fs.readFileSync(filePath, 'utf8')
+  const fileName = path.basename(filePath, path.extname(filePath))
 
   // Assuming coq and cpp output files have the same name
-  const coqOutputPath = path.join(argv.coqOutput, `${fileName}.v`);
-  const cppOutputPath = path.join(argv.cppOutput, `${fileName}.cpp`);
+  const coqOutputPath = path.join(argv.coqOutput, `${fileName}.v`)
+  const cppOutputPath = path.join(argv.cppOutput, `${fileName}.cpp`)
 
-  transform(fileContent, cppOutputPath, coqOutputPath);
+  transform(fileContent, cppOutputPath, coqOutputPath)
 }
 
 // Initial processing of files
-processFiles(argv.input);
+processFiles(argv.input)
 
 // Watch mode using chokidar
 if (argv.watch) {
-  const watcher = chokidar.watch(argv.input, { ignoreInitial: true });
+  const watcher = chokidar.watch(argv.input, { ignoreInitial: true })
 
   watcher.on('all', (event: any, filePath: string) => {
-    console.log(`File ${filePath} has been ${event}`);
-    transformFile(filePath);
-  });
+    console.log(`File ${filePath} has been ${event}`)
+    transformFile(filePath)
+  })
 }
