@@ -3,9 +3,10 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as glob from 'glob'
 import * as chokidar from 'chokidar'
+import * as yargs from 'yargs'
 
 // Import necessary modules for transform function
-import { CoqCPASTTransformer, CoqCPAST, PrimitiveType, Location } from './parse'
+import { CoqCPASTTransformer, CoqCPAST, ParseError } from './parse'
 import { validateAST } from './validateAST'
 import { coqCodegen } from './coqCodegen'
 import { cppCodegen } from './cppCodegen'
@@ -22,6 +23,8 @@ function transform(
     ast = transformer.transform()
   } catch (error) {
     // Print error here
+    if (!(error instanceof ParseError) && !(error instanceof SyntaxError))
+      throw error
     console.error(`Error transforming file: ${error.message}`)
   }
   if (ast === undefined) return
@@ -38,10 +41,15 @@ function transform(
         case 'binary expression expects boolean':
         case 'binary expression type mismatch':
         case 'instruction type mismatch':
-        case 'variable type mismatch':
           console.error(`${error.type} at ${JSON.stringify(error.location)}`)
           console.error(
             `Actual Types: ${error.actualType1}, ${error.actualType2}`
+          )
+          break
+        case 'variable type mismatch':
+          console.error(`${error.type} at ${JSON.stringify(error.location)}`)
+          console.error(
+            `Actual Type: ${error.actualType}`
           )
           break
         case 'expression no statement':
@@ -65,8 +73,6 @@ function transform(
         case "array length can't be negative":
           console.error(`${error.type} at ${JSON.stringify(error.location)}`)
           break
-        default:
-          console.error(`Unknown error type: ${error.type}`)
       }
     })
     return
@@ -83,8 +89,6 @@ function transform(
   )
 }
 
-// Define CLI options using a library like yargs
-const yargs = require('yargs')
 const argv = yargs
   .option('input', {
     alias: 'i',
@@ -112,11 +116,7 @@ const argv = yargs
 
 // Function to process files based on the provided glob pattern
 function processFiles(globPattern: string) {
-  glob(globPattern, {}, (err: any, files: string[]) => {
-    if (err) throw err
-
-    files.forEach((file) => transformFile(file))
-  })
+  glob.glob(globPattern).then(files => files.forEach(file => transformFile(file)))
 }
 
 // Define the transform function for a file
