@@ -140,8 +140,8 @@ processFiles(argv.input)
 if (argv.watch) {
   const watcher = chokidar.watch(argv.input, { ignoreInitial: true })
 
-  watcher.on('all', (event: any, filePath: string) => {
-    console.log(`File ${filePath} has been ${event}`)
+  watcher.on('all', (event, filePath: string) => {
+    console.log(`${filePath} ${event}`)
     transformFile(filePath)
   })
 }
