@@ -441,7 +441,9 @@ export class CoqCPASTTransformer {
       return { type: 'local binder', name: node.name, location: node.loc }
     } else if (
       node.type === 'Literal' &&
-      (typeof node.value === 'number' || typeof node.value === 'boolean')
+      (typeof node.value === 'number' ||
+        typeof node.value === 'boolean' ||
+        typeof node.value === 'string')
     ) {
       if (node.raw === undefined) {
         throw new ParseError(
@@ -450,8 +452,13 @@ export class CoqCPASTTransformer {
       }
       return {
         type: 'literal',
-        valueType: typeof node.value === 'number' ? 'number' : 'boolean',
-        raw: node.raw,
+        valueType:
+          typeof node.value === 'number'
+            ? 'number'
+            : typeof node.value === 'boolean'
+            ? 'boolean'
+            : 'string',
+        raw: typeof node.value === 'string' ? node.value : node.raw,
         location: node.loc,
       }
     } else if (node.type === 'BinaryExpression') {
