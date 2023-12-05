@@ -18,15 +18,15 @@ function transform(
   cppOutputPath: string,
   coqOutputPath: string
 ) {
-  const transformer = new CoqCPASTTransformer(fileContent)
   let ast: CoqCPAST | undefined
   try {
+    const transformer = new CoqCPASTTransformer(fileContent)
     ast = transformer.transform()
   } catch (error) {
     // Print error here
     if (!(error instanceof ParseError) && !(error instanceof SyntaxError))
       throw error
-    console.error(`Error transforming file: ${error.message}`)
+    console.error(`Error transforming file`, error)
   }
   if (ast === undefined) return
 
