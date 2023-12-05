@@ -3,7 +3,8 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as glob from 'glob'
 import * as chokidar from 'chokidar'
-import * as yargs from 'yargs'
+import yargs from 'yargs/yargs'
+import { hideBin } from "yargs/helpers"
 
 // Import necessary modules for transform function
 import { CoqCPASTTransformer, CoqCPAST, ParseError } from './parse'
@@ -87,7 +88,7 @@ function transform(
   )
 }
 
-const argv = yargs
+const argv = yargs(hideBin(process.argv))
   .option('input', {
     alias: 'i',
     description: 'Input files glob pattern',
@@ -110,7 +111,7 @@ const argv = yargs
     alias: 'w',
     description: 'Watch mode',
     type: 'boolean',
-  }).argv
+  }).parseSync()
 
 // Function to process files based on the provided glob pattern
 function processFiles(globPattern: string) {
