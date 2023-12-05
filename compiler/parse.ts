@@ -45,7 +45,7 @@ export type ValueType =
   | LocalBinder
   | {
       type: 'literal'
-      valueType: 'number' | 'boolean'
+      valueType: 'number' | 'boolean' | 'string'
       raw: string
       location: Location
     }
