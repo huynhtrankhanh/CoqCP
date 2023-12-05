@@ -456,8 +456,8 @@ export class CoqCPASTTransformer {
           typeof node.value === 'number'
             ? 'number'
             : typeof node.value === 'boolean'
-            ? 'boolean'
-            : 'string',
+              ? 'boolean'
+              : 'string',
         raw: typeof node.value === 'string' ? node.value : node.raw,
         location: node.loc,
       }
