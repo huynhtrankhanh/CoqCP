@@ -64,15 +64,15 @@ Only integers are allowed. Number literals are always interpreted as `int64`.
 ## String literal
 
 ```js
-"hello"
+'hello'
 ```
 
 ```js
-"đi chơi không"
+'đi chơi không'
 ```
 
 ```js
-"自我解放吧！"
+'自我解放吧！'
 ```
 
 String literals can only be used with `range()`.
@@ -179,7 +179,9 @@ range(endValue, (counter) => {
 ### String literal
 
 ```js
-range("Hello, World!", x => { writeChar(x); })
+range('Hello, World!', (x) => {
+  writeChar(x)
+})
 ```
 
 Iterates over all bytes of the UTF-8 representation of the string. `x` is of type `int8`. Each byte might or might not represent a character.
