@@ -61,6 +61,22 @@ Only integers are allowed. Number literals are always interpreted as `int64`.
 
 **In general, numbers are treated as unsigned unless you use a command specifically for signed numbers.** If you write a negative number, it will be silently converted to its unsigned equivalent.
 
+## String literal
+
+```js
+"hello"
+```
+
+```js
+"đi chơi không"
+```
+
+```js
+"自我解放吧！"
+```
+
+String literals can only be used with `range()`.
+
 ## Set a local variable
 
 ```js
@@ -137,6 +153,8 @@ Same syntax as JavaScript. `{}` (curly brackets) are mandatory.
 
 ## Loop
 
+### Numeric
+
 ```js
 range(endValue, (counter) => {
   // ...
@@ -157,6 +175,14 @@ range(endValue, (counter) => {
   ;('continue')
 })
 ```
+
+### String literal
+
+```js
+range("Hello, World!", x => { writeChar(x); })
+```
+
+Iterates over all bytes of the UTF-8 representation of the string. `x` is of type `int8`. Each byte might or might not represent a character.
 
 ## Procedure call
 
