@@ -12,7 +12,7 @@ procedure("pointless", { preset: int32 }, () => {
 
 procedure("more", { a: int8, b: int8, c: int8 }, () => {})
 
-procedure("fibonacci", { n: int32, a: int32, b: int32, i: int32 }, () => {
+procedure("main", { n: int32, a: int32, b: int32, i: int32 }, () => {
     set("n", readChar());  // Reading the term 'n' to which Fibonacci sequence is to be calculated
     set("a", 0);
     set("b", 1);

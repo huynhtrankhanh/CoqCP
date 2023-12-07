@@ -92,6 +92,7 @@ int main() {
     if (binaryOp([&]() { return binaryOp([&]() { return readChar(); }, [&]() { return readChar(); }, [&](auto a, auto b) { return a + b; }); }, [&]() { return uint8_t(uint64_t(3)); }, [&](auto a, auto b) { return a < b; }) && binaryOp([&]() { return toSigned(readChar()); }, [&]() { return toSigned(readChar()); }, [&](auto a, auto b) { return a < b; })) {
     }
   };
+  procedure_2(0, 0, 0, 0);
 }`)
   })
 })

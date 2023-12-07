@@ -1,3 +1,4 @@
+import { assert } from './assert'
 import { consumeNever } from './consumeNever'
 import isPure from './isPure'
 import { CoqCPAST, ValueType } from './parse'
@@ -474,6 +475,20 @@ void flushSTDOUT() {
     indent +
     'std::cin.tie(0)->sync_with_stdio(0);\n' +
     mainCode +
+    (() => {
+      const mainNumber = procedureNameMap.get('main')
+      if (mainNumber === undefined) return ''
+      const definition = procedures.find(({ name }) => name === 'main')
+      assert(definition !== undefined)
+      return (
+        indent +
+        'procedure_' +
+        mainNumber +
+        '(' +
+        Array(definition.variables.size).fill(0).join(', ') +
+        ');\n'
+      )
+    })() +
     '}'
   )
 }
