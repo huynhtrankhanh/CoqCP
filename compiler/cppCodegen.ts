@@ -357,7 +357,7 @@ export const cppCodegen = ({ environment, procedures }: CoqCPAST): string => {
                     (() => {
                       const encoder = new TextEncoder()
                       const encoded = encoder.encode(end.raw)
-                      return encoded.join(", ")
+                      return encoded.join(', ')
                     })() +
                     ' }) {\n' +
                     loopBody

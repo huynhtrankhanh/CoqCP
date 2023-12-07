@@ -109,14 +109,14 @@ procedure("hello", { a: bool }, () => {
       `procedure('hello', {}, () => {
   range(3, x => {})
 })`,
-`procedure('hello', {}, () => {
+      `procedure('hello', {}, () => {
   range("hello", a => {});
 })`,
-`procedure('hello', { a: int8 }, () => {
+      `procedure('hello', { a: int8 }, () => {
   range("hello", a => {
     writeChar(get("a") + a)
   })
-})`
+})`,
     ]
     for (const program of programs) {
       if (!noErrors(program)) {
@@ -183,11 +183,11 @@ procedure("hello", { a: bool }, () => {
       `procedure('hello', {}, () => {
   range(74829387492847492947392874928473974929748293737, x => {})
 })`,
-`procedure('hello', { a: int64 }, () => {
+      `procedure('hello', { a: int64 }, () => {
   range("hello", a => {
     writeChar(get("a") + a)
   })
-})`
+})`,
     ]
     for (const program of programs) {
       if (!hasValidationErrorsOnly(program)) {
