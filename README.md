@@ -30,12 +30,13 @@ Tasks:
 **Why contribute?**
 
 As a contributor, your contributions
+
 - **Benefit you personally:**
-  + You have a solid framework to reason about and solve competitive programming problems.
-  + Your performance in programming contests leapfrogs significantly.
-  + As an early adopter of formal verification, you have a competitive advantage in the labor market once formal verification gains widespread traction.
+  - You have a solid framework to reason about and solve competitive programming problems.
+  - Your performance in programming contests leapfrogs significantly.
+  - As an early adopter of formal verification, you have a competitive advantage in the labor market once formal verification gains widespread traction.
 - **Benefit society at large:**
-  + As more competitive programming techniques get documented through formal verification, this eases the learning curve for people interested in competitive programming.
-  + Your contributions reduce the reliance on online judges for the verification of program correctness. Test cases on online judges can be not very stringent. Auxiliary programs facilitating the judging process can be wrong. But a formal proof is a sure guarantee of a program's correctness.
-  + Contests become fairer as model solutions and auxiliary judging programs can be formally verified, thus reducing room for deadly errors in the contest preparation stage.
-  + Your contributions will draw more attention to formal verification and aid its widespread adoption.
+  - As more competitive programming techniques get documented through formal verification, this eases the learning curve for people interested in competitive programming.
+  - Your contributions reduce the reliance on online judges for the verification of program correctness. Test cases on online judges can be not very stringent. Auxiliary programs facilitating the judging process can be wrong. But a formal proof is a sure guarantee of a program's correctness.
+  - Contests become fairer as model solutions and auxiliary judging programs can be formally verified, thus reducing room for deadly errors in the contest preparation stage.
+  - Your contributions will draw more attention to formal verification and aid its widespread adoption.
