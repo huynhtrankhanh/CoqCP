@@ -113,7 +113,8 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
 
       // every element of body is an Action returning absolutely anything
       const statements = body.map((statement) => {
-        const localBinderMap = new Map<string, number>()
+        type BinderInfo = { number: number; type: 'int8' | 'int64' }
+        const localBinderMap = new Map<string, BinderInfo>()
         let binderCounter = 0
         const dfs = (
           value: ValueType
@@ -439,6 +440,8 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
                     type: 'int64',
                   }
                 }
+                case 'string':
+                  assert(false, 'only makes sense within range()')
               }
             }
             case 'subscript': {
@@ -497,27 +500,48 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
               const { name } = value
               const binder = localBinderMap.get(name)
               assert(binder !== undefined)
-              return { expression: 'binder_' + binder, type: 'int64' }
+              return {
+                expression: 'binder_' + binder.number,
+                type: binder.type,
+              }
             }
             case 'range': {
               const { loopVariable, loopBody, end } = value
               const previousBinderValue = localBinderMap.get(loopVariable)
 
-              localBinderMap.set(loopVariable, binderCounter++)
+              if (end.type === 'literal' && end.valueType === 'string')
+                localBinderMap.set(loopVariable, {
+                  type: 'int8',
+                  number: binderCounter++,
+                })
+              else
+                localBinderMap.set(loopVariable, {
+                  type: 'int64',
+                  number: binderCounter++,
+                })
 
               const bodyExpression = joinStatements(
                 loopBody.map(dfs).map((x) => x.expression)
               )
 
-              const { expression: endExpression } = dfs(end)
-
               if (previousBinderValue === undefined) localBinderMap.delete(name)
               else localBinderMap.set(loopVariable, previousBinderValue)
               binderCounter--
 
-              return {
-                expression: `(bind ${endExpression} (fun x => loop (Z.to_nat x) (fun binder_${binderCounter}_intermediate => let binder_${binderCounter} := Done _ _ _ (Z.sub (Z.sub x (Z.of_nat binder_${binderCounter}_intermediate)) 1%Z) in bind (${bodyExpression}) (fun ignored => Done _ _ _ KeepGoing))))`,
-                type: 'statement',
+              if (end.type === 'literal' && end.valueType === 'string') {
+                return {
+                  expression: `(loopString (${getCoqString(
+                    end.raw
+                  )}) (fun binder_${binderCounter}_intermediate => let binder_${binderCounter} := Done _ _ _ binder_${binderCounter}_intermediate in bind (${bodyExpression}) (fun ignored => Done _ _ _ KeepGoing)))`,
+                  type: 'statement',
+                }
+              } else {
+                return {
+                  expression: `(bind ${
+                    dfs(end).expression
+                  } (fun x => loop (Z.to_nat x) (fun binder_${binderCounter}_intermediate => let binder_${binderCounter} := Done _ _ _ (Z.sub (Z.sub x (Z.of_nat binder_${binderCounter}_intermediate)) 1%Z) in bind (${bodyExpression}) (fun ignored => Done _ _ _ KeepGoing))))`,
+                  type: 'statement',
+                }
               }
             }
           }

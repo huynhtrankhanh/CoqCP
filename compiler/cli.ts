@@ -60,7 +60,7 @@ function transform(
         case 'undefined binder':
         case 'not representable int64':
         case 'bad number literal':
-        case 'range end must be int64':
+        case 'range end must be int64 or string':
         case 'instruction expects int8':
         case 'instruction expects int64':
         case 'instruction expects tuple':

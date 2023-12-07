@@ -72,6 +72,9 @@ int main() {
       continue;
       flushSTDOUT();
     }
+    for (uint8_t binder_0 : { 104, 101, 108, 108, 111, 32, 108, 105, 102, 101 }) {
+      writeChar(binder_0);
+    }
     (uint64_t(2) / uint64_t(3));
     (toSigned(uint64_t(1)) / toSigned(uint64_t(2)));
     binaryOp([&]() { return readChar(); }, [&]() { return uint8_t(uint64_t(3)); }, [&](auto a, auto b) { return a / b; });

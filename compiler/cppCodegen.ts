@@ -347,28 +347,52 @@ export const cppCodegen = ({ environment, procedures }: CoqCPAST): string => {
 
                 const baseIndent = indent.repeat(indentationLevel)
 
-                const constructed =
-                  baseIndent +
-                  'for (uint64_t binder_' +
-                  index +
-                  ' = 0; binder_' +
-                  index +
-                  ' < ' +
-                  print(end) +
-                  '; binder_' +
-                  index +
-                  '++) {\n' +
-                  loopBody
-                    .map((x) =>
-                      print(x, {
-                        type: 'inside block',
-                        indentationLevel: indentationLevel + 1,
-                      })
-                    )
-                    .join('') +
-                  baseIndent +
-                  '}\n'
-
+                let constructed = ''
+                if (end.type === 'literal' && end.valueType === 'string') {
+                  constructed =
+                    baseIndent +
+                    'for (uint8_t binder_' +
+                    index +
+                    ' : { ' +
+                    (() => {
+                      const encoder = new TextEncoder()
+                      const encoded = encoder.encode(end.raw)
+                      return encoded.join(", ")
+                    })() +
+                    ' }) {\n' +
+                    loopBody
+                      .map((x) =>
+                        print(x, {
+                          type: 'inside block',
+                          indentationLevel: indentationLevel + 1,
+                        })
+                      )
+                      .join('') +
+                    baseIndent +
+                    '}\n'
+                } else {
+                  constructed =
+                    baseIndent +
+                    'for (uint64_t binder_' +
+                    index +
+                    ' = 0; binder_' +
+                    index +
+                    ' < ' +
+                    print(end) +
+                    '; binder_' +
+                    index +
+                    '++) {\n' +
+                    loopBody
+                      .map((x) =>
+                        print(x, {
+                          type: 'inside block',
+                          indentationLevel: indentationLevel + 1,
+                        })
+                      )
+                      .join('') +
+                    baseIndent +
+                    '}\n'
+                }
                 if (previousIndex === undefined) {
                   localBinderMap.delete(loopVariable)
                 } else {

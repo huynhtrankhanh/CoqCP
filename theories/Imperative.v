@@ -2,6 +2,7 @@ From CoqCP Require Import Options.
 From stdpp Require Import strings.
 Require Import Coq.Logic.Eqdep_dec.
 Require Import ZArith.
+Require Import Coq.Strings.Ascii.
 Open Scope Z_scope.
 
 Record Environment := { arrayType: string -> Type; arrays: forall (name : string), list (arrayType name) }.
@@ -129,6 +130,16 @@ Fixpoint loop (n : nat) { arrayType } (body : nat -> Action (WithLocalVariables 
   | O => Done _ _ unit tt
   | S n => bind (body n) (fun outcome => match outcome with
     | KeepGoing => loop n body
+    | Stop => Done _ _ unit tt
+    end)
+  end.
+
+Fixpoint loopString (s : string) { arrayType } (body : Z -> Action (WithLocalVariables arrayType) withLocalVariablesReturnValue LoopOutcome) : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue unit :=
+  match s with
+  | EmptyString => Done _ _ unit tt
+  | String x tail => bind (body (Z.of_N (N_of_ascii x))) (fun outcome =>
+    match outcome with
+    | KeepGoing => loopString tail body
     | Stop => Done _ _ unit tt
     end)
   end.

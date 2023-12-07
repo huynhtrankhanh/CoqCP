@@ -29,6 +29,8 @@ procedure("fibonacci", { n: int32, a: int32, b: int32, i: int32 }, () => {
         "flush"
     })
 
+    range("hello life", x => { writeChar(x) })
+
     divide(2, 3)
     sDivide(1, 2)
 

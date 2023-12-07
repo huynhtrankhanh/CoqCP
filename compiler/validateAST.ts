@@ -10,36 +10,36 @@ import {
 export type ValidationError = (
   | {
       type: 'binary expression expects numeric' | 'instruction expects numeric'
-      actualType1: PrimitiveType | PrimitiveType[]
-      actualType2: PrimitiveType | PrimitiveType[]
+      actualType1: PrimitiveType | PrimitiveType[] | 'string'
+      actualType2: PrimitiveType | PrimitiveType[] | 'string'
     }
   | {
       type: 'binary expression expects boolean'
-      actualType1: PrimitiveType | PrimitiveType[]
-      actualType2: PrimitiveType | PrimitiveType[]
+      actualType1: PrimitiveType | PrimitiveType[] | 'string'
+      actualType2: PrimitiveType | PrimitiveType[] | 'string'
     }
   | {
       type: 'binary expression type mismatch' | 'instruction type mismatch'
-      actualType1: PrimitiveType | PrimitiveType[]
-      actualType2: PrimitiveType | PrimitiveType[]
+      actualType1: PrimitiveType | PrimitiveType[] | 'string'
+      actualType2: PrimitiveType | PrimitiveType[] | 'string'
     }
   | { type: 'expression no statement' }
   | { type: 'procedure not found'; name: string }
   | { type: 'variable not present'; variables: string[] }
   | {
       type: 'variable type mismatch'
-      expectedType: PrimitiveType | PrimitiveType[]
-      actualType: PrimitiveType | PrimitiveType[]
+      expectedType: PrimitiveType | PrimitiveType[] | 'string'
+      actualType: PrimitiveType | PrimitiveType[] | 'string'
     }
   | {
       type: 'condition must be boolean'
-      actualType: PrimitiveType | PrimitiveType[]
+      actualType: PrimitiveType | PrimitiveType[] | 'string'
     }
   | { type: 'no surrounding range command' }
   | { type: 'undefined variable' | 'undefined binder' }
   | { type: 'not representable int64' }
   | { type: 'bad number literal' }
-  | { type: 'range end must be int64' }
+  | { type: 'range end must be int64 or string' }
   | {
       type:
         | 'instruction expects int8'
@@ -52,6 +52,7 @@ export type ValidationError = (
       type:
         | 'unary operator expects numeric'
         | "unary operator can't operate on tuples"
+        | "unary operator can't operate on strings"
         | 'unary operator expects boolean'
     }
   | { type: "array length can't be negative" }
@@ -100,9 +101,14 @@ export const validateAST = ({
   }
   const procedureMap = new Map<string, Procedure>()
   for (const procedure of procedures) {
-    type Type = PrimitiveType | 'statement' | 'illegal' | PrimitiveType[]
+    type Type =
+      | PrimitiveType
+      | 'string'
+      | 'statement'
+      | 'illegal'
+      | PrimitiveType[]
     let hasSurroundingRangeCommand = false
-    const presentBinders = new Set<string>()
+    const presentBinderType = new Map<string, 'int64' | 'int8'>()
     const dfs = (instruction: ValueType): Type => {
       switch (instruction.type) {
         case 'binaryOp': {
@@ -313,10 +319,10 @@ export const validateAST = ({
           return instruction.type === 'coerceInt16'
             ? 'int16'
             : instruction.type === 'coerceInt32'
-              ? 'int32'
-              : instruction.type === 'coerceInt64'
-                ? 'int64'
-                : 'int8'
+            ? 'int32'
+            : instruction.type === 'coerceInt64'
+            ? 'int64'
+            : 'int8'
         }
         case 'condition': {
           const { alternate, body, condition, location } = instruction
@@ -414,6 +420,7 @@ export const validateAST = ({
         }
         case 'literal': {
           if (instruction.valueType === 'boolean') return 'bool'
+          else if (instruction.valueType === 'string') return 'string'
           else if (instruction.valueType === 'number') {
             if (
               instruction.raw !== '0' &&
@@ -439,14 +446,15 @@ export const validateAST = ({
         }
         case 'local binder': {
           const { name } = instruction
-          if (!presentBinders.has(name)) {
+          const binderType = presentBinderType.get(name)
+          if (binderType === undefined) {
             errors.push({
               type: 'undefined binder',
               location: instruction.location,
             })
             return 'illegal'
           }
-          return 'int64'
+          return binderType
         }
         case 'range': {
           const { end, loopBody, loopVariable } = instruction
@@ -459,22 +467,27 @@ export const validateAST = ({
             })
             return 'illegal'
           }
-          if (endType !== 'int64') {
+          if (endType !== 'int64' && endType !== 'string') {
             errors.push({
-              type: 'range end must be int64',
+              type: 'range end must be int64 or string',
               location: instruction.location,
             })
             return 'illegal'
           }
           const previousHasSurroundingRangeCommand = hasSurroundingRangeCommand
           hasSurroundingRangeCommand = true
-          const binderPresentBefore = presentBinders.has(loopVariable)
-          presentBinders.add(loopVariable)
+          const binderTypeBefore = presentBinderType.get(loopVariable)
+          presentBinderType.set(
+            loopVariable,
+            endType === 'string' ? 'int8' : 'int64'
+          )
           const result = loopBody.map(dfs).includes('illegal')
             ? 'illegal'
             : 'statement'
           hasSurroundingRangeCommand = previousHasSurroundingRangeCommand
-          if (!binderPresentBefore) presentBinders.delete(loopVariable)
+          if (binderTypeBefore === undefined)
+            presentBinderType.delete(loopVariable)
+          else presentBinderType.set(loopVariable, binderTypeBefore)
           return result
         }
         case 'readChar':
@@ -650,6 +663,13 @@ export const validateAST = ({
           if (Array.isArray(valueType)) {
             errors.push({
               type: "unary operator can't operate on tuples",
+              location: instruction.location,
+            })
+            return 'illegal'
+          }
+          if (valueType === 'string') {
+            errors.push({
+              type: "unary operator can't operate on strings",
               location: instruction.location,
             })
             return 'illegal'
