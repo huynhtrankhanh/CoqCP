@@ -103,6 +103,20 @@ To divide, you can use `divide(x, y)` (unsigned) or `sDivide(x, y)` (signed).
 
 Only the `sDivide` command has overflow. All other commands use wraparound arithmetic.
 
+## Read character
+```js
+readChar()
+```
+
+Returns an `int64`. Return value fits within `int8` range if end of file is not reached. If end of line is reached, `readChar()` returns `int64` `-1`.
+
+## Write character
+```js
+writeChar(x)
+```
+
+Takes a single `int8` as argument.
+
 ## Boolean Operators
 
 These operators are allowed: `||`, `&&` and `!`.
