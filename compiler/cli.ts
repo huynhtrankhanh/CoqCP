@@ -70,7 +70,7 @@ function transform(
         case "unary operator can't operate on tuples":
         case 'unary operator expects boolean':
         case "array length can't be negative":
-        case "string not allowed":
+        case 'string not allowed':
         case "unary operator can't operate on strings":
           console.error(`${error.type} at ${JSON.stringify(error.location)}`)
           return null

@@ -320,10 +320,10 @@ export const validateAST = ({
           return instruction.type === 'coerceInt16'
             ? 'int16'
             : instruction.type === 'coerceInt32'
-            ? 'int32'
-            : instruction.type === 'coerceInt64'
-            ? 'int64'
-            : 'int8'
+              ? 'int32'
+              : instruction.type === 'coerceInt64'
+                ? 'int64'
+                : 'int8'
         }
         case 'condition': {
           const { alternate, body, condition, location } = instruction
