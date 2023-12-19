@@ -187,7 +187,16 @@ procedure("hello", { a: bool }, () => {
   range("hello", a => {
     writeChar(get("a") + a)
   })
-})`,
+})`,`environment({
+  n: array([int32], 1),
+  })
+  procedure("main", { currentChar: int64 }, () => {
+  range(10, _ => {
+  set("currentChar", readChar());
+  if (get("currentChar") == 0){ "break";}
+  store("n", 0, [retrieve("n", 0)[0] * coerceInt32(10) + coerceInt32(get("currentChar") - coerceInt8(48))]);
+  })
+  })`
     ]
     for (const program of programs) {
       if (!hasValidationErrorsOnly(program)) {

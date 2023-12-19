@@ -35,7 +35,7 @@ function transform(
   // Print errors in a user-friendly format
   if (errors.length !== 0) {
     console.error('Validation Errors:')
-    errors.forEach((error) => {
+    errors.forEach((error): null => {
       switch (error.type) {
         case 'binary expression expects numeric':
         case 'instruction expects numeric':
@@ -46,11 +46,11 @@ function transform(
           console.error(
             `Actual Types: ${error.actualType1}, ${error.actualType2}`
           )
-          break
+          return null
         case 'variable type mismatch':
           console.error(`${error.type} at ${JSON.stringify(error.location)}`)
           console.error(`Actual Type: ${error.actualType}`)
-          break
+          return null
         case 'expression no statement':
         case 'procedure not found':
         case 'variable not present':
@@ -70,8 +70,10 @@ function transform(
         case "unary operator can't operate on tuples":
         case 'unary operator expects boolean':
         case "array length can't be negative":
+        case "string not allowed":
+        case "unary operator can't operate on strings":
           console.error(`${error.type} at ${JSON.stringify(error.location)}`)
-          break
+          return null
       }
     })
     return

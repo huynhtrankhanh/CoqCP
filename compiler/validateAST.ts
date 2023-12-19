@@ -56,6 +56,7 @@ export type ValidationError = (
         | 'unary operator expects boolean'
     }
   | { type: "array length can't be negative" }
+  | { type: 'string not allowed' }
 ) & { location: Location }
 
 export const isNumeric = (
@@ -319,10 +320,10 @@ export const validateAST = ({
           return instruction.type === 'coerceInt16'
             ? 'int16'
             : instruction.type === 'coerceInt32'
-              ? 'int32'
-              : instruction.type === 'coerceInt64'
-                ? 'int64'
-                : 'int8'
+            ? 'int32'
+            : instruction.type === 'coerceInt64'
+            ? 'int64'
+            : 'int8'
         }
         case 'condition': {
           const { alternate, body, condition, location } = instruction
@@ -580,6 +581,49 @@ export const validateAST = ({
               location: instruction.location,
             })
             return 'illegal'
+          }
+          const actualType = tuple.map(dfs)
+          const filterNotPermissible = (x: Type[]): PrimitiveType[] =>
+            x.filter(
+              (x): x is PrimitiveType =>
+                x !== 'illegal' && x !== 'statement' && x !== 'string'
+            )
+          if (actualType.includes('illegal')) return 'illegal'
+          for (const [index, type] of actualType.entries()) {
+            if (type === 'statement') {
+              errors.push({
+                type: 'expression no statement',
+                location: tuple[index].location,
+              })
+            }
+            if (type === 'string') {
+              errors.push({
+                type: 'string not allowed',
+                location: tuple[index].location,
+              })
+            }
+          }
+          if (actualType.includes('statement')) return 'illegal'
+          const coercedActualType = filterNotPermissible(actualType)
+          if (tuple.length !== elementType.length) {
+            errors.push({
+              type: 'variable type mismatch',
+              expectedType: elementType,
+              actualType: coercedActualType,
+              location: instruction.location,
+            })
+            return 'illegal'
+          }
+          for (const [index, type] of actualType.entries()) {
+            if (type !== elementType[index]) {
+              errors.push({
+                type: 'variable type mismatch',
+                expectedType: elementType,
+                actualType: coercedActualType,
+                location: instruction.location,
+              })
+              return 'illegal'
+            }
           }
           const indexType = dfs(index)
           if (indexType === 'illegal') return 'illegal'
