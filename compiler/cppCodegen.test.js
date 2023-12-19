@@ -21,14 +21,15 @@ using std::get;
  * Status: tested on SPOJ INTEST, unit tested
  */
 
-inline uint8_t readChar() { // like getchar()
+inline uint64_t readChar() { // like getchar()
   static char buf[1 << 16];
   static size_t bc, be;
   if (bc >= be) {
     buf[0] = 0, bc = 0;
     be = fread(buf, 1, sizeof(buf), stdin);
   }
-  return buf[bc++]; // returns 0 on EOF
+  if (bc >= be) return -1;
+  return buf[bc++]; // returns -1 on EOF
 }
 
 void writeChar(uint8_t x) {

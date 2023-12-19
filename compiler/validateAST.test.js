@@ -117,6 +117,14 @@ procedure("hello", { a: bool }, () => {
     writeChar(get("a") + a)
   })
 })`,
+      `environment({ a: array([int32, int8], 1)})
+procedure("hello", {}, () => {
+  store("a", 0, [coerceInt32(0), coerceInt8(0)])
+})`,
+      `environment({ a: array([int8, bool],1) })
+procedure("hello", {}, () => {
+  store("a", 0, [coerceInt8(2), false])
+})`,
     ]
     for (const program of programs) {
       if (!noErrors(program)) {
@@ -198,6 +206,26 @@ procedure("hello", { a: bool }, () => {
   store("n", 0, [retrieve("n", 0)[0] * coerceInt32(10) + coerceInt32(get("currentChar") - coerceInt8(48))]);
   })
   })`,
+      `environment({ a: array([int32, int8], 1)})
+  procedure("hello", {}, () => {
+    store("a", 0, [coerceInt32(0)])
+  })`,
+      `environment({ a: array([int8, bool],1) })
+  procedure("hello", {}, () => {
+    store("a", 0, [coerceInt8(2), "haha"])
+  })`,
+      `environment({ a: array([int32, int8], 1)})
+procedure("hello", {}, () => {
+  store("a", 0, [coerceInt8(0), coerceInt8(0)])
+})`,
+      `environment({ a: array([int8, bool],1) })
+procedure("hello", {}, () => {
+  store("a", 0, [coerceInt8(2), false, false])
+})`,
+      `environment({ a: array([int8, bool],1) })
+procedure("hello", {}, () => {
+  store("a", 0, [coerceInt8(2), range(6, x => {})])
+})`,
     ]
     for (const program of programs) {
       if (!hasValidationErrorsOnly(program)) {
