@@ -143,6 +143,13 @@ export type Instruction = (
       presetVariables: Map<string, ValueType>
     }
   | {
+      type: 'cross module call'
+      procedure: string
+      module: string
+      presetVariables: Map<string, ValueType>
+      arrayMapping: Map<string, string>
+    }
+  | {
       type: 'break' | 'continue' | 'flush'
     }
 ) & { location: Location }
