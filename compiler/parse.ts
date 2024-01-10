@@ -171,6 +171,7 @@ export interface Procedure {
 export class CoqCPAST {
   environment: Environment | null = null
   procedures: Procedure[] = []
+  moduleName: string = ''
 }
 
 export class CoqCPASTTransformer {
@@ -194,10 +195,11 @@ export class CoqCPASTTransformer {
         node.expression.type !== 'CallExpression' ||
         node.expression.callee.type !== 'Identifier' ||
         (node.expression.callee.name !== 'environment' &&
-          node.expression.callee.name !== 'procedure')
+          node.expression.callee.name !== 'procedure' &&
+          node.expression.callee.name !== 'module')
       ) {
         throw new ParseError(
-          'only "environment" and "procedure" expressions allowed. ' +
+          'only "environment", "procedure" and "module" expressions allowed. ' +
             formatLocation(node.loc)
         )
       }
@@ -420,6 +422,30 @@ export class CoqCPASTTransformer {
           body,
         })
       }
+      if (node.expression.callee.name === 'module') {
+        if (this.result.moduleName !== '') {
+          throw new ParseError(
+            'duplicate module expression. ' + formatLocation(node.loc)
+          )
+        }
+
+        if (node.expression.arguments.length !== 1) {
+          throw new ParseError(
+            'module expression accepts exactly 1 argument. ' +
+              formatLocation(node.loc)
+          )
+        }
+
+        const argument = node.expression.arguments[0]
+        if (argument.type !== 'Identifier') {
+          throw new ParseError(
+            'module expression must take an identifier. ' +
+              formatLocation(argument.loc)
+          )
+        }
+
+        this.result.moduleName = argument.name
+      }
     }
     return this.result
   }
@@ -456,8 +482,8 @@ export class CoqCPASTTransformer {
           typeof node.value === 'number'
             ? 'number'
             : typeof node.value === 'boolean'
-              ? 'boolean'
-              : 'string',
+            ? 'boolean'
+            : 'string',
         raw: typeof node.value === 'string' ? node.value : node.raw,
         location: node.loc,
       }
