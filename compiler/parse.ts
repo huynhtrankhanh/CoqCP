@@ -241,11 +241,19 @@ export class CoqCPASTTransformer {
             )
           }
 
-          if (property.key.type !== 'Identifier') {
+          let keyName: string
+
+          if (property.key.type === 'Identifier') keyName = property.key.name
+          else if (property.key.type === 'Literal') {
+            if (typeof property.key.value !== 'string')
+              throw new ParseError(
+                'unrecognized key type. ' + formatLocation(property.key.loc)
+              )
+            keyName = property.key.value
+          } else
             throw new ParseError(
               'unrecognized key type. ' + formatLocation(property.key.loc)
             )
-          }
 
           const arrayDescription = property.value
           if (
@@ -300,9 +308,7 @@ export class CoqCPASTTransformer {
             this.result.environment = { arrays: new Map() }
           }
 
-          if (
-            this.result.environment.arrays.get(property.key.name) !== undefined
-          ) {
+          if (this.result.environment.arrays.get(keyName) !== undefined) {
             throw new ParseError(
               'duplicate identifier in environment block. ' +
                 formatLocation(property.key.loc)
@@ -314,7 +320,7 @@ export class CoqCPASTTransformer {
             lengthLiteral.type === 'literal' &&
             lengthLiteral.valueType === 'number'
           ) {
-            this.result.environment.arrays.set(property.key.name, {
+            this.result.environment.arrays.set(keyName, {
               itemTypes,
               length: {
                 type: 'literal',
@@ -371,11 +377,20 @@ export class CoqCPASTTransformer {
             )
           }
 
-          if (property.key.type !== 'Identifier') {
+          let keyName: string
+
+          if (property.key.type === 'Identifier') keyName = property.key.name
+          else if (property.key.type === 'Literal') {
+            if (typeof property.key.value !== 'string')
+              throw new ParseError(
+                'unrecognized key type. ' + formatLocation(property.key.loc)
+              )
+
+            keyName = property.key.value
+          } else
             throw new ParseError(
               'unrecognized key type. ' + formatLocation(property.key.loc)
             )
-          }
 
           if (property.value.type !== 'Identifier') {
             throw new ParseError(
@@ -383,7 +398,7 @@ export class CoqCPASTTransformer {
             )
           }
 
-          if (variables.get(property.key.name) !== undefined) {
+          if (variables.get(keyName) !== undefined) {
             throw new ParseError(
               'duplicate identifier in procedure variables. ' +
                 formatLocation(property.key.loc)
@@ -402,7 +417,7 @@ export class CoqCPASTTransformer {
               'invalid variable type. ' + formatLocation(property.value.loc)
             )
 
-          variables.set(property.key.name, { type: declaredType })
+          variables.set(keyName, { type: declaredType })
         }
 
         // transforming bodyNode into Instruction[]
@@ -463,7 +478,7 @@ export class CoqCPASTTransformer {
         node.callee.name,
         node.arguments.map((x) => {
           if (x.type === 'SpreadElement') {
-            throw new ParseError('spread syntax not supported')
+            throw new ParseError("spread syntax isn't recognized")
           }
 
           return x
@@ -489,8 +504,8 @@ export class CoqCPASTTransformer {
           typeof node.value === 'number'
             ? 'number'
             : typeof node.value === 'boolean'
-              ? 'boolean'
-              : 'string',
+            ? 'boolean'
+            : 'string',
         raw: typeof node.value === 'string' ? node.value : node.raw,
         location: node.loc,
       }
@@ -706,7 +721,7 @@ export class CoqCPASTTransformer {
           }
           if (node.type === 'SpreadElement') {
             throw new ParseError(
-              'spread syntax not supported, ' + formatLocation(location)
+              "spread syntax isn't recognized. " + formatLocation(location)
             )
           }
           return this.processNode(node)
@@ -910,60 +925,182 @@ export class CoqCPASTTransformer {
       }
 
       case 'call': {
-        if (args.length !== 2) {
+        if (args.length === 2) {
+          if (args[0].type !== 'Literal' || typeof args[0].value !== 'string') {
+            throw new ParseError(
+              'first argument to call() must be a procedure name. ' +
+                formatLocation(args[0].loc)
+            )
+          }
+
+          const procedureName = args[0].value
+          if (args[1].type !== 'ObjectExpression') {
+            throw new ParseError(
+              'second argument to call() must be an object denoting preset variables. ' +
+                formatLocation(args[1].loc)
+            )
+          }
+
+          const presetVariables: Map<string, ValueType> = new Map()
+
+          for (const property of args[1].properties) {
+            if (property.type === 'SpreadElement') {
+              throw new ParseError(
+                'spread syntax not allowed. ' + formatLocation(property.loc)
+              )
+            }
+
+            let name: string
+
+            if (property.key.type === 'Identifier') name = property.key.name
+            else if (property.key.type === 'Literal') {
+              if (typeof property.key.value !== 'string')
+                throw new ParseError(
+                  'unrecognized key type. ' + formatLocation(property.key.loc)
+                )
+              name = property.key.value
+            } else
+              throw new ParseError(
+                'unrecognized key type. ' + formatLocation(property.key.loc)
+              )
+
+            const value = this.processNode(property.value)
+
+            if (presetVariables.get(name) !== undefined) {
+              throw new ParseError(
+                'duplicate identifier in preset variables. ' +
+                  formatLocation(property.key.loc)
+              )
+            }
+
+            presetVariables.set(name, value)
+          }
+
+          instruction = {
+            type: 'call',
+            procedure: procedureName,
+            presetVariables,
+            location,
+          }
+        } else if (args.length === 4) {
+          const moduleNameNode = args[0]
+          if (moduleNameNode.type !== 'Identifier')
+            throw new ParseError(
+              'first argument to cross module call() expression must be an identifier. ' +
+                formatLocation(location)
+            )
+
+          const moduleName = moduleNameNode.name
+
+          const arrayMappingNode = args[1]
+          if (arrayMappingNode.type !== 'ObjectExpression')
+            throw new ParseError(
+              'second argument to cross module call() expression must be an object literal. ' +
+                formatLocation(location)
+            )
+
+          const procedureNameNode = args[2]
+          if (
+            procedureNameNode.type !== 'Literal' ||
+            typeof procedureNameNode.value !== 'string'
+          )
+            throw new ParseError(
+              'third argument to cross module call() expression must be a string literal. ' +
+                formatLocation(location)
+            )
+
+          const procedureName = procedureNameNode.value
+
+          const presetVariablesNode = args[3]
+          if (presetVariablesNode.type !== 'ObjectExpression')
+            throw new ParseError(
+              'fourth argument to cross module call() expression must be an object literal. ' +
+                formatLocation(location)
+            )
+
+          const arrayMapping = new Map<string, string>()
+          for (const property of arrayMappingNode.properties) {
+            if (property.type === 'SpreadElement')
+              throw new ParseError(
+                'spread syntax not allowed. ' + formatLocation(property.loc)
+              )
+
+            let arrayName: string
+
+            if (property.key.type === 'Identifier')
+              arrayName = property.key.name
+            else if (property.key.type === 'Literal') {
+              if (typeof property.key.value !== 'string')
+                throw new ParseError(
+                  'unrecognized key type. ' + formatLocation(property.loc)
+                )
+              arrayName = property.key.value
+            } else
+              throw new ParseError(
+                'unrecognized key type. ' + formatLocation(property.loc)
+              )
+
+            if (arrayMapping.get(arrayName) !== undefined)
+              throw new ParseError(
+                'duplicate identifier in array mapping. ' +
+                  formatLocation(property.loc)
+              )
+
+            if (
+              property.value.type !== 'Literal' ||
+              typeof property.value.value !== 'string'
+            )
+              throw new ParseError(
+                'value must be a string literal denoting array name. ' +
+                  formatLocation(property.loc)
+              )
+
+            arrayMapping.set(arrayName, property.value.value)
+          }
+
+          const presetVariables = new Map<string, ValueType>()
+
+          for (const property of presetVariablesNode.properties) {
+            if (property.type === 'SpreadElement')
+              throw new ParseError(
+                "spread syntax isn't recognized. " +
+                  formatLocation(property.loc)
+              )
+            let name: string
+            if (property.key.type === 'Identifier') name = property.key.name
+            else if (property.key.type === 'Literal') {
+              if (typeof property.key.value !== 'string')
+                throw new ParseError(
+                  'unrecognized key type. ' + formatLocation(property.key.loc)
+                )
+              name = property.key.value
+            } else
+              throw new ParseError(
+                'unrecognized key type. ' + formatLocation(property.key.loc)
+              )
+
+            if (presetVariables.get(name) !== undefined)
+              throw new ParseError(
+                'duplicate identifier in preset variables. ' +
+                  formatLocation(property.key.loc)
+              )
+
+            presetVariables.set(name, this.processNode(property.value))
+          }
+
+          instruction = {
+            type: 'cross module call',
+            procedure: procedureName,
+            presetVariables,
+            arrayMapping,
+            module: moduleName,
+            location,
+          }
+        } else {
           throw new ParseError(
-            'call() function accepts exactly 2 arguments. ' +
+            'call() takes exactly 2 arguments for intra-module calls or 4 arguments for cross module calls. ' +
               formatLocation(location)
           )
-        }
-        if (args[0].type !== 'Literal' || typeof args[0].value !== 'string') {
-          throw new ParseError(
-            'first argument to call() must be a procedure name. ' +
-              formatLocation(args[0].loc)
-          )
-        }
-
-        const procedureName = args[0].value
-        if (args[1].type !== 'ObjectExpression') {
-          throw new ParseError(
-            'second argument to call() must be an object denoting preset variables. ' +
-              formatLocation(args[1].loc)
-          )
-        }
-
-        const presetVariables: Map<string, ValueType> = new Map()
-
-        for (const property of args[1].properties) {
-          if (property.type === 'SpreadElement') {
-            throw new ParseError(
-              'spread syntax not allowed. ' + formatLocation(property.loc)
-            )
-          }
-
-          if (property.key.type !== 'Identifier') {
-            throw new ParseError(
-              'unrecognized key type. ' + formatLocation(property.key.loc)
-            )
-          }
-
-          const name = property.key.name
-          const value = this.processNode(property.value)
-
-          if (presetVariables.get(name) !== undefined) {
-            throw new ParseError(
-              'duplicate identifier in preset variables. ' +
-                formatLocation(property.key.loc)
-            )
-          }
-
-          presetVariables.set(name, value)
-        }
-
-        instruction = {
-          type: 'call',
-          procedure: procedureName,
-          presetVariables,
-          location,
         }
         break
       }
