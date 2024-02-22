@@ -1,5 +1,6 @@
 From CoqCP Require Import Options.
 From stdpp Require Import strings.
+Import Coq.Lists.List.
 Require Import Coq.Logic.Eqdep_dec.
 Require Import ZArith.
 Require Import Coq.Strings.Ascii.
@@ -256,3 +257,22 @@ Fixpoint liftToWithLocalVariables {arrayType r} (x : Action (WithArrays arrayTyp
   | Done _ _ _ x => Done _ _ _ x
   | Dispatch _ _ _ effect continuation => Dispatch _ _ _ (DoWithArrays _ effect) (fun x => liftToWithLocalVariables (continuation x))
   end.
+
+Lemma nth_lt {A} (l : list A) (n : nat) (isLess : Nat.lt n (length l)) : A.
+Proof.
+  destruct l as [| head tail]; simpl in *; (lia || exact (nth n (head :: tail) head)).
+Defined.
+
+Lemma getNewArrays {arrayType} (x : Action (WithArrays arrayType) withArraysReturnValue ()) (arrays : forall x, list (arrayType x)) : (Action BasicEffect basicEffectReturnValue (forall x, list (arrayType x))).
+Proof.
+  induction x as [x | effect continuation IH] in arrays |- *.
+  - exact (Done _ _ _ arrays).
+  - destruct effect as [effect | arrayName index | arrayName index value].
+    + exact (Dispatch _ _ _ effect (fun x => (IH ltac:(simpl in *; exact x) arrays))).
+    + destruct (decide (Nat.lt (Z.to_nat index) (length (arrays arrayName)))) as [H | H].
+      * exact (IH ltac:(simpl in *; exact (nth_lt (arrays arrayName) (Z.to_nat index) H)) arrays).
+      * exact (Dispatch _ _ _ Trap (fun _ => Done _ _ _ arrays)).
+    + destruct (decide (Nat.lt (Z.to_nat index) (length (arrays arrayName)))) as [H | H].
+      * exact (IH tt (fun name => ltac:(destruct (decide (name = arrayName)) as [H' |]; [subst arrayName; exact (<[(Z.to_nat index):=value]>(arrays name)) | exact (arrays name)]))).
+      * exact (Dispatch _ _ _ Trap (fun _ => Done _ _ _ arrays)).
+Defined.
