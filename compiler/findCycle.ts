@@ -14,7 +14,6 @@ export function findCycle(edges: [number, number][]): number[] | undefined {
   let path: number[] = []
 
   edges.forEach(([from, to], i) => {
-    // Note: no adjustment done for 0-index here as input is already in 0-index
     head[from]++
   })
 
@@ -22,10 +21,9 @@ export function findCycle(edges: [number, number][]): number[] | undefined {
     head[i] += head[i - 1]
   }
 
-  let tempHead = [...head]
   edges.forEach(([from, to], i) => {
-    values[tempHead[from] - 1] = to
-    tempHead[from]--
+    values[head[from] - 1] = to
+    head[from]--
   })
 
   const dfs = (vertex: number) => {
