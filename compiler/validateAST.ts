@@ -57,13 +57,103 @@ export type ValidationError = (
     }
   | { type: "array length can't be negative" }
   | { type: 'string not allowed' }
-) & { location: Location }
+) & { location: Location & { moduleName: string } }
 
 export const isNumeric = (
   x: string | PrimitiveType[]
 ): x is 'int8' | 'int16' | 'int32' | 'int64' => {
   return x === 'int8' || x === 'int16' || x === 'int32' || x === 'int64'
 }
+
+// There might be duplicate dependencies
+const findDependencies = ({ procedures }: CoqCPAST) => {
+  function findDependencies(valueType: ValueType): void {
+    switch (valueType.type) {
+      case 'local binder':
+        // Local binders do not introduce dependencies
+        break
+      case 'literal':
+        // Literals do not introduce dependencies
+        break
+      case 'binaryOp':
+        findDependencies(valueType.left)
+        findDependencies(valueType.right)
+        break
+      case 'unaryOp':
+        findDependencies(valueType.value)
+        break
+      case 'get':
+        // Getting a variable does not introduce dependencies
+        break
+      case 'set':
+        findDependencies(valueType.value)
+        break
+      case 'store':
+        findDependencies(valueType.index)
+        valueType.tuple.forEach((value) => findDependencies(value))
+        break
+      case 'retrieve':
+        findDependencies(valueType.index)
+        break
+      case 'range':
+        findDependencies(valueType.end)
+        valueType.loopBody.forEach((instruction) =>
+          findDependencies(instruction)
+        )
+        break
+      case 'writeChar':
+        findDependencies(valueType.value)
+        break
+      case 'subscript':
+        findDependencies(valueType.value)
+        break
+      case 'condition':
+        findDependencies(valueType.condition)
+        valueType.body.forEach((instruction) => findDependencies(instruction))
+        valueType.alternate.forEach((instruction) =>
+          findDependencies(instruction)
+        )
+        break
+      case 'sDivide':
+      case 'divide':
+      case 'less':
+      case 'sLess':
+        findDependencies(valueType.left)
+        findDependencies(valueType.right)
+        break
+      case 'coerceInt8':
+      case 'coerceInt16':
+      case 'coerceInt32':
+      case 'coerceInt64':
+        findDependencies(valueType.value)
+        break
+      case 'call':
+        valueType.presetVariables.forEach((value) => findDependencies(value))
+        break
+      case 'cross module call':
+        dependencies.push(valueType.module)
+        valueType.presetVariables.forEach((value) => findDependencies(value))
+        break
+      case 'break':
+      case 'continue':
+      case 'flush':
+      case 'readChar':
+        // These instructions do not introduce dependencies
+        break
+      default:
+        consumeNever(valueType)
+    }
+  }
+  const dependencies: string[] = []
+  for (const procedure of procedures) {
+    for (const instruction of procedure.body) {
+      findDependencies(instruction)
+    }
+  }
+  return dependencies
+}
+
+const validateCyclicDependencies = (modules: CoqCPAST[]) => {}
 
 export const validateAST = ({
   procedures,
@@ -320,10 +410,10 @@ export const validateAST = ({
           return instruction.type === 'coerceInt16'
             ? 'int16'
             : instruction.type === 'coerceInt32'
-              ? 'int32'
-              : instruction.type === 'coerceInt64'
-                ? 'int64'
-                : 'int8'
+            ? 'int32'
+            : instruction.type === 'coerceInt64'
+            ? 'int64'
+            : 'int8'
         }
         case 'condition': {
           const { alternate, body, condition, location } = instruction
