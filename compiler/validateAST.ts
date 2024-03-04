@@ -154,7 +154,7 @@ const findDependencies = ({ procedures }: CoqCPAST) => {
   return dependencies
 }
 
-// Rings aren't cyclic dependencies
+// Self loops aren't cyclic dependencies
 const validateCyclicDependencies = (modules: CoqCPAST[]) => {
   const indexMap = new Map<string, number>()
 
