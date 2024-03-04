@@ -1,4 +1,5 @@
 import { consumeNever } from './consumeNever'
+import { findCycle } from './findCycle'
 import {
   ValueType,
   Procedure,
@@ -153,7 +154,33 @@ const findDependencies = ({ procedures }: CoqCPAST) => {
   return dependencies
 }
 
-const validateCyclicDependencies = (modules: CoqCPAST[]) => {}
+// Rings aren't cyclic dependencies
+const validateCyclicDependencies = (modules: CoqCPAST[]) => {
+  const indexMap = new Map<string, number>()
+
+  const existingModuleNames = modules.map((x) => x.moduleName)
+  for (const [index, name] of existingModuleNames.entries()) {
+    indexMap.set(name, index)
+  }
+
+  const edgeList: [number, number][] = []
+  for (const [toNumber, module] of modules.entries()) {
+    const dependencies = findDependencies(module).filter(
+      (x) => x !== module.moduleName
+    )
+    for (const dependency of dependencies) {
+      const fromNumber = indexMap.get(dependency)
+      if (fromNumber === undefined) continue
+      edgeList.push([fromNumber, toNumber])
+    }
+  }
+
+  const cycle = findCycle(edgeList)
+
+  if (cycle === undefined) return undefined
+
+  // Error reporting
+}
 
 export const validateAST = ({
   procedures,
@@ -410,10 +437,10 @@ export const validateAST = ({
           return instruction.type === 'coerceInt16'
             ? 'int16'
             : instruction.type === 'coerceInt32'
-              ? 'int32'
-              : instruction.type === 'coerceInt64'
-                ? 'int64'
-                : 'int8'
+            ? 'int32'
+            : instruction.type === 'coerceInt64'
+            ? 'int64'
+            : 'int8'
         }
         case 'condition': {
           const { alternate, body, condition, location } = instruction
