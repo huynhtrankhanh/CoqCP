@@ -176,7 +176,7 @@ const createEdgeIndexMap = () => {
 
 const createEdgeListAndMentionLocation = (
   modules: CoqCPAST[],
-  indexMap: Map<string, index>
+  indexMap: Map<string, number>
 ) => {
   const edgeList: [number, number][] = []
   const mentionLocation: Location[] = []
