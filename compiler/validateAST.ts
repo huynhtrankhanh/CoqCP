@@ -58,6 +58,7 @@ export type ValidationError = (
     }
   | { type: "array length can't be negative" }
   | { type: 'string not allowed' }
+  | { type: 'call implicated in cycle' }
 ) & { location: Location & { moduleName: string } }
 
 export const isNumeric = (
@@ -132,7 +133,10 @@ const findDependencies = ({ procedures }: CoqCPAST) => {
         valueType.presetVariables.forEach((value) => findDependencies(value))
         break
       case 'cross module call':
-        dependencies.push(valueType.module)
+        dependencies.push({
+          dependencyName: valueType.module,
+          mention: valueType.location,
+        })
         valueType.presetVariables.forEach((value) => findDependencies(value))
         break
       case 'break':
@@ -145,7 +149,10 @@ const findDependencies = ({ procedures }: CoqCPAST) => {
         consumeNever(valueType)
     }
   }
-  const dependencies: string[] = []
+
+  type DependencyMention = { dependencyName: string; mention: Location }
+
+  const dependencies: DependencyMention[] = []
   for (const procedure of procedures) {
     for (const instruction of procedure.body) {
       findDependencies(instruction)
@@ -155,7 +162,7 @@ const findDependencies = ({ procedures }: CoqCPAST) => {
 }
 
 // Self loops aren't cyclic dependencies
-const validateCyclicDependencies = (modules: CoqCPAST[]) => {
+const validateCyclicDependencies = (modules: CoqCPAST[]): ValidationError[] => {
   const indexMap = new Map<string, number>()
 
   const existingModuleNames = modules.map((x) => x.moduleName)
@@ -164,22 +171,58 @@ const validateCyclicDependencies = (modules: CoqCPAST[]) => {
   }
 
   const edgeList: [number, number][] = []
+  const mentionLocation: Location[] = []
+
+  const edgeIndexMap = (() => {
+    const map = new Map<string, number>()
+
+    return {
+      set(key: [number, number], value: number) {
+        map.set(JSON.stringify(key), value)
+      },
+      get(key: [number, number]) {
+        return map.get(JSON.stringify(key))
+      },
+    }
+  })()
+
   for (const [toNumber, module] of modules.entries()) {
     const dependencies = findDependencies(module).filter(
-      (x) => x !== module.moduleName
+      (x) => x.dependencyName !== module.moduleName
     )
-    for (const dependency of dependencies) {
-      const fromNumber = indexMap.get(dependency)
+    for (const { dependencyName, mention } of dependencies) {
+      const fromNumber = indexMap.get(dependencyName)
       if (fromNumber === undefined) continue
       edgeList.push([fromNumber, toNumber])
+      mentionLocation.push(mention)
     }
+  }
+
+  for (const [index, edge] of edgeList.entries()) {
+    edgeIndexMap.set(edge, index)
   }
 
   const cycle = findCycle(edgeList)
 
-  if (cycle === undefined) return undefined
+  if (cycle === undefined) return []
 
-  // Error reporting
+  if (cycle.length < 3) {
+    throw new Error(
+      "Cycle with length less than 3 - can't happen. This is a compiler bug."
+    )
+  }
+
+  const errors: ValidationError[] = []
+  for (let i = 0; i + 1 < cycle.length; i++) {
+    const edgeIndex = edgeIndexMap.get([cycle[0], cycle[1]])!
+    const mention = mentionLocation[edgeIndex]
+    errors.push({
+      type: 'call implicated in cycle',
+      location: { ...mention, moduleName: existingModuleNames[cycle[1]] },
+    })
+  }
+
+  return errors
 }
 
 export const validateAST = ({
@@ -437,10 +480,10 @@ export const validateAST = ({
           return instruction.type === 'coerceInt16'
             ? 'int16'
             : instruction.type === 'coerceInt32'
-              ? 'int32'
-              : instruction.type === 'coerceInt64'
-                ? 'int64'
-                : 'int8'
+            ? 'int32'
+            : instruction.type === 'coerceInt64'
+            ? 'int64'
+            : 'int8'
         }
         case 'condition': {
           const { alternate, body, condition, location } = instruction
