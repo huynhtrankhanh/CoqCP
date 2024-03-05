@@ -165,18 +165,18 @@ const createEdgeIndexMap = () => {
   const map = new Map()
 
   return {
-    set(key, value) {
+    set(key: [number, number], value: number) {
       map.set(JSON.stringify(key), value)
     },
-    get(key) {
+    get(key: [number, number]) {
       return map.get(JSON.stringify(key))
     },
   }
 }
 
-const createEdgeListAndMentionLocation = (modules, indexMap) => {
-  const edgeList = []
-  const mentionLocation = []
+const createEdgeListAndMentionLocation = (modules: CoqCPAST[], indexMap: Map<string, index>) => {
+  const edgeList: [number, number][] = []
+  const mentionLocation: Location[] = []
 
   for (const [toNumber, module] of modules.entries()) {
     const dependencies = findDependencies(module).filter(
@@ -193,7 +193,7 @@ const createEdgeListAndMentionLocation = (modules, indexMap) => {
   return { edgeList, mentionLocation }
 }
 
-const createIndexMap = (modules) => {
+const createIndexMap = (modules: CoqCPAST[]) => {
   const indexMap = new Map()
 
   const existingModuleNames = modules.map((x) => x.moduleName)
@@ -204,7 +204,7 @@ const createIndexMap = (modules) => {
   return indexMap
 }
 
-const validateCyclicDependencies = (modules) => {
+const validateCyclicDependencies = (modules: CoqCPAST[]) => {
   const indexMap = createIndexMap(modules)
   const { edgeList, mentionLocation } = createEdgeListAndMentionLocation(
     modules,
@@ -232,7 +232,7 @@ const validateCyclicDependencies = (modules) => {
     const mention = mentionLocation[edgeIndex]
     errors.push({
       type: 'call implicated in cycle',
-      location: { ...mention, moduleName: existingModuleNames[cycle[1]] },
+      location: { ...mention, moduleName: modules[cycle[1]].moduleName },
     })
   }
 
