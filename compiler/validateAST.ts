@@ -229,7 +229,7 @@ const validateCyclicDependencies = (modules: CoqCPAST[]) => {
     )
   }
 
-  const errors = []
+  const errors: ValidationError[] = []
   for (let i = 0; i + 1 < cycle.length; i++) {
     const edgeIndex = edgeIndexMap.get([cycle[0], cycle[1]])!
     const mention = mentionLocation[edgeIndex]
@@ -242,10 +242,14 @@ const validateCyclicDependencies = (modules: CoqCPAST[]) => {
   return errors
 }
 
-export const validateAST = ({
-  procedures,
-  environment,
-}: CoqCPAST): ValidationError[] => {
+export const validateAST = (modules: CoqCPAST[]): ValidationError[] => {
+  const cyclicDependencyCheck = validateCyclicDependencies(modules)
+  if (cyclicDependencyCheck.length) return cyclicDependencyCheck
+
+  const sortedModules = (() => {
+    
+  })()
+
   const errors: ValidationError[] = []
   if (environment !== null) {
     for (const [key, array] of (environment?.arrays || new Map()).entries()) {
@@ -497,10 +501,10 @@ export const validateAST = ({
           return instruction.type === 'coerceInt16'
             ? 'int16'
             : instruction.type === 'coerceInt32'
-              ? 'int32'
-              : instruction.type === 'coerceInt64'
-                ? 'int64'
-                : 'int8'
+            ? 'int32'
+            : instruction.type === 'coerceInt64'
+            ? 'int64'
+            : 'int8'
         }
         case 'condition': {
           const { alternate, body, condition, location } = instruction
