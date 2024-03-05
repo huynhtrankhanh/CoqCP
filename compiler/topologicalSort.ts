@@ -1,4 +1,6 @@
-export function topologicalSort(graph: Map<number, number[]>) {
+export function topologicalSort(edgeList: [number, number][]) {
+  const graph = edgeListToGraph(edgeList)
+
   const visited = new Set<number>()
   const result: number[] = []
 
