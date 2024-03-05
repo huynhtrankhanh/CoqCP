@@ -161,69 +161,80 @@ const findDependencies = ({ procedures }: CoqCPAST) => {
   return dependencies
 }
 
-// Self loops aren't cyclic dependencies
-const validateCyclicDependencies = (modules: CoqCPAST[]): ValidationError[] => {
-  const indexMap = new Map<string, number>()
+const createEdgeIndexMap = () => {
+  const map = new Map();
 
-  const existingModuleNames = modules.map((x) => x.moduleName)
-  for (const [index, name] of existingModuleNames.entries()) {
-    indexMap.set(name, index)
-  }
+  return {
+    set(key, value) {
+      map.set(JSON.stringify(key), value);
+    },
+    get(key) {
+      return map.get(JSON.stringify(key));
+    },
+  };
+};
 
-  const edgeList: [number, number][] = []
-  const mentionLocation: Location[] = []
-
-  const edgeIndexMap = (() => {
-    const map = new Map<string, number>()
-
-    return {
-      set(key: [number, number], value: number) {
-        map.set(JSON.stringify(key), value)
-      },
-      get(key: [number, number]) {
-        return map.get(JSON.stringify(key))
-      },
-    }
-  })()
+const createEdgeListAndMentionLocation = (modules, indexMap) => {
+  const edgeList = [];
+  const mentionLocation = [];
 
   for (const [toNumber, module] of modules.entries()) {
     const dependencies = findDependencies(module).filter(
       (x) => x.dependencyName !== module.moduleName
-    )
+    );
     for (const { dependencyName, mention } of dependencies) {
-      const fromNumber = indexMap.get(dependencyName)
-      if (fromNumber === undefined) continue
-      edgeList.push([fromNumber, toNumber])
-      mentionLocation.push(mention)
+      const fromNumber = indexMap.get(dependencyName);
+      if (fromNumber === undefined) continue;
+      edgeList.push([fromNumber, toNumber]);
+      mentionLocation.push(mention);
     }
   }
 
-  for (const [index, edge] of edgeList.entries()) {
-    edgeIndexMap.set(edge, index)
+  return { edgeList, mentionLocation };
+};
+
+const createIndexMap = (modules) => {
+  const indexMap = new Map();
+
+  const existingModuleNames = modules.map((x) => x.moduleName);
+  for (const [index, name] of existingModuleNames.entries()) {
+    indexMap.set(name, index);
   }
 
-  const cycle = findCycle(edgeList)
+  return indexMap;
+};
 
-  if (cycle === undefined) return []
+const validateCyclicDependencies = (modules) => {
+  const indexMap = createIndexMap(modules);
+  const { edgeList, mentionLocation } = createEdgeListAndMentionLocation(modules, indexMap);
+  const edgeIndexMap = createEdgeIndexMap();
+
+  for (const [index, edge] of edgeList.entries()) {
+    edgeIndexMap.set(edge, index);
+  }
+
+  const cycle = findCycle(edgeList);
+
+  if (cycle === undefined) return [];
 
   if (cycle.length < 3) {
     throw new Error(
       "Cycle with length less than 3 - can't happen. This is a compiler bug."
-    )
+    );
   }
 
-  const errors: ValidationError[] = []
+  const errors = [];
   for (let i = 0; i + 1 < cycle.length; i++) {
-    const edgeIndex = edgeIndexMap.get([cycle[0], cycle[1]])!
-    const mention = mentionLocation[edgeIndex]
+    const edgeIndex = edgeIndexMap.get([cycle[0], cycle[1]])!;
+    const mention = mentionLocation[edgeIndex];
     errors.push({
       type: 'call implicated in cycle',
       location: { ...mention, moduleName: existingModuleNames[cycle[1]] },
-    })
+    });
   }
 
-  return errors
-}
+  return errors;
+};
 
 export const validateAST = ({
   procedures,
