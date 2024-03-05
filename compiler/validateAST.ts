@@ -246,9 +246,7 @@ export const validateAST = (modules: CoqCPAST[]): ValidationError[] => {
   const cyclicDependencyCheck = validateCyclicDependencies(modules)
   if (cyclicDependencyCheck.length) return cyclicDependencyCheck
 
-  const sortedModules = (() => {
-    
-  })()
+  const sortedModules = (() => {})()
 
   const errors: ValidationError[] = []
   if (environment !== null) {
@@ -501,10 +499,10 @@ export const validateAST = (modules: CoqCPAST[]): ValidationError[] => {
           return instruction.type === 'coerceInt16'
             ? 'int16'
             : instruction.type === 'coerceInt32'
-            ? 'int32'
-            : instruction.type === 'coerceInt64'
-            ? 'int64'
-            : 'int8'
+              ? 'int32'
+              : instruction.type === 'coerceInt64'
+                ? 'int64'
+                : 'int8'
         }
         case 'condition': {
           const { alternate, body, condition, location } = instruction
