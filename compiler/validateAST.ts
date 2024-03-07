@@ -242,6 +242,22 @@ const validateCyclicDependencies = (modules: CoqCPAST[]) => {
   return errors
 }
 
+function sortModules(modules: CoqCPAST[]): CoqCPAST[] {
+  // Step 1: Create index map
+  const indexMap = createIndexMap(modules);
+
+  // Step 2: Create edge list and mention location
+  const { edgeList, mentionLocation } = createEdgeListAndMentionLocation(modules, indexMap);
+
+  // Step 3: Perform topological sort
+  const sortedIndices = topologicalSort(edgeList);
+
+  // Step 4: Rearrange modules according to sorted indices
+  const sortedModules = sortedIndices.map(index => modules[index]);
+
+  return sortedModules;
+}
+
 export const validateAST = (modules: CoqCPAST[]): ValidationError[] => {
   const cyclicDependencyCheck = validateCyclicDependencies(modules)
   if (cyclicDependencyCheck.length) return cyclicDependencyCheck
