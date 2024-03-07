@@ -5,7 +5,7 @@ function createCounter() {
   return () => ++counter
 }
 
-export class PairMap<KeyLeft extends object, KeyRight extends object, Value> {
+export class PairMap<KeyLeft, KeyRight, Value> {
   private leftKeyMap = new WeakMap<object, number>()
   private rightKeyMap = new WeakMap<object, number>()
   private valueMap = new WeakMap<object, Value>()
