@@ -19,10 +19,10 @@ export class PairMap<KeyLeft, KeyRight, Value> {
     map: WeakMap<object, number>,
     key: T
   ): number {
-      if (!map.has(key)) {
-        map.set(key, this.getNextCounter())
-      }
-      return map.get(key)!
+    if (!map.has(key)) {
+      map.set(key, this.getNextCounter())
+    }
+    return map.get(key)!
   }
 
   set(pair: Pair<KeyLeft, KeyRight>, value: Value): void {
