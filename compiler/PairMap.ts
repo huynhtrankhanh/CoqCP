@@ -6,9 +6,9 @@ function createCounter() {
 }
 
 export class PairMap<KeyLeft, KeyRight, Value> {
-  private leftKeyMap = new WeakMap<object, number>()
-  private rightKeyMap = new WeakMap<object, number>()
-  private valueMap = new WeakMap<object, Value>()
+  private leftKeyMap = new WeakMap<KeyLeft, number>()
+  private rightKeyMap = new WeakMap<KeyRight, number>()
+  private valueMap = new WeakMap<string, Value>()
   private getNextCounter: () => number
 
   constructor() {
@@ -19,14 +19,10 @@ export class PairMap<KeyLeft, KeyRight, Value> {
     map: WeakMap<object, number>,
     key: T
   ): number {
-    if (typeof key === 'object' && key !== null) {
       if (!map.has(key)) {
         map.set(key, this.getNextCounter())
       }
       return map.get(key)!
-    } else {
-      throw new Error('Key must be a non-null object')
-    }
   }
 
   set(pair: Pair<KeyLeft, KeyRight>, value: Value): void {
@@ -40,9 +36,7 @@ export class PairMap<KeyLeft, KeyRight, Value> {
     )
     const combinedKey = `${leftKeyCounter},${rightKeyCounter}`
 
-    // Use an object as a key to maintain the connection between the counter and the actual value
-    const keyObject = { [combinedKey]: true }
-    this.valueMap.set(keyObject, value)
+    this.valueMap.set(combinedKey, value)
   }
 
   get(pair: Pair<KeyLeft, KeyRight>): Value | undefined {
@@ -53,11 +47,6 @@ export class PairMap<KeyLeft, KeyRight, Value> {
     }
     const combinedKey = `${leftKeyCounter},${rightKeyCounter}`
 
-    for (const key of this.valueMap.keys()) {
-      if (key[combinedKey]) {
-        return this.valueMap.get(key)
-      }
-    }
-    return undefined // Pair not found
+    return this.valueMap.get(combinedKey)
   }
 }
