@@ -1,33 +1,54 @@
-type Pair<Left, Right> = [Left, Right]
+type Pair<U, V> = [U, V];
 
-export class PairMap<KeyLeft, KeyRight, Value> {
-  private leftToNumber: WeakMap<KeyLeft, number>
-  private rightToNumber: WeakMap<KeyRight, number>
-  private map: WeakMap<string, Value>
+function createCounter() {
+    let counter = 0;
+    return () => ++counter;
+}
 
-  constructor() {
-    this.leftToNumber = new WeakMap()
-    this.rightToNumber = new WeakMap()
-    this.map = new WeakMap()
-  }
+export class PairMap<KeyLeft extends object, KeyRight extends object, Value> {
+    private leftKeyMap = new WeakMap<object, number>();
+    private rightKeyMap = new WeakMap<object, number>();
+    private valueMap = new WeakMap<object, Value>();
+    private getNextCounter: () => number;
 
-  get(pair: Pair<KeyLeft, KeyRight>): Value | undefined {
-    const key = this.getKey(pair)
-    return this.map.get(key)
-  }
+    constructor() {
+        this.getNextCounter = createCounter();
+    }
 
-  set(pair: Pair<KeyLeft, KeyRight>, value: Value): void {
-    const key = this.getKey(pair)
-    this.map.set(key, value)
+    private getOrCreateCounterForKey<T>(map: WeakMap<object, number>, key: T): number {
+        if (typeof key === 'object' && key !== null) {
+            if (!map.has(key)) {
+                map.set(key, this.getNextCounter());
+            }
+            return map.get(key)!;
+        } else {
+            throw new Error('Key must be a non-null object');
+        }
+    }
 
-    const leftCount = this.leftToNumber.get(pair[0]) || 0
-    this.leftToNumber.set(pair[0], leftCount + 1)
+    set(pair: Pair<KeyLeft, KeyRight>, value: Value): void {
+        const leftKeyCounter = this.getOrCreateCounterForKey(this.leftKeyMap, pair[0]);
+        const rightKeyCounter = this.getOrCreateCounterForKey(this.rightKeyMap, pair[1]);
+        const combinedKey = `${leftKeyCounter},${rightKeyCounter}`;
+        
+        // Use an object as a key to maintain the connection between the counter and the actual value
+        const keyObject = {[combinedKey]: true};
+        this.valueMap.set(keyObject, value);
+    }
 
-    const rightCount = this.rightToNumber.get(pair[1]) || 0
-    this.rightToNumber.set(pair[1], rightCount + 1)
-  }
-
-  private getKey(pair: Pair<KeyLeft, KeyRight>): string {
-    return `${pair[0]},${pair[1]}`
-  }
+    get(pair: Pair<KeyLeft, KeyRight>): Value | undefined {
+        const leftKeyCounter = this.leftKeyMap.get(pair[0]);
+        const rightKeyCounter = this.rightKeyMap.get(pair[1]);
+        if (leftKeyCounter === undefined || rightKeyCounter === undefined) {
+            return undefined; // Either part of the pair is not in the map
+        }
+        const combinedKey = `${leftKeyCounter},${rightKeyCounter}`;
+        
+        for (const key of this.valueMap.keys()) {
+            if (key[combinedKey]) {
+                return this.valueMap.get(key);
+            }
+        }
+        return undefined; // Pair not found
+    }
 }
