@@ -260,78 +260,88 @@ export const validateAST = (modules: CoqCPAST[]): ValidationError[] => {
             }
             return 'statement'
           }
-          case 'call': 
-          function validateCall(procedure: Procedure, presetVariables: Map<string, ValueType>, location: Location): "statement" | "illegal" {
-            const { variables } = procedure
+          case 'call':
+            function validateCall(
+              procedure: Procedure,
+              presetVariables: Map<string, ValueType>,
+              location: Location
+            ): 'statement' | 'illegal' {
+              const { variables } = procedure
 
-            const notPresent = [...presetVariables.keys()].filter(
-              (x) => variables.get(x) === undefined
-            )
-            if (notPresent.length !== 0) {
-              errors.push({
-                type: 'variable not present',
-                variables: notPresent,
-                location: { ...location, moduleName },
-              })
-              return 'illegal'
-            }
+              const notPresent = [...presetVariables.keys()].filter(
+                (x) => variables.get(x) === undefined
+              )
+              if (notPresent.length !== 0) {
+                errors.push({
+                  type: 'variable not present',
+                  variables: notPresent,
+                  location: { ...location, moduleName },
+                })
+                return 'illegal'
+              }
 
-            let typeMismatch = false
+              let typeMismatch = false
 
-            for (const [variableName, { type }] of variables.entries()) {
-              const presetValue = presetVariables.get(variableName)
-              if (presetValue === undefined) continue
-              const actualType = dfs(presetValue)
-              if (type !== actualType) {
-                typeMismatch = true
-                if (actualType === 'statement') {
-                  errors.push({
-                    type: 'expression no statement',
-                    location: { ...presetValue.location, moduleName },
-                  })
-                } else if (actualType !== 'illegal') {
-                  errors.push({
-                    type: 'variable type mismatch',
-                    actualType,
-                    expectedType: type,
-                    location: { ...presetValue.location, moduleName },
-                  })
+              for (const [variableName, { type }] of variables.entries()) {
+                const presetValue = presetVariables.get(variableName)
+                if (presetValue === undefined) continue
+                const actualType = dfs(presetValue)
+                if (type !== actualType) {
+                  typeMismatch = true
+                  if (actualType === 'statement') {
+                    errors.push({
+                      type: 'expression no statement',
+                      location: { ...presetValue.location, moduleName },
+                    })
+                  } else if (actualType !== 'illegal') {
+                    errors.push({
+                      type: 'variable type mismatch',
+                      actualType,
+                      expectedType: type,
+                      location: { ...presetValue.location, moduleName },
+                    })
+                  }
                 }
               }
-            }
 
-            if (typeMismatch) return 'illegal'
-            return 'statement'
-          }
-          {
-            const {
-              procedure: procedureName,
-              presetVariables,
-              location,
-            } = instruction
-            const procedure = procedureMap.get(procedureName)
-            if (procedure === undefined) {
-              errors.push({
-                type: 'procedure not found',
-                name: procedureName,
-                location: { ...location, moduleName },
-              })
-              return 'illegal'
+              if (typeMismatch) return 'illegal'
+              return 'statement'
             }
-         return validateCall(procedure, presetVariables, location)
-          }
+            {
+              const {
+                procedure: procedureName,
+                presetVariables,
+                location,
+              } = instruction
+              const procedure = procedureMap.get(procedureName)
+              if (procedure === undefined) {
+                errors.push({
+                  type: 'procedure not found',
+                  name: procedureName,
+                  location: { ...location, moduleName },
+                })
+                return 'illegal'
+              }
+              return validateCall(procedure, presetVariables, location)
+            }
           case 'cross module call': {
             const {
               arrayMapping,
               procedure: procedureName,
               presetVariables,
               location,
-              module: procedureModule
+              module: procedureModule,
             } = instruction
-            const procedure = crossModuleProcedureMap.get([procedureModule, procedureName])
-            const basicCheck = validateCall(procedure, presetVariables, location)
-return "statement"
-
+            const procedure = crossModuleProcedureMap.get([
+              procedureModule,
+              procedureName,
+            ])
+            const basicCheck = validateCall(
+              procedure,
+              presetVariables,
+              location
+            )
+            return 'statement'
           }
           case 'coerceInt16':
           case 'coerceInt32':
@@ -349,10 +359,10 @@ return "statement"
             return instruction.type === 'coerceInt16'
               ? 'int16'
               : instruction.type === 'coerceInt32'
-              ? 'int32'
-              : instruction.type === 'coerceInt64'
-              ? 'int64'
-              : 'int8'
+                ? 'int32'
+                : instruction.type === 'coerceInt64'
+                  ? 'int64'
+                  : 'int8'
           }
           case 'condition': {
             const { alternate, body, condition, location } = instruction
