@@ -29,6 +29,7 @@ export type ValidationError = (
     }
   | { type: 'expression no statement' }
   | { type: 'procedure not found'; name: string }
+  | { type: 'module not found'; name: string }
   | { type: 'variable not present'; variables: string[] }
   | {
       type: 'variable type mismatch'
@@ -76,10 +77,12 @@ export const validateAST = (modules: CoqCPAST[]): ValidationError[] => {
 
   const sortedModules = sortModules(modules)
   const crossModuleProcedureMap = new PairMap<string, string, Procedure>()
+  const seenModules = new Set<string>()
 
   const errors: ValidationError[] = []
 
   for (const { environment, procedures, moduleName } of sortedModules) {
+    seenModules.add(moduleName)
     if (environment !== null) {
       for (const [key, array] of (environment?.arrays || new Map()).entries()) {
         const raw = array.length.raw
@@ -332,15 +335,35 @@ export const validateAST = (modules: CoqCPAST[]): ValidationError[] => {
               location,
               module: procedureModule,
             } = instruction
+            if (!seenModules.has(procedureModule)) {
+              errors.push({
+                type: 'module not found',
+                name: procedureModule,
+                location: { ...location, moduleName },
+              })
+              return 'illegal'
+            }
+
             const procedure = crossModuleProcedureMap.get([
               procedureModule,
               procedureName,
             ])
+
+            if (procedure === undefined) {
+              errors.push({
+                type: 'procedure not found',
+                name: procedureName,
+                location: { ...location, moduleName },
+              })
+              return 'illegal'
+            }
+
             const basicCheck = validateCall(
               procedure,
               presetVariables,
               location
             )
+            if (basicCheck === 'illegal') return 'illegal'
             return 'statement'
           }
           case 'coerceInt16':
@@ -359,10 +382,10 @@ export const validateAST = (modules: CoqCPAST[]): ValidationError[] => {
             return instruction.type === 'coerceInt16'
               ? 'int16'
               : instruction.type === 'coerceInt32'
-                ? 'int32'
-                : instruction.type === 'coerceInt64'
-                  ? 'int64'
-                  : 'int8'
+              ? 'int32'
+              : instruction.type === 'coerceInt64'
+              ? 'int64'
+              : 'int8'
           }
           case 'condition': {
             const { alternate, body, condition, location } = instruction
