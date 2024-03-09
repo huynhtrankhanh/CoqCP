@@ -25,8 +25,9 @@ describe('PairMap', () => {
   test('set method works for different types of keys', () => {
     pairMap.set([1, 'a'], 'value')
     expect(pairMap.get([1, 'a'])).toBe('value')
-    pairMap.set(['x', { key: 'b' }], 'anotherValue')
-    expect(pairMap.get(['x', { key: 'b' }])).toBe('anotherValue')
+    const key = { key: 'b' }
+    pairMap.set(['x', key], 'anotherValue')
+    expect(pairMap.get(['x', key])).toBe('anotherValue')
   })
 
   test('get method returns undefined for non-existing keys', () => {

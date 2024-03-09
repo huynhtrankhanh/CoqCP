@@ -6,9 +6,9 @@ function createCounter() {
 }
 
 export class PairMap<KeyLeft, KeyRight, Value> {
-  private leftKeyMap = new WeakMap<KeyLeft, number>()
-  private rightKeyMap = new WeakMap<KeyRight, number>()
-  private valueMap = new WeakMap<string, Value>()
+  private leftKeyMap = new Map<KeyLeft, number>()
+  private rightKeyMap = new Map<KeyRight, number>()
+  private valueMap = new Map<string, Value>()
   private getNextCounter: () => number
 
   constructor() {
@@ -16,7 +16,7 @@ export class PairMap<KeyLeft, KeyRight, Value> {
   }
 
   private getOrCreateCounterForKey<T>(
-    map: WeakMap<object, number>,
+    map: Map<T, number>,
     key: T
   ): number {
     if (!map.has(key)) {
