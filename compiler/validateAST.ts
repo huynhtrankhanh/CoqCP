@@ -1,7 +1,6 @@
 import { PairMap } from './PairMap'
 import { consumeNever } from './consumeNever'
 import { sortModules, validateCyclicDependencies } from './dependencyGraph'
-import { findCycle } from './findCycle'
 import {
   ValueType,
   Procedure,
@@ -9,7 +8,6 @@ import {
   CoqCPAST,
   Location,
 } from './parse'
-import { topologicalSort } from './topologicalSort'
 
 export type ValidationError = (
   | {
