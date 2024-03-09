@@ -15,10 +15,7 @@ export class PairMap<KeyLeft, KeyRight, Value> {
     this.getNextCounter = createCounter()
   }
 
-  private getOrCreateCounterForKey<T>(
-    map: Map<T, number>,
-    key: T
-  ): number {
+  private getOrCreateCounterForKey<T>(map: Map<T, number>, key: T): number {
     if (!map.has(key)) {
       map.set(key, this.getNextCounter())
     }
