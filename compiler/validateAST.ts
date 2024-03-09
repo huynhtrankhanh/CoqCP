@@ -1,3 +1,4 @@
+import { PairMap } from './PairMap'
 import { consumeNever } from './consumeNever'
 import { sortModules, validateCyclicDependencies } from './dependencyGraph'
 import { findCycle } from './findCycle'
@@ -74,6 +75,7 @@ export const validateAST = (modules: CoqCPAST[]): ValidationError[] => {
   if (cyclicDependencyCheck.length) return cyclicDependencyCheck
 
   const sortedModules = sortModules(modules)
+  const crossModuleProcedureMap = new PairMap<string, string, Procedure>()
 
   const errors: ValidationError[] = []
 
@@ -258,21 +260,8 @@ export const validateAST = (modules: CoqCPAST[]): ValidationError[] => {
             }
             return 'statement'
           }
-          case 'call': {
-            const {
-              procedure: procedureName,
-              presetVariables,
-              location,
-            } = instruction
-            const procedure = procedureMap.get(procedureName)
-            if (procedure === undefined) {
-              errors.push({
-                type: 'procedure not found',
-                name: procedureName,
-                location: { ...location, moduleName },
-              })
-              return 'illegal'
-            }
+          case 'call': 
+          function validateCall(procedure: Procedure, presetVariables: Map<string, ValueType>, location: Location): "statement" | "illegal" {
             const { variables } = procedure
 
             const notPresent = [...presetVariables.keys()].filter(
@@ -314,6 +303,36 @@ export const validateAST = (modules: CoqCPAST[]): ValidationError[] => {
             if (typeMismatch) return 'illegal'
             return 'statement'
           }
+          {
+            const {
+              procedure: procedureName,
+              presetVariables,
+              location,
+            } = instruction
+            const procedure = procedureMap.get(procedureName)
+            if (procedure === undefined) {
+              errors.push({
+                type: 'procedure not found',
+                name: procedureName,
+                location: { ...location, moduleName },
+              })
+              return 'illegal'
+            }
+         return validateCall(procedure, presetVariables, location)
+          }
+          case 'cross module call': {
+            const {
+              arrayMapping,
+              procedure: procedureName,
+              presetVariables,
+              location,
+              module: procedureModule
+            } = instruction
+            const procedure = crossModuleProcedureMap.get([procedureModule, procedureName])
+            const basicCheck = validateCall(procedure, presetVariables, location)
+return "statement"
+
+          }
           case 'coerceInt16':
           case 'coerceInt32':
           case 'coerceInt64':
@@ -330,10 +349,10 @@ export const validateAST = (modules: CoqCPAST[]): ValidationError[] => {
             return instruction.type === 'coerceInt16'
               ? 'int16'
               : instruction.type === 'coerceInt32'
-                ? 'int32'
-                : instruction.type === 'coerceInt64'
-                  ? 'int64'
-                  : 'int8'
+              ? 'int32'
+              : instruction.type === 'coerceInt64'
+              ? 'int64'
+              : 'int8'
           }
           case 'condition': {
             const { alternate, body, condition, location } = instruction
@@ -756,6 +775,7 @@ export const validateAST = (modules: CoqCPAST[]): ValidationError[] => {
       }
       procedure.body.forEach(dfs)
       procedureMap.set(procedure.name, procedure)
+      crossModuleProcedureMap.set([moduleName, procedure.name], procedure)
     }
   }
   return errors

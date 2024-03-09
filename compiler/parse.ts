@@ -147,6 +147,7 @@ export type Instruction = (
       procedure: string
       module: string
       presetVariables: Map<string, ValueType>
+      // key is name of the array of the called procedure's module
       arrayMapping: Map<string, string>
     }
   | {
