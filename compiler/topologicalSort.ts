@@ -1,4 +1,4 @@
-export function topologicalSort(edgeList: [number, number][]) {
+export function topologicalSort(nodeCount: number, edgeList: [number, number][]) {
   const graph = edgeListToGraph(edgeList)
 
   const visited = new Set<number>()
@@ -15,7 +15,7 @@ export function topologicalSort(edgeList: [number, number][]) {
     result.push(node)
   }
 
-  for (const node of graph.keys()) {
+  for (let node = 0; node < nodeCount; node++) {
     if (!visited.has(node)) {
       dfs(node)
     }

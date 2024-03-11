@@ -187,7 +187,7 @@ export function sortModules(modules: CoqCPAST[]): CoqCPAST[] {
   const { edgeList } = createEdgeListAndMentionLocation(modules, indexMap)
 
   // Step 3: Perform topological sort
-  const sortedIndices = topologicalSort(edgeList)
+  const sortedIndices = topologicalSort(modules.length, edgeList)
 
   // Step 4: Rearrange modules according to sorted indices
   const sortedModules = sortedIndices.map((index) => modules[index])
