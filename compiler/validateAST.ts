@@ -63,6 +63,11 @@ export type ValidationError = (
   | { type: 'call implicated in cycle' }
   | { type: 'must specify all arrays' }
   | {
+      type: 'array shape mismatch'
+      procedureModuleArrayShape: PrimitiveType[]
+      currentModuleArrayShape: PrimitiveType[]
+    }
+  | {
       type: 'array shape mismatch' | "array doesn't exist in procedure module"
       procedureModuleArray: string
     }
@@ -395,6 +400,40 @@ export const validateAST = (modules: CoqCPAST[]): ValidationError[] => {
                 procedureModule.environment?.arrays.get(procedureModuleArray)
               const currentModuleArrayDeclaration =
                 currentModule.environment?.arrays.get(currentModuleArray)
+              if (procedureModuleArrayDeclaration === undefined) {
+                errors.push({
+                  type: "array doesn't exist in procedure module",
+                  procedureModuleArray,
+                  location: { ...location, moduleName },
+                })
+                return 'illegal'
+              }
+              if (currentModuleArrayDeclaration === undefined) {
+                errors.push({
+                  type: "array doesn't exist in current module",
+                  currentModuleArray,
+                  location: { ...location, moduleName },
+                })
+                return 'illegal'
+              }
+              if (
+                currentModuleArrayDeclaration.itemTypes.length !==
+                  procedureModuleArrayDeclaration.itemTypes.length ||
+                currentModuleArrayDeclaration.itemTypes.some(
+                  (element, index) =>
+                    procedureModuleArrayDeclaration.itemTypes[index] !== element
+                )
+              ) {
+                errors.push({
+                  type: 'array shape mismatch',
+                  procedureModuleArrayShape:
+                    procedureModuleArrayDeclaration.itemTypes,
+                  currentModuleArrayShape:
+                    currentModuleArrayDeclaration.itemTypes,
+                  location: { ...location, moduleName },
+                })
+                return 'illegal'
+              }
             }
 
             return 'statement'
@@ -415,10 +454,10 @@ export const validateAST = (modules: CoqCPAST[]): ValidationError[] => {
             return instruction.type === 'coerceInt16'
               ? 'int16'
               : instruction.type === 'coerceInt32'
-                ? 'int32'
-                : instruction.type === 'coerceInt64'
-                  ? 'int64'
-                  : 'int8'
+              ? 'int32'
+              : instruction.type === 'coerceInt64'
+              ? 'int64'
+              : 'int8'
           }
           case 'condition': {
             const { alternate, body, condition, location } = instruction
