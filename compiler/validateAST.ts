@@ -61,6 +61,15 @@ export type ValidationError = (
   | { type: "array length can't be negative" }
   | { type: 'string not allowed' }
   | { type: 'call implicated in cycle' }
+  | { type: 'must specify all arrays' }
+  | {
+      type: 'array shape mismatch' | "array doesn't exist in procedure module"
+      procedureModuleArray: string
+    }
+  | {
+      type: "array doesn't exist in current module"
+      currentModuleArray: string
+    }
 ) & { location: Location & { moduleName: string } }
 
 export const isNumeric = (
@@ -75,12 +84,13 @@ export const validateAST = (modules: CoqCPAST[]): ValidationError[] => {
 
   const sortedModules = sortModules(modules)
   const crossModuleProcedureMap = new PairMap<string, string, Procedure>()
-  const seenModules = new Set<string>()
+  const seenModules = new Map<string, CoqCPAST>()
 
   const errors: ValidationError[] = []
 
-  for (const { environment, procedures, moduleName } of sortedModules) {
-    seenModules.add(moduleName)
+  for (const currentModule of sortedModules) {
+    const { environment, procedures, moduleName } = currentModule
+    seenModules.set(moduleName, currentModule)
     if (environment !== null) {
       for (const [key, array] of (environment?.arrays || new Map()).entries()) {
         const raw = array.length.raw
@@ -331,19 +341,19 @@ export const validateAST = (modules: CoqCPAST[]): ValidationError[] => {
               procedure: procedureName,
               presetVariables,
               location,
-              module: procedureModule,
+              module: procedureModuleName,
             } = instruction
-            if (!seenModules.has(procedureModule)) {
+            if (!seenModules.has(procedureModuleName)) {
               errors.push({
                 type: 'module not found',
-                name: procedureModule,
+                name: procedureModuleName,
                 location: { ...location, moduleName },
               })
               return 'illegal'
             }
 
             const procedure = crossModuleProcedureMap.get([
-              procedureModule,
+              procedureModuleName,
               procedureName,
             ])
 
@@ -361,7 +371,32 @@ export const validateAST = (modules: CoqCPAST[]): ValidationError[] => {
               presetVariables,
               location
             )
+
             if (basicCheck === 'illegal') return 'illegal'
+
+            const procedureModule = seenModules.get(procedureModuleName)!
+
+            if (
+              arrayMapping.size <
+              (procedureModule.environment?.arrays.size ?? 0)
+            ) {
+              errors.push({
+                type: 'must specify all arrays',
+                location: { ...location, moduleName },
+              })
+              return 'illegal'
+            }
+
+            for (const [
+              procedureModuleArray,
+              currentModuleArray,
+            ] of arrayMapping.entries()) {
+              const procedureModuleArrayDeclaration =
+                procedureModule.environment?.arrays.get(procedureModuleArray)
+              const currentModuleArrayDeclaration =
+                currentModule.environment?.arrays.get(currentModuleArray)
+            }
+
             return 'statement'
           }
           case 'coerceInt16':
@@ -380,10 +415,10 @@ export const validateAST = (modules: CoqCPAST[]): ValidationError[] => {
             return instruction.type === 'coerceInt16'
               ? 'int16'
               : instruction.type === 'coerceInt32'
-                ? 'int32'
-                : instruction.type === 'coerceInt64'
-                  ? 'int64'
-                  : 'int8'
+              ? 'int32'
+              : instruction.type === 'coerceInt64'
+              ? 'int64'
+              : 'int8'
           }
           case 'condition': {
             const { alternate, body, condition, location } = instruction
