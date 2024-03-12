@@ -54,7 +54,9 @@ function createEdges(moduleName, dependencies) {
  */
 test('No procedures in CoqCPAST', () => {
   const x = new CoqCPAST()
-  const dependencies = findDependencies(x).map(x => x.dependencyName).sort()
+  const dependencies = findDependencies(x)
+    .map((x) => x.dependencyName)
+    .sort()
   expect(dependencies).toEqual([])
 })
 
@@ -107,7 +109,9 @@ test('Procedures with no cross module calls', () => {
   }
   const x = new CoqCPAST()
   x.procedures = [procedure1, procedure2]
-  const dependencies = findDependencies(x).map(x => x.dependencyName).sort()
+  const dependencies = findDependencies(x)
+    .map((x) => x.dependencyName)
+    .sort()
   expect(dependencies).toEqual([])
 })
 
@@ -154,7 +158,9 @@ test('Procedures with cross module calls', () => {
   }
   const x = new CoqCPAST()
   x.procedures = [procedure1, procedure2]
-  const dependencies = findDependencies(x).map(x => x.dependencyName).sort()
+  const dependencies = findDependencies(x)
+    .map((x) => x.dependencyName)
+    .sort()
   expect(dependencies).toEqual(['module2'])
 })
 
@@ -204,6 +210,8 @@ test('Circular dependencies in CoqCPAST', () => {
   }
   const x = new CoqCPAST()
   x.procedures = [procedure1, procedure2]
-  const dependencies = findDependencies(x).map(x => x.dependencyName).sort()
+  const dependencies = findDependencies(x)
+    .map((x) => x.dependencyName)
+    .sort()
   expect(dependencies).toEqual(['module1', 'module2'])
 })
