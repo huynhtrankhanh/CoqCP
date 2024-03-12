@@ -1,6 +1,7 @@
 // @ts-check
 import { CoqCPAST, ParseError } from './parse'
 import { findDependencies } from './dependencyGraph'
+import { sortModules } from './dependencyGraph';
 
 /**
  * Creates a CoqCPAST object with the given moduleName and dependencies.
@@ -215,3 +216,70 @@ test('Circular dependencies in CoqCPAST', () => {
     .sort()
   expect(dependencies).toEqual(['module1', 'module2'])
 })
+
+/**
+ * Represents a CoqCPAST module.
+ * @typedef {import('./parse').CoqCPAST} CoqCPAST
+ */
+
+/**
+ * Test for sorting modules.
+ */
+describe('sortModules', () => {
+  it('should process module with no dependencies first', () => {
+    const moduleA = createEdges('A', []);
+    const moduleB = createEdges('B', ['A']);
+    const moduleC = createEdges('C', ['A', 'B']);
+    const modules = [moduleC, moduleB, moduleA];
+    const sortedModules = sortModules(modules);
+    expect(sortedModules[0].moduleName).toBe('A');
+  });
+
+  it('should handle cyclic dependencies gracefully', () => {
+    const moduleA = createEdges('A', ['B']);
+    const moduleB = createEdges('B', ['A']);
+    const modules = [moduleA, moduleB];
+    const sortedModules = sortModules(modules);
+    // Verify that the result is not in a cyclic order
+    expect(sortedModules[0].moduleName).not.toBe('A');
+    expect(sortedModules[1].moduleName).not.toBe('B');
+  });
+
+  it('should process modules with shared dependencies correctly', () => {
+    const moduleA = createEdges('A', []);
+    const moduleB = createEdges('B', ['A']);
+    const moduleC = createEdges('C', ['A']);
+    const modules = [moduleB, moduleC, moduleA];
+    const sortedModules = sortModules(modules);
+    // Verify that modules with shared dependencies are processed correctly
+    expect(sortedModules[0].moduleName).toBe('A');
+    expect(sortedModules[1].moduleName).toBe('B');
+    expect(sortedModules[2].moduleName).toBe('C');
+  });
+
+  it('should process modules in correct order', () => {
+    const moduleA = createEdges('A', []);
+    const moduleB = createEdges('B', ['A']);
+    const moduleC = createEdges('C', ['B']);
+    const modules = [moduleC, moduleB, moduleA];
+    const sortedModules = sortModules(modules);
+    // Verify that modules are processed in the correct order
+    expect(sortedModules[0].moduleName).toBe('A');
+    expect(sortedModules[1].moduleName).toBe('B');
+    expect(sortedModules[2].moduleName).toBe('C');
+  });
+
+  it('should handle empty input', () => {
+    const modules = [];
+    const sortedModules = sortModules(modules);
+    expect(sortedModules.length).toBe(0);
+  });
+
+  it('should handle single module input', () => {
+    const moduleA = createEdges('A', []);
+    const modules = [moduleA];
+    const sortedModules = sortModules(modules);
+    expect(sortedModules.length).toBe(1);
+    expect(sortedModules[0].moduleName).toBe('A');
+  });
+});
