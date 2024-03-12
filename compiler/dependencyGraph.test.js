@@ -1,7 +1,6 @@
 // @ts-check
 import { CoqCPAST, ParseError } from './parse'
-import { findDependencies } from './dependencyGraph'
-import { sortModules } from './dependencyGraph'
+import { findDependencies, sortModules } from './dependencyGraph'
 
 /**
  * Creates a CoqCPAST object with the given moduleName and dependencies.
