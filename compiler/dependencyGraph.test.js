@@ -1,13 +1,5 @@
 // @ts-check
-import {
-  CoqCPAST,
-  ArrayDeclaration,
-  Variable,
-  ValueType,
-  Instruction,
-  Location,
-  ParseError,
-} from './parse'
+import { CoqCPAST, ParseError } from './parse'
 
 /**
  * Creates a CoqCPAST object with the given moduleName and dependencies.
