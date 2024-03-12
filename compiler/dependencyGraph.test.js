@@ -243,7 +243,7 @@ describe('sortModules', () => {
     // Verify that modules with shared dependencies are processed correctly
     expect(sortedModules[0].moduleName).toBe('A')
     expect(
-      (sortedModules[1].moduleName + sortedModules[2].moduleName).sort()
+      ([sortedModules[1].moduleName , sortedModules[2].moduleName]).sort().join("")
     ).toBe('BC')
   })
 
