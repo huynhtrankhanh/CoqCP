@@ -9,7 +9,7 @@ import { findDependencies, sortModules } from './dependencyGraph'
  * @returns {CoqCPAST} The created CoqCPAST object.
  * @throws {ParseError} If any dependency is missing.
  */
-function createEdges(moduleName, dependencies) {
+export function createEdges(moduleName, dependencies) {
   const coqCPAST = new CoqCPAST()
   coqCPAST.moduleName = moduleName
   coqCPAST.environment = {

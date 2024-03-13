@@ -1,4 +1,5 @@
-import { createEdges } from './dependencyGraph'
+// @ts-check
+import { createEdges } from './dependencyGraph.test'
 import { validateAST } from './validateAST'
 
 describe('validateAST', () => {
@@ -30,6 +31,7 @@ describe('validateAST', () => {
 
     // Check if returned value is NOT EMPTY and every error has type "call implicated in cycle"
     expect(errors).not.toEqual([])
+    console.log(errors)
     expect(
       errors.every((error) => error.type === 'call implicated in cycle')
     ).toBe(true)
