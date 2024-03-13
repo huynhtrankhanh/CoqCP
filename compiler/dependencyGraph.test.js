@@ -42,6 +42,12 @@ function createEdges(moduleName, dependencies) {
     ],
   }))
 
+  coqCPAST.procedures.push({
+    name: 'your_procedure_name',
+    variables: new Map(),
+    body: [],
+  })
+
   return coqCPAST
 }
 
@@ -215,11 +221,6 @@ test('Circular dependencies in CoqCPAST', () => {
     .sort()
   expect(dependencies).toEqual(['module1', 'module2'])
 })
-
-/**
- * Represents a CoqCPAST module.
- * @typedef {import('./parse').CoqCPAST} CoqCPAST
- */
 
 /**
  * Test for sorting modules.
