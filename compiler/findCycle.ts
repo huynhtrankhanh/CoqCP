@@ -26,7 +26,7 @@ export function findCycle(edges: [number, number][]): number[] | undefined {
     head[from]--
   })
 
-  const dfs = (vertex: number) => {
+  const dfs = (vertex: number): number[] | undefined => {
     let oldPosition = positionInPath[vertex]
     positionInPath[vertex] = path.length
     path.push(vertex)
@@ -35,11 +35,12 @@ export function findCycle(edges: [number, number][]): number[] | undefined {
       let adjacent = values[i]
       if (positionInPath[adjacent] === -1) {
         if (visited[vertex]) continue
-        dfs(adjacent)
+        const dfsResult = dfs(adjacent)
+        if (dfsResult !== undefined) return dfsResult
       } else {
         // Found a cycle
         let start = positionInPath[adjacent]
-        return path.slice(start).concat(adjacent)
+        return [...path.slice(start), adjacent]
       }
     }
 
@@ -51,7 +52,7 @@ export function findCycle(edges: [number, number][]): number[] | undefined {
   for (let i = 0; i < n; i++) {
     if (visited[i]) continue
     const result = dfs(i)
-    if (result) return result
+    if (result !== undefined) return result
   }
 
   return undefined // No cycle found
