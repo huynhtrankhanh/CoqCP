@@ -3,50 +3,50 @@ import { CoqCPASTTransformer, ParseError } from './parse'
 import { validateAST } from './validateAST'
 import { consumeNever } from './consumeNever'
 /**
- * @param {string} code
+ * @param {string[]} codes
  * @returns {import("./combinedError").CombinedError}
  */
-const getCombinedError = (code) => {
-  const parser = new CoqCPASTTransformer(code)
+const getCombinedError = (codes) => {
+  const parsers = codes.map(code => new CoqCPASTTransformer(code));
   try {
-    var transformed = parser.transform()
+    var transformed = parsers.map(parser => parser.transform());
   } catch (error) {
     if (!(error instanceof ParseError) && !(error instanceof SyntaxError))
-      throw error
-    return { type: 'parse error', message: error.message }
+      throw error;
+    return { type: 'parse error', message: error.message };
   }
-  return { type: 'validation error', errors: validateAST([transformed]) }
+  return { type: 'validation error', errors: validateAST(transformed) };
 }
 
 /**
- * @param {string} code
+ * @param {string[]} codes
  * @returns {boolean}
  */
-const noErrors = (code) => {
-  const error = getCombinedError(code)
-  if (error.type === 'parse error') return false
-  if (error.type === 'validation error') return error.errors.length === 0
-  return consumeNever(error)
+const noErrors = (codes) => {
+  const error = getCombinedError(codes);
+  if (error.type === 'parse error') return false;
+  if (error.type === 'validation error') return error.errors.length === 0;
+  return consumeNever(error);
 }
 
 /**
- * @param {string} code
+ * @param {string[]} codes
  * @returns {boolean}
  */
-const hasValidationErrorsOnly = (code) => {
-  const error = getCombinedError(code)
-  if (error.type === 'parse error') return false
-  if (error.type === 'validation error') return error.errors.length !== 0
-  return consumeNever(error)
+const hasValidationErrorsOnly = (codes) => {
+  const error = getCombinedError(codes);
+  if (error.type === 'parse error') return false;
+  if (error.type === 'validation error') return error.errors.length !== 0;
+  return consumeNever(error);
 }
 
 /**
- * @param {string} code
+ * @param {string[]} codes
  * @returns {boolean}
  */
-const hasParseErrorsOnly = (code) => {
-  const error = getCombinedError(code)
-  return error.type === 'parse error'
+const hasParseErrorsOnly = (codes) => {
+  const error = getCombinedError(codes);
+  return error.type === 'parse error';
 }
 
 describe('validateAST', () => {
