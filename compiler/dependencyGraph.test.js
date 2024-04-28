@@ -7,20 +7,12 @@ import { findDependencies, sortModules } from './dependencyGraph'
  * @param {string} moduleName - The name of the module.
  * @param {string[]} dependencies - An array of dependency module names.
  * @returns {CoqCPAST} The created CoqCPAST object.
- * @throws {ParseError} If any dependency is missing.
  */
 export function createEdges(moduleName, dependencies) {
   const coqCPAST = new CoqCPAST()
   coqCPAST.moduleName = moduleName
   coqCPAST.environment = {
     arrays: new Map(),
-  }
-
-  // Throw error if dependencies are missing
-  for (const dependency of dependencies) {
-    if (!dependency) {
-      throw new ParseError('Dependency is missing')
-    }
   }
 
   // Initialize procedures with cross module calls
