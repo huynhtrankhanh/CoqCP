@@ -276,3 +276,20 @@ Proof.
       * exact (IH tt (fun name => ltac:(destruct (decide (name = arrayName)) as [H' |]; [subst arrayName; exact (<[(Z.to_nat index):=value]>(arrays name)) | exact (arrays name)]))).
       * exact (Dispatch _ _ _ Trap (fun _ => Done _ _ _ arrays)).
 Defined.
+
+Lemma withArraysReturnValueDoBasicEffectArrayType (arrayType1 arrayType2 : string -> Type) (effect : BasicEffect) : withArraysReturnValue (DoBasicEffect arrayType1 effect) = withArraysReturnValue (DoBasicEffect arrayType2 effect).
+Proof. auto. Qed.
+
+Lemma translateArrays {arrayType} (x : Action (WithArrays arrayType) withArraysReturnValue ()) (destinationArrayType : string -> Type) (mapping : string -> string) (hCongruent : forall x, arrayType x = destinationArrayType (mapping x)) : Action (WithArrays destinationArrayType) withArraysReturnValue ().
+Proof.
+  induction x as [x | effect continuation IH].
+  - exact (Done _ _ _ tt).
+  - destruct effect as [effect | arrayName index | arrayName index value].
+    + rewrite (withArraysReturnValueDoBasicEffectArrayType arrayType destinationArrayType) in IH. exact (Dispatch _ _ _ (DoBasicEffect destinationArrayType effect) IH).
+    + assert (h : withArraysReturnValue (Retrieve arrayType arrayName index) = withArraysReturnValue (Retrieve destinationArrayType (mapping arrayName) index)). { simpl; auto. }
+      rewrite h in IH.
+      exact (Dispatch _ _ _ (Retrieve destinationArrayType (mapping arrayName) index) IH).
+    + assert (h : withArraysReturnValue (Store arrayType arrayName index value) = withArraysReturnValue (Store destinationArrayType (mapping arrayName) index ltac:(rewrite <- hCongruent; exact value))). { simpl; auto. }
+      rewrite h in IH.
+      exact (Dispatch _ _ _ (Store destinationArrayType (mapping arrayName) index ltac:(rewrite <- hCongruent; exact value)) IH).
+Qed.
