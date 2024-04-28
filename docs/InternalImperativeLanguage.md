@@ -203,7 +203,9 @@ range('Hello, World!', (x) => {
 Iterates over all bytes of the UTF-8 representation of the string. `x` is of type `int8`. Each byte might or might not represent a character.
 
 ## Procedure call
+
 ### Within the same module
+
 ```js
 call('procedure_name', {
   a: 5,
@@ -214,4 +216,5 @@ call('procedure_name', {
 When calling a procedure, you can preset some of its local variables. The remaining local variables are initialized to 0 if the variable is numeric and false if the variable is boolean. A procedure call is a statement and doesn't have a return value.
 
 It is only possible to call functions that are already declared. Recursion is not allowed.
+
 ### Cross module calls
