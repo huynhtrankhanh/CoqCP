@@ -127,9 +127,9 @@ procedure("hello", {}, () => {
 })`,
     ]
     for (const program of programs) {
-      if (!noErrors(program)) {
+      if (!noErrors([program])) {
         console.log('failing program:', program)
-        console.log('error:', getCombinedError(program))
+        console.log('error:', getCombinedError([program]))
         expect(false).toBe(true)
       }
     }
@@ -228,9 +228,9 @@ procedure("hello", {}, () => {
 })`,
     ]
     for (const program of programs) {
-      if (!hasValidationErrorsOnly(program)) {
+      if (!hasValidationErrorsOnly([program])) {
         console.log('failing program:', program)
-        console.log('error:', getCombinedError(program))
+        console.log('error:', getCombinedError([program]))
         expect(false).toBe(true)
       }
     }
@@ -240,9 +240,9 @@ procedure("hello", {}, () => {
       `procedure("hello", {}, () => { if(true)if(true)if(true);})`,
     ]
     for (const program of programs) {
-      if (!hasParseErrorsOnly(program)) {
+      if (!hasParseErrorsOnly([program])) {
         console.log('failing program:', program)
-        console.log('error:', getCombinedError(program))
+        console.log('error:', getCombinedError([program]))
         expect(false).toBe(true)
       }
     }
