@@ -1,5 +1,5 @@
 // @ts-check
-import { CoqCPAST, ParseError } from './parse'
+import { CoqCPAST } from './parse'
 import { findDependencies, sortModules } from './dependencyGraph'
 
 /**
