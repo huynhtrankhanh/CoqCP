@@ -220,10 +220,15 @@ It is only possible to call functions that are already declared. Recursion is no
 ### Cross module calls
 
 ```js
-call("module name", {
-  array1: "arrayA",
-  array2: "arrayB"
-}, "procedure name", { a: 5, b: 6 })
+call(
+  'module name',
+  {
+    array1: 'arrayA',
+    array2: 'arrayB',
+  },
+  'procedure name',
+  { a: 5, b: 6 }
+)
 ```
 
 The first two parameters are the module name and the array mapping, respectively. The two remaining variables are the procedure name and the preset variables.
