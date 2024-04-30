@@ -181,6 +181,7 @@ export class CoqCPAST {
   environment: Environment | null = null
   procedures: Procedure[] = []
   moduleName: string = ''
+  moduleNameLocation: Location | null = null
 }
 
 export class CoqCPASTTransformer {
@@ -470,6 +471,7 @@ export class CoqCPASTTransformer {
         }
 
         this.result.moduleName = argument.name
+        this.result.moduleNameLocation = argument.loc
       }
     }
     return this.result
