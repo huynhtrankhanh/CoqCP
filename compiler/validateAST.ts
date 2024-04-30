@@ -9,74 +9,75 @@ import {
   Location,
 } from './parse'
 
-export type ValidationError = (
+export type ValidationError = ((
   | {
-      type: 'binary expression expects numeric' | 'instruction expects numeric'
-      actualType1: PrimitiveType | PrimitiveType[] | 'string'
-      actualType2: PrimitiveType | PrimitiveType[] | 'string'
-    }
+    type: 'binary expression expects numeric' | 'instruction expects numeric'
+    actualType1: PrimitiveType | PrimitiveType[] | 'string'
+    actualType2: PrimitiveType | PrimitiveType[] | 'string'
+  }
   | {
-      type: 'binary expression expects boolean'
-      actualType1: PrimitiveType | PrimitiveType[] | 'string'
-      actualType2: PrimitiveType | PrimitiveType[] | 'string'
-    }
+    type: 'binary expression expects boolean'
+    actualType1: PrimitiveType | PrimitiveType[] | 'string'
+    actualType2: PrimitiveType | PrimitiveType[] | 'string'
+  }
   | {
-      type: 'binary expression type mismatch' | 'instruction type mismatch'
-      actualType1: PrimitiveType | PrimitiveType[] | 'string'
-      actualType2: PrimitiveType | PrimitiveType[] | 'string'
-    }
+    type: 'binary expression type mismatch' | 'instruction type mismatch'
+    actualType1: PrimitiveType | PrimitiveType[] | 'string'
+    actualType2: PrimitiveType | PrimitiveType[] | 'string'
+  }
   | { type: 'expression no statement' }
   | { type: 'procedure not found'; name: string }
   | { type: 'module not found'; name: string }
   | { type: 'variable not present'; variables: string[] }
   | {
-      type: 'variable type mismatch'
-      expectedType: PrimitiveType | PrimitiveType[] | 'string'
-      actualType: PrimitiveType | PrimitiveType[] | 'string'
-    }
+    type: 'variable type mismatch'
+    expectedType: PrimitiveType | PrimitiveType[] | 'string'
+    actualType: PrimitiveType | PrimitiveType[] | 'string'
+  }
   | {
-      type: 'condition must be boolean'
-      actualType: PrimitiveType | PrimitiveType[] | 'string'
-    }
+    type: 'condition must be boolean'
+    actualType: PrimitiveType | PrimitiveType[] | 'string'
+  }
   | { type: 'no surrounding range command' }
   | { type: 'undefined variable' | 'undefined binder' }
   | { type: 'not representable int64' }
   | { type: 'bad number literal' }
   | { type: 'range end must be int64 or string' }
   | {
-      type:
-        | 'instruction expects int8'
-        | 'instruction expects int64'
-        | 'instruction expects tuple'
-    }
+    type:
+    | 'instruction expects int8'
+    | 'instruction expects int64'
+    | 'instruction expects tuple'
+  }
   | { type: 'undefined array' }
   | { type: 'index out of bounds' }
   | {
-      type:
-        | 'unary operator expects numeric'
-        | "unary operator can't operate on tuples"
-        | "unary operator can't operate on strings"
-        | 'unary operator expects boolean'
-    }
+    type:
+    | 'unary operator expects numeric'
+    | "unary operator can't operate on tuples"
+    | "unary operator can't operate on strings"
+    | 'unary operator expects boolean'
+  }
   | { type: "array length can't be negative" }
   | { type: 'string not allowed' }
   | { type: 'call implicated in cycle' }
   | { type: 'must specify all arrays' }
   | {
-      type: 'array shape mismatch'
-      procedureModuleArrayShape: PrimitiveType[]
-      currentModuleArrayShape: PrimitiveType[]
-    }
+    type: 'array shape mismatch'
+    procedureModuleArrayShape: PrimitiveType[]
+    currentModuleArrayShape: PrimitiveType[]
+  }
   | {
-      type: 'array shape mismatch' | "array doesn't exist in procedure module"
-      procedureModuleArray: string
-    }
+    type: 'array shape mismatch' | "array doesn't exist in procedure module"
+    procedureModuleArray: string
+  }
   | {
-      type: "array doesn't exist in current module"
-      currentModuleArray: string
-    }
+    type: "array doesn't exist in current module"
+    currentModuleArray: string
+  }
   | { type: 'duplicate procedure'; procedureName: string }
 ) & { location: Location & { moduleName: string } }
+) | { type: "duplicate module", moduleName: string }
 
 export const isNumeric = (
   x: string | PrimitiveType[]
@@ -85,6 +86,23 @@ export const isNumeric = (
 }
 
 export const validateAST = (modules: CoqCPAST[]): ValidationError[] => {
+  // Check for duplicate modules
+  {
+    const errors: ValidationError[] = []
+    const names = modules.map(x => x.moduleName).sort()
+    const n = names.length
+    let cursor = 0;
+    while (cursor !== n) {
+      let next = cursor;
+      while (next !== n && names[next] === names[cursor]) next++;
+      if (next - cursor > 1) {
+        errors.push({ type: "duplicate module", moduleName: names[cursor] })
+      }
+      cursor = next
+    }
+    if (errors.length) return errors
+  }
+
   const cyclicDependencyCheck = validateCyclicDependencies(modules)
   if (cyclicDependencyCheck.length) return cyclicDependencyCheck
 
@@ -427,7 +445,7 @@ export const validateAST = (modules: CoqCPAST[]): ValidationError[] => {
               }
               if (
                 currentModuleArrayDeclaration.itemTypes.length !==
-                  procedureModuleArrayDeclaration.itemTypes.length ||
+                procedureModuleArrayDeclaration.itemTypes.length ||
                 currentModuleArrayDeclaration.itemTypes.some(
                   (element, index) =>
                     procedureModuleArrayDeclaration.itemTypes[index] !== element
