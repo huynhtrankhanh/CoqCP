@@ -127,11 +127,19 @@ procedure("hello", {}, () => {
 })`,
       `procedure("hello", {a: int8, b: int8}, () => {})`,
       `environment({ a: array([int16], 100), b: array([int16], 100) })`,
-      [`procedure("main", {}, () => { call(A, {}, "print", {}); })`, `module(A); procedure("print", {}, () => {})`],
-      [`procedure("main", {}, () => { call(A, {}, "print", { yell: false }); })`, `module(A); procedure("print", { yell: bool }, () => {if(get("yell")){range("YELL", x => { writeChar(x); })}})`],
-      [`environment({ sum: array([bool], 1) }); procedure("main", {}, () => { call(A, { bound: "sum" }, "print", { yell: false }); })`, `module(A); environment({ bound: array([bool], 2) }); procedure("print", { yell: bool }, () => {})`],
-      `module(M); procedure("dfs1", {}, () => {}); procedure("dfs", {}, () => { call(M, {}, "dfs1", {}) })`
-
+      [
+        `procedure("main", {}, () => { call(A, {}, "print", {}); })`,
+        `module(A); procedure("print", {}, () => {})`,
+      ],
+      [
+        `procedure("main", {}, () => { call(A, {}, "print", { yell: false }); })`,
+        `module(A); procedure("print", { yell: bool }, () => {if(get("yell")){range("YELL", x => { writeChar(x); })}})`,
+      ],
+      [
+        `environment({ sum: array([bool], 1) }); procedure("main", {}, () => { call(A, { bound: "sum" }, "print", { yell: false }); })`,
+        `module(A); environment({ bound: array([bool], 2) }); procedure("print", { yell: bool }, () => {})`,
+      ],
+      `module(M); procedure("dfs1", {}, () => {}); procedure("dfs", {}, () => { call(M, {}, "dfs1", {}) })`,
     ]
     for (const program of programs) {
       if (Array.isArray(program)) {
@@ -244,12 +252,27 @@ procedure("hello", {}, () => {
       `procedure("hello", {}, () => {}); procedure("hello", {}, () => {});`,
       ['', ''],
       ['module(hello)', 'module(hello)'],
-      [`procedure("main", {}, () => { call(A, {}, "print", {}); })`, `module(B); procedure("print", {}, () => {})`],
-      [`procedure("main", {}, () => { call(A, {}, "print", {a:6}); })`, `module(A); procedure("print", {}, () => {})`],
-      [`procedure("main", {}, () => { call(A, {}, "prit", {}); })`, `module(A); procedure("print", {}, () => {})`],
-      [`procedure("main", {}, () => { call(A, {}, "print", { yell: 10 }); })`, `module(A); procedure("print", { yell: bool }, () => {if(get("yell")){range("YELL", x => { writeChar(x); })}})`],
-      [`environment({ sum: array([int8], 1) }); procedure("main", {}, () => { call(A, { bound: "sum" }, "print", { yell: false }); })`, `module(A); environment({ bound: array([bool], 2) }); procedure("print", { yell: bool }, () => {})`],
-      `module(M); procedure("dfs", {}, () => { call(M, {}, "dfs", {}) })`
+      [
+        `procedure("main", {}, () => { call(A, {}, "print", {}); })`,
+        `module(B); procedure("print", {}, () => {})`,
+      ],
+      [
+        `procedure("main", {}, () => { call(A, {}, "print", {a:6}); })`,
+        `module(A); procedure("print", {}, () => {})`,
+      ],
+      [
+        `procedure("main", {}, () => { call(A, {}, "prit", {}); })`,
+        `module(A); procedure("print", {}, () => {})`,
+      ],
+      [
+        `procedure("main", {}, () => { call(A, {}, "print", { yell: 10 }); })`,
+        `module(A); procedure("print", { yell: bool }, () => {if(get("yell")){range("YELL", x => { writeChar(x); })}})`,
+      ],
+      [
+        `environment({ sum: array([int8], 1) }); procedure("main", {}, () => { call(A, { bound: "sum" }, "print", { yell: false }); })`,
+        `module(A); environment({ bound: array([bool], 2) }); procedure("print", { yell: bool }, () => {})`,
+      ],
+      `module(M); procedure("dfs", {}, () => { call(M, {}, "dfs", {}) })`,
     ]
     for (const program of programs) {
       if (Array.isArray(program)) {
@@ -272,13 +295,16 @@ procedure("hello", {}, () => {
       `procedure("hello", {}, () => { if(true)if(true)if(true);})`,
       `procedure("hello", {a: int8, a: int8}, () => {})`,
       `environment({ a: array([int16], 100), a: array([int16], 100) })`,
-      [`environment({ sum: array([bool], 1) }); procedure("main", {}, () => { call(A, { bound: sum }, "print", { yell: false }); })`, `module(A); environment({ bound: array([bool], 2) }); procedure("print", { yell: bool }, () => {})`]
+      [
+        `environment({ sum: array([bool], 1) }); procedure("main", {}, () => { call(A, { bound: sum }, "print", { yell: false }); })`,
+        `module(A); environment({ bound: array([bool], 2) }); procedure("print", { yell: bool }, () => {})`,
+      ],
     ]
     for (const program of programs) {
       if (Array.isArray(program)) {
         if (!hasParseErrorsOnly(program)) {
-          console.log("failing program:", program)
-          console.log("error:", getCombinedError(program))
+          console.log('failing program:', program)
+          console.log('error:', getCombinedError(program))
           expect(false).toBe(true)
         }
         continue
