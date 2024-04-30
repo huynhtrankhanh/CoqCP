@@ -221,7 +221,7 @@ It is only possible to call functions that are already declared. Recursion is no
 
 ```js
 call(
-  'module name',
+  moduleName,
   {
     array1: 'arrayA',
     array2: 'arrayB',
@@ -231,6 +231,6 @@ call(
 )
 ```
 
-The first two parameters are the module name and the array mapping, respectively. The two remaining variables are the procedure name and the preset variables.
+The first two parameters are the module name and the array mapping, respectively. The module name isn't a string, it is written without quotes. The two remaining variables are the procedure name and the preset variables.
 
 **Array mapping:** When calling a procedure in another module, you have to supply the module with all the arrays it declares in its `environment` block. This creates a mapping between the arrays in the external module and the arrays in the current module. When calling a procedure in another module, that external module can't create arrays on its own.
