@@ -126,7 +126,7 @@ procedure("hello", {}, () => {
   store("a", 0, [coerceInt8(2), false])
 })`,
       `procedure("hello", {a: int8, b: int8}, () => {})`,
-      `environment({ a: array([int16], 100), b: array([int16], 100) })`
+      `environment({ a: array([int16], 100), b: array([int16], 100) })`,
     ]
     for (const program of programs) {
       if (!noErrors([program])) {
@@ -227,14 +227,16 @@ procedure("hello", {}, () => {
       `environment({ a: array([int8, bool],1) })
 procedure("hello", {}, () => {
   store("a", 0, [coerceInt8(2), range(6, x => {})])
-})`, `procedure("hello", {}, () => {}); procedure("hello", {}, () => {});`,
-      ["", ""], ["module(hello)", "module(hello)"]
+})`,
+      `procedure("hello", {}, () => {}); procedure("hello", {}, () => {});`,
+      ['', ''],
+      ['module(hello)', 'module(hello)'],
     ]
     for (const program of programs) {
       if (Array.isArray(program)) {
         if (!hasValidationErrorsOnly(program)) {
-          console.log("failing program:", program)
-          console.log("error:", getCombinedError(program))
+          console.log('failing program:', program)
+          console.log('error:', getCombinedError(program))
           expect(false).toBe(true)
         }
         continue
@@ -250,7 +252,7 @@ procedure("hello", {}, () => {
     const programs = [
       `procedure("hello", {}, () => { if(true)if(true)if(true);})`,
       `procedure("hello", {a: int8, a: int8}, () => {})`,
-      `environment({ a: array([int16], 100), a: array([int16], 100) })`
+      `environment({ a: array([int16], 100), a: array([int16], 100) })`,
     ]
     for (const program of programs) {
       if (!hasParseErrorsOnly([program])) {
