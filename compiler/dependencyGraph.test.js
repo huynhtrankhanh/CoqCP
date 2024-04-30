@@ -31,13 +31,19 @@ export function createEdges(moduleName, dependencies) {
           end: { line: 0, column: 0 },
         },
       },
-    ],
+    ], nameLocation: {
+      start: { line: 0, column: 0 },
+      end: { line: 0, column: 0 },
+    },
   }))
 
   coqCPAST.procedures.push({
     name: 'your_procedure_name',
     variables: new Map(),
-    body: [],
+    body: [], nameLocation: {
+      start: { line: 0, column: 0 },
+      end: { line: 0, column: 0 },
+    },
   })
 
   return coqCPAST
@@ -86,7 +92,10 @@ test('Procedures with no cross module calls', () => {
           end: { line: 1, column: 2 },
         },
       },
-    ],
+    ], nameLocation: {
+      start: { line: 1, column: 0 },
+      end: { line: 1, column: 2 },
+    },
   }
   /**
    * @type {import("./parse").Procedure}
@@ -103,7 +112,10 @@ test('Procedures with no cross module calls', () => {
           end: { line: 1, column: 2 },
         },
       },
-    ],
+    ], nameLocation: {
+      start: { line: 1, column: 0 },
+      end: { line: 1, column: 2 },
+    },
   }
   const x = new CoqCPAST()
   x.procedures = [procedure1, procedure2]
@@ -135,7 +147,10 @@ test('Procedures with cross module calls', () => {
           end: { line: 1, column: 2 },
         },
       },
-    ],
+    ], nameLocation: {
+      start: { line: 1, column: 0 },
+      end: { line: 1, column: 2 },
+    },
   }
   /**
    * @type {import("./parse").Procedure}
@@ -152,7 +167,10 @@ test('Procedures with cross module calls', () => {
           end: { line: 1, column: 2 },
         },
       },
-    ],
+    ], nameLocation: {
+      start: { line: 1, column: 0 },
+      end: { line: 1, column: 2 },
+    },
   }
   const x = new CoqCPAST()
   x.procedures = [procedure1, procedure2]
@@ -185,6 +203,10 @@ test('Circular dependencies in CoqCPAST', () => {
         },
       },
     ],
+    nameLocation: {
+      start: { line: 1, column: 0 },
+      end: { line: 1, column: 2 },
+    },
   }
   /**
    * @type {import("./parse").Procedure}
@@ -204,7 +226,10 @@ test('Circular dependencies in CoqCPAST', () => {
           end: { line: 1, column: 2 },
         },
       },
-    ],
+    ], nameLocation: {
+      start: { line: 1, column: 0 },
+      end: { line: 1, column: 2 },
+    },
   }
   const x = new CoqCPAST()
   x.procedures = [procedure1, procedure2]
