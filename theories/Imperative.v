@@ -292,4 +292,4 @@ Proof.
     + assert (h : withArraysReturnValue (Store arrayType arrayName index value) = withArraysReturnValue (Store destinationArrayType (mapping arrayName) index ltac:(rewrite <- hCongruent; exact value))). { simpl; auto. }
       rewrite h in IH.
       exact (Dispatch _ _ _ (Store destinationArrayType (mapping arrayName) index ltac:(rewrite <- hCongruent; exact value)) IH).
-Qed.
+Defined.
