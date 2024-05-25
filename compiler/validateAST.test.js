@@ -252,6 +252,7 @@ procedure("hello", {}, () => {
       `procedure("hello", {}, () => {}); procedure("hello", {}, () => {});`,
       ['', ''],
       ['module(hello)', 'module(hello)'],
+      `procedure("wow", {}, () => {}); procedure("wow", {}, () => {});`,
       [
         `procedure("main", {}, () => { call(A, {}, "print", {}); })`,
         `module(B); procedure("print", {}, () => {})`,

@@ -4,7 +4,7 @@ import { cppCodegen } from './cppCodegen'
 describe('cppCodegen function', () => {
   it('should produce correct C++ code', () => {
     const ast = transformer.transform()
-    const cppCode = cppCodegen(ast)
+    const cppCode = cppCodegen([ast])
     console.log(cppCode)
     expect(cppCode).toEqual(`#include <iostream>
 #include <tuple>
