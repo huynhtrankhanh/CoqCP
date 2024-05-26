@@ -123,8 +123,8 @@ export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
                 state:
                   | { type: 'not inside block' }
                   | { type: 'inside block'; indentationLevel: number } = {
-                  type: 'not inside block',
-                }
+                    type: 'not inside block',
+                  }
               ): string => {
                 const adorn = (x: string) => {
                   if (state.type === 'not inside block') return x
@@ -140,10 +140,10 @@ export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
                       instruction.operator === 'boolean and' ? '&&' : '||'
                     return adorn(
                       print(instruction.left) +
-                        ' ' +
-                        operator +
-                        ' ' +
-                        print(instruction.right)
+                      ' ' +
+                      operator +
+                      ' ' +
+                      print(instruction.right)
                     )
                   }
                   const operator = ((): string => {
@@ -163,21 +163,21 @@ export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
                   if (isPure(instruction.left) && isPure(instruction.right))
                     return adorn(
                       '(' +
-                        print(instruction.left) +
-                        ' ' +
-                        operator +
-                        ' ' +
-                        print(instruction.right) +
-                        ')'
+                      print(instruction.left) +
+                      ' ' +
+                      operator +
+                      ' ' +
+                      print(instruction.right) +
+                      ')'
                     )
                   return adorn(
                     'binaryOp([&]() { return ' +
-                      print(instruction.left) +
-                      '; }, [&]() { return ' +
-                      print(instruction.right) +
-                      '; }, [&](auto a, auto b) { return a ' +
-                      operator +
-                      ' b; })'
+                    print(instruction.left) +
+                    '; }, [&]() { return ' +
+                    print(instruction.right) +
+                    '; }, [&](auto a, auto b) { return a ' +
+                    operator +
+                    ' b; })'
                   )
                 }
                 if (instruction.type === 'unaryOp') {
@@ -196,30 +196,30 @@ export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
                 if (instruction.type === 'set') {
                   return adorn(
                     'local_' +
-                      localNameMap.get(instruction.name) +
-                      ' = ' +
-                      print(instruction.value)
+                    localNameMap.get(instruction.name) +
+                    ' = ' +
+                    print(instruction.value)
                   )
                 }
                 if (instruction.type === 'store') {
                   return adorn(
                     'environment_' +
-                      environmentNameMap.get(instruction.name) +
-                      '[' +
-                      print(instruction.index) +
-                      '] = ' +
-                      '{ ' +
-                      instruction.tuple.map((x) => print(x)).join(', ') +
-                      ' }'
+                    environmentNameMap.get(instruction.name) +
+                    '[' +
+                    print(instruction.index) +
+                    '] = ' +
+                    '{ ' +
+                    instruction.tuple.map((x) => print(x)).join(', ') +
+                    ' }'
                   )
                 }
                 if (instruction.type === 'retrieve') {
                   return adorn(
                     'environment_' +
-                      environmentNameMap.get(instruction.name) +
-                      '[' +
-                      print(instruction.index) +
-                      ']'
+                    environmentNameMap.get(instruction.name) +
+                    '[' +
+                    print(instruction.index) +
+                    ']'
                   )
                 }
                 if (instruction.type === 'readChar') {
@@ -231,46 +231,46 @@ export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
                 if (instruction.type === 'subscript') {
                   return adorn(
                     'get<' +
-                      instruction.index.raw +
-                      '>(' +
-                      print(instruction.value) +
-                      ')'
+                    instruction.index.raw +
+                    '>(' +
+                    print(instruction.value) +
+                    ')'
                   )
                 }
                 if (instruction.type === 'sDivide') {
                   if (isPure(instruction.left) && isPure(instruction.right)) {
                     return adorn(
                       '(toSigned(' +
-                        print(instruction.left) +
-                        ') / toSigned(' +
-                        print(instruction.right) +
-                        '))'
+                      print(instruction.left) +
+                      ') / toSigned(' +
+                      print(instruction.right) +
+                      '))'
                     )
                   }
                   return adorn(
                     'binaryOp([&]() { return toSigned(' +
-                      print(instruction.left) +
-                      '); }, [&]() { return toSigned(' +
-                      print(instruction.right) +
-                      '); }, [&](auto a, auto b) { return a / b; })'
+                    print(instruction.left) +
+                    '); }, [&]() { return toSigned(' +
+                    print(instruction.right) +
+                    '); }, [&](auto a, auto b) { return a / b; })'
                   )
                 }
                 if (instruction.type === 'divide') {
                   if (isPure(instruction.left) && isPure(instruction.right)) {
                     return adorn(
                       '(' +
-                        print(instruction.left) +
-                        ' / ' +
-                        print(instruction.right) +
-                        ')'
+                      print(instruction.left) +
+                      ' / ' +
+                      print(instruction.right) +
+                      ')'
                     )
                   }
                   return adorn(
                     'binaryOp([&]() { return ' +
-                      print(instruction.left) +
-                      '; }, [&]() { return ' +
-                      print(instruction.right) +
-                      '; }, [&](auto a, auto b) { return a / b; })'
+                    print(instruction.left) +
+                    '; }, [&]() { return ' +
+                    print(instruction.right) +
+                    '; }, [&](auto a, auto b) { return a / b; })'
                   )
                 }
                 if (instruction.type === 'coerceInt8') {
@@ -289,36 +289,36 @@ export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
                   if (isPure(instruction.left) && isPure(instruction.right)) {
                     return adorn(
                       '(' +
-                        print(instruction.left) +
-                        ' < ' +
-                        print(instruction.right) +
-                        ')'
+                      print(instruction.left) +
+                      ' < ' +
+                      print(instruction.right) +
+                      ')'
                     )
                   }
                   return adorn(
                     'binaryOp([&]() { return ' +
-                      print(instruction.left) +
-                      '; }, [&]() { return ' +
-                      print(instruction.right) +
-                      '; }, [&](auto a, auto b) { return a < b; })'
+                    print(instruction.left) +
+                    '; }, [&]() { return ' +
+                    print(instruction.right) +
+                    '; }, [&](auto a, auto b) { return a < b; })'
                   )
                 }
                 if (instruction.type === 'sLess') {
                   if (isPure(instruction.left) && isPure(instruction.right)) {
                     return adorn(
                       '(toSigned(' +
-                        print(instruction.left) +
-                        ') < toSigned(' +
-                        print(instruction.right) +
-                        '))'
+                      print(instruction.left) +
+                      ') < toSigned(' +
+                      print(instruction.right) +
+                      '))'
                     )
                   }
                   return adorn(
                     'binaryOp([&]() { return toSigned(' +
-                      print(instruction.left) +
-                      '); }, [&]() { return toSigned(' +
-                      print(instruction.right) +
-                      '); }, [&](auto a, auto b) { return a < b; })'
+                    print(instruction.left) +
+                    '); }, [&]() { return toSigned(' +
+                    print(instruction.right) +
+                    '); }, [&](auto a, auto b) { return a < b; })'
                   )
                 }
                 if (instruction.type === 'call') {
@@ -343,19 +343,18 @@ export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
                     // emit workaround code
                     return adorn(
                       '([&]() {' +
-                        argumentList
-                          .map(
-                            (value, index) =>
-                              `auto workaround_${index} = ${value}; `
-                          )
-                          .join('') +
-                        'procedure_' +
-                        index +
-                        '(' +
-                        [...environmentArrays, ...argumentList]
-                          .map((_, index) => 'workaround_' + index)
-                          .join(', ') +
-                        ');})()'
+                      argumentList
+                        .map(
+                          (value, index) =>
+                            `auto workaround_${index} = ${value}; `
+                        )
+                        .join('') +
+                      'procedure_' +
+                      index +
+                      '(' +
+                      [...environmentArrays, ...argumentList.map((_, index) => 'workaround_' + index)]
+                        .join(', ') +
+                      ');})()'
                     )
                   }
                   return adorn(
@@ -510,19 +509,19 @@ export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
                     // emit workaround code
                     return adorn(
                       '([&]() {' +
-                        argumentList
-                          .map(
-                            (value, index) =>
-                              `auto workaround_${index} = ${value}; `
-                          )
-                          .join('') +
-                        'procedure_' +
-                        index +
-                        '(' +
-                        [...environmentArrays, ...argumentList]
-                          .map((_, index) => 'workaround_' + index)
-                          .join(', ') +
-                        ');})()'
+                      argumentList
+                        .map(
+                          (value, index) =>
+                            `auto workaround_${index} = ${value}; `
+                        )
+                        .join('') +
+                      'procedure_' +
+                      index +
+                      '(' +
+                      [...environmentArrays, ...argumentList.map((_, index) => 'workaround_' + index)]
+
+                        .join(', ') +
+                      ');})()'
                     )
                   }
                   return adorn(
@@ -552,8 +551,9 @@ export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
       })
       .join('')
 
-    joined +=
-      'int main() {\n' +
+    joined += mainCode
+
+    'int main() {\n' +
       indent +
       'std::cin.tie(0)->sync_with_stdio(0);\n' +
       mainCode +
@@ -575,5 +575,42 @@ export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
     seenModules.set(module.moduleName, module)
   }
 
-  return preamble + joined
+  const mainModule = seenModules.get("")
+  const mainModuleEnvironmentCode = (() => {
+    if (mainModule === undefined) return ""
+    const arrays = mainModule.environment?.arrays
+    if (arrays === undefined) return ""
+    let i = 0;
+    let string = ""
+    for (const { itemTypes, length } of arrays.values()) {
+      string += (
+        'std::tuple<' +
+        itemTypes
+          .map((x) => (x === 'bool' ? x : 'u' + x + '_t'))
+          .join(', ') +
+        '> environment_' + i + "[" + length.raw + "];\n")
+      i++
+    }
+    return string
+  })()
+
+  const mainFunctionCall = (() => {
+    if (mainModule === undefined) return ""
+    const arrays = mainModule.environment?.arrays
+    const environmentArguments = (() => {
+      if (arrays === undefined) return ""
+      return Array.from({ length: arrays.size }).map((_, index) => "environment_" + index)
+    })()
+    const procedure = crossModuleProcedureMap.get(["", "main"])
+    if (procedure === undefined) return ""
+    const localVariableCount = procedure.variables.size
+    const localVariables = Array.from({ length: localVariableCount }).fill("0")
+    const procedureId = procedureNameMap.get(["", "main"])
+    if (procedureId === undefined) throw new Error("shouldn't happen")
+    return indent + "procedure_" + procedureId + "(" + [...environmentArguments, ...localVariables].join(", ") + ");\n"
+  })()
+
+  return preamble + mainModuleEnvironmentCode + 'int main() {\n' +
+    indent +
+    'std::cin.tie(0)->sync_with_stdio(0);\n' + joined + mainFunctionCall + '}\n'
 }
