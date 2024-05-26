@@ -47,5 +47,7 @@ export class PairMap<KeyLeft, KeyRight, Value> {
     return this.valueMap.get(combinedKey)
   }
 
-  size() { return this.valueMap.size }
+  size() {
+    return this.valueMap.size
+  }
 }

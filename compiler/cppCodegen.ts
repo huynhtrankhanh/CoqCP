@@ -322,7 +322,10 @@ export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
                   )
                 }
                 if (instruction.type === 'call') {
-                  const index = procedureNameMap.get([module.moduleName, instruction.procedure])
+                  const index = procedureNameMap.get([
+                    module.moduleName,
+                    instruction.procedure,
+                  ])
                   if (index === undefined) {
                     throw new Error('you forgot to validate')
                   }
@@ -333,28 +336,34 @@ export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
                     if (value === undefined) return '0'
                     else return print(value)
                   })
-                  const environmentArrays = Array.from({ length: environment?.arrays.size || 0 }).map((_, i) => "environment_" + i)
+                  const environmentArrays = Array.from({
+                    length: environment?.arrays.size || 0,
+                  }).map((_, i) => 'environment_' + i)
                   if ([...supplied.values()].some((x) => !isPure(x))) {
                     // emit workaround code
                     return adorn(
                       '([&]() {' +
-                      argumentList
-                        .map(
-                          (value, index) =>
-                            `auto workaround_${index} = ${value}; `
-                        )
-                        .join('') +
-                      'procedure_' +
-                      index +
-                      '(' +
-                      [...environmentArrays, ...argumentList]
-                        .map((_, index) => 'workaround_' + index)
-                        .join(', ') +
-                      ');})()'
+                        argumentList
+                          .map(
+                            (value, index) =>
+                              `auto workaround_${index} = ${value}; `
+                          )
+                          .join('') +
+                        'procedure_' +
+                        index +
+                        '(' +
+                        [...environmentArrays, ...argumentList]
+                          .map((_, index) => 'workaround_' + index)
+                          .join(', ') +
+                        ');})()'
                     )
                   }
                   return adorn(
-                    'procedure_' + index + '(' + [...environmentArrays, ...argumentList].join(', ') + ')'
+                    'procedure_' +
+                      index +
+                      '(' +
+                      [...environmentArrays, ...argumentList].join(', ') +
+                      ')'
                   )
                 }
                 if (
@@ -468,8 +477,11 @@ export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
                   }
                   return adorn('binder_' + index)
                 }
-                if (instruction.type === "cross module call") {
-                  const index = procedureNameMap.get([instruction.module, instruction.procedure])
+                if (instruction.type === 'cross module call') {
+                  const index = procedureNameMap.get([
+                    instruction.module,
+                    instruction.procedure,
+                  ])
                   if (index === undefined) {
                     throw new Error('you forgot to validate')
                   }
@@ -488,32 +500,37 @@ export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
                     const iterator = foreignModule.environment?.arrays.keys()
                     if (iterator === undefined) return []
                     return [...iterator]
-                  })().map(array => {
+                  })().map((array) => {
                     const name = environmentNameMap.get(array)
-                    if (name === undefined) throw new Error("you forgot to validate")
-                    return "environment_" + name
+                    if (name === undefined)
+                      throw new Error('you forgot to validate')
+                    return 'environment_' + name
                   })
                   if ([...supplied.values()].some((x) => !isPure(x))) {
                     // emit workaround code
                     return adorn(
                       '([&]() {' +
-                      argumentList
-                        .map(
-                          (value, index) =>
-                            `auto workaround_${index} = ${value}; `
-                        )
-                        .join('') +
-                      'procedure_' +
-                      index +
-                      '(' +
-                      [...environmentArrays, ...argumentList]
-                        .map((_, index) => 'workaround_' + index)
-                        .join(', ') +
-                      ');})()'
+                        argumentList
+                          .map(
+                            (value, index) =>
+                              `auto workaround_${index} = ${value}; `
+                          )
+                          .join('') +
+                        'procedure_' +
+                        index +
+                        '(' +
+                        [...environmentArrays, ...argumentList]
+                          .map((_, index) => 'workaround_' + index)
+                          .join(', ') +
+                        ');})()'
                     )
                   }
                   return adorn(
-                    'procedure_' + index + '(' + [...environmentArrays, ...argumentList].join(', ') + ')'
+                    'procedure_' +
+                      index +
+                      '(' +
+                      [...environmentArrays, ...argumentList].join(', ') +
+                      ')'
                   )
                 }
 
