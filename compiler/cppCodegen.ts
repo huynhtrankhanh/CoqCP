@@ -59,6 +59,7 @@ void flushSTDOUT() {
 
 export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
   const crossModuleProcedureMap = new PairMap<string, string, Procedure>()
+  const procedureNameMap = new PairMap<string, string, number>()
   const seenModules = new Map<string, CoqCPAST>()
 
   let joined = ''
@@ -66,7 +67,6 @@ export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
   for (const module of sortedModules) {
     const { environment, procedures } = module
     const environmentNameMap = new Map<string, number>()
-    const procedureNameMap = new Map<string, number>()
 
     const environmentCode = (() => {
       if (environment === null) return ''
@@ -81,7 +81,7 @@ export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
       return (
         [...environment.arrays]
           .map(([name, description]) => {
-            const { itemTypes, length } = description
+            const { itemTypes } = description
             return (
               'std::tuple<' +
               itemTypes
@@ -96,9 +96,10 @@ export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
     })()
 
     const mainCode = procedures
-      .map((procedure, index) => {
+      .map((procedure) => {
         const { name, body, variables } = procedure
-        procedureNameMap.set(name, index)
+        const index = procedureNameMap.size()
+        procedureNameMap.set([module.moduleName, name], index)
         const localNameMap = new Map<string, number>()
         const code =
           indent +
@@ -321,7 +322,7 @@ export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
                   )
                 }
                 if (instruction.type === 'call') {
-                  const index = procedureNameMap.get(instruction.procedure)
+                  const index = procedureNameMap.get([module.moduleName, instruction.procedure])
                   if (index === undefined) {
                     throw new Error('you forgot to validate')
                   }
@@ -332,27 +333,28 @@ export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
                     if (value === undefined) return '0'
                     else return print(value)
                   })
+                  const environmentArrays = Array.from({ length: environment?.arrays.size || 0 }).map((_, i) => "environment_" + i)
                   if ([...supplied.values()].some((x) => !isPure(x))) {
                     // emit workaround code
                     return adorn(
                       '([&]() {' +
-                        argumentList
-                          .map(
-                            (value, index) =>
-                              `auto workaround_${index} = ${value}; `
-                          )
-                          .join('') +
-                        'procedure_' +
-                        index +
-                        '(' +
-                        argumentList
-                          .map((_, index) => 'workaround_' + index)
-                          .join(', ') +
-                        ');})()'
+                      argumentList
+                        .map(
+                          (value, index) =>
+                            `auto workaround_${index} = ${value}; `
+                        )
+                        .join('') +
+                      'procedure_' +
+                      index +
+                      '(' +
+                      [...environmentArrays, ...argumentList]
+                        .map((_, index) => 'workaround_' + index)
+                        .join(', ') +
+                      ');})()'
                     )
                   }
                   return adorn(
-                    'procedure_' + index + '(' + argumentList.join(', ') + ')'
+                    'procedure_' + index + '(' + [...environmentArrays, ...argumentList].join(', ') + ')'
                   )
                 }
                 if (
@@ -466,8 +468,53 @@ export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
                   }
                   return adorn('binder_' + index)
                 }
-                if (instruction.type === 'cross module call') {
-                  return 'running out of ideas'
+                if (instruction.type === "cross module call") {
+                  const index = procedureNameMap.get([instruction.module, instruction.procedure])
+                  if (index === undefined) {
+                    throw new Error('you forgot to validate')
+                  }
+                  const foreignModule = seenModules.get(instruction.module)
+                  if (foreignModule === undefined) {
+                    throw new Error('you forgot to validate')
+                  }
+                  const { variables } = procedures[index]
+                  const supplied = instruction.presetVariables
+                  const argumentList = [...variables.keys()].map((x) => {
+                    const value = supplied.get(x)
+                    if (value === undefined) return '0'
+                    else return print(value)
+                  })
+                  const environmentArrays = (() => {
+                    const iterator = foreignModule.environment?.arrays.keys()
+                    if (iterator === undefined) return []
+                    return [...iterator]
+                  })().map(array => {
+                    const name = environmentNameMap.get(array)
+                    if (name === undefined) throw new Error("you forgot to validate")
+                    return "environment_" + name
+                  })
+                  if ([...supplied.values()].some((x) => !isPure(x))) {
+                    // emit workaround code
+                    return adorn(
+                      '([&]() {' +
+                      argumentList
+                        .map(
+                          (value, index) =>
+                            `auto workaround_${index} = ${value}; `
+                        )
+                        .join('') +
+                      'procedure_' +
+                      index +
+                      '(' +
+                      [...environmentArrays, ...argumentList]
+                        .map((_, index) => 'workaround_' + index)
+                        .join(', ') +
+                      ');})()'
+                    )
+                  }
+                  return adorn(
+                    'procedure_' + index + '(' + [...environmentArrays, ...argumentList].join(', ') + ')'
+                  )
                 }
 
                 return consumeNever(instruction.type)
@@ -494,7 +541,7 @@ export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
       'std::cin.tie(0)->sync_with_stdio(0);\n' +
       mainCode +
       (() => {
-        const mainNumber = procedureNameMap.get('main')
+        const mainNumber = procedureNameMap.get([module.moduleName, 'main'])
         if (mainNumber === undefined) return ''
         const definition = procedures.find(({ name }) => name === 'main')
         assert(definition !== undefined)
