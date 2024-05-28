@@ -1,6 +1,6 @@
 // @ts-check
 import { CoqCPASTTransformer, ParseError } from './parse'
-import { validateAST } from './validateAST'
+import { sortAndValidateAST } from './validateAST'
 import { consumeNever } from './consumeNever'
 /**
  * @param {string[]} codes
@@ -15,7 +15,7 @@ const getCombinedError = (codes) => {
       throw error
     return { type: 'parse error', message: error.message }
   }
-  return { type: 'validation error', errors: validateAST(transformed) }
+  return { type: 'validation error', errors: sortAndValidateAST(transformed) }
 }
 
 /**

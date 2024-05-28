@@ -1,6 +1,6 @@
 // @ts-check
 import { createEdges } from './dependencyGraph.test'
-import { validateAST } from './validateAST'
+import { sortAndValidateAST } from './validateAST'
 
 describe('validateAST', () => {
   test('No cyclic dependencies', () => {
@@ -12,7 +12,7 @@ describe('validateAST', () => {
     ]
 
     // Validate ASTs
-    const errors = validateAST(modules)
+    const errors = sortAndValidateAST(modules)
 
     // Check if the returned value is an empty array
     expect(errors).toEqual([])
@@ -27,7 +27,7 @@ describe('validateAST', () => {
     ]
 
     // Validate ASTs
-    const errors = validateAST(modules)
+    const errors = sortAndValidateAST(modules)
 
     // Check if returned value is NOT EMPTY and every error has type "call implicated in cycle"
     expect(errors).not.toEqual([])
