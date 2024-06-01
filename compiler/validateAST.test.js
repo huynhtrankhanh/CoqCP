@@ -53,7 +53,7 @@ describe('validateAST', () => {
   it('accepts valid code', () => {
     const programs = [
       `environment({})`,
-      `environment({ fib: array([int32], 0)})`,
+      `environment({ fib: array([int32], 1)})`,
       `environment({ intricate: array([bool, int64], 1) })`,
       `procedure("empty", {}, () => {})`,
       `environment({ a: array([bool], 1) })
@@ -198,6 +198,11 @@ procedure("hello", { a: bool }, () => {
     })
   })
   writeChar(coerceInt8(x))
+})`,
+      `environment({ a: array([bool], 0) })
+procedure("hello", { a: bool }, () => {
+  store("a", 0, [get("a")])
+  set("a", retrieve("a", 0)[0])
 })`,
       `procedure("hello", {}, () => {
   range(30, x => {

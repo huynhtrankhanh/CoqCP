@@ -52,6 +52,8 @@ const isPure = (value: ValueType): boolean => {
       return isPure(value.value)
     case 'writeChar':
       return false
+    case 'cross module call':
+      return false
   }
 }
 
