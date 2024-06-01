@@ -27,8 +27,8 @@ const getCoqString = (text: string): string => {
 }
 
 const byteLength = (x: string) => {
-  const encoder = new TextEncoder();
-  const bytes = encoder.encode(x);
+  const encoder = new TextEncoder()
+  const bytes = encoder.encode(x)
   return bytes.length
 }
 
