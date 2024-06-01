@@ -26,6 +26,12 @@ const getCoqString = (text: string): string => {
   return coqString
 }
 
+const byteLength = (x: string) => {
+  const encoder = new TextEncoder();
+  const bytes = encoder.encode(x);
+  return bytes.length
+}
+
 const indent = '  '
 
 const sanitizeName = (name: string): string =>
@@ -585,7 +591,7 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
                     }
                   const nonexistentArray = (() => {
                     const maxLength = [...environment.arrays.keys()]
-                      .map((x) => x.length)
+                      .map((x) => byteLength(x))
                       .reduce((a, b) => Math.max(a, b))
                     return 'a'.repeat(maxLength + 1)
                   })()
