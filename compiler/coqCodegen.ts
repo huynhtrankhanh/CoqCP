@@ -38,7 +38,7 @@ export const coqCodegen = (sortedModules: CoqCPAST[]): string => {
   const sanitize = (moduleName: string, procedureName: string) => {
     const existing = mapToSanitized.get([moduleName, procedureName])
     if (existing !== undefined) return existing
-    const sanePart = sanitizeName(moduleName + "_" + procedureName)
+    const sanePart = sanitizeName(moduleName + '_' + procedureName)
     const discriminator = (() => {
       const count = sanitizedProcedureNameCollisions.get(sanePart) || 0
       sanitizedProcedureNameCollisions.set(sanePart, count + 1)
@@ -67,7 +67,9 @@ export const coqCodegen = (sortedModules: CoqCPAST[]): string => {
             const coqType =
               itemTypes.length === 0
                 ? 'unit'
-                : itemTypes.map((x) => (x === 'bool' ? 'bool' : 'Z')).join(' * ')
+                : itemTypes
+                    .map((x) => (x === 'bool' ? 'bool' : 'Z'))
+                    .join(' * ')
             return `if decide (name = ${getCoqString(
               name
             )}) then ${coqType} else `
@@ -89,10 +91,10 @@ export const coqCodegen = (sortedModules: CoqCPAST[]): string => {
                 itemTypes.length === 0
                   ? 'tt'
                   : '(' +
-                  itemTypes
-                    .map((x) => (x === 'bool' ? 'false' : '0%Z'))
-                    .join(', ') +
-                  ')'
+                    itemTypes
+                      .map((x) => (x === 'bool' ? 'false' : '0%Z'))
+                      .join(', ') +
+                    ')'
               return `destruct (decide (name = ${getCoqString(
                 name
               )})) as [h |]; [(rewrite h; simpl; exact (repeat ${value} ${rawLength})) |]; `
@@ -147,8 +149,9 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
                 value.map((_, i) => 'tuple_element_' + i).join(', ') +
                 ')'
               for (const [index, element] of value.entries()) {
-                tuple = `(bind ${dfs(element).expression
-                  } (fun tuple_element_${index} => ${tuple}))`
+                tuple = `(bind ${
+                  dfs(element).expression
+                } (fun tuple_element_${index} => ${tuple}))`
               }
               return tuple
             }
@@ -292,7 +295,10 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
                 }
               }
               case 'continue': {
-                return { expression: `(Done _ _ _ KeepGoing)`, type: 'statement' }
+                return {
+                  expression: `(Done _ _ _ KeepGoing)`,
+                  type: 'statement',
+                }
               }
               case 'break': {
                 return { expression: `(Done _ _ _ Stop)`, type: 'statement' }
@@ -480,7 +486,8 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
                 }
                 return {
                   expression: `(bind ${numberMap} (fun x => bind ${booleanMap} (fun y => liftToWithLocalVariables (${sanitize(
-                    moduleName, procedure
+                    moduleName,
+                    procedure
                   )} y x))))`,
                   type: 'statement',
                 }
@@ -527,7 +534,8 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
                   loopBody.map(dfs).map((x) => x.expression)
                 )
 
-                if (previousBinderValue === undefined) localBinderMap.delete(name)
+                if (previousBinderValue === undefined)
+                  localBinderMap.delete(name)
                 else localBinderMap.set(loopVariable, previousBinderValue)
                 binderCounter--
 
@@ -540,14 +548,20 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
                   }
                 } else {
                   return {
-                    expression: `(bind ${dfs(end).expression
-                      } (fun x => loop (Z.to_nat x) (fun binder_${binderCounter}_intermediate => let binder_${binderCounter} := Done _ _ _ (Z.sub (Z.sub x (Z.of_nat binder_${binderCounter}_intermediate)) 1%Z) in bind (${bodyExpression}) (fun ignored => Done _ _ _ KeepGoing))))`,
+                    expression: `(bind ${
+                      dfs(end).expression
+                    } (fun x => loop (Z.to_nat x) (fun binder_${binderCounter}_intermediate => let binder_${binderCounter} := Done _ _ _ (Z.sub (Z.sub x (Z.of_nat binder_${binderCounter}_intermediate)) 1%Z) in bind (${bodyExpression}) (fun ignored => Done _ _ _ KeepGoing))))`,
                     type: 'statement',
                   }
                 }
               }
               case 'cross module call': {
-                const { arrayMapping, module: foreignModule, presetVariables, procedure } = value
+                const {
+                  arrayMapping,
+                  module: foreignModule,
+                  presetVariables,
+                  procedure,
+                } = value
                 let numberMap = '(Done _ _ _ (fun x => 0%Z))'
                 let booleanMap = '(Done _ _ _ (fun x => false))'
                 for (const [name, value] of presetVariables.entries()) {
@@ -564,22 +578,35 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
                   }
                 }
                 const { arrayMappingText, congruence } = (() => {
-                  if (environment === null || environment.arrays.size === 0) return {
-                    arrayMappingText: "(fun name => \"\")",
-                    congruence: "ltac:(intro name; easy)"
-                  }
+                  if (environment === null || environment.arrays.size === 0)
+                    return {
+                      arrayMappingText: '(fun name => "")',
+                      congruence: 'ltac:(intro name; easy)',
+                    }
                   const nonexistentArray = (() => {
-                    const maxLength = [...environment.arrays.keys()].map(x => x.length).reduce((a, b) => Math.max(a, b))
-                    return "a".repeat(maxLength + 1)
+                    const maxLength = [...environment.arrays.keys()]
+                      .map((x) => x.length)
+                      .reduce((a, b) => Math.max(a, b))
+                    return 'a'.repeat(maxLength + 1)
                   })()
-                  const arrayMappingText = "(fun name => " + [...arrayMapping.entries()].map(([inForeign, inCurrent]) => `if (decide (name = ${getCoqString(inForeign)})) then ${getCoqString(inCurrent)} else `).join("") + JSON.stringify(nonexistentArray) + ")"
-                  const congruence = "(fun name => ltac:(simpl; repeat case_decide; easy))"
+                  const arrayMappingText =
+                    '(fun name => ' +
+                    [...arrayMapping.entries()]
+                      .map(
+                        ([inForeign, inCurrent]) =>
+                          `if (decide (name = ${getCoqString(inForeign)})) then ${getCoqString(inCurrent)} else `
+                      )
+                      .join('') +
+                    JSON.stringify(nonexistentArray) +
+                    ')'
+                  const congruence =
+                    '(fun name => ltac:(simpl; repeat case_decide; easy))'
                   return { arrayMappingText, congruence }
-                }
-                )()
+                })()
                 return {
                   expression: `(bind ${numberMap} (fun x => bind ${booleanMap} (fun y => liftToWithLocalVariables (translateArrays (${sanitize(
-                    foreignModule, procedure
+                    foreignModule,
+                    procedure
                   )} y x) (arrayType environment${moduleIndex}) ${arrayMappingText} ${congruence}))))`,
                   type: 'statement',
                 }
@@ -606,9 +633,7 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
       })
       .join('')
 
-    code += (
-      environmentCode + decidableEquality + generatedCodeForProcedures
-    )
+    code += environmentCode + decidableEquality + generatedCodeForProcedures
   }
   return code
 }
