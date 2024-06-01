@@ -504,7 +504,10 @@ export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
                     if (iterator === undefined) return []
                     return [...iterator]
                   })().map((array) => {
-                    const name = environmentNameMap.get(array)
+                    const mappedArray = instruction.arrayMapping.get(array)
+                    if (mappedArray === undefined)
+                      throw new Error('you forgot to validate')
+                    const name = environmentNameMap.get(mappedArray)
                     if (name === undefined)
                       throw new Error('you forgot to validate')
                     return 'environment_' + name
