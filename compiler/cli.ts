@@ -77,7 +77,7 @@ function compile(files: string[], coqOutput: string, cppOutput: string) {
 
   if (parseErrors.length > 0) {
     parseErrors.forEach((error) => console.error(error))
-    process.exit(1)
+    return
   }
 
   const modulePathMap = new Map(
@@ -95,7 +95,7 @@ function compile(files: string[], coqOutput: string, cppOutput: string) {
 
   if (validationErrors.length > 0) {
     validationErrors.forEach((error) => console.error(error))
-    process.exit(1)
+    return
   }
 
   generateOutput(sortedModules, coqOutput, cppOutput)
@@ -108,6 +108,7 @@ function watchAndCompile(
   coqOutput: string,
   cppOutput: string
 ) {
+  compile(files, coqOutput, cppOutput)
   chokidar.watch(files).on('change', () => {
     console.log(chalk.blue('File change detected. Recompiling...'))
     compile(files, coqOutput, cppOutput)
