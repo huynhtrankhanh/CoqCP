@@ -11,78 +11,78 @@ import {
 
 export type ValidationError =
   | ((
-      | {
-          type:
-            | 'binary expression expects numeric'
-            | 'instruction expects numeric'
-          actualType1: PrimitiveType | PrimitiveType[] | 'string'
-          actualType2: PrimitiveType | PrimitiveType[] | 'string'
-        }
-      | {
-          type: 'binary expression expects boolean'
-          actualType1: PrimitiveType | PrimitiveType[] | 'string'
-          actualType2: PrimitiveType | PrimitiveType[] | 'string'
-        }
-      | {
-          type: 'binary expression type mismatch' | 'instruction type mismatch'
-          actualType1: PrimitiveType | PrimitiveType[] | 'string'
-          actualType2: PrimitiveType | PrimitiveType[] | 'string'
-        }
-      | { type: 'expression no statement' }
-      | { type: 'procedure not found'; name: string }
-      | { type: 'module not found'; name: string }
-      | { type: 'variable not present'; variables: string[] }
-      | {
-          type: 'variable type mismatch'
-          expectedType: PrimitiveType | PrimitiveType[] | 'string'
-          actualType: PrimitiveType | PrimitiveType[] | 'string'
-        }
-      | {
-          type: 'condition must be boolean'
-          actualType: PrimitiveType | PrimitiveType[] | 'string'
-        }
-      | { type: 'no surrounding range command' }
-      | { type: 'undefined variable' | 'undefined binder' }
-      | { type: 'not representable int64' }
-      | { type: 'bad number literal' }
-      | { type: 'range end must be int64 or string' }
-      | {
-          type:
-            | 'instruction expects int8'
-            | 'instruction expects int64'
-            | 'instruction expects tuple'
-        }
-      | { type: 'undefined array' }
-      | { type: 'index out of bounds' }
-      | {
-          type:
-            | 'unary operator expects numeric'
-            | "unary operator can't operate on tuples"
-            | "unary operator can't operate on strings"
-            | 'unary operator expects boolean'
-        }
-      | { type: "array length can't be less than 1" }
-      | { type: 'string not allowed' }
-      | { type: 'call implicated in cycle' }
-      | { type: 'must specify all arrays' }
-      | {
-          type: 'array shape mismatch'
-          procedureModuleArrayShape: PrimitiveType[]
-          currentModuleArrayShape: PrimitiveType[]
-        }
-      | {
-          type:
-            | 'array shape mismatch'
-            | "array doesn't exist in procedure module"
-          procedureModuleArray: string
-        }
-      | {
-          type: "array doesn't exist in current module"
-          currentModuleArray: string
-        }
-      | { type: 'duplicate procedure'; procedureName: string }
-    ) & { location: Location & { moduleName: string } })
-  | { type: 'duplicate module'; moduleName: string }
+    | {
+      type:
+      | 'binary expression expects numeric'
+      | 'instruction expects numeric'
+      actualType1: PrimitiveType | PrimitiveType[] | 'string'
+      actualType2: PrimitiveType | PrimitiveType[] | 'string'
+    }
+    | {
+      type: 'binary expression expects boolean'
+      actualType1: PrimitiveType | PrimitiveType[] | 'string'
+      actualType2: PrimitiveType | PrimitiveType[] | 'string'
+    }
+    | {
+      type: 'binary expression type mismatch' | 'instruction type mismatch'
+      actualType1: PrimitiveType | PrimitiveType[] | 'string'
+      actualType2: PrimitiveType | PrimitiveType[] | 'string'
+    }
+    | { type: 'expression no statement' }
+    | { type: 'procedure not found'; name: string }
+    | { type: 'module not found'; name: string }
+    | { type: 'variable not present'; variables: string[] }
+    | {
+      type: 'variable type mismatch'
+      expectedType: PrimitiveType | PrimitiveType[] | 'string'
+      actualType: PrimitiveType | PrimitiveType[] | 'string'
+    }
+    | {
+      type: 'condition must be boolean'
+      actualType: PrimitiveType | PrimitiveType[] | 'string'
+    }
+    | { type: 'no surrounding range command' }
+    | { type: 'undefined variable' | 'undefined binder' }
+    | { type: 'not representable int64' }
+    | { type: 'bad number literal' }
+    | { type: 'range end must be int64 or string' }
+    | {
+      type:
+      | 'instruction expects int8'
+      | 'instruction expects int64'
+      | 'instruction expects tuple'
+    }
+    | { type: 'undefined array' }
+    | { type: 'index out of bounds' }
+    | {
+      type:
+      | 'unary operator expects numeric'
+      | "unary operator can't operate on tuples"
+      | "unary operator can't operate on strings"
+      | 'unary operator expects boolean'
+    }
+    | { type: "array length can't be less than 1" }
+    | { type: 'string not allowed' }
+    | { type: 'call implicated in cycle' }
+    | { type: 'must specify all arrays' }
+    | {
+      type: 'array shape mismatch'
+      procedureModuleArrayShape: PrimitiveType[]
+      currentModuleArrayShape: PrimitiveType[]
+    }
+    | {
+      type:
+      | 'array shape mismatch'
+      | "array doesn't exist in procedure module"
+      procedureModuleArray: string
+    }
+    | {
+      type: "array doesn't exist in current module"
+      currentModuleArray: string
+    }
+    | { type: 'duplicate procedure'; procedureName: string }
+  ) & { location: Location & { moduleName: string } })
+  | { type: 'duplicate module'; module: CoqCPAST, moduleName: string }
 
 export const isNumeric = (
   x: string | PrimitiveType[]
@@ -100,13 +100,20 @@ export const validateAST = (sortedModules: CoqCPAST[]): ValidationError[] => {
   {
     const errors: ValidationError[] = []
     const names = sortedModules.map((x) => x.moduleName).sort()
+    const mapNameToModule = new Map<string, CoqCPAST[]>();
+    sortedModules.map(x => {
+      const array = mapNameToModule.get(x.moduleName);
+      if (array === undefined) mapNameToModule.set(x.moduleName, [x]);
+      else array.push(x);
+    })
     const n = names.length
     let cursor = 0
     while (cursor !== n) {
       let next = cursor
       while (next !== n && names[next] === names[cursor]) next++
       if (next - cursor > 1) {
-        errors.push({ type: 'duplicate module', moduleName: names[cursor] })
+        for (const module of mapNameToModule.get(names[cursor])!)
+          errors.push({ type: 'duplicate module', module, moduleName: names[cursor] })
       }
       cursor = next
     }
@@ -454,7 +461,7 @@ export const validateAST = (sortedModules: CoqCPAST[]): ValidationError[] => {
               }
               if (
                 currentModuleArrayDeclaration.itemTypes.length !==
-                  procedureModuleArrayDeclaration.itemTypes.length ||
+                procedureModuleArrayDeclaration.itemTypes.length ||
                 currentModuleArrayDeclaration.itemTypes.some(
                   (element, index) =>
                     procedureModuleArrayDeclaration.itemTypes[index] !== element
