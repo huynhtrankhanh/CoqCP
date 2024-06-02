@@ -38,7 +38,8 @@ function parseFiles(files: string[]): {
 // Utility function to validate modules
 function validateModules(
   modules: CoqCPAST[],
-  modulePathMap: Map<CoqCPAST, string>
+  modulePathMap: Map<CoqCPAST, string>,
+  moduleNameToPath: Map<string, string>,
 ): string[] {
   const errors: string[] = []
   const validationErrors = validateAST(modules)
@@ -47,7 +48,7 @@ function validateModules(
     const filePath =
       'module' in error
         ? modulePathMap.get(error.module)
-        : error.location.moduleName
+        : moduleNameToPath.get(error.location.moduleName)
     errors.push(
       chalk.red(`Validation Error in file ${filePath}: ${error.type}`)
     )
@@ -81,6 +82,9 @@ function compile(files: string[], coqOutput: string, cppOutput: string) {
 
   const modulePathMap = new Map(
     modules.map((module, index) => [module, files[index]])
+  )
+  const moduleNameToPath = new Map(
+    modules.map((module, index) => [module.moduleName, files[index]])
   )
   const sortedModules = sortModules(modules)
   const validationErrors = validateModules(sortedModules, modulePathMap)
