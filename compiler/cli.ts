@@ -87,7 +87,11 @@ function compile(files: string[], coqOutput: string, cppOutput: string) {
     modules.map((module, index) => [module.moduleName, files[index]])
   )
   const sortedModules = sortModules(modules)
-  const validationErrors = validateModules(sortedModules, modulePathMap, moduleNameToPath)
+  const validationErrors = validateModules(
+    sortedModules,
+    modulePathMap,
+    moduleNameToPath
+  )
 
   if (validationErrors.length > 0) {
     validationErrors.forEach((error) => console.error(error))
