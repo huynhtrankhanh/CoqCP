@@ -1,149 +1,113 @@
-// Import necessary libraries/modules
-import * as fs from 'fs'
-import * as path from 'path'
-import * as glob from 'glob'
-import * as chokidar from 'chokidar'
-import yargs from 'yargs/yargs'
-import { hideBin } from 'yargs/helpers'
+import acorn from 'acorn';
+import fs from 'fs';
+import path from 'path';
+import chokidar from 'chokidar';
+import chalk from 'chalk';
+import { Command } from 'commander';
+import { CoqCPASTTransformer, ParseError } from './parse';
+import { validateAST, ValidationError } from './validateAST';
+import { sortModules } from './dependencyGraph';
+import { coqCodegen } from './coqCodegen';
+import { cppCodegen } from './cppCodegen';
 
-// Import necessary modules for transform function
-import { CoqCPASTTransformer, CoqCPAST, ParseError } from './parse'
-import { validateAST } from './validateAST'
-import { coqCodegen } from './coqCodegen'
-import { cppCodegen } from './cppCodegen'
+// Utility function to parse files
+function parseFiles(files: string[]): { modules: CoqCPAST[], errors: string[] } {
+  const modules: CoqCPAST[] = [];
+  const errors: string[] = [];
 
-// Define transform function
-function transform(
-  fileContent: string,
-  cppOutputPath: string,
-  coqOutputPath: string
-) {
-  let ast: CoqCPAST | undefined
-  try {
-    const transformer = new CoqCPASTTransformer(fileContent)
-    ast = transformer.transform()
-  } catch (error) {
-    // Print error here
-    if (!(error instanceof ParseError) && !(error instanceof SyntaxError))
-      throw error
-    console.error(`Error transforming file`, error)
-  }
-  if (ast === undefined) return
-
-  const errors = validateAST(ast)
-
-  // Print errors in a user-friendly format
-  if (errors.length !== 0) {
-    console.error('Validation Errors:')
-    errors.forEach((error): null => {
-      switch (error.type) {
-        case 'binary expression expects numeric':
-        case 'instruction expects numeric':
-        case 'binary expression expects boolean':
-        case 'binary expression type mismatch':
-        case 'instruction type mismatch':
-          console.error(`${error.type} at ${JSON.stringify(error.location)}`)
-          console.error(
-            `Actual Types: ${error.actualType1}, ${error.actualType2}`
-          )
-          return null
-        case 'variable type mismatch':
-          console.error(`${error.type} at ${JSON.stringify(error.location)}`)
-          console.error(`Actual Type: ${error.actualType}`)
-          return null
-        case 'expression no statement':
-        case 'procedure not found':
-        case 'variable not present':
-        case 'condition must be boolean':
-        case 'no surrounding range command':
-        case 'undefined variable':
-        case 'undefined binder':
-        case 'not representable int64':
-        case 'bad number literal':
-        case 'range end must be int64 or string':
-        case 'instruction expects int8':
-        case 'instruction expects int64':
-        case 'instruction expects tuple':
-        case 'undefined array':
-        case 'index out of bounds':
-        case 'unary operator expects numeric':
-        case "unary operator can't operate on tuples":
-        case 'unary operator expects boolean':
-        case "array length can't be negative":
-        case 'string not allowed':
-        case "unary operator can't operate on strings":
-          console.error(`${error.type} at ${JSON.stringify(error.location)}`)
-          return null
+  files.forEach(file => {
+    try {
+      const code = fs.readFileSync(file, 'utf-8');
+      const transformer = new CoqCPASTTransformer(code);
+      modules.push(transformer.transform());
+    } catch (error) {
+      if (error instanceof ParseError || error instanceof SyntaxError) {
+        errors.push(chalk.red(`Error in file ${file}: ${error.message}`));
+      } else {
+        throw error;
       }
-    })
-    return
+    }
+  });
+
+  return { modules, errors };
+}
+
+// Utility function to validate modules
+function validateModules(modules: CoqCPAST[], modulePathMap: Map<CoqCPAST, string>): string[] {
+  const errors: string[] = [];
+  const validationErrors = validateAST(modules);
+
+  validationErrors.forEach(error => {
+    const filePath = 'module' in error ? modulePathMap.get(error.module) : error.location.moduleName;
+    errors.push(chalk.red(`Validation Error in file ${filePath}: ${error.type}`));
+    errors.push(chalk.yellow(`Details: ${JSON.stringify(error, null, 2)}`));
+  });
+
+  return errors;
+}
+
+// Utility function to generate output files
+function generateOutput(sortedModules: CoqCPAST[], coqOutput: string, cppOutput: string) {
+  const coqCode = coqCodegen(sortedModules);
+  fs.writeFileSync(coqOutput, coqCode, 'utf-8');
+  
+  const cppCode = cppCodegen(sortedModules);
+  fs.writeFileSync(cppOutput, cppCode, 'utf-8');
+}
+
+// Compile function
+function compile(files: string[], coqOutput: string, cppOutput: string) {
+  const { modules, errors: parseErrors } = parseFiles(files);
+  
+  if (parseErrors.length > 0) {
+    parseErrors.forEach(error => console.error(error));
+    process.exit(1);
   }
 
-  const coqCode = coqCodegen(ast)
-  fs.writeFileSync(coqOutputPath, coqCode)
+  const modulePathMap = new Map(modules.map((module, index) => [module, files[index]]));
+  const sortedModules = sortModules(modules);
+  const validationErrors = validateModules(sortedModules, modulePathMap);
 
-  const cppCode = cppCodegen(ast)
-  fs.writeFileSync(cppOutputPath, cppCode)
+  if (validationErrors.length > 0) {
+    validationErrors.forEach(error => console.error(error));
+    process.exit(1);
+  }
 
-  console.log(
-    `Transformation completed for ${cppOutputPath} and ${coqOutputPath}`
-  )
+  generateOutput(sortedModules, coqOutput, cppOutput);
+  console.log(chalk.green('Compilation successful!'));
 }
 
-const argv = yargs(hideBin(process.argv))
-  .option('input', {
-    alias: 'i',
-    description: 'Input files glob pattern',
-    demandOption: true,
-    type: 'string',
-  })
-  .option('coqOutput', {
-    alias: 'co',
-    description: 'Coq output directory',
-    demandOption: true,
-    type: 'string',
-  })
-  .option('cppOutput', {
-    alias: 'cp',
-    description: 'C++ output directory',
-    demandOption: true,
-    type: 'string',
-  })
-  .option('watch', {
-    alias: 'w',
-    description: 'Watch mode',
-    type: 'boolean',
-  })
-  .parseSync()
-
-// Function to process files based on the provided glob pattern
-function processFiles(globPattern: string) {
-  glob
-    .glob(globPattern)
-    .then((files) => files.forEach((file) => transformFile(file)))
+// Watch and compile function
+function watchAndCompile(files: string[], coqOutput: string, cppOutput: string) {
+  chokidar.watch(files).on('change', () => {
+    console.log(chalk.blue('File change detected. Recompiling...'));
+    compile(files, coqOutput, cppOutput);
+  });
 }
 
-// Define the transform function for a file
-function transformFile(filePath: string) {
-  const fileContent = fs.readFileSync(filePath, 'utf8')
-  const fileName = path.basename(filePath, path.extname(filePath))
+// Main function
+function main() {
+  const program = new Command();
 
-  // Assuming coq and cpp output files have the same name
-  const coqOutputPath = path.join(argv.coqOutput, `${fileName}.v`)
-  const cppOutputPath = path.join(argv.cppOutput, `${fileName}.cpp`)
+  program
+    .name('coqcp-compiler')
+    .version('1.0.0')
+    .description('CLI tool for compiling CoqCP source code files to Coq and C++ files')
+    .arguments('<inputFiles...> <coqOutput> <cppOutput>')
+    .option('-w, --watch', 'Enable watch mode')
+    .action((inputFiles, coqOutput, cppOutput, options) => {
+      if (options.watch) {
+        watchAndCompile(inputFiles, coqOutput, cppOutput);
+      } else {
+        compile(inputFiles, coqOutput, cppOutput);
+      }
+    });
 
-  transform(fileContent, cppOutputPath, coqOutputPath)
+  program.parse(process.argv);
+
+  if (program.args.length < 3) {
+    program.help();
+  }
 }
 
-// Initial processing of files
-processFiles(argv.input)
-
-// Watch mode using chokidar
-if (argv.watch) {
-  const watcher = chokidar.watch(argv.input, { ignoreInitial: true })
-
-  watcher.on('all', (event, filePath: string) => {
-    console.log(`${filePath} ${event}`)
-    transformFile(filePath)
-  })
-}
+main();
