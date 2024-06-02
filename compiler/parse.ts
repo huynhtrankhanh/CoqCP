@@ -1125,6 +1125,7 @@ export class CoqCPASTTransformer {
     let instructions: Instruction[] = []
 
     for (const statement of bodyNode.body) {
+      if (statement.type === 'EmptyStatement') continue
       if (statement.type === 'IfStatement') {
         const test = this.processNode(statement.test)
         if (statement.consequent.type !== 'BlockStatement') {
