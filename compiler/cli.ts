@@ -124,9 +124,9 @@ function main() {
     .description(
       'CLI tool for compiling CoqCP source code files to Coq and C++ files'
     )
-    .arguments('<inputFiles...> <coqOutput> <cppOutput>')
+    .arguments('<coqOutput> <cppOutput> <inputFiles...>')
     .option('-w, --watch', 'Enable watch mode')
-    .action((inputFiles, coqOutput, cppOutput, options) => {
+    .action((coqOutput, cppOutput, inputFiles, options) => {
       if (options.watch) {
         watchAndCompile(inputFiles, coqOutput, cppOutput)
       } else {
