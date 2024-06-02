@@ -78,20 +78,15 @@ export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
         return counter++
       }
 
-      return (
-        [...environment.arrays]
-          .map(([name, description]) => {
-            const { itemTypes } = description
-            return (
-              'std::tuple<' +
-              itemTypes
-                .map((x) => (x === 'bool' ? x : 'u' + x + '_t'))
-                .join(', ') +
-              '> *environment_' +
-              get(name)
-            )
-          })
-      )
+      return [...environment.arrays].map(([name, description]) => {
+        const { itemTypes } = description
+        return (
+          'std::tuple<' +
+          itemTypes.map((x) => (x === 'bool' ? x : 'u' + x + '_t')).join(', ') +
+          '> *environment_' +
+          get(name)
+        )
+      })
     })()
 
     const mainCode = procedures
