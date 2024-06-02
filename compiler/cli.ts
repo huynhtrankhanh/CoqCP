@@ -39,7 +39,7 @@ function parseFiles(files: string[]): {
 function validateModules(
   modules: CoqCPAST[],
   modulePathMap: Map<CoqCPAST, string>,
-  moduleNameToPath: Map<string, string>,
+  moduleNameToPath: Map<string, string>
 ): string[] {
   const errors: string[] = []
   const validationErrors = validateAST(modules)
