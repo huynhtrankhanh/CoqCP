@@ -69,7 +69,7 @@ export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
     const environmentNameMap = new Map<string, number>()
 
     const environmentCode = (() => {
-      if (environment === null) return ''
+      if (environment === null) return []
 
       let counter = 0
 
@@ -91,7 +91,6 @@ export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
               get(name)
             )
           })
-          .join(', ') + '\n'
       )
     })()
 
@@ -107,7 +106,7 @@ export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
           index +
           ' = [&](' +
           [
-            environmentCode,
+            ...environmentCode,
             ...[...variables].map(([name, value], index) => {
               const { type } = value
               localNameMap.set(name, index)
