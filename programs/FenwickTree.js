@@ -1,5 +1,3 @@
-module(FenwickTree)
-
 environment({
   fenwick: array([int64], 200001),
   resultArray: array([int64], 1),
@@ -51,10 +49,11 @@ procedure('rangeQuery', { left: int64, right: int64, result: int64 }, () => {
 })
 
 procedure(
-  'processQueries',
-  { q: int64, t: int64, idx: int64, value: int64, left: int64, right: int64 },
+  'main',
+  { t: int64, idx: int64, value: int64, left: int64, right: int64 },
   () => {
-    range(get('q'), (i) => {
+    call('ReadUnsignedInt64', { resultArray: 'resultArray' }, '', {})
+    range(retrieve('resultArray', 0)[0], (i) => {
       call('ReadSignedInt64', { resultArray: 'resultArray' }, '', {})
       set('t', retrieve('resultArray', 0)[0])
       call('ReadSignedInt64', { resultArray: 'resultArray' }, '', {})
