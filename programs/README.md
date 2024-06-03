@@ -1,0 +1,1 @@
+These programs are not written in JavaScript. They are not written in any dialect of JavaScript. They are written in a language that steals JavaScript syntax. See [the documentation](../docs/InternalImperativeLanguage.md).
