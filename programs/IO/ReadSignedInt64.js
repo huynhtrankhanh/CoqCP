@@ -1,4 +1,4 @@
-module(readSigned64BitInteger)
+module(ReadSignedInt64)
 
 environment({
   resultArray: array([int64], 1),
