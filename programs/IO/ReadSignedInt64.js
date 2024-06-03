@@ -16,11 +16,11 @@ procedure('', { tmpChar: int64, result: int64, sign: int64 }, () => {
         // '+' sign
         set('sign', 1)
         ;('continue')
-      } else if (get('tmpChar') == 45) {
+      } if (get('tmpChar') == 45) {
         // '-' sign
         set('sign', -1)
         ;('continue')
-      } else if (less(get('tmpChar'), 48) || !less(get('tmpChar'), 58)) {
+      } if (less(get('tmpChar'), 48) || !less(get('tmpChar'), 58)) {
         if (coerceInt64(get('tmpChar')) == -1) {
           ;('break')
         }

@@ -50,7 +50,7 @@ void flushSTDOUT() {
 `
 
   return (
-    '#include <iostream>\n#include <tuple>\n#include <cstdlib>\nusing std::get;\n' +
+    '#include <iostream>\n#include <tuple>\n#include <cstdlib>\n#include <cstdint>\nusing std::get;\n' +
     charOps +
     toSigned +
     binaryOp
@@ -89,11 +89,14 @@ export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
       })
     })()
 
+    const mapProcedureNameToArrayIndex = new Map<string, number>()
+
     const mainCode = procedures
-      .map((procedure) => {
+      .map((procedure, arrayIndex) => {
         const { name, body, variables } = procedure
         const index = procedureNameMap.size()
         procedureNameMap.set([module.moduleName, name], index)
+        mapProcedureNameToArrayIndex.set(procedure.name, arrayIndex)
         const localNameMap = new Map<string, number>()
         const code =
           indent +
@@ -316,14 +319,14 @@ export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
                   )
                 }
                 if (instruction.type === 'call') {
-                  const index = procedureNameMap.get([
-                    module.moduleName,
+                  const arrayIndex = mapProcedureNameToArrayIndex.get(
                     instruction.procedure,
-                  ])
-                  if (index === undefined) {
+                  )
+                  const index = procedureNameMap.get([module.moduleName, instruction.procedure])!
+                  if (arrayIndex === undefined) {
                     throw new Error('you forgot to validate')
                   }
-                  const { variables } = procedures[index]
+                  const { variables } = procedures[arrayIndex]
                   const supplied = instruction.presetVariables
                   const argumentList = [...variables.keys()].map((x) => {
                     const value = supplied.get(x)
@@ -344,7 +347,7 @@ export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
                           )
                           .join('') +
                         'procedure_' +
-                        index +
+                        arrayIndex +
                         '(' +
                         [
                           ...environmentArrays,
@@ -486,7 +489,7 @@ export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
                   if (foreignModule === undefined) {
                     throw new Error('you forgot to validate')
                   }
-                  const { variables } = procedures[index]
+                  const { variables } = crossModuleProcedureMap.get([instruction.module, instruction.procedure])!
                   const supplied = instruction.presetVariables
                   const argumentList = [...variables.keys()].map((x) => {
                     const value = supplied.get(x)
