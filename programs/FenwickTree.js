@@ -6,8 +6,8 @@ environment({
   valueArray: array([int64], 1),
   sumArray: array([int64], 1),
   printBuffer: array([int8], 20),
-  n: int64,
-  q: int64,
+  n: array([int64], 1),
+  q: array([int64], 1),
 })
 
 procedure('increase', { idx: int64, value: int64 }, () => {
