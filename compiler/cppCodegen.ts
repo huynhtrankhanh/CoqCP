@@ -442,11 +442,9 @@ export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
                       baseIndent +
                       'for (uint64_t binder_' +
                       index +
-                      ' = 0; binder_' +
+                      ' = 0, loop_end = ' + print(end) + '; binder_' +
                       index +
-                      ' < ' +
-                      print(end) +
-                      '; binder_' +
+                      ' < loop_end; binder_' +
                       index +
                       '++) {\n' +
                       loopBody
