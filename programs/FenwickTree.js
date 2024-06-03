@@ -12,8 +12,10 @@ environment({
 procedure('increase', { idx: int64, value: int64 }, () => {
   set('idx', get('idx') + 1) // Convert 0-based index to 1-based index for Fenwick Tree
 
-  range(30, i => {
-  if (less(200000, get('idx'))) { 'break' }
+  range(30, (i) => {
+    if (less(200000, get('idx'))) {
+      ;('break')
+    }
     set(
       'fenwick',
       get('idx'),
@@ -27,8 +29,10 @@ procedure('query', { idx: int64, sum: int64 }, () => {
   set('sum', 0)
   set('idx', get('idx') + 1) // Convert 0-based index to 1-based index for Fenwick Tree
 
-  range(30, i => {
-    if (sLess(get('idx', 0))) { "break" }
+  range(30, (i) => {
+    if (sLess(get('idx', 0))) {
+      ;('break')
+    }
     set('sum', get('sum') + retrieve('fenwick', get('idx'))[0])
     set('idx', get('idx') - (get('idx') & -get('idx')))
   })
@@ -64,7 +68,9 @@ procedure(
         call('ReadSignedInt64', { resultArray: 'resultArray' }, '', {})
         set('right', retrieve('resultArray', 0)[0])
         call('rangeQuery', { left: get('idx'), right: get('right') })
-        call('PrintInt64', { buffer: 'printBuffer' }, 'unsigned', { num: retrieve('resultArray', 0)[0] })
+        call('PrintInt64', { buffer: 'printBuffer' }, 'unsigned', {
+          num: retrieve('resultArray', 0)[0],
+        })
         writeChar(10) // Print newline
       }
     })
