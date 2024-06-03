@@ -1,7 +1,7 @@
 module(PrintInt64)
 // Create a buffer to hold characters
 environment({
-  buffer: array([int8], 20)
+  buffer: array([int8], 20),
 })
 
 procedure('unsigned', { num: int64, i: int64, tmpChar: int8 }, () => {
@@ -18,7 +18,7 @@ procedure('unsigned', { num: int64, i: int64, tmpChar: int8 }, () => {
     if (get('num') == 0) {
       ;('break')
     }
-    set('tmpChar', coerceInt8(get('num') % 10 + 48))
+    set('tmpChar', coerceInt8((get('num') % 10) + 48))
     store('buffer', get('i'), [get('tmpChar')])
     set('num', get('num') / 10)
     set('i', get('i') + 1)
