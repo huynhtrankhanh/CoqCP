@@ -404,7 +404,7 @@ export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
                       .join('') +
                     baseIndent +
                     '} else {\n' +
-                    body
+                    alternate
                       .map((x) =>
                         print(x, {
                           type: 'inside block',
