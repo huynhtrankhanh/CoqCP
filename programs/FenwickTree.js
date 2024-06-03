@@ -7,7 +7,7 @@ environment({
   sumArray: array([int64], 1),
   printBuffer: array([int8], 20),
   n: int64,
-  q: int64
+  q: int64,
 })
 
 procedure('increase', { idx: int64, value: int64 }, () => {
@@ -16,12 +16,16 @@ procedure('increase', { idx: int64, value: int64 }, () => {
 
   range(30, (i) => {
     if (less(get('n'), retrieve('idxArray', 0)[0])) {
-      'break'
+      ;('break')
     }
     store('fenwick', retrieve('idxArray', 0)[0], [
-      retrieve('fenwick', retrieve('idxArray', 0)[0])[0] + retrieve('valueArray', 0)[0]
+      retrieve('fenwick', retrieve('idxArray', 0)[0])[0] +
+        retrieve('valueArray', 0)[0],
     ])
-    store('idxArray', 0, [retrieve('idxArray', 0)[0] + (retrieve('idxArray', 0)[0] & -retrieve('idxArray', 0)[0])])
+    store('idxArray', 0, [
+      retrieve('idxArray', 0)[0] +
+        (retrieve('idxArray', 0)[0] & -retrieve('idxArray', 0)[0]),
+    ])
   })
 })
 
@@ -31,10 +35,16 @@ procedure('query', { idx: int64 }, () => {
 
   range(30, (i) => {
     if (less(retrieve('idxArray', 0)[0], 1)) {
-      'break'
+      ;('break')
     }
-    store('sumArray', 0, [retrieve('sumArray', 0)[0] + retrieve('fenwick', retrieve('idxArray', 0)[0])[0]])
-    store('idxArray', 0, [retrieve('idxArray', 0)[0] - (retrieve('idxArray', 0)[0] & -retrieve('idxArray', 0)[0])])
+    store('sumArray', 0, [
+      retrieve('sumArray', 0)[0] +
+        retrieve('fenwick', retrieve('idxArray', 0)[0])[0],
+    ])
+    store('idxArray', 0, [
+      retrieve('idxArray', 0)[0] -
+        (retrieve('idxArray', 0)[0] & -retrieve('idxArray', 0)[0]),
+    ])
   })
 
   store('resultArray', 0, [retrieve('sumArray', 0)[0]])
@@ -45,7 +55,9 @@ procedure('rangeQuery', { left: int64, right: int64 }, () => {
   store('tempArray', 0, [retrieve('resultArray', 0)[0]])
 
   call('query', { idx: get('left') - 1 })
-  store('tempArray', 0, [retrieve('tempArray', 0)[0] - retrieve('resultArray', 0)[0]])
+  store('tempArray', 0, [
+    retrieve('tempArray', 0)[0] - retrieve('resultArray', 0)[0],
+  ])
 
   store('resultArray', 0, [retrieve('tempArray', 0)[0]])
 })
@@ -62,7 +74,7 @@ procedure('update', { idx: int64, value: int64 }, () => {
   call('increase', { idx: get('idx'), value: retrieve('tempArray', 0)[0] })
 })
 
-procedure('main', { }, () => {
+procedure('main', {}, () => {
   call(ReadUnsignedInt64, { resultArray: 'resultArray' }, '', {})
   store('n', 0, [retrieve('resultArray', 0)[0]])
   call(ReadUnsignedInt64, { resultArray: 'resultArray' }, '', {})
@@ -82,11 +94,17 @@ procedure('main', { }, () => {
     if (retrieve('tempArray', 0)[0] == 1) {
       call(ReadUnsignedInt64, { resultArray: 'resultArray' }, '', {})
       store('valueArray', 0, [retrieve('resultArray', 0)[0]])
-      call('update', { idx: retrieve('idxArray', 0)[0] - 1, value: retrieve('valueArray', 0)[0] })
+      call('update', {
+        idx: retrieve('idxArray', 0)[0] - 1,
+        value: retrieve('valueArray', 0)[0],
+      })
     } else {
       call(ReadUnsignedInt64, { resultArray: 'resultArray' }, '', {})
       store('tempArray', 0, [retrieve('resultArray', 0)[0]])
-      call('rangeQuery', { left: retrieve('idxArray', 0)[0] - 1, right: retrieve('tempArray', 0)[0] - 1 })
+      call('rangeQuery', {
+        left: retrieve('idxArray', 0)[0] - 1,
+        right: retrieve('tempArray', 0)[0] - 1,
+      })
       call(PrintInt64, { buffer: 'printBuffer' }, 'unsigned', {
         num: retrieve('resultArray', 0)[0],
       })
