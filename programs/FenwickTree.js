@@ -62,7 +62,9 @@ procedure(
         call('ReadSignedInt64', { resultArray: 'resultArray' }, '', {})
         set('right', retrieve('resultArray', 0)[0])
         call('rangeQuery', { left: get('idx'), right: get('right') })
-        call('PrintInt64', { buffer: 'printBuffer' }, 'unsigned', { num: retrieve('resultArray', 0)[0] })
+        call('PrintInt64', { buffer: 'printBuffer' }, 'unsigned', {
+          num: retrieve('resultArray', 0)[0],
+        })
         writeChar(10) // Print newline
       }
     })
