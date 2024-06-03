@@ -52,17 +52,17 @@ procedure(
   () => {
     call(ReadUnsignedInt64, { resultArray: 'resultArray' }, '', {})
     range(retrieve('resultArray', 0)[0], (i) => {
-      call(ReadSignedInt64, { resultArray: 'resultArray' }, '', {})
+      call(ReadUnsignedInt64, { resultArray: 'resultArray' }, '', {})
       set('t', retrieve('resultArray', 0)[0])
-      call(ReadSignedInt64, { resultArray: 'resultArray' }, '', {})
+      call(ReadUnsignedInt64, { resultArray: 'resultArray' }, '', {})
       set('idx', retrieve('resultArray', 0)[0])
 
       if (get('t') == 0) {
-        call(ReadSignedInt64, { resultArray: 'resultArray' }, '', {})
+        call(ReadUnsignedInt64, { resultArray: 'resultArray' }, '', {})
         set('value', retrieve('resultArray', 0)[0])
         call('increase', { idx: get('idx'), value: get('value') })
       } else {
-        call(ReadSignedInt64, { resultArray: 'resultArray' }, '', {})
+        call(ReadUnsignedInt64, { resultArray: 'resultArray' }, '', {})
         set('right', retrieve('resultArray', 0)[0])
         call('rangeQuery', { left: get('idx'), right: get('right') })
         call(PrintInt64, { buffer: 'printBuffer' }, 'unsigned', {
