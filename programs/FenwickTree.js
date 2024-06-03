@@ -15,7 +15,7 @@ procedure('increase', { idx: int64, value: int64 }, () => {
   store('valueArray', 0, [get('value')])
 
   range(30, (i) => {
-    if (less(get('n'), retrieve('idxArray', 0)[0])) {
+    if (less(retrieve('n', 0)[0], retrieve('idxArray', 0)[0])) {
       ;('break')
     }
     store('fenwick', retrieve('idxArray', 0)[0], [
