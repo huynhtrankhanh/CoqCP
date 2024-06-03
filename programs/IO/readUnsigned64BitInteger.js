@@ -22,10 +22,6 @@ procedure('', { tmpChar: int64, result: int64 }, () => {
     }
 
     set('result', get('result') * 10 + (get('tmpChar') - 48))
-
-    if (get('result') >= 10000000000000000000) {  # Ensure it does not overflow beyond 20 digits
-      ;('break')
-    }
   })
 
   store('resultArray', 0, [get('result')])
