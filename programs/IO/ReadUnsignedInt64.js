@@ -12,6 +12,7 @@ procedure('', { tmpChar: int64, result: int64 }, () => {
     if (less(get('tmpChar'), 48) || !less(get('tmpChar'), 58)) {
       ;('continue')
     }
+    set('result', get('result') * 10 + (get('tmpChar') - 48))
     ;('break')
   })
 
