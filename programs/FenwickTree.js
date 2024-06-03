@@ -14,11 +14,9 @@ procedure('increase', { idx: int64, value: int64 }, () => {
     if (less(200000, get('idx'))) {
       ;('break')
     }
-    store(
-      'fenwick',
-      get('idx'),
-      [retrieve('fenwick', get('idx'))[0] + get('value')]
-    )
+    store('fenwick', get('idx'), [
+      retrieve('fenwick', get('idx'))[0] + get('value'),
+    ])
     set('idx', get('idx') + (get('idx') & -get('idx')))
   })
 })

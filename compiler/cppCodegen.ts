@@ -320,9 +320,12 @@ export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
                 }
                 if (instruction.type === 'call') {
                   const arrayIndex = mapProcedureNameToArrayIndex.get(
-                    instruction.procedure,
+                    instruction.procedure
                   )
-                  const index = procedureNameMap.get([module.moduleName, instruction.procedure])!
+                  const index = procedureNameMap.get([
+                    module.moduleName,
+                    instruction.procedure,
+                  ])!
                   if (arrayIndex === undefined) {
                     throw new Error('you forgot to validate')
                   }
@@ -489,7 +492,10 @@ export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
                   if (foreignModule === undefined) {
                     throw new Error('you forgot to validate')
                   }
-                  const { variables } = crossModuleProcedureMap.get([instruction.module, instruction.procedure])!
+                  const { variables } = crossModuleProcedureMap.get([
+                    instruction.module,
+                    instruction.procedure,
+                  ])!
                   const supplied = instruction.presetVariables
                   const argumentList = [...variables.keys()].map((x) => {
                     const value = supplied.get(x)

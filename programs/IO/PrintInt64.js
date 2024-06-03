@@ -14,7 +14,7 @@ procedure('unsigned', { num: int64, i: int64, tmpChar: int8 }, () => {
     // Extract digits and store in buffer
     range(20, (j) => {
       if (get('num') == 0) {
-        ; ('break')
+        ;('break')
       }
       set('tmpChar', coerceInt8((get('num') % 10) + 48))
       store('buffer', get('i'), [get('tmpChar')])
