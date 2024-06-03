@@ -1,4 +1,4 @@
-module(ReadUnsigned64BitInteger)
+module(ReadUnsignedInt64)
 
 environment({
   resultArray: array([int64], 1),
