@@ -6,6 +6,7 @@ environment({
   queryType: array([int64], 1),
   queryIndex: array([int64], 2),
   queryValue: array([int64], 1),
+  printBuffer: array([int8], 20),
 })
 
 procedure('increase', { idx: int64, value: int64 }, () => {
@@ -48,21 +49,20 @@ procedure(
   { q: int64, t: int64, idx: int64, value: int64, left: int64, right: int64 },
   () => {
     range(get('q'), (i) => {
-      call('readSigned64BitInteger', {})
+      call('ReadSignedInt64', { resultArray: 'resultArray' }, '', {})
       set('t', retrieve('resultArray', 0)[0])
-      call('readSigned64BitInteger', {})
+      call('ReadSignedInt64', { resultArray: 'resultArray' }, '', {})
       set('idx', retrieve('resultArray', 0)[0])
 
       if (get('t') == 0) {
-        call('readSigned64BitInteger', {})
+        call('ReadSignedInt64', { resultArray: 'resultArray' }, '', {})
         set('value', retrieve('resultArray', 0)[0])
         call('increase', { idx: get('idx'), value: get('value') })
       } else {
-        call('readSigned64BitInteger', {})
+        call('ReadSignedInt64', { resultArray: 'resultArray' }, '', {})
         set('right', retrieve('resultArray', 0)[0])
         call('rangeQuery', { left: get('idx'), right: get('right') })
-        call('PrintInt64', {})
-        call('printUnsignedInt64', { num: retrieve('resultArray', 0)[0] })
+        call('PrintInt64', { buffer: 'printBuffer' }, 'unsigned', { num: retrieve('resultArray', 0)[0] })
         writeChar(10) // Print newline
       }
     })
