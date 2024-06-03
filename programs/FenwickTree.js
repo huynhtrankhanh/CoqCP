@@ -5,14 +5,18 @@ environment({
   resultArray: array([int64], 1),
   queryType: array([int64], 1),
   queryIndex: array([int64], 2),
-  queryValue: array([int64], 1)
+  queryValue: array([int64], 1),
 })
 
 procedure('increase', { idx: int64, value: int64 }, () => {
   set('idx', get('idx') + 1) // Convert 0-based index to 1-based index for Fenwick Tree
 
   while (get('idx') <= 200000) {
-    set('fenwick', get('idx'), retrieve('fenwick', get('idx'))[0] + get('value'))
+    set(
+      'fenwick',
+      get('idx'),
+      retrieve('fenwick', get('idx'))[0] + get('value')
+    )
     set('idx', get('idx') + (get('idx') & -get('idx')))
   }
 })
@@ -39,24 +43,28 @@ procedure('rangeQuery', { left: int64, right: int64, result: int64 }, () => {
   store('resultArray', 0, [get('result')])
 })
 
-procedure('processQueries', { q: int64, t: int64, idx: int64, value: int64, left: int64, right: int64 }, () => {
-  range(get('q'), (i) => {
-    call('readSigned64BitInteger', {})
-    set('t', retrieve('resultArray', 0)[0])
-    call('readSigned64BitInteger', {})
-    set('idx', retrieve('resultArray', 0)[0])
-    
-    if (get('t') == 0) {
+procedure(
+  'processQueries',
+  { q: int64, t: int64, idx: int64, value: int64, left: int64, right: int64 },
+  () => {
+    range(get('q'), (i) => {
       call('readSigned64BitInteger', {})
-      set('value', retrieve('resultArray', 0)[0])
-      call('increase', { idx: get('idx'), value: get('value') })
-    } else {
+      set('t', retrieve('resultArray', 0)[0])
       call('readSigned64BitInteger', {})
-      set('right', retrieve('resultArray', 0)[0])
-      call('rangeQuery', { left: get('idx'), right: get('right') })
-      call('PrintInt64', {})
-      call('printUnsignedInt64', { num: retrieve('resultArray', 0)[0] })
-      writeChar(10) // Print newline
-    }
-  })
-})
+      set('idx', retrieve('resultArray', 0)[0])
+
+      if (get('t') == 0) {
+        call('readSigned64BitInteger', {})
+        set('value', retrieve('resultArray', 0)[0])
+        call('increase', { idx: get('idx'), value: get('value') })
+      } else {
+        call('readSigned64BitInteger', {})
+        set('right', retrieve('resultArray', 0)[0])
+        call('rangeQuery', { left: get('idx'), right: get('right') })
+        call('PrintInt64', {})
+        call('printUnsignedInt64', { num: retrieve('resultArray', 0)[0] })
+        writeChar(10) // Print newline
+      }
+    })
+  }
+)
