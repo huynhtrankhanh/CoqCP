@@ -9,9 +9,11 @@ procedure('', { tmpChar: int64, result: int64 }, () => {
 
   range(20, (i) => {
     set('tmpChar', readChar())
-    if (less(get('tmpChar'), 48) || !less(get('tmpChar'), 58)) { 'continue'; }
-    'break';
-  });
+    if (less(get('tmpChar'), 48) || !less(get('tmpChar'), 58)) {
+      ;('continue')
+    }
+    ;('break')
+  })
 
   range(20, (i) => {
     set('tmpChar', readChar())
