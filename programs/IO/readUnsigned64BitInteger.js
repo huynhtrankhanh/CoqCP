@@ -10,7 +10,10 @@ procedure('', { tmpChar: int64, result: int64 }, () => {
   range(20, (i) => {
     set('tmpChar', readChar())
 
-    if (get('result') == 0 && (less(get('tmpChar'), 48) || !less(get('tmpChar'), 58))) {
+    if (
+      get('result') == 0 &&
+      (less(get('tmpChar'), 48) || !less(get('tmpChar'), 58))
+    ) {
       if (coerceInt64(get('tmpChar')) == -1) {
         ;('break')
       }
