@@ -1,9 +1,11 @@
+module(readSigned64BitInteger)
+
 environment({
   resultArray: array([int64], 1),
 })
 
 procedure(
-  'readSigned64BitInteger',
+  '',
   { tmpChar: int64, result: int64, sign: int64 },
   () => {
     set('result', 0)
