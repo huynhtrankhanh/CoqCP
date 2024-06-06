@@ -333,16 +333,6 @@ Proof.
   - exact (arrays arrayName).
 Defined.
 
-Lemma getFinalArrays {arrayType} (x : Action (WithArrays arrayType) withArraysReturnValue ()) (arrays : forall x, list (arrayType x)) : Action (WithArrays arrayType) withArraysReturnValue (forall x, list (arrayType x)).
-Proof.
-  induction x as [x | effect continuation IH] in arrays |- *.
-  - exact (Done _ _ _ arrays).
-  - destruct effect as [effect | arrayName index | arrayName index value].
-    + exact (Dispatch _ _ _ (DoBasicEffect arrayType effect) (fun x => IH x arrays)).
-    + exact (Dispatch _ _ _ (Retrieve arrayType arrayName index) (fun x => IH x arrays)).
-    + exact (Dispatch _ _ _ (Store arrayType arrayName index value) (fun x => IH x (modifyArray arrays arrayName (Z.to_nat index) value))).
-Defined.
-
 Lemma getAllCharacters {arrayType} (x : Action (WithArrays arrayType) withArraysReturnValue ()) (captured : list Z) : Action (WithArrays arrayType) withArraysReturnValue (list Z).
 Proof.
   induction x as [x | effect continuation IH] in captured |- *.
