@@ -204,9 +204,9 @@ Definition retrieve arrayType name index := Dispatch (WithLocalVariables arrayTy
 
 Definition store arrayType name index (value : arrayType name) := Dispatch (WithLocalVariables arrayType) withLocalVariablesReturnValue _ (DoWithArrays _ (Store arrayType name index value)) (fun x => Done _ _ _ x).
 
-Definition continue arrayType := Done (WithLocalVariables arrayType) withLocalVariablesReturnValue _ KeepGoing.
+Definition continue arrayType := Dispatch (WithinLoop arrayType) withinLoopReturnValue () (DoContinue arrayType).
 
-Definition break arrayType := Done (WithLocalVariables arrayType) withLocalVariablesReturnValue _ Stop.
+Definition break arrayType := Dispatch (WithinLoop arrayType) withinLoopReturnValue () (DoBreak arrayType).
 
 (* Coercion functions *)
 Definition coerceInt8 (n : Z) : Z := n mod 256.
@@ -280,6 +280,12 @@ Fixpoint liftToWithLocalVariables {arrayType r} (x : Action (WithArrays arrayTyp
   match x with
   | Done _ _ _ x => Done _ _ _ x
   | Dispatch _ _ _ effect continuation => Dispatch _ _ _ (DoWithArrays _ effect) (fun x => liftToWithLocalVariables (continuation x))
+  end.
+
+Fixpoint liftToWithinLoop {arrayType r} (x : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue r) : Action (WithinLoop arrayType) withinLoopReturnValue r :=
+  match x with
+  | Done _ _ _ x => Done _ _ _ x
+  | Dispatch _ _ _ effect continuation => Dispatch _ _ _ (DoWithLocalVariables _ effect) (fun x => liftToWithinLoop (continuation x))
   end.
 
 Lemma nth_lt {A} (l : list A) (n : nat) (isLess : Nat.lt n (length l)) : A.
