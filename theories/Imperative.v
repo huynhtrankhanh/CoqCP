@@ -126,6 +126,30 @@ Inductive LoopOutcome :=
 | KeepGoing
 | Stop.
 
+Inductive WithinLoop (arrayType : string -> Type) :=
+| DoWithLocalVariables (effect : WithLocalVariables arrayType)
+| DoContinue
+| DoBreak.
+
+#[export] Instance withinLoopEqualityDecidable {arrayType} (hArrayType : forall name, EqDecision (arrayType name)) : EqDecision (WithinLoop arrayType) := ltac:(solve_decision).
+
+Definition withinLoopReturnValue {arrayType} (effect : WithinLoop arrayType) : Type :=
+  match effect with
+  | DoWithLocalVariables _ effect => withLocalVariablesReturnValue effect
+  | DoContinue _ => false
+  | DoBreak _ => false
+  end.
+
+Lemma dropWithinLoop {arrayType} (action : Action (WithinLoop arrayType) withinLoopReturnValue ()) : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue LoopOutcome.
+Proof.
+  induction action as [| effect continuation IH].
+  - exact (Done _ _ _ KeepGoing).
+  - destruct effect as [effect | |].
+    + exact (Dispatch _ _ _ effect IH).
+    + exact (Done _ _ _ KeepGoing).
+    + exact (Done _ _ _ Stop).
+Defined.
+
 Fixpoint loop (n : nat) { arrayType } (body : nat -> Action (WithLocalVariables arrayType) withLocalVariablesReturnValue LoopOutcome) : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue unit :=
   match n with
   | O => Done _ _ unit tt
