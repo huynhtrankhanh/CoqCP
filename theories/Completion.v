@@ -153,9 +153,10 @@ Qed.
 
 Lemma getKthBlankUpperBound (withBlanks : list (option A)) (k : nat) (hReasonable : k < count_occ decide withBlanks None) : getKthBlank withBlanks k < length withBlanks.
 Proof.
+  pose proof (ltac:(intros; lia) : forall x y : nat, x < y -> S x < S y) as m.
   induction withBlanks as [| head tail IH] in k, hReasonable |- *.
   - simpl in *. lia.
-  - destruct head; simpl in hReasonable; destruct (decide _ _); destruct k as [| k]; simpl in *; try apply Arith_prebase.lt_n_S_stt; try refine (IH _ _); (done || lia).
+  - destruct head; simpl in hReasonable; destruct (decide _ _); destruct k as [| k]; simpl in *; try apply m; try refine (IH _ _); try (done || lia).
 Qed.
 
 Lemma takeKthBlankCountOcc (withBlanks : list (option A)) (k : nat) (hReasonable : k < count_occ decide withBlanks None) : count_occ decide (take (getKthBlank withBlanks k) withBlanks) None = k.
@@ -266,7 +267,8 @@ Qed.
 
 Lemma getKthBlankLt (withBlanks : list (option A)) (i j : nat) (hReasonable : j < count_occ decide withBlanks None) (hLt : i < j) : getKthBlank withBlanks i < getKthBlank withBlanks j.
 Proof.
-  induction withBlanks as [| [head |] tail IH] in i, j, hReasonable, hLt |- *; try easy; destruct i as [| i]; destruct j as [| j]; simpl in *; destruct (decide _ _); try (done || lia); apply Arith_prebase.lt_n_S_stt, IH; (done || lia).
+  pose proof (ltac:(intros; lia) : forall x y : nat, x < y -> S x < S y) as m.
+  induction withBlanks as [| [head |] tail IH] in i, j, hReasonable, hLt |- *; try easy; destruct i as [| i]; destruct j as [| j]; simpl in *; destruct (decide _ _); try (done || lia); apply m, IH; (done || lia).
 Qed.
 
 End Completion.
