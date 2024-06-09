@@ -64,6 +64,38 @@ Definition shortCircuitOr {effectType effectResponse} (a b : Action effectType e
   | false => b
   end).
 
+Class EffectResponse (Effect : Type) := {
+  response: Effect -> Type
+}.
+
+Class LiftEffect (A B : Type) := {
+  lift: A -> B
+}.
+
+Instance LiftSumLeft (A B : Type) : LiftEffect A (A + B) := {
+  lift (a : A) := inl a
+}.
+
+Instance LiftSumRight (A B : Type) : LiftEffect B (A + B) := {
+  lift (b : B) := inr b
+}.
+
+Instance LiftSumLeftRecursive (A' A B : Type) `{LiftEffect A' A} : LiftEffect A' (A + B) := {
+  lift (a' : A') := inl (lift a')
+}.
+
+Instance LiftSumRightRecursive (A B' B : Type) `{LiftEffect B' B} : LiftEffect B' (A + B) := {
+  lift (b' : B') := inr (lift b')
+}.
+
+Instance EffectResponseSum (A B : Type) `{EffectResponse A} `{EffectResponse B} : EffectResponse (A + B) := {
+  response sum :=
+    match sum with
+    | inl x => response x
+    | inr x => response x
+    end
+}.
+
 Inductive BasicEffect :=
 | Trap
 | Flush
