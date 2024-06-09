@@ -113,76 +113,58 @@ Definition basicEffectReturnValue (effect : BasicEffect): Type :=
   end.
 
 Inductive WithArrays (arrayType : string -> Type) :=
-| DoBasicEffect (effect : BasicEffect)
 | Retrieve (arrayName : string) (index : Z)
 | Store (arrayName : string) (index : Z) (value : arrayType arrayName).
 
 #[export] Instance withArraysEqualityDecidable {arrayType} (hArrayType : forall name, EqDecision (arrayType name)) : EqDecision (WithArrays arrayType).
 Proof.
   intros a b.
-  destruct a as [e | a i | a i v]; destruct b as [e1 | a1 i1 | a1 i1 v1]; try ((left; easy) || (right; easy)).
-  - destruct (decide (e = e1)) as [h | h]; try subst e1.
-    { now left. } { right; intro x; now inversion x. }
+  destruct a as [a i | a i v]; destruct b as [a1 i1 | a1 i1 v1]; try ((left; easy) || (right; easy)).
   - destruct (decide (a = a1)) as [h | h]; try subst a1; destruct (decide (i = i1)) as [h1 | h1]; try subst i1; try now left.
     all: right; intro x; now inversion x.
   - destruct (decide (a = a1)) as [h | h]; try subst a1; destruct (decide (i = i1)) as [h1 | h1]; try subst i1; try (right; intro x; now inversion x).
     destruct (hArrayType a v v1) as [h | h]; try (subst v1; now left). right. intro x. inversion x as [x1]. apply inj_pair2_eq_dec in x1; try easy. solve_decision.
-Qed.
+Defined.
 
 Definition withArraysReturnValue {arrayType} (effect : WithArrays arrayType) : Type :=
   match effect with
-  | DoBasicEffect _ effect => basicEffectReturnValue effect
   | Retrieve _ arrayName _ => arrayType arrayName
   | Store _ _ _ _ => unit
   end.
 
-Inductive WithLocalVariables (arrayType : string -> Type) :=
-| DoWithArrays (effect : WithArrays arrayType)
+Inductive WithLocalVariables :=
 | BooleanLocalGet (name : string)
 | BooleanLocalSet (name : string) (value : bool)
 | NumberLocalGet (name : string)
 | NumberLocalSet (name : string) (value : Z).
 
-#[export] Instance withLocalVariablesEqualityDecidable {arrayType} (hArrayType : forall name, EqDecision (arrayType name)) : EqDecision (WithLocalVariables arrayType) := ltac:(solve_decision).
+#[export] Instance withLocalVariablesEqualityDecidable : EqDecision WithLocalVariables := ltac:(solve_decision).
 
-Definition withLocalVariablesReturnValue {arrayType} (effect : WithLocalVariables arrayType) : Type :=
+Definition withLocalVariablesReturnValue (effect : WithLocalVariables) : Type :=
   match effect with
-  | DoWithArrays _ effect => withArraysReturnValue effect
-  | BooleanLocalGet _ _ => bool
-  | BooleanLocalSet _ _ _ => unit
-  | NumberLocalGet _ _ => Z
-  | NumberLocalSet _ _ _ => unit
+  | BooleanLocalGet _ => bool
+  | BooleanLocalSet _ _ => unit
+  | NumberLocalGet _ => Z
+  | NumberLocalSet _ _ => unit
   end.
 
 Inductive LoopOutcome :=
 | KeepGoing
 | Stop.
 
-Inductive WithinLoop (arrayType : string -> Type) :=
-| DoWithLocalVariables (effect : WithLocalVariables arrayType)
+Inductive WithinLoop :=
 | DoContinue
 | DoBreak.
 
-#[export] Instance withinLoopEqualityDecidable {arrayType} (hArrayType : forall name, EqDecision (arrayType name)) : EqDecision (WithinLoop arrayType) := ltac:(solve_decision).
+#[export] Instance withinLoopEqualityDecidable : EqDecision WithinLoop := ltac:(solve_decision).
 
-Definition withinLoopReturnValue {arrayType} (effect : WithinLoop arrayType) : Type :=
+Definition withinLoopReturnValue (effect : WithinLoop) : Type :=
   match effect with
-  | DoWithLocalVariables _ effect => withLocalVariablesReturnValue effect
-  | DoContinue _ => false
-  | DoBreak _ => false
+  | DoContinue => false
+  | DoBreak => false
   end.
 
-Lemma dropWithinLoop {arrayType} (action : Action (WithinLoop arrayType) withinLoopReturnValue ()) : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue LoopOutcome.
-Proof.
-  induction action as [| effect continuation IH].
-  - exact (Done _ _ _ KeepGoing).
-  - destruct effect as [effect | |].
-    + exact (Dispatch _ _ _ effect IH).
-    + exact (Done _ _ _ KeepGoing).
-    + exact (Done _ _ _ Stop).
-Defined.
-
-Fixpoint loop (n : nat) { arrayType } (body : nat -> Action (WithLocalVariables arrayType) withLocalVariablesReturnValue LoopOutcome) : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue unit :=
+Fixpoint loop (n : nat) { arrayType } (body : nat -> Action (WithLocalVariables + WithArrays arrayType + BasicEffect) withLocalVariablesReturnValue LoopOutcome) : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue unit :=
   match n with
   | O => Done _ _ unit tt
   | S n => bind (body n) (fun outcome => match outcome with
