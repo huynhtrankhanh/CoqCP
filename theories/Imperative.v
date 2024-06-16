@@ -100,6 +100,24 @@ Class DropEffect (A B : Type) `{EffectResponse A} `{EffectResponse B} := {
   dropEffect {R : Type} : Action (A + B) R -> Action A R
 }.
 
+Class DropEffectChangeReturnType (A B R : Type) `{EffectResponse A} `{EffectResponse B} := {
+  dropEffectChangeReturnType {R : Type} : Action (A + B) () -> Action A R
+}.
+
+Class Morph (A B RA RB : Type) `{EffectResponse A} `{EffectResponse B} := {
+  morph : Action A RA -> Action B RB
+}.
+
+Instance MorphDrop (A B R : Type) `{EffectResponse A} `{EffectResponse B} `{DropEffect A B} : Morph (A + B) A R R := {
+  morph (a : Action (A + B) R) := dropEffect a
+}.
+
+Instance MorphChange (A B R : Type) `{EffectResponse A} `{EffectResponse B} `{DropEffectChangeReturnType A B R} : Morph (A + B) A () R := {
+  morph (a : Action (A + B) ()) := dropEffectChangeReturnType a
+}.
+
+Definition morphAction {A B RA RB : Type} `{EffectResponse A} `{EffectResponse B} (a : Action A RA) `{morphInstance : @Morph A B RA RB _ _} : Action B RB := @morph A B RA RB _ _ morphInstance a.
+
 Inductive BasicEffect :=
 | Trap
 | Flush
