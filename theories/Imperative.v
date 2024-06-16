@@ -9,12 +9,14 @@ Open Scope Z_scope.
 Record Environment := { arrayType: string -> Type; arrays: forall (name : string), list (arrayType name) }.
 
 Record Locals := { numbers: string -> Z; booleans: string -> bool }.
-
-Inductive Action (effectType : Type) (effectResponse : effectType -> Type) (returnType : Type) :=
+Class EffectResponse (Effect : Type) := {
+  response: Effect -> Type
+}.
+Inductive Action (effectType : Type) `{effectResponse : EffectResponse effectType} (returnType : Type) :=
 | Done (returnValue : returnType)
-| Dispatch (effect : effectType) (continuation : effectResponse effect -> Action effectType effectResponse returnType).
+| Dispatch (effect : effectType) (continuation : @response effectType effectResponse effect -> Action effectType returnType).
 
-Fixpoint identical {effectType effectResponse returnType} (a b : Action effectType effectResponse returnType) : Prop.
+Fixpoint identical {effectType returnType} `{EffectResponse effectType} (a b : Action effectType returnType) : Prop.
 Proof.
   case a as [returnValue | effect continuation].
   - case b as [returnValue2 |].
@@ -26,47 +28,43 @@ Proof.
       exact (effect = effect2 /\ forall x: effect = effect2, rhs x).
 Defined.
 
-Fixpoint bind {effectType effectResponse A B} (a : Action effectType effectResponse A) (f : A -> Action effectType effectResponse B) : Action effectType effectResponse B :=
+Fixpoint bind {effectType A B} `{EffectResponse effectType} (a : Action effectType A) (f : A -> Action effectType B) : Action effectType B :=
   match a with
-  | Done _ _ _ value => f value
-  | Dispatch _ _ _ effect continuation => Dispatch _ _ _ effect (fun response => bind (continuation response) f)
+  | Done _ _ value => f value
+  | Dispatch _ _ effect continuation => Dispatch _ _ effect (fun response => bind (continuation response) f)
   end.
 
-Lemma identicalSelf {effectType effectResponse A} (a : Action effectType effectResponse A) (hEffectType : EqDecision effectType) : identical a a.
+Lemma identicalSelf {effectType A} `{EffectResponse effectType} (a : Action effectType A) (hEffectType : EqDecision effectType) : identical a a.
 Proof.
   induction a as [| effect continuation IH]; simpl; try easy. split; try easy. intro no. unfold eq_rect_r. now rewrite <- (eq_rect_eq_dec hEffectType).
 Qed.
 
-Lemma leftIdentity {effectType effectResponse A B} (x : A) (f : A -> Action effectType effectResponse B) : bind (Done _ _ _ x) f = f x.
+Lemma leftIdentity {effectType A B} `{EffectResponse effectType} (x : A) (f : A -> Action effectType B) : bind (Done _ _ x) f = f x.
 Proof. easy. Qed.
 
-Lemma rightIdentity {effectType effectResponse A} (x : Action effectType effectResponse A) (hEffectType : EqDecision effectType) : identical (bind x (Done _ _ _)) x.
+Lemma rightIdentity {effectType A} `{EffectResponse effectType} (x : Action effectType A) (hEffectType : EqDecision effectType) : identical (bind x (Done _ _)) x.
 Proof.
   induction x as [| a next IH]; try easy; simpl.
   split; try easy. intros no. unfold eq_rect_r. rewrite <- (eq_rect_eq_dec hEffectType).
   intros h. exact (IH h).
 Qed.
 
-Lemma assoc {effectType effectResponse A B C} (x : Action effectType effectResponse A) (hEffectType : EqDecision effectType) (f : A -> Action effectType effectResponse B) (g : B -> Action effectType effectResponse C) : identical (bind x (fun x => bind (f x) g)) (bind (bind x f) g).
+Lemma assoc {effectType A B C} `{EffectResponse effectType} (x : Action effectType A) (hEffectType : EqDecision effectType) (f : A -> Action effectType B) (g : B -> Action effectType C) : identical (bind x (fun x => bind (f x) g)) (bind (bind x f) g).
 Proof.
   induction x as [| a next IH]; try easy; simpl.
   - now apply identicalSelf.
   - split; try easy. intros no. unfold eq_rect_r. rewrite <- (eq_rect_eq_dec hEffectType). intros h. exact (IH h).
 Qed.
 
-Definition shortCircuitAnd {effectType effectResponse} (a b : Action effectType effectResponse bool) := bind a (fun x => match x with
-  | false => Done _ _ _ false
+Definition shortCircuitAnd {effectType} `{EffectResponse effectType} (a b : Action effectType bool) := bind a (fun x => match x with
+  | false => Done _ _ false
   | true => b
   end).
 
-Definition shortCircuitOr {effectType effectResponse} (a b : Action effectType effectResponse bool) := bind a (fun x => match x with
-  | true => Done _ _ _ true
+Definition shortCircuitOr {effectType} `{EffectResponse effectType} (a b : Action effectType bool) := bind a (fun x => match x with
+  | true => Done _ _ true
   | false => b
   end).
-
-Class EffectResponse (Effect : Type) := {
-  response: Effect -> Type
-}.
 
 Class LiftEffect (A B : Type) := {
   lift: A -> B
@@ -94,6 +92,10 @@ Instance EffectResponseSum (A B : Type) `{EffectResponse A} `{EffectResponse B} 
     | inl x => response x
     | inr x => response x
     end
+}.
+
+Class DropEffect (A B : Type) `{EffectResponse A} `{EffectResponse B} := {
+  dropEffect {R : Type} : Action (A + B) R -> Action A R
 }.
 
 Inductive BasicEffect :=
