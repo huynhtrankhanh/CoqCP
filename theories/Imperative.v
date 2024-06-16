@@ -9,9 +9,11 @@ Open Scope Z_scope.
 Record Environment := { arrayType: string -> Type; arrays: forall (name : string), list (arrayType name) }.
 
 Record Locals := { numbers: string -> Z; booleans: string -> bool }.
+
 Class EffectResponse (Effect : Type) := {
   response: Effect -> Type
 }.
+
 Inductive Action (effectType : Type) `{effectResponse : EffectResponse effectType} (returnType : Type) :=
 | Done (returnValue : returnType)
 | Dispatch (effect : effectType) (continuation : @response effectType effectResponse effect -> Action effectType returnType).
