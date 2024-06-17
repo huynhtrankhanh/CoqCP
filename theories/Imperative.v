@@ -134,6 +134,10 @@ Definition basicEffectReturnValue (effect : BasicEffect): Type :=
   | WriteChar _ => unit
   end.
 
+#[export] Instance basicEffectResponse : EffectResponse BasicEffect := {
+  response := basicEffectReturnValue
+}.
+
 Inductive WithArrays (arrayType : string -> Type) :=
 | Retrieve (arrayName : string) (index : Z)
 | Store (arrayName : string) (index : Z) (value : arrayType arrayName).
@@ -154,6 +158,10 @@ Definition withArraysReturnValue {arrayType} (effect : WithArrays arrayType) : T
   | Store _ _ _ _ => unit
   end.
 
+#[export] Instance withArraysResponse (arrayType : string -> Type) : EffectResponse (WithArrays arrayType) := {
+  response := withArraysReturnValue
+}.
+
 Inductive WithLocalVariables :=
 | BooleanLocalGet (name : string)
 | BooleanLocalSet (name : string) (value : bool)
@@ -170,6 +178,10 @@ Definition withLocalVariablesReturnValue (effect : WithLocalVariables) : Type :=
   | NumberLocalSet _ _ => unit
   end.
 
+#[export] Instance withLocalVariablesResponse : EffectResponse WithLocalVariables := {
+  response := withLocalVariablesReturnValue
+}.
+
 Inductive LoopOutcome :=
 | KeepGoing
 | Stop.
@@ -185,6 +197,10 @@ Definition withinLoopReturnValue (effect : WithinLoop) : Type :=
   | DoContinue => false
   | DoBreak => false
   end.
+
+#[export] Instance withinLoopResponse : EffectResponse WithinLoop := {
+  response := withinLoopReturnValue
+}.
 
 Fixpoint loop (n : nat) { arrayType } (body : nat -> Action (WithLocalVariables + WithArrays arrayType + BasicEffect) withLocalVariablesReturnValue LoopOutcome) : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue unit :=
   match n with
