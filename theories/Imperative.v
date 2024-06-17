@@ -202,22 +202,22 @@ Definition withinLoopReturnValue (effect : WithinLoop) : Type :=
   response := withinLoopReturnValue
 }.
 
-Fixpoint loop (n : nat) { arrayType } (body : nat -> Action (WithLocalVariables + WithArrays arrayType + BasicEffect) withLocalVariablesReturnValue LoopOutcome) : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue unit :=
+Fixpoint loop (n : nat) { effectType } `{EffectResponse effectType} (body : nat -> Action effectType LoopOutcome) : Action effectType unit :=
   match n with
-  | O => Done _ _ unit tt
+  | O => Done _ unit tt
   | S n => bind (body n) (fun outcome => match outcome with
     | KeepGoing => loop n body
-    | Stop => Done _ _ unit tt
+    | Stop => Done _ unit tt
     end)
   end.
 
-Fixpoint loopString (s : string) { arrayType } (body : Z -> Action (WithLocalVariables arrayType) withLocalVariablesReturnValue LoopOutcome) : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue unit :=
+Fixpoint loopString (s : string) { effectType } `{EffectResponse effectType} (body : Z -> Action effectType LoopOutcome) : Action effectType unit :=
   match s with
-  | EmptyString => Done _ _ unit tt
+  | EmptyString => Done _ unit tt
   | String x tail => bind (body (Z.of_N (N_of_ascii x))) (fun outcome =>
     match outcome with
     | KeepGoing => loopString tail body
-    | Stop => Done _ _ unit tt
+    | Stop => Done _ unit tt
     end)
   end.
 
