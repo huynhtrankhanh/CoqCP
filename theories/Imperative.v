@@ -204,9 +204,9 @@ Definition retrieve arrayType name index := Dispatch (WithLocalVariables arrayTy
 
 Definition store arrayType name index (value : arrayType name) := Dispatch (WithLocalVariables arrayType) withLocalVariablesReturnValue _ (DoWithArrays _ (Store arrayType name index value)) (fun x => Done _ _ _ x).
 
-Definition continue arrayType := Dispatch (WithinLoop arrayType) withinLoopReturnValue () (DoContinue arrayType).
+Definition continue arrayType := Dispatch (WithinLoop arrayType) withinLoopReturnValue () (DoContinue arrayType) (fun x => Done _ _ _ tt).
 
-Definition break arrayType := Dispatch (WithinLoop arrayType) withinLoopReturnValue () (DoBreak arrayType).
+Definition break arrayType := Dispatch (WithinLoop arrayType) withinLoopReturnValue () (DoBreak arrayType) (fun x => Done _ _ _ tt).
 
 (* Coercion functions *)
 Definition coerceInt8 (n : Z) : Z := n mod 256.
