@@ -10,15 +10,11 @@ Record Environment := { arrayType: string -> Type; arrays: forall (name : string
 
 Record Locals := { numbers: string -> Z; booleans: string -> bool }.
 
-Class EffectResponse (Effect : Type) := {
-  response: Effect -> Type
-}.
-
-Inductive Action (effectType : Type) `{effectResponse : EffectResponse effectType} (returnType : Type) :=
+Inductive Action (effectType : Type) (effectResponse : effectType -> Type) (returnType : Type) :=
 | Done (returnValue : returnType)
-| Dispatch (effect : effectType) (continuation : @response effectType effectResponse effect -> Action effectType returnType).
+| Dispatch (effect : effectType) (continuation : effectResponse effect -> Action effectType effectResponse returnType).
 
-Fixpoint identical {effectType returnType} `{EffectResponse effectType} (a b : Action effectType returnType) : Prop.
+Fixpoint identical {effectType effectResponse returnType} (a b : Action effectType effectResponse returnType) : Prop.
 Proof.
   case a as [returnValue | effect continuation].
   - case b as [returnValue2 |].
@@ -30,93 +26,43 @@ Proof.
       exact (effect = effect2 /\ forall x: effect = effect2, rhs x).
 Defined.
 
-Fixpoint bind {effectType A B} `{EffectResponse effectType} (a : Action effectType A) (f : A -> Action effectType B) : Action effectType B :=
+Fixpoint bind {effectType effectResponse A B} (a : Action effectType effectResponse A) (f : A -> Action effectType effectResponse B) : Action effectType effectResponse B :=
   match a with
-  | Done _ _ value => f value
-  | Dispatch _ _ effect continuation => Dispatch _ _ effect (fun response => bind (continuation response) f)
+  | Done _ _ _ value => f value
+  | Dispatch _ _ _ effect continuation => Dispatch _ _ _ effect (fun response => bind (continuation response) f)
   end.
 
-Lemma identicalSelf {effectType A} `{EffectResponse effectType} (a : Action effectType A) (hEffectType : EqDecision effectType) : identical a a.
+Lemma identicalSelf {effectType effectResponse A} (a : Action effectType effectResponse A) (hEffectType : EqDecision effectType) : identical a a.
 Proof.
   induction a as [| effect continuation IH]; simpl; try easy. split; try easy. intro no. unfold eq_rect_r. now rewrite <- (eq_rect_eq_dec hEffectType).
 Qed.
 
-Lemma leftIdentity {effectType A B} `{EffectResponse effectType} (x : A) (f : A -> Action effectType B) : bind (Done _ _ x) f = f x.
+Lemma leftIdentity {effectType effectResponse A B} (x : A) (f : A -> Action effectType effectResponse B) : bind (Done _ _ _ x) f = f x.
 Proof. easy. Qed.
 
-Lemma rightIdentity {effectType A} `{EffectResponse effectType} (x : Action effectType A) (hEffectType : EqDecision effectType) : identical (bind x (Done _ _)) x.
+Lemma rightIdentity {effectType effectResponse A} (x : Action effectType effectResponse A) (hEffectType : EqDecision effectType) : identical (bind x (Done _ _ _)) x.
 Proof.
   induction x as [| a next IH]; try easy; simpl.
   split; try easy. intros no. unfold eq_rect_r. rewrite <- (eq_rect_eq_dec hEffectType).
   intros h. exact (IH h).
 Qed.
 
-Lemma assoc {effectType A B C} `{EffectResponse effectType} (x : Action effectType A) (hEffectType : EqDecision effectType) (f : A -> Action effectType B) (g : B -> Action effectType C) : identical (bind x (fun x => bind (f x) g)) (bind (bind x f) g).
+Lemma assoc {effectType effectResponse A B C} (x : Action effectType effectResponse A) (hEffectType : EqDecision effectType) (f : A -> Action effectType effectResponse B) (g : B -> Action effectType effectResponse C) : identical (bind x (fun x => bind (f x) g)) (bind (bind x f) g).
 Proof.
   induction x as [| a next IH]; try easy; simpl.
   - now apply identicalSelf.
   - split; try easy. intros no. unfold eq_rect_r. rewrite <- (eq_rect_eq_dec hEffectType). intros h. exact (IH h).
 Qed.
 
-Definition shortCircuitAnd {effectType} `{EffectResponse effectType} (a b : Action effectType bool) := bind a (fun x => match x with
-  | false => Done _ _ false
+Definition shortCircuitAnd {effectType effectResponse} (a b : Action effectType effectResponse bool) := bind a (fun x => match x with
+  | false => Done _ _ _ false
   | true => b
   end).
 
-Definition shortCircuitOr {effectType} `{EffectResponse effectType} (a b : Action effectType bool) := bind a (fun x => match x with
-  | true => Done _ _ true
+Definition shortCircuitOr {effectType effectResponse} (a b : Action effectType effectResponse bool) := bind a (fun x => match x with
+  | true => Done _ _ _ true
   | false => b
   end).
-
-Class LiftEffect (A B : Type) := {
-  lift: A -> B
-}.
-
-Instance LiftSumLeft (A B : Type) : LiftEffect A (A + B) := {
-  lift (a : A) := inl a
-}.
-
-Instance LiftSumRight (A B : Type) : LiftEffect B (A + B) := {
-  lift (b : B) := inr b
-}.
-
-Instance LiftSumLeftRecursive (A' A B : Type) `{LiftEffect A' A} : LiftEffect A' (A + B) := {
-  lift (a' : A') := inl (lift a')
-}.
-
-Instance LiftSumRightRecursive (A B' B : Type) `{LiftEffect B' B} : LiftEffect B' (A + B) := {
-  lift (b' : B') := inr (lift b')
-}.
-
-Instance EffectResponseSum (A B : Type) `{EffectResponse A} `{EffectResponse B} : EffectResponse (A + B) := {
-  response sum :=
-    match sum with
-    | inl x => response x
-    | inr x => response x
-    end
-}.
-
-Class DropEffect (A B : Type) `{EffectResponse A} `{EffectResponse B} := {
-  dropEffect {R : Type} : Action (A + B) R -> Action A R
-}.
-
-Class DropEffectChangeReturnType (A B R : Type) `{EffectResponse A} `{EffectResponse B} := {
-  dropEffectChangeReturnType {R : Type} : Action (A + B) () -> Action A R
-}.
-
-Class Morph (A B RA RB : Type) `{EffectResponse A} `{EffectResponse B} := {
-  morph : Action A RA -> Action B RB
-}.
-
-Instance MorphDrop (A B R : Type) `{EffectResponse A} `{EffectResponse B} `{DropEffect A B} : Morph (A + B) A R R := {
-  morph (a : Action (A + B) R) := dropEffect a
-}.
-
-Instance MorphChange (A B R : Type) `{EffectResponse A} `{EffectResponse B} `{DropEffectChangeReturnType A B R} : Morph (A + B) A () R := {
-  morph (a : Action (A + B) ()) := dropEffectChangeReturnType a
-}.
-
-Definition morphAction {A B RA RB : Type} `{EffectResponse A} `{EffectResponse B} (a : Action A RA) `{morphInstance : @Morph A B RA RB _ _} : Action B RB := @morph A B RA RB _ _ morphInstance a.
 
 Inductive BasicEffect :=
 | Trap
@@ -134,90 +80,92 @@ Definition basicEffectReturnValue (effect : BasicEffect): Type :=
   | WriteChar _ => unit
   end.
 
-#[export] Instance basicEffectResponse : EffectResponse BasicEffect := {
-  response := basicEffectReturnValue
-}.
-
 Inductive WithArrays (arrayType : string -> Type) :=
+| DoBasicEffect (effect : BasicEffect)
 | Retrieve (arrayName : string) (index : Z)
 | Store (arrayName : string) (index : Z) (value : arrayType arrayName).
 
 #[export] Instance withArraysEqualityDecidable {arrayType} (hArrayType : forall name, EqDecision (arrayType name)) : EqDecision (WithArrays arrayType).
 Proof.
   intros a b.
-  destruct a as [a i | a i v]; destruct b as [a1 i1 | a1 i1 v1]; try ((left; easy) || (right; easy)).
+  destruct a as [e | a i | a i v]; destruct b as [e1 | a1 i1 | a1 i1 v1]; try ((left; easy) || (right; easy)).
+  - destruct (decide (e = e1)) as [h | h]; try subst e1.
+    { now left. } { right; intro x; now inversion x. }
   - destruct (decide (a = a1)) as [h | h]; try subst a1; destruct (decide (i = i1)) as [h1 | h1]; try subst i1; try now left.
     all: right; intro x; now inversion x.
   - destruct (decide (a = a1)) as [h | h]; try subst a1; destruct (decide (i = i1)) as [h1 | h1]; try subst i1; try (right; intro x; now inversion x).
     destruct (hArrayType a v v1) as [h | h]; try (subst v1; now left). right. intro x. inversion x as [x1]. apply inj_pair2_eq_dec in x1; try easy. solve_decision.
-Defined.
+Qed.
 
 Definition withArraysReturnValue {arrayType} (effect : WithArrays arrayType) : Type :=
   match effect with
+  | DoBasicEffect _ effect => basicEffectReturnValue effect
   | Retrieve _ arrayName _ => arrayType arrayName
   | Store _ _ _ _ => unit
   end.
 
-#[export] Instance withArraysResponse (arrayType : string -> Type) : EffectResponse (WithArrays arrayType) := {
-  response := withArraysReturnValue
-}.
-
-Inductive WithLocalVariables :=
+Inductive WithLocalVariables (arrayType : string -> Type) :=
+| DoWithArrays (effect : WithArrays arrayType)
 | BooleanLocalGet (name : string)
 | BooleanLocalSet (name : string) (value : bool)
 | NumberLocalGet (name : string)
 | NumberLocalSet (name : string) (value : Z).
 
-#[export] Instance withLocalVariablesEqualityDecidable : EqDecision WithLocalVariables := ltac:(solve_decision).
+#[export] Instance withLocalVariablesEqualityDecidable {arrayType} (hArrayType : forall name, EqDecision (arrayType name)) : EqDecision (WithLocalVariables arrayType) := ltac:(solve_decision).
 
-Definition withLocalVariablesReturnValue (effect : WithLocalVariables) : Type :=
+Definition withLocalVariablesReturnValue {arrayType} (effect : WithLocalVariables arrayType) : Type :=
   match effect with
-  | BooleanLocalGet _ => bool
-  | BooleanLocalSet _ _ => unit
-  | NumberLocalGet _ => Z
-  | NumberLocalSet _ _ => unit
+  | DoWithArrays _ effect => withArraysReturnValue effect
+  | BooleanLocalGet _ _ => bool
+  | BooleanLocalSet _ _ _ => unit
+  | NumberLocalGet _ _ => Z
+  | NumberLocalSet _ _ _ => unit
   end.
-
-#[export] Instance withLocalVariablesResponse : EffectResponse WithLocalVariables := {
-  response := withLocalVariablesReturnValue
-}.
 
 Inductive LoopOutcome :=
 | KeepGoing
 | Stop.
 
-Inductive WithinLoop :=
+Inductive WithinLoop (arrayType : string -> Type) :=
+| DoWithLocalVariables (effect : WithLocalVariables arrayType)
 | DoContinue
 | DoBreak.
 
-#[export] Instance withinLoopEqualityDecidable : EqDecision WithinLoop := ltac:(solve_decision).
+#[export] Instance withinLoopEqualityDecidable {arrayType} (hArrayType : forall name, EqDecision (arrayType name)) : EqDecision (WithinLoop arrayType) := ltac:(solve_decision).
 
-Definition withinLoopReturnValue (effect : WithinLoop) : Type :=
+Definition withinLoopReturnValue {arrayType} (effect : WithinLoop arrayType) : Type :=
   match effect with
-  | DoContinue => false
-  | DoBreak => false
+  | DoWithLocalVariables _ effect => withLocalVariablesReturnValue effect
+  | DoContinue _ => false
+  | DoBreak _ => false
   end.
 
-#[export] Instance withinLoopResponse : EffectResponse WithinLoop := {
-  response := withinLoopReturnValue
-}.
+Lemma dropWithinLoop {arrayType} (action : Action (WithinLoop arrayType) withinLoopReturnValue ()) : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue LoopOutcome.
+Proof.
+  induction action as [| effect continuation IH].
+  - exact (Done _ _ _ KeepGoing).
+  - destruct effect as [effect | |].
+    + exact (Dispatch _ _ _ effect IH).
+    + exact (Done _ _ _ KeepGoing).
+    + exact (Done _ _ _ Stop).
+Defined.
 
-Fixpoint loop (n : nat) { effectType } `{EffectResponse effectType} (body : nat -> Action effectType LoopOutcome) : Action effectType unit :=
+Fixpoint loop (n : nat) { arrayType } (body : nat -> Action (WithLocalVariables arrayType) withLocalVariablesReturnValue LoopOutcome) : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue unit :=
   match n with
-  | O => Done _ unit tt
+  | O => Done _ _ unit tt
   | S n => bind (body n) (fun outcome => match outcome with
     | KeepGoing => loop n body
-    | Stop => Done _ unit tt
+    | Stop => Done _ _ unit tt
     end)
   end.
 
-Fixpoint loopString (s : string) { effectType } `{EffectResponse effectType} (body : Z -> Action effectType LoopOutcome) : Action effectType unit :=
+Fixpoint loopString (s : string) { arrayType } (body : Z -> Action (WithLocalVariables arrayType) withLocalVariablesReturnValue LoopOutcome) : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue unit :=
   match s with
-  | EmptyString => Done _ unit tt
+  | EmptyString => Done _ _ unit tt
   | String x tail => bind (body (Z.of_N (N_of_ascii x))) (fun outcome =>
     match outcome with
     | KeepGoing => loopString tail body
-    | Stop => Done _ unit tt
+    | Stop => Done _ _ unit tt
     end)
   end.
 
