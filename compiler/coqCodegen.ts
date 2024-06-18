@@ -74,8 +74,8 @@ export const coqCodegen = (sortedModules: CoqCPAST[]): string => {
               itemTypes.length === 0
                 ? 'unit'
                 : itemTypes
-                    .map((x) => (x === 'bool' ? 'bool' : 'Z'))
-                    .join(' * ')
+                  .map((x) => (x === 'bool' ? 'bool' : 'Z'))
+                  .join(' * ')
             return `if decide (name = ${getCoqString(
               name
             )}) then ${coqType} else `
@@ -97,10 +97,10 @@ export const coqCodegen = (sortedModules: CoqCPAST[]): string => {
                 itemTypes.length === 0
                   ? 'tt'
                   : '(' +
-                    itemTypes
-                      .map((x) => (x === 'bool' ? 'false' : '0%Z'))
-                      .join(', ') +
-                    ')'
+                  itemTypes
+                    .map((x) => (x === 'bool' ? 'false' : '0%Z'))
+                    .join(', ') +
+                  ')'
               return `destruct (decide (name = ${getCoqString(
                 name
               )})) as [h |]; [(rewrite h; simpl; exact (repeat ${value} ${rawLength})) |]; `
@@ -128,11 +128,19 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
           type BinderInfo = { number: number; type: 'int8' | 'int64' }
           const localBinderMap = new Map<string, BinderInfo>()
           let binderCounter = 0
+          const liftExpression = (x: {
+            expression: string
+            type: PrimitiveType | 'statement' | 'loop control' | 'condition' | PrimitiveType[]
+          }): string => {
+            if (binderCounter === 0) return x.expression
+            if (x.type === 'loop control' || x.type === 'condition') return x.expression
+            return `(liftToWithinLoop ${x.expression})`
+          }
           const dfs = (
             value: ValueType
           ): {
             expression: string
-            type: PrimitiveType | 'statement' | PrimitiveType[]
+            type: PrimitiveType | 'statement' | 'loop control' | 'condition' | PrimitiveType[]
           } => {
             const getBitWidth = (
               type: 'int8' | 'int16' | 'int32' | 'int64'
@@ -155,9 +163,8 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
                 value.map((_, i) => 'tuple_element_' + i).join(', ') +
                 ')'
               for (const [index, element] of value.entries()) {
-                tuple = `(bind ${
-                  dfs(element).expression
-                } (fun tuple_element_${index} => ${tuple}))`
+                tuple = `(bind ${dfs(element).expression
+                  } (fun tuple_element_${index} => ${tuple}))`
               }
               return tuple
             }
@@ -302,12 +309,12 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
               }
               case 'continue': {
                 return {
-                  expression: `(Done _ _ _ KeepGoing)`,
-                  type: 'statement',
+                  expression: `(continue (arrayType environment${moduleIndex}))`,
+                  type: 'loop control',
                 }
               }
               case 'break': {
-                return { expression: `(Done _ _ _ Stop)`, type: 'statement' }
+                return { expression: `(break (arrayType environment${moduleIndex}))`, type: 'loop control' }
               }
               case 'flush': {
                 return {
@@ -433,7 +440,7 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
                   }
                   case 'minus': {
                     return {
-                      expression: `(bind ${expression} (fun x => -x))`,
+                      expression: `(bind ${expression} (fun x => Done _ _ _ (-x)))`,
                       type,
                     }
                   }
@@ -467,11 +474,11 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
                 // because of validation, this is nonnegative and less than length
                 if (type.length === 1) return { expression, type: type[0] }
                 const reverseIndex = length - index - 1
-                let finalExpression = expression
+                let finalExpression = 'element_tuple'
                 for (let i = 0; i < reverseIndex; i++)
                   finalExpression = 'fst (' + finalExpression + ')'
                 finalExpression = `(snd (${finalExpression}))`
-                return { expression: finalExpression, type: type[index] }
+                return { expression: (`(bind ${expression} (fun element_tuple => Done _ _ _ ${finalExpression}))`), type: type[index] }
               }
               case 'call': {
                 const { presetVariables, procedure } = value
@@ -500,16 +507,16 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
               }
               case 'condition': {
                 const { condition, body, alternate } = value
-                const { expression: conditionExpression } = dfs(condition)
+                const processedCondition = dfs(condition)
                 const bodyExpression = joinStatements(
-                  body.map(dfs).map((x) => x.expression)
+                  body.map(dfs).map((x) => liftExpression(x))
                 )
                 const alternateExpression = joinStatements(
-                  alternate.map(dfs).map((x) => x.expression)
+                  alternate.map(dfs).map((x) => liftExpression(x))
                 )
                 return {
-                  expression: `(bind ${conditionExpression} (fun x => if x then ${bodyExpression} else ${alternateExpression}))`,
-                  type: 'statement',
+                  expression: `(bind ${liftExpression(processedCondition)} (fun x => if x then ${bodyExpression} else ${alternateExpression}))`,
+                  type: 'condition',
                 }
               }
               case 'local binder': {
@@ -537,7 +544,7 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
                   })
 
                 const bodyExpression = joinStatements(
-                  loopBody.map(dfs).map((x) => x.expression)
+                  loopBody.map(dfs).map((x) => liftExpression(x))
                 )
 
                 if (previousBinderValue === undefined)
@@ -549,14 +556,13 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
                   return {
                     expression: `(loopString (${getCoqString(
                       end.raw
-                    )}) (fun binder_${binderCounter}_intermediate => let binder_${binderCounter} := Done _ _ _ binder_${binderCounter}_intermediate in bind (${bodyExpression}) (fun ignored => Done _ _ _ KeepGoing)))`,
+                    )}) (fun binder_${binderCounter}_intermediate => let binder_${binderCounter} := Done (WithLocalVariables (arrayType environment${moduleIndex})) withLocalVariablesReturnValue _ binder_${binderCounter}_intermediate in dropWithinLoop (bind (${bodyExpression}) (fun ignored => Done _ _ _ tt))))`,
                     type: 'statement',
                   }
                 } else {
                   return {
-                    expression: `(bind ${
-                      dfs(end).expression
-                    } (fun x => loop (Z.to_nat x) (fun binder_${binderCounter}_intermediate => let binder_${binderCounter} := Done _ _ _ (Z.sub (Z.sub x (Z.of_nat binder_${binderCounter}_intermediate)) 1%Z) in bind (${bodyExpression}) (fun ignored => Done _ _ _ KeepGoing))))`,
+                    expression: `(bind ${dfs(end).expression
+                      } (fun x => loop (Z.to_nat x) (fun binder_${binderCounter}_intermediate => let binder_${binderCounter} := Done (WithLocalVariables (arrayType environment${moduleIndex})) withLocalVariablesReturnValue _ (Z.sub (Z.sub x (Z.of_nat binder_${binderCounter}_intermediate)) 1%Z) in dropWithinLoop (bind (${bodyExpression}) (fun ignored => Done _ _ _ tt)))))`,
                     type: 'statement',
                   }
                 }
