@@ -7,13 +7,13 @@ const getCoqString = (text: string): string => {
   const encoder = new TextEncoder()
   const utf8Bytes = encoder.encode(text)
 
-  if (utf8Bytes.every(x => x < 128)) {
+  if (utf8Bytes.every((x) => x < 128)) {
     return '"' + text.split('"').join('""') + '"'
   }
 
-const byteCode =Array.from(utf8Bytes).map(
-  (byte) => `"${byte.toString().padStart(3, '0')}"`
-)
+  const byteCode = Array.from(utf8Bytes).map(
+    (byte) => `"${byte.toString().padStart(3, '0')}"`
+  )
 
   function constructCoqString(byteCode: string[]) {
     return byteCode.reduceRight(
