@@ -5,13 +5,15 @@ import { isNumeric } from './validateAST'
 
 const getCoqString = (text: string): string => {
   const encoder = new TextEncoder()
+  const utf8Bytes = encoder.encode(text)
 
-  function getByteCode(string: string) {
-    const utf8Bytes = encoder.encode(string)
-    return Array.from(utf8Bytes).map(
-      (byte) => `"${byte.toString().padStart(3, '0')}"`
-    )
+  if (utf8Bytes.every(x => x < 128)) {
+    return '"' + text.split('"').join('""') + '"'
   }
+
+const byteCode =Array.from(utf8Bytes).map(
+  (byte) => `"${byte.toString().padStart(3, '0')}"`
+)
 
   function constructCoqString(byteCode: string[]) {
     return byteCode.reduceRight(
@@ -20,7 +22,6 @@ const getCoqString = (text: string): string => {
     )
   }
 
-  const byteCode = getByteCode(text)
   const coqString = constructCoqString(byteCode)
 
   return coqString
