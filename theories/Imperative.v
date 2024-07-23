@@ -6,9 +6,9 @@ Require Import ZArith.
 Require Import Coq.Strings.Ascii.
 Open Scope Z_scope.
 
-Record Environment := { arrayType: string -> Type; arrays: forall (name : string), list (arrayType name) }.
+Record Environment (arrayIndex : Type) := { arrayType: arrayIndex -> Type; arrays: forall (name : arrayIndex), list (arrayType name) }.
 
-Record Locals := { numbers: string -> Z; booleans: string -> bool }.
+Record Locals (variableIndex : Type) := { numbers: variableIndex -> Z; booleans: variableIndex -> bool }.
 
 Inductive Action (effectType : Type) (effectResponse : effectType -> Type) (returnType : Type) :=
 | Done (returnValue : returnType)
@@ -80,12 +80,12 @@ Definition basicEffectReturnValue (effect : BasicEffect): Type :=
   | WriteChar _ => unit
   end.
 
-Inductive WithArrays (arrayType : string -> Type) :=
+Inductive WithArrays (arrayIndex : Type) (arrayType : arrayIndex -> Type) :=
 | DoBasicEffect (effect : BasicEffect)
-| Retrieve (arrayName : string) (index : Z)
-| Store (arrayName : string) (index : Z) (value : arrayType arrayName).
+| Retrieve (arrayName : arrayIndex) (index : Z)
+| Store (arrayName : arrayIndex) (index : Z) (value : arrayType arrayName).
 
-#[export] Instance withArraysEqualityDecidable {arrayType} (hArrayType : forall name, EqDecision (arrayType name)) : EqDecision (WithArrays arrayType).
+#[export] Instance withArraysEqualityDecidable {arrayIndex : Type} {arrayType : arrayIndex -> Type} (hIndexEq : EqDecision arrayIndex) (hArrayType : forall name, EqDecision (arrayType name)) : EqDecision (WithArrays arrayIndex arrayType).
 Proof.
   intros a b.
   destruct a as [e | a i | a i v]; destruct b as [e1 | a1 i1 | a1 i1 v1]; try ((left; easy) || (right; easy)).
@@ -94,53 +94,53 @@ Proof.
   - destruct (decide (a = a1)) as [h | h]; try subst a1; destruct (decide (i = i1)) as [h1 | h1]; try subst i1; try now left.
     all: right; intro x; now inversion x.
   - destruct (decide (a = a1)) as [h | h]; try subst a1; destruct (decide (i = i1)) as [h1 | h1]; try subst i1; try (right; intro x; now inversion x).
-    destruct (hArrayType a v v1) as [h | h]; try (subst v1; now left). right. intro x. inversion x as [x1]. apply inj_pair2_eq_dec in x1; try easy. solve_decision.
+    destruct (hArrayType a v v1) as [h | h]; try (subst v1; now left). right. intro x. inversion x as [x1]. apply inj_pair2_eq_dec in x1; try easy.
 Qed.
 
-Definition withArraysReturnValue {arrayType} (effect : WithArrays arrayType) : Type :=
+Definition withArraysReturnValue {arrayIndex} {arrayType : arrayIndex -> Type} (effect : WithArrays arrayIndex arrayType) : Type :=
   match effect with
-  | DoBasicEffect _ effect => basicEffectReturnValue effect
-  | Retrieve _ arrayName _ => arrayType arrayName
-  | Store _ _ _ _ => unit
+  | DoBasicEffect _ _ effect => basicEffectReturnValue effect
+  | Retrieve _ _ arrayName _ => arrayType arrayName
+  | Store _ _ _ _ _ => unit
   end.
 
-Inductive WithLocalVariables (arrayType : string -> Type) :=
-| DoWithArrays (effect : WithArrays arrayType)
-| BooleanLocalGet (name : string)
-| BooleanLocalSet (name : string) (value : bool)
-| NumberLocalGet (name : string)
-| NumberLocalSet (name : string) (value : Z).
+Inductive WithLocalVariables (arrayIndex : Type) (arrayType : arrayIndex -> Type) (variableIndex : Type) :=
+| DoWithArrays (effect : WithArrays arrayIndex arrayType)
+| BooleanLocalGet (name : variableIndex)
+| BooleanLocalSet (name : variableIndex) (value : bool)
+| NumberLocalGet (name : variableIndex)
+| NumberLocalSet (name : variableIndex) (value : Z).
 
-#[export] Instance withLocalVariablesEqualityDecidable {arrayType} (hArrayType : forall name, EqDecision (arrayType name)) : EqDecision (WithLocalVariables arrayType) := ltac:(solve_decision).
+#[export] Instance withLocalVariablesEqualityDecidable {arrayIndex arrayType variableIndex} (hArrayIndex : EqDecision arrayIndex) (hArrayType : forall name, EqDecision (arrayType name)) (hVariableIndex : EqDecision variableIndex) : EqDecision (WithLocalVariables arrayIndex arrayType variableIndex) := ltac:(solve_decision).
 
-Definition withLocalVariablesReturnValue {arrayType} (effect : WithLocalVariables arrayType) : Type :=
+Definition withLocalVariablesReturnValue {arrayIndex arrayType variableIndex} (effect : WithLocalVariables arrayIndex arrayType variableIndex) : Type :=
   match effect with
-  | DoWithArrays _ effect => withArraysReturnValue effect
-  | BooleanLocalGet _ _ => bool
-  | BooleanLocalSet _ _ _ => unit
-  | NumberLocalGet _ _ => Z
-  | NumberLocalSet _ _ _ => unit
+  | DoWithArrays _ _ _ effect => withArraysReturnValue effect
+  | BooleanLocalGet _ _ _ _ => bool
+  | BooleanLocalSet _ _ _ _ _ => unit
+  | NumberLocalGet _ _ _ _ => Z
+  | NumberLocalSet _ _ _ _ _ => unit
   end.
 
 Inductive LoopOutcome :=
 | KeepGoing
 | Stop.
 
-Inductive WithinLoop (arrayType : string -> Type) :=
-| DoWithLocalVariables (effect : WithLocalVariables arrayType)
+Inductive WithinLoop arrayIndex arrayType variableIndex :=
+| DoWithLocalVariables (effect : WithLocalVariables arrayIndex arrayType variableIndex)
 | DoContinue
 | DoBreak.
 
-#[export] Instance withinLoopEqualityDecidable {arrayType} (hArrayType : forall name, EqDecision (arrayType name)) : EqDecision (WithinLoop arrayType) := ltac:(solve_decision).
+#[export] Instance withinLoopEqualityDecidable {arrayIndex arrayType variableIndex} (hArrayType : forall name, EqDecision (arrayType name)) (hArrayIndex : EqDecision arrayIndex) (hVariableIndex : EqDecision variableIndex): EqDecision (WithinLoop arrayIndex arrayType variableIndex) := ltac:(solve_decision).
 
-Definition withinLoopReturnValue {arrayType} (effect : WithinLoop arrayType) : Type :=
+Definition withinLoopReturnValue {arrayIndex arrayType variableIndex} (effect : WithinLoop arrayIndex arrayType variableIndex) : Type :=
   match effect with
-  | DoWithLocalVariables _ effect => withLocalVariablesReturnValue effect
-  | DoContinue _ => false
-  | DoBreak _ => false
+  | DoWithLocalVariables _ _ _ effect => withLocalVariablesReturnValue effect
+  | DoContinue _ _ _ => false
+  | DoBreak _ _ _ => false
   end.
 
-Lemma dropWithinLoop {arrayType} (action : Action (WithinLoop arrayType) withinLoopReturnValue ()) : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue LoopOutcome.
+Lemma dropWithinLoop {arrayIndex arrayType variableIndex} (action : Action (WithinLoop arrayIndex arrayType variableIndex) withinLoopReturnValue ()) : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue LoopOutcome.
 Proof.
   induction action as [| effect continuation IH].
   - exact (Done _ _ _ KeepGoing).
@@ -150,7 +150,7 @@ Proof.
     + exact (Done _ _ _ Stop).
 Defined.
 
-Fixpoint loop (n : nat) { arrayType } (body : nat -> Action (WithLocalVariables arrayType) withLocalVariablesReturnValue LoopOutcome) : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue unit :=
+Fixpoint loop (n : nat) {arrayIndex arrayType variableIndex} (body : nat -> Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue LoopOutcome) : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue unit :=
   match n with
   | O => Done _ _ unit tt
   | S n => bind (body n) (fun outcome => match outcome with
@@ -159,7 +159,7 @@ Fixpoint loop (n : nat) { arrayType } (body : nat -> Action (WithLocalVariables 
     end)
   end.
 
-Fixpoint loopString (s : string) { arrayType } (body : Z -> Action (WithLocalVariables arrayType) withLocalVariablesReturnValue LoopOutcome) : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue unit :=
+Fixpoint loopString (s : string) {arrayIndex arrayType variableIndex} (body : Z -> Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue LoopOutcome) : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue unit :=
   match s with
   | EmptyString => Done _ _ unit tt
   | String x tail => bind (body (Z.of_N (N_of_ascii x))) (fun outcome =>
@@ -169,14 +169,14 @@ Fixpoint loopString (s : string) { arrayType } (body : Z -> Action (WithLocalVar
     end)
   end.
 
-Definition update { A } (map : string -> A) (key : string) (value : A) := fun x => if decide (x = key) then value else map x.
+Definition update {indexType : Type} {A} (map : indexType -> A) (key : indexType) (value : A) `{EqDecision indexType} := fun x => if decide (x = key) then value else map x.
 
-Lemma eliminateLocalVariables { arrayType } (bools : string -> bool) (numbers : string -> Z) (action : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue unit) : Action (WithArrays arrayType) withArraysReturnValue unit.
+Lemma eliminateLocalVariables {arrayIndex arrayType variableIndex} `{EqDecision variableIndex} (bools : variableIndex -> bool) (numbers : variableIndex -> Z) (action : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue unit) : Action (WithArrays arrayIndex arrayType) withArraysReturnValue unit.
 Proof.
   induction action as [x | effect continuation IH] in bools, numbers |- *;
   [exact (Done _ _ _ x) |].
   destruct effect as [effect | name | name value | name | name value].
-  - apply (Dispatch (WithArrays arrayType) withArraysReturnValue unit effect).
+  - apply (Dispatch (WithArrays arrayIndex arrayType) withArraysReturnValue unit effect).
     simpl in IH, continuation. intro value. exact (IH value bools numbers).
   - simpl in IH, continuation. exact (IH (bools name) bools numbers).
   - simpl in IH, continuation. exact (IH tt (update bools name value) numbers).
@@ -184,29 +184,29 @@ Proof.
   - simpl in IH, continuation. exact (IH tt bools (update numbers name value)).
 Defined.
 
-Definition readChar arrayType := Dispatch (WithLocalVariables arrayType) withLocalVariablesReturnValue Z (DoWithArrays _(DoBasicEffect _ ReadChar)) (fun x => Done _ _ Z x).
+Definition readChar arrayIndex arrayType variableIndex := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue Z (DoWithArrays _ _ _ (DoBasicEffect _ _ ReadChar)) (fun x => Done _ _ Z x).
 
-Definition writeChar arrayType x := Dispatch (WithLocalVariables arrayType) withLocalVariablesReturnValue _ (DoWithArrays _(DoBasicEffect _ (WriteChar x))) (fun x => Done _ _ _ x).
+Definition writeChar arrayIndex arrayType variableIndex x := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue _ (DoWithArrays _ _ _ (DoBasicEffect _ _ (WriteChar x))) (fun x => Done _ _ _ x).
 
-Definition flush arrayType := Dispatch (WithLocalVariables arrayType) withLocalVariablesReturnValue _ (DoWithArrays _(DoBasicEffect _ Flush)) (fun x => Done _ _ _ x).
+Definition flush arrayIndex arrayType variableIndex := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue _ (DoWithArrays _ _ _ (DoBasicEffect _ _ Flush)) (fun x => Done _ _ _ x).
 
-Definition trap arrayType returnType := Dispatch (WithLocalVariables arrayType) withLocalVariablesReturnValue returnType (DoWithArrays _ (DoBasicEffect _ Trap)) (fun x => False_rect _ x).
+Definition trap arrayIndex arrayType variableIndex returnType := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue returnType (DoWithArrays _ _ _ (DoBasicEffect _ _ Trap)) (fun x => False_rect _ x).
 
-Definition booleanLocalSet arrayType name value := Dispatch (WithLocalVariables arrayType) withLocalVariablesReturnValue _ (BooleanLocalSet _ name value) (fun x => Done _ _ _ x).
+Definition booleanLocalSet arrayIndex arrayType variableIndex name value := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue _ (BooleanLocalSet _ _ _ name value) (fun x => Done _ _ _ x).
 
-Definition booleanLocalGet arrayType name := Dispatch (WithLocalVariables arrayType) withLocalVariablesReturnValue _ (BooleanLocalGet _ name) (fun x => Done _ _ _ x).
+Definition booleanLocalGet arrayIndex arrayType variableIndex name := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue _ (BooleanLocalGet _ _ _ name) (fun x => Done _ _ _ x).
 
-Definition numberLocalSet arrayType name value := Dispatch (WithLocalVariables arrayType) withLocalVariablesReturnValue _ (NumberLocalSet _ name value) (fun x => Done _ _ _ x).
+Definition numberLocalSet arrayIndex arrayType variableIndex name value := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue _ (NumberLocalSet _ _ _ name value) (fun x => Done _ _ _ x).
 
-Definition numberLocalGet arrayType name := Dispatch (WithLocalVariables arrayType) withLocalVariablesReturnValue _ (NumberLocalGet _ name) (fun x => Done _ _ _ x).
+Definition numberLocalGet arrayIndex arrayType variableIndex name := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue _ (NumberLocalGet _ _ _ name) (fun x => Done _ _ _ x).
 
-Definition retrieve arrayType name index := Dispatch (WithLocalVariables arrayType) withLocalVariablesReturnValue _ (DoWithArrays _ (Retrieve arrayType name index)) (fun x => Done _ _ _ x).
+Definition retrieve arrayIndex arrayType variableIndex name index := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue _ (DoWithArrays _ _ _ (Retrieve arrayIndex arrayType name index)) (fun x => Done _ _ _ x).
 
-Definition store arrayType name index (value : arrayType name) := Dispatch (WithLocalVariables arrayType) withLocalVariablesReturnValue _ (DoWithArrays _ (Store arrayType name index value)) (fun x => Done _ _ _ x).
+Definition store arrayIndex arrayType variableIndex name index (value : arrayType name) := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue _ (DoWithArrays _ _ _ (Store _ _ name index value)) (fun x => Done _ _ _ x).
 
-Definition continue arrayType := Dispatch (WithinLoop arrayType) withinLoopReturnValue () (DoContinue arrayType) (fun x => Done _ _ _ tt).
+Definition continue arrayIndex arrayType variableIndex := Dispatch (WithinLoop arrayIndex arrayType variableIndex) withinLoopReturnValue () (DoContinue _ _ _) (fun x => Done _ _ _ tt).
 
-Definition break arrayType := Dispatch (WithinLoop arrayType) withinLoopReturnValue () (DoBreak arrayType) (fun x => Done _ _ _ tt).
+Definition break arrayIndex arrayType variableIndex := Dispatch (WithinLoop arrayIndex arrayType variableIndex) withinLoopReturnValue () (DoBreak _ _ _) (fun x => Done _ _ _ tt).
 
 (* Coercion functions *)
 Definition coerceInt8 (n : Z) : Z := n mod 256.
@@ -227,32 +227,32 @@ Definition toSigned32 (n : Z) : Z :=
 Definition toSigned64 (n : Z) : Z :=
   if decide (n < 9223372036854775808) then n else n - 18446744073709551616.
 
-Definition divIntUnsigned {arrayType} (a b : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue Z) : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue Z := bind a (fun a => bind b (fun b => if decide (b = 0) then trap arrayType Z else Done _ _ _ (a / b))).
-Definition modIntUnsigned {arrayType} (a b : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue Z) : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue Z := bind a (fun a => bind b (fun b => if decide (b = 0) then trap arrayType Z else Done _ _ _ (a mod b))).
+Definition divIntUnsigned {arrayIndex arrayType variableIndex} (a b : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue Z) : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue Z := bind a (fun a => bind b (fun b => if decide (b = 0) then trap arrayIndex arrayType variableIndex Z else Done _ _ _ (a / b))).
+Definition modIntUnsigned {arrayIndex arrayType variableIndex} (a b : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue Z) : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue Z := bind a (fun a => bind b (fun b => if decide (b = 0) then trap arrayIndex arrayType variableIndex Z else Done _ _ _ (a mod b))).
 
 (* Arithmetic operations for 8-bit integers *)
 Definition addInt8 {u v} (a b : Action u v Z) : Action u v Z := bind a (fun a => bind b (fun b => Done _ _ _ (coerceInt8 (a + b)))).
 Definition subInt8 {u v} (a b : Action u v Z) : Action u v Z := bind a (fun a => bind b (fun b => Done _ _ _ (coerceInt8 (a - b)))).
 Definition multInt8 {u v} (a b : Action u v Z) : Action u v Z := bind a (fun a => bind b (fun b => Done _ _ _ (coerceInt8 (a * b)))).
-Definition divInt8Signed {arrayType} (a b : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue Z) : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue Z := bind a (fun a => bind b (fun b => if decide (b = 0) then trap arrayType Z else if decide (toSigned8 a = -128 /\ toSigned8 b = -1) then trap arrayType Z else Done _ _ _ (coerceInt8 (a / b)))).
+Definition divInt8Signed {arrayIndex arrayType variableIndex} (a b : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue Z) : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue Z := bind a (fun a => bind b (fun b => if decide (b = 0) then trap arrayIndex arrayType variableIndex Z else if decide (toSigned8 a = -128 /\ toSigned8 b = -1) then trap arrayIndex arrayType variableIndex Z else Done _ _ _ (coerceInt8 (a / b)))).
 
 (* Arithmetic operations for 16-bit integers *)
 Definition addInt16 {u v} (a b : Action u v Z) : Action u v Z := bind a (fun a => bind b (fun b => Done _ _ _ (coerceInt16 (a + b)))).
 Definition subInt16 {u v} (a b : Action u v Z) : Action u v Z := bind a (fun a => bind b (fun b => Done _ _ _ (coerceInt16 (a - b)))).
 Definition multInt16 {u v} (a b : Action u v Z) : Action u v Z := bind a (fun a => bind b (fun b => Done _ _ _ (coerceInt16 (a * b)))).
-Definition divInt16Signed {arrayType} (a b : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue Z) : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue Z := bind a (fun a => bind b (fun b => if decide (b = 0) then trap arrayType Z else if decide (toSigned16 a = -32768 /\ toSigned16 b = -1) then trap arrayType Z else Done _ _ _ (coerceInt16 (a / b)))).
+Definition divInt16Signed {arrayIndex arrayType variableIndex} (a b : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue Z) : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue Z := bind a (fun a => bind b (fun b => if decide (b = 0) then trap arrayIndex arrayType variableIndex Z else if decide (toSigned16 a = -32768 /\ toSigned16 b = -1) then trap arrayIndex arrayType variableIndex Z else Done _ _ _ (coerceInt16 (a / b)))).
 
 (* Arithmetic operations for 32-bit integers *)
 Definition addInt32 {u v} (a b : Action u v Z) : Action u v Z := bind a (fun a => bind b (fun b => Done _ _ _ (coerceInt32 (a + b)))).
 Definition subInt32 {u v} (a b : Action u v Z) : Action u v Z := bind a (fun a => bind b (fun b => Done _ _ _ (coerceInt32 (a - b)))).
 Definition multInt32 {u v} (a b : Action u v Z) : Action u v Z := bind a (fun a => bind b (fun b => Done _ _ _ (coerceInt32 (a * b)))).
-Definition divInt32Signed {arrayType} (a b : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue Z) : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue Z := bind a (fun a => bind b (fun b => if decide (b = 0) then trap arrayType Z else if decide (toSigned32 a = -2147483648 /\ toSigned32 b = -1) then trap arrayType Z else Done _ _ _ (coerceInt32 (a / b)))).
+Definition divInt32Signed {arrayIndex arrayType variableIndex} (a b : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue Z) : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue Z := bind a (fun a => bind b (fun b => if decide (b = 0) then trap arrayIndex arrayType variableIndex Z else if decide (toSigned32 a = -2147483648 /\ toSigned32 b = -1) then trap arrayIndex arrayType variableIndex Z else Done _ _ _ (coerceInt32 (a / b)))).
 
 (* Arithmetic operations for 64-bit integers *)
 Definition addInt64 {u v} (a b : Action u v Z) : Action u v Z := bind a (fun a => bind b (fun b => Done _ _ _ (coerceInt64 (a + b)))).
 Definition subInt64 {u v} (a b : Action u v Z) : Action u v Z := bind a (fun a => bind b (fun b => Done _ _ _ (coerceInt64 (a - b)))).
 Definition multInt64 {u v} (a b : Action u v Z) : Action u v Z := bind a (fun a => bind b (fun b => Done _ _ _ (coerceInt64 (a * b)))).
-Definition divInt64Signed {arrayType} (a b : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue Z) : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue Z := bind a (fun a => bind b (fun b => if decide (b = 0) then trap arrayType Z else if decide (toSigned64 a = -9223372036854775808 /\ toSigned64 b = -1) then trap arrayType Z else Done _ _ _ (coerceInt64 (a / b)))).
+Definition divInt64Signed {arrayIndex arrayType variableIndex} (a b : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue Z) : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue Z := bind a (fun a => bind b (fun b => if decide (b = 0) then trap arrayIndex arrayType variableIndex Z else if decide (toSigned64 a = -9223372036854775808 /\ toSigned64 b = -1) then trap arrayIndex arrayType variableIndex Z else Done _ _ _ (coerceInt64 (a / b)))).
 
 (* Bitwise operations for any bit width *)
 Definition andBits {u v} (a b : Action u v Z) : Action u v Z := bind a (fun a => bind b (fun b => Done _ _ _ (Z.land a b))).
@@ -260,14 +260,14 @@ Definition orBits {u v} (a b : Action u v Z) : Action u v Z := bind a (fun a => 
 Definition xorBits {u v} (a b : Action u v Z) : Action u v Z := bind a (fun a => bind b (fun b => Done _ _ _ (Z.lxor a b))).
 
 (* Operations for specified bit width *)
-Definition shiftLeft {arrayType} (bitWidth : Z) (a amount : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue Z) : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue Z :=
+Definition shiftLeft {arrayIndex arrayType variableIndex} (bitWidth : Z) (a amount : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue Z) : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue Z :=
   bind a (fun a => bind amount (fun amount =>
-    if decide (amount >= bitWidth) then trap _ Z else Done _ _ _ (Z.land (Z.shiftl a amount) (Z.ones bitWidth))
+    if decide (amount >= bitWidth) then trap arrayIndex arrayType variableIndex Z else Done _ _ _ (Z.land (Z.shiftl a amount) (Z.ones bitWidth))
   )).
 
-Definition shiftRight {arrayType} (bitWidth : Z) (a amount : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue Z) : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue Z :=
+Definition shiftRight {arrayIndex arrayType variableIndex} (bitWidth : Z) (a amount : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue Z) : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue Z :=
   bind a (fun a => bind amount (fun amount =>
-    if decide (amount >= bitWidth) then trap _ Z else Done _ _ _ (Z.land (Z.shiftr a amount) (Z.ones bitWidth))
+    if decide (amount >= bitWidth) then trap arrayIndex arrayType variableIndex Z else Done _ _ _ (Z.land (Z.shiftr a amount) (Z.ones bitWidth))
   )).
 
 Definition notBits {u v} (bitWidth : Z) (a : Action u v Z) : Action u v Z := bind a (fun a => Done _ _ _ (Z.land (Z.lnot a) (Z.ones bitWidth))).
@@ -276,16 +276,16 @@ Definition coerceBool {u v} (a : Action u v bool) : Action u v Z := bind a (fun 
   if a then Done _ _ _ 1 else Done _ _ _ 0
 ).
 
-Fixpoint liftToWithLocalVariables {arrayType r} (x : Action (WithArrays arrayType) withArraysReturnValue r) : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue r :=
+Fixpoint liftToWithLocalVariables {arrayIndex arrayType variableIndex r} (x : Action (WithArrays arrayIndex arrayType) withArraysReturnValue r) : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue r :=
   match x with
   | Done _ _ _ x => Done _ _ _ x
-  | Dispatch _ _ _ effect continuation => Dispatch _ _ _ (DoWithArrays _ effect) (fun x => liftToWithLocalVariables (continuation x))
+  | Dispatch _ _ _ effect continuation => Dispatch _ _ _ (DoWithArrays _ _ _ effect) (fun x => liftToWithLocalVariables (continuation x))
   end.
 
-Fixpoint liftToWithinLoop {arrayType r} (x : Action (WithLocalVariables arrayType) withLocalVariablesReturnValue r) : Action (WithinLoop arrayType) withinLoopReturnValue r :=
+Fixpoint liftToWithinLoop {arrayIndex arrayType variableIndex r} (x : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue r) : Action (WithinLoop arrayIndex arrayType variableIndex) withinLoopReturnValue r :=
   match x with
   | Done _ _ _ x => Done _ _ _ x
-  | Dispatch _ _ _ effect continuation => Dispatch _ _ _ (DoWithLocalVariables _ effect) (fun x => liftToWithinLoop (continuation x))
+  | Dispatch _ _ _ effect continuation => Dispatch _ _ _ (DoWithLocalVariables _ _ _ effect) (fun x => liftToWithinLoop (continuation x))
   end.
 
 Lemma nth_lt {A} (l : list A) (n : nat) (isLess : Nat.lt n (length l)) : A.
@@ -293,7 +293,7 @@ Proof.
   destruct l as [| head tail]; simpl in *; (lia || exact (nth n (head :: tail) head)).
 Defined.
 
-Lemma getNewArrays {arrayType} (x : Action (WithArrays arrayType) withArraysReturnValue ()) (arrays : forall x, list (arrayType x)) : (Action BasicEffect basicEffectReturnValue (forall x, list (arrayType x))).
+Lemma getNewArrays {arrayIndex arrayType} `{EqDecision arrayIndex} (x : Action (WithArrays arrayIndex arrayType) withArraysReturnValue ()) (arrays : forall x, list (arrayType x)) : (Action BasicEffect basicEffectReturnValue (forall x, list (arrayType x))).
 Proof.
   induction x as [x | effect continuation IH] in arrays |- *.
   - exact (Done _ _ _ arrays).
@@ -307,24 +307,24 @@ Proof.
       * exact (Dispatch _ _ _ Trap (fun _ => Done _ _ _ arrays)).
 Defined.
 
-Lemma withArraysReturnValueDoBasicEffectArrayType (arrayType1 arrayType2 : string -> Type) (effect : BasicEffect) : withArraysReturnValue (DoBasicEffect arrayType1 effect) = withArraysReturnValue (DoBasicEffect arrayType2 effect).
+Lemma withArraysReturnValueDoBasicEffectArrayType arrayIndex1 arrayIndex2 arrayType1 arrayType2 (effect : BasicEffect) : withArraysReturnValue (DoBasicEffect arrayIndex1 arrayType1 effect) = withArraysReturnValue (DoBasicEffect arrayIndex2 arrayType2 effect).
 Proof. auto. Qed.
 
-Lemma translateArrays {arrayType} (x : Action (WithArrays arrayType) withArraysReturnValue ()) (destinationArrayType : string -> Type) (mapping : string -> string) (hCongruent : forall x, arrayType x = destinationArrayType (mapping x)) : Action (WithArrays destinationArrayType) withArraysReturnValue ().
+Lemma translateArrays {arrayIndex1 arrayIndex2 arrayType} (x : Action (WithArrays arrayIndex1 arrayType) withArraysReturnValue ()) (destinationArrayType : arrayIndex2 -> Type) (mapping : arrayIndex1 -> arrayIndex2) (hCongruent : forall x, arrayType x = destinationArrayType (mapping x)) : Action (WithArrays arrayIndex2 destinationArrayType) withArraysReturnValue ().
 Proof.
   induction x as [x | effect continuation IH].
   - exact (Done _ _ _ tt).
   - destruct effect as [effect | arrayName index | arrayName index value].
-    + rewrite (withArraysReturnValueDoBasicEffectArrayType arrayType destinationArrayType) in IH. exact (Dispatch _ _ _ (DoBasicEffect destinationArrayType effect) IH).
-    + assert (h : withArraysReturnValue (Retrieve arrayType arrayName index) = withArraysReturnValue (Retrieve destinationArrayType (mapping arrayName) index)). { simpl; auto. }
+    + rewrite (withArraysReturnValueDoBasicEffectArrayType arrayIndex1 arrayIndex2 arrayType destinationArrayType) in IH. exact (Dispatch _ _ _ (DoBasicEffect _ destinationArrayType effect) IH).
+    + assert (h : withArraysReturnValue (Retrieve arrayIndex1 arrayType arrayName index) = withArraysReturnValue (Retrieve arrayIndex2 destinationArrayType (mapping arrayName) index)). { simpl; auto. }
       rewrite h in IH.
-      exact (Dispatch _ _ _ (Retrieve destinationArrayType (mapping arrayName) index) IH).
-    + assert (h : withArraysReturnValue (Store arrayType arrayName index value) = withArraysReturnValue (Store destinationArrayType (mapping arrayName) index ltac:(rewrite <- hCongruent; exact value))). { simpl; auto. }
+      exact (Dispatch _ _ _ (Retrieve _ destinationArrayType (mapping arrayName) index) IH).
+    + assert (h : withArraysReturnValue (Store arrayIndex1 arrayType arrayName index value) = withArraysReturnValue (Store _ destinationArrayType (mapping arrayName) index ltac:(rewrite <- hCongruent; exact value))). { simpl; auto. }
       rewrite h in IH.
-      exact (Dispatch _ _ _ (Store destinationArrayType (mapping arrayName) index ltac:(rewrite <- hCongruent; exact value)) IH).
+      exact (Dispatch _ _ _ (Store _ destinationArrayType (mapping arrayName) index ltac:(rewrite <- hCongruent; exact value)) IH).
 Defined.
 
-Lemma modifyArray {arrayType : string -> Type} (arrays : forall x, list (arrayType x)) (toBeModified : string) (index : nat) (value : arrayType toBeModified) : forall x, list (arrayType x).
+Lemma modifyArray {arrayIndex} `{EqDecision arrayIndex} {arrayType : arrayIndex -> Type} (arrays : forall x, list (arrayType x)) (toBeModified : arrayIndex) (index : nat) (value : arrayType toBeModified) : forall x, list (arrayType x).
 Proof.
   intro arrayName.
   destruct (decide (arrayName = toBeModified)) as [H | H].
@@ -333,16 +333,16 @@ Proof.
   - exact (arrays arrayName).
 Defined.
 
-Lemma getAllCharacters {arrayType} (x : Action (WithArrays arrayType) withArraysReturnValue ()) (captured : list Z) : Action (WithArrays arrayType) withArraysReturnValue (list Z).
+Lemma getAllCharacters {arrayIndex arrayType} (x : Action (WithArrays arrayIndex arrayType) withArraysReturnValue ()) (captured : list Z) : Action (WithArrays arrayIndex arrayType) withArraysReturnValue (list Z).
 Proof.
   induction x as [x | effect continuation IH] in captured |- *.
   - exact (Done _ _ _ captured).
   - destruct effect as [effect | arrayName index | arrayName index value].
     + destruct effect as [| | | x].
-      * exact (Dispatch _ _ _ (DoBasicEffect _ Trap) (fun returnValue => IH returnValue captured)).
-      * exact (Dispatch _ _ _ (DoBasicEffect _ Flush) (fun returnValue => IH returnValue captured)).
-      * exact (Dispatch _ _ _ (DoBasicEffect _ ReadChar) (fun returnValue => IH returnValue captured)).
-      * exact (Dispatch _ _ _ (DoBasicEffect _ (WriteChar x)) (fun returnValue => IH returnValue (captured ++ [x]))).
-    + exact (Dispatch _ _ _ (Retrieve arrayType arrayName index) (fun x => IH x captured)).
-    + exact (Dispatch _ _ _ (Store arrayType arrayName index value) (fun x => IH x captured)).
+      * exact (Dispatch _ _ _ (DoBasicEffect _ _ Trap) (fun returnValue => IH returnValue captured)).
+      * exact (Dispatch _ _ _ (DoBasicEffect _ _ Flush) (fun returnValue => IH returnValue captured)).
+      * exact (Dispatch _ _ _ (DoBasicEffect _ _ ReadChar) (fun returnValue => IH returnValue captured)).
+      * exact (Dispatch _ _ _ (DoBasicEffect _ _ (WriteChar x)) (fun returnValue => IH returnValue (captured ++ [x]))).
+    + exact (Dispatch _ _ _ (Retrieve _ arrayType arrayName index) (fun x => IH x captured)).
+    + exact (Dispatch _ _ _ (Store _ arrayType arrayName index value) (fun x => IH x captured)).
 Defined.
