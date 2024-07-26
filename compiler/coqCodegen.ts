@@ -35,26 +35,53 @@ const byteLength = (x: string) => {
 
 const indent = '  '
 
+const generateInductive = (name: string, arms: string[]) => {
+  if (arms.length === 0) return "Inductive " + name + ".\n";
+  return `Inductive ${name} :=` + "\n" + arms.map(x => "| " + x).join("\n") + ".\n";
+};
+
 const sanitizeName = (name: string): string =>
   [...name].filter((x) => /[0-9a-zA-Z'_]/.test(x)).join('')
 
 export const coqCodegen = (sortedModules: CoqCPAST[]): string => {
-  const mapToSanitized = new PairMap<string, string, string>()
-  const sanitizedProcedureNameCollisions = new Map<string, number>()
+  const mapToSanitizedFunc = new PairMap<string, string, string>()
+  const mapToSanitizedVar = new PairMap<string, string, string>()
+  const mapToSanitizedArray = new PairMap<string, string, string>()
 
-  const sanitize = (moduleName: string, procedureName: string) => {
-    const existing = mapToSanitized.get([moduleName, procedureName])
+  const sanitizedFuncCollisions = new Map<string, number>()
+  const sanitizedVarCollisions = new Map<string, number>()
+  const sanitizedArrayCollisions = new Map<string, number>()
+
+  const sanitize = (
+    moduleName: string,
+    identifier: string,
+    namespace: 'funcdef' | 'vardef' | 'arraydef' | 'arrayidx',
+    mapToSanitized: PairMap<string, string, string>,
+    sanitizedIdentifierCollisions: Map<string, number>
+  ) => {
+    const existing = mapToSanitized.get([moduleName, identifier])
     if (existing !== undefined) return existing
-    const sanePart = sanitizeName(moduleName + '_' + procedureName)
+    const sanePart = sanitizeName(moduleName + '_' + identifier)
     const discriminator = (() => {
-      const count = sanitizedProcedureNameCollisions.get(sanePart) || 0
-      sanitizedProcedureNameCollisions.set(sanePart, count + 1)
+      const count = sanitizedIdentifierCollisions.get(sanePart) || 0
+      sanitizedIdentifierCollisions.set(sanePart, count + 1)
       return count
     })()
-    const aggregate = 'funcdef_' + discriminator + '_' + sanePart
-    mapToSanitized.set([moduleName, procedureName], aggregate)
+    const aggregate = namespace + '_' + discriminator + '_' + sanePart
+    mapToSanitized.set([moduleName, identifier], aggregate)
     return aggregate
   }
+
+  const sanitizeFunction = (moduleName: string, identifier: string) =>
+    sanitize(moduleName, identifier, 'funcdef', mapToSanitizedFunc, sanitizedFuncCollisions)
+
+  const sanitizeVariable = (moduleName: string, functionName: string, identifier: string) =>
+    sanitize(moduleName, JSON.stringify([functionName, '_', identifier]), 'vardef', mapToSanitizedVar, sanitizedVarCollisions)
+
+  const sanitizeArray = (moduleName: string, identifier: string) =>
+    sanitize(moduleName, identifier, 'arraydef', mapToSanitizedArray, sanitizedArrayCollisions)
+
+  const sanitizeVariableIndex = (moduleName: string, functionName: string): string => "vars" + sanitizeFunction(moduleName, functionName)
 
   let code =
     'From CoqCP Require Import Options Imperative.\nFrom stdpp Require Import numbers list strings.\nRequire Import Coq.Strings.Ascii.\nOpen Scope type_scope.\n'
@@ -64,64 +91,50 @@ export const coqCodegen = (sortedModules: CoqCPAST[]): string => {
 
     const environmentCode = (() => {
       if (environment === null || environment.arrays.size === 0) {
-        return `Definition environment${moduleIndex} : Environment := {| arrayType := fun _ => False; arrays := fun _ => [] |}.
+        return `Definition environment${moduleIndex} : Environment False := {| arrayType := fun _ => False; arrays := fun _ => [] |}.
 `
       }
-      const arrayTypeFunction =
-        'fun name => ' +
-        [...environment.arrays.entries()]
-          .map(([name, { itemTypes }]) => {
-            const coqType =
-              itemTypes.length === 0
-                ? 'unit'
-                : itemTypes
-                    .map((x) => (x === 'bool' ? 'bool' : 'Z'))
-                    .join(' * ')
-            return `if decide (name = ${getCoqString(
-              name
-            )}) then ${coqType} else `
-          })
-          .join('') +
-        'False'
-      const arrayFunction =
-        'fun name => ltac:(' +
-        [...environment.arrays.entries()]
-          .map(
-            ([
-              name,
-              {
-                itemTypes,
-                length: { raw: rawLength },
-              },
-            ]) => {
-              const value =
-                itemTypes.length === 0
-                  ? 'tt'
-                  : '(' +
-                    itemTypes
-                      .map((x) => (x === 'bool' ? 'false' : '0%Z'))
-                      .join(', ') +
-                    ')'
-              return `destruct (decide (name = ${getCoqString(
-                name
-              )})) as [h |]; [(rewrite h; simpl; exact (repeat ${value} ${rawLength})) |]; `
-            }
-          )
-          .join('') +
-        'exact [])'
-      return `Definition environment${moduleIndex} : Environment := {| arrayType := ${arrayTypeFunction}; arrays := ${arrayFunction} |}.
+      const arrayTypeFunction = 'fun name => match name with ' + [...environment.arrays.entries()].map(([name, { itemTypes }]) => {
+        const coqType =
+          itemTypes.length === 0
+            ? 'unit'
+            : itemTypes
+              .map((x) => (x === 'bool' ? 'bool' : 'Z'))
+              .join(' * ')
+        return "| " + sanitizeArray(moduleName, name) + " => " + coqType
+      }).join(" ") + " end"
+      const arrayFunction = 'fun name => match name with ' + [...environment.arrays.entries()].map(([
+        name,
+        {
+          itemTypes,
+          length: { raw: rawLength },
+        },
+      ]) => {
+        const value =
+          itemTypes.length === 0
+            ? 'tt'
+            : '(' +
+            itemTypes
+              .map((x) => (x === 'bool' ? 'false' : '0%Z'))
+              .join(', ') +
+            ')'
+        return "| " + sanitizeArray(moduleName, name) + " => " + `repeat ${value} ${rawLength}`
+      }).join(" ") + " end"
+      return generateInductive("arrayIndex" + moduleIndex, [...environment.arrays.entries()].map(([x]) => sanitizeArray(moduleName, x))) + "\n" + `Definition environment${moduleIndex} : Environment arrayIndex${moduleIndex} := {| arrayType := ${arrayTypeFunction}; arrays := ${arrayFunction} |}.
+
+#[export] Instance arrayIndexEqualityDecidable${moduleIndex} : EqDecision arrayIndex${moduleIndex} := ltac:(solve_decision).
 `
     })()
 
-    const decidableEquality = `#[export] Instance arrayTypeEqualityDecidable${moduleIndex} (name : string) : EqDecision (arrayType environment${moduleIndex} name).
-Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
+    const decidableEquality = `#[export] Instance arrayTypeEqualityDecidable${moduleIndex} name : EqDecision (arrayType _ environment${moduleIndex} name).
+Proof. simpl. repeat destruct name. all: solve_decision. Defined.
 `
 
     const generatedCodeForProcedures = procedures
       .map(({ body, name, variables }) => {
-        const header =
+        const header = generateInductive(sanitizeVariableIndex(moduleName, name), [...variables.keys()].map(x => sanitizeVariable(moduleName, name, x))) +
           'Definition ' +
-          sanitize(moduleName, name) +
+          sanitizeFunction(moduleName, name) +
           ` (bools : string -> bool) (numbers : string -> Z) : Action (WithArrays (arrayType environment${moduleIndex})) withArraysReturnValue unit := eliminateLocalVariables bools numbers `
 
         // every element of body is an Action returning absolutely anything
@@ -132,11 +145,11 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
           const liftExpression = (x: {
             expression: string
             type:
-              | PrimitiveType
-              | 'statement'
-              | 'loop control'
-              | 'condition'
-              | PrimitiveType[]
+            | PrimitiveType
+            | 'statement'
+            | 'loop control'
+            | 'condition'
+            | PrimitiveType[]
           }): string => {
             if (binderCounter === 0) return x.expression
             if (x.type === 'loop control' || x.type === 'condition')
@@ -148,11 +161,11 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
           ): {
             expression: string
             type:
-              | PrimitiveType
-              | 'statement'
-              | 'loop control'
-              | 'condition'
-              | PrimitiveType[]
+            | PrimitiveType
+            | 'statement'
+            | 'loop control'
+            | 'condition'
+            | PrimitiveType[]
           } => {
             const getBitWidth = (
               type: 'int8' | 'int16' | 'int32' | 'int64'
@@ -175,9 +188,8 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
                 value.map((_, i) => 'tuple_element_' + i).join(', ') +
                 ')'
               for (const [index, element] of value.entries()) {
-                tuple = `(bind ${
-                  dfs(element).expression
-                } (fun tuple_element_${index} => ${tuple}))`
+                tuple = `(bind ${dfs(element).expression
+                  } (fun tuple_element_${index} => ${tuple}))`
               }
               return tuple
             }
@@ -517,7 +529,7 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
                   }
                 }
                 return {
-                  expression: `(bind ${numberMap} (fun x => bind ${booleanMap} (fun y => liftToWithLocalVariables (${sanitize(
+                  expression: `(bind ${numberMap} (fun x => bind ${booleanMap} (fun y => liftToWithLocalVariables (${sanitizeFunction(
                     moduleName,
                     procedure
                   )} y x))))`,
@@ -580,9 +592,8 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
                   }
                 } else {
                   return {
-                    expression: `(bind ${
-                      dfs(end).expression
-                    } (fun x => loop (Z.to_nat x) (fun binder_${binderCounter}_intermediate => let binder_${binderCounter} := Done (WithLocalVariables (arrayType environment${moduleIndex})) withLocalVariablesReturnValue _ (Z.sub (Z.sub x (Z.of_nat binder_${binderCounter}_intermediate)) 1%Z) in dropWithinLoop (bind (${bodyExpression}) (fun ignored => Done _ _ _ tt)))))`,
+                    expression: `(bind ${dfs(end).expression
+                      } (fun x => loop (Z.to_nat x) (fun binder_${binderCounter}_intermediate => let binder_${binderCounter} := Done (WithLocalVariables (arrayType environment${moduleIndex})) withLocalVariablesReturnValue _ (Z.sub (Z.sub x (Z.of_nat binder_${binderCounter}_intermediate)) 1%Z) in dropWithinLoop (bind (${bodyExpression}) (fun ignored => Done _ _ _ tt)))))`,
                     type: 'statement',
                   }
                 }
@@ -636,7 +647,7 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
                   return { arrayMappingText, congruence }
                 })()
                 return {
-                  expression: `(bind ${numberMap} (fun x => bind ${booleanMap} (fun y => liftToWithLocalVariables (translateArrays (${sanitize(
+                  expression: `(bind ${numberMap} (fun x => bind ${booleanMap} (fun y => liftToWithLocalVariables (translateArrays (${sanitizeFunction(
                     foreignModule,
                     procedure
                   )} y x) (arrayType environment${moduleIndex}) ${arrayMappingText} ${congruence}))))`,
@@ -648,19 +659,13 @@ Proof. simpl. repeat destruct (decide _). all: solve_decision. Defined.
           return dfs(statement).expression
         })
 
-        return (
-          header +
-          '(bind (' +
-          joinStatements(statements) +
-          ') (fun ignored => Done _ _ _ tt)).\n'
-        )
+        return header + joinStatements(statements) + ".\n"
 
         function joinStatements(statements: string[]) {
-          if (statements.length === 0) return 'Done _ _ _ tt'
           return statements.reduce(
             (accumulated, current) =>
               'bind (' + accumulated + ') (fun ignored => ' + current + ')'
-          )
+            , 'Done _ _ _ tt')
         }
       })
       .join('')
