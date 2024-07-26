@@ -36,9 +36,11 @@ const byteLength = (x: string) => {
 const indent = '  '
 
 const generateInductive = (name: string, arms: string[]) => {
-  if (arms.length === 0) return "Inductive " + name + ".\n";
-  return `Inductive ${name} :=` + "\n" + arms.map(x => "| " + x).join("\n") + ".\n";
-};
+  if (arms.length === 0) return 'Inductive ' + name + '.\n'
+  return (
+    `Inductive ${name} :=` + '\n' + arms.map((x) => '| ' + x).join('\n') + '.\n'
+  )
+}
 
 const sanitizeName = (name: string): string =>
   [...name].filter((x) => /[0-9a-zA-Z'_]/.test(x)).join('')
@@ -73,15 +75,40 @@ export const coqCodegen = (sortedModules: CoqCPAST[]): string => {
   }
 
   const sanitizeFunction = (moduleName: string, identifier: string) =>
-    sanitize(moduleName, identifier, 'funcdef', mapToSanitizedFunc, sanitizedFuncCollisions)
+    sanitize(
+      moduleName,
+      identifier,
+      'funcdef',
+      mapToSanitizedFunc,
+      sanitizedFuncCollisions
+    )
 
-  const sanitizeVariable = (moduleName: string, functionName: string, identifier: string) =>
-    sanitize(moduleName, JSON.stringify([functionName, '_', identifier]), 'vardef', mapToSanitizedVar, sanitizedVarCollisions)
+  const sanitizeVariable = (
+    moduleName: string,
+    functionName: string,
+    identifier: string
+  ) =>
+    sanitize(
+      moduleName,
+      JSON.stringify([functionName, '_', identifier]),
+      'vardef',
+      mapToSanitizedVar,
+      sanitizedVarCollisions
+    )
 
   const sanitizeArray = (moduleName: string, identifier: string) =>
-    sanitize(moduleName, identifier, 'arraydef', mapToSanitizedArray, sanitizedArrayCollisions)
+    sanitize(
+      moduleName,
+      identifier,
+      'arraydef',
+      mapToSanitizedArray,
+      sanitizedArrayCollisions
+    )
 
-  const sanitizeVariableIndex = (moduleName: string, functionName: string): string => "vars" + sanitizeFunction(moduleName, functionName)
+  const sanitizeVariableIndex = (
+    moduleName: string,
+    functionName: string
+  ): string => 'vars' + sanitizeFunction(moduleName, functionName)
 
   let code =
     'From CoqCP Require Import Options Imperative.\nFrom stdpp Require Import numbers list strings.\nRequire Import Coq.Strings.Ascii.\nOpen Scope type_scope.\n'
@@ -94,36 +121,62 @@ export const coqCodegen = (sortedModules: CoqCPAST[]): string => {
         return `Definition environment${moduleIndex} : Environment False := {| arrayType := fun _ => False; arrays := fun _ => [] |}.
 `
       }
-      const arrayTypeFunction = 'fun name => match name with ' + [...environment.arrays.entries()].map(([name, { itemTypes }]) => {
-        const coqType =
-          itemTypes.length === 0
-            ? 'unit'
-            : itemTypes
-              .map((x) => (x === 'bool' ? 'bool' : 'Z'))
-              .join(' * ')
-        return "| " + sanitizeArray(moduleName, name) + " => " + coqType
-      }).join(" ") + " end"
-      const arrayFunction = 'fun name => match name with ' + [...environment.arrays.entries()].map(([
-        name,
-        {
-          itemTypes,
-          length: { raw: rawLength },
-        },
-      ]) => {
-        const value =
-          itemTypes.length === 0
-            ? 'tt'
-            : '(' +
-            itemTypes
-              .map((x) => (x === 'bool' ? 'false' : '0%Z'))
-              .join(', ') +
-            ')'
-        return "| " + sanitizeArray(moduleName, name) + " => " + `repeat ${value} ${rawLength}`
-      }).join(" ") + " end"
-      return generateInductive("arrayIndex" + moduleIndex, [...environment.arrays.entries()].map(([x]) => sanitizeArray(moduleName, x))) + "\n" + `Definition environment${moduleIndex} : Environment arrayIndex${moduleIndex} := {| arrayType := ${arrayTypeFunction}; arrays := ${arrayFunction} |}.
+      const arrayTypeFunction =
+        'fun name => match name with ' +
+        [...environment.arrays.entries()]
+          .map(([name, { itemTypes }]) => {
+            const coqType =
+              itemTypes.length === 0
+                ? 'unit'
+                : itemTypes
+                    .map((x) => (x === 'bool' ? 'bool' : 'Z'))
+                    .join(' * ')
+            return '| ' + sanitizeArray(moduleName, name) + ' => ' + coqType
+          })
+          .join(' ') +
+        ' end'
+      const arrayFunction =
+        'fun name => match name with ' +
+        [...environment.arrays.entries()]
+          .map(
+            ([
+              name,
+              {
+                itemTypes,
+                length: { raw: rawLength },
+              },
+            ]) => {
+              const value =
+                itemTypes.length === 0
+                  ? 'tt'
+                  : '(' +
+                    itemTypes
+                      .map((x) => (x === 'bool' ? 'false' : '0%Z'))
+                      .join(', ') +
+                    ')'
+              return (
+                '| ' +
+                sanitizeArray(moduleName, name) +
+                ' => ' +
+                `repeat ${value} ${rawLength}`
+              )
+            }
+          )
+          .join(' ') +
+        ' end'
+      return (
+        generateInductive(
+          'arrayIndex' + moduleIndex,
+          [...environment.arrays.entries()].map(([x]) =>
+            sanitizeArray(moduleName, x)
+          )
+        ) +
+        '\n' +
+        `Definition environment${moduleIndex} : Environment arrayIndex${moduleIndex} := {| arrayType := ${arrayTypeFunction}; arrays := ${arrayFunction} |}.
 
 #[export] Instance arrayIndexEqualityDecidable${moduleIndex} : EqDecision arrayIndex${moduleIndex} := ltac:(solve_decision).
 `
+      )
     })()
 
     const decidableEquality = `#[export] Instance arrayTypeEqualityDecidable${moduleIndex} name : EqDecision (arrayType _ environment${moduleIndex} name).
@@ -132,7 +185,13 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
 
     const generatedCodeForProcedures = procedures
       .map(({ body, name, variables }) => {
-        const header = generateInductive(sanitizeVariableIndex(moduleName, name), [...variables.keys()].map(x => sanitizeVariable(moduleName, name, x))) +
+        const header =
+          generateInductive(
+            sanitizeVariableIndex(moduleName, name),
+            [...variables.keys()].map((x) =>
+              sanitizeVariable(moduleName, name, x)
+            )
+          ) +
           'Definition ' +
           sanitizeFunction(moduleName, name) +
           ` (bools : string -> bool) (numbers : string -> Z) : Action (WithArrays (arrayType environment${moduleIndex})) withArraysReturnValue unit := eliminateLocalVariables bools numbers `
@@ -145,11 +204,11 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
           const liftExpression = (x: {
             expression: string
             type:
-            | PrimitiveType
-            | 'statement'
-            | 'loop control'
-            | 'condition'
-            | PrimitiveType[]
+              | PrimitiveType
+              | 'statement'
+              | 'loop control'
+              | 'condition'
+              | PrimitiveType[]
           }): string => {
             if (binderCounter === 0) return x.expression
             if (x.type === 'loop control' || x.type === 'condition')
@@ -161,11 +220,11 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
           ): {
             expression: string
             type:
-            | PrimitiveType
-            | 'statement'
-            | 'loop control'
-            | 'condition'
-            | PrimitiveType[]
+              | PrimitiveType
+              | 'statement'
+              | 'loop control'
+              | 'condition'
+              | PrimitiveType[]
           } => {
             const getBitWidth = (
               type: 'int8' | 'int16' | 'int32' | 'int64'
@@ -188,8 +247,9 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                 value.map((_, i) => 'tuple_element_' + i).join(', ') +
                 ')'
               for (const [index, element] of value.entries()) {
-                tuple = `(bind ${dfs(element).expression
-                  } (fun tuple_element_${index} => ${tuple}))`
+                tuple = `(bind ${
+                  dfs(element).expression
+                } (fun tuple_element_${index} => ${tuple}))`
               }
               return tuple
             }
@@ -592,8 +652,9 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                   }
                 } else {
                   return {
-                    expression: `(bind ${dfs(end).expression
-                      } (fun x => loop (Z.to_nat x) (fun binder_${binderCounter}_intermediate => let binder_${binderCounter} := Done (WithLocalVariables (arrayType environment${moduleIndex})) withLocalVariablesReturnValue _ (Z.sub (Z.sub x (Z.of_nat binder_${binderCounter}_intermediate)) 1%Z) in dropWithinLoop (bind (${bodyExpression}) (fun ignored => Done _ _ _ tt)))))`,
+                    expression: `(bind ${
+                      dfs(end).expression
+                    } (fun x => loop (Z.to_nat x) (fun binder_${binderCounter}_intermediate => let binder_${binderCounter} := Done (WithLocalVariables (arrayType environment${moduleIndex})) withLocalVariablesReturnValue _ (Z.sub (Z.sub x (Z.of_nat binder_${binderCounter}_intermediate)) 1%Z) in dropWithinLoop (bind (${bodyExpression}) (fun ignored => Done _ _ _ tt)))))`,
                     type: 'statement',
                   }
                 }
@@ -659,13 +720,14 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
           return dfs(statement).expression
         })
 
-        return header + joinStatements(statements) + ".\n"
+        return header + joinStatements(statements) + '.\n'
 
         function joinStatements(statements: string[]) {
           return statements.reduce(
             (accumulated, current) =>
-              'bind (' + accumulated + ') (fun ignored => ' + current + ')'
-            , 'Done _ _ _ tt')
+              'bind (' + accumulated + ') (fun ignored => ' + current + ')',
+            'Done _ _ _ tt'
+          )
         }
       })
       .join('')
