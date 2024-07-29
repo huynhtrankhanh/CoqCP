@@ -478,10 +478,10 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                 assert(declaration !== undefined)
                 const { expression: indexExpression } = dfs(value.index)
                 return {
-                  expression: `(let x := bind ${indexExpression} (fun x => retrieve ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex} (${sanitizeArray(
+                  expression: `(bind ${indexExpression} (fun x => retrieve ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex} (${sanitizeArray(
                     moduleName,
                     value.name
-                  )}) x) in ltac:(simpl in *; exact x))`,
+                  )}) x))`,
                   type: declaration.itemTypes,
                 }
               }
