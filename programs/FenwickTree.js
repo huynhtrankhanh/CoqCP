@@ -13,7 +13,6 @@ environment({
 procedure('increase', { idx: int64, value: int64 }, () => {
   store('idxArray', 0, [get('idx') + 1]) // Convert 0-based index to 1-based index for Fenwick Tree
   store('valueArray', 0, [get('value')])
-
   range(30, (i) => {
     if (less(retrieve('n', 0)[0], retrieve('idxArray', 0)[0])) {
       ;('break')
