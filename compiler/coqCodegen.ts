@@ -251,9 +251,9 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                 value.map((_, i) => 'tuple_element_' + i).join(', ') +
                 ')'
               for (const [index, element] of value.entries()) {
-                tuple = `(bind ${
+                tuple = `(${
                   dfs(element).expression
-                } (fun tuple_element_${index} => ${tuple}))`
+                } >>= fun tuple_element_${index} => ${tuple})`
               }
               return tuple
             }
@@ -331,12 +331,12 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                     }
                   case 'equal':
                     return {
-                      expression: `(bind ${leftExpression} (fun x => bind ${rightExpression} (fun y => Done _ _ _ (bool_decide (x = y)))))`,
+                      expression: `(${leftExpression} >>= fun x => ${rightExpression} >>= fun y => Done _ _ _ (bool_decide (x = y)))`,
                       type: 'bool',
                     }
                   case 'noteq':
                     return {
-                      expression: `(bind ${leftExpression} (fun x => bind ${rightExpression} (fun y => Done _ _ _ (bool_decide (x <> y)))))`,
+                      expression: `(${leftExpression} >>= fun x => ${rightExpression} >>= fun y => Done _ _ _ (bool_decide (x <> y)))`,
                       type: 'bool',
                     }
                 }
@@ -381,7 +381,7 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                   return { expression: `(coerceBool ${expression})`, type }
                 }
                 return {
-                  expression: `(bind ${expression} (fun x => Done _ _ _ (${value.type} x)))`,
+                  expression: `(${expression} >>= fun x => Done _ _ _ (${value.type} x))`,
                   type: (() => {
                     switch (value.type) {
                       case 'coerceInt8':
@@ -423,7 +423,7 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
               case 'writeChar': {
                 const { expression } = dfs(value.value)
                 return {
-                  expression: `(bind ${expression} (fun x => writeChar ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex} x))`,
+                  expression: `(${expression} >>= fun x => writeChar ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex} x)`,
                   type: 'statement',
                 }
               }
@@ -455,11 +455,11 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                 const { expression } = dfs(value.value)
                 if (isNumeric(variable.type)) {
                   return {
-                    expression: `(bind ${expression} (fun x => numberLocalSet ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex} (${sanitizeVariable(
+                    expression: `(${expression} >>= fun x => numberLocalSet ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex} (${sanitizeVariable(
                       moduleName,
                       functionName,
                       value.name
-                    )}) x))`,
+                    )}) x)`,
                     type: 'statement',
                   }
                 }
@@ -478,10 +478,10 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                 assert(declaration !== undefined)
                 const { expression: indexExpression } = dfs(value.index)
                 return {
-                  expression: `(bind ${indexExpression} (fun x => retrieve ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex} (${sanitizeArray(
+                  expression: `(${indexExpression} >>= fun x => retrieve ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex} (${sanitizeArray(
                     moduleName,
                     value.name
-                  )}) x))`,
+                  )}) x)`,
                   type: declaration.itemTypes,
                 }
               }
@@ -489,10 +489,10 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                 const { expression: indexExpression } = dfs(value.index)
                 let tuple = getTuple(value.tuple)
                 return {
-                  expression: `(bind ${indexExpression} (fun x => bind ${tuple} (fun y => store ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex} (${sanitizeArray(
+                  expression: `(${indexExpression} >>= fun x => ${tuple} >>= fun y => store ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex} (${sanitizeArray(
                     moduleName,
                     value.name
-                  )}) x y)))`,
+                  )}) x y)`,
                   type: 'statement',
                 }
               }
@@ -500,7 +500,7 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                 const { expression: leftExpression } = dfs(value.left)
                 const { expression: rightExpression } = dfs(value.right)
                 return {
-                  expression: `(bind ${leftExpression} (fun a => bind ${rightExpression} (fun b => Done _ _ _ (bool_decide (Z.lt a b)))))`,
+                  expression: `(${leftExpression} >>= fun a => ${rightExpression} >>= fun b => Done _ _ _ (bool_decide (Z.lt a b)))`,
                   type: 'bool',
                 }
               }
@@ -516,7 +516,7 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                 const bitWidth = getBitWidth(leftType)
                 const toSigned = 'toSigned' + bitWidth
                 return {
-                  expression: `(bind ${leftExpression} (fun a => bind ${rightExpression} (fun b => Done _ _ _ (bool_decide (Z.lt (${toSigned} a) (${toSigned} b))))))`,
+                  expression: `(${leftExpression} >>= fun a => ${rightExpression} >>= fun b => Done _ _ _ (bool_decide (Z.lt (${toSigned} a) (${toSigned} b))))`,
                   type: 'bool',
                 }
               }
@@ -533,7 +533,7 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                   }
                   case 'boolean not': {
                     return {
-                      expression: `(bind ${expression} (fun x => Done _ _ _ (negb x)))`,
+                      expression: `(${expression} >>= fun x => Done _ _ _ (negb x))`,
                       type,
                     }
                   }
@@ -542,7 +542,7 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                   }
                   case 'minus': {
                     return {
-                      expression: `(bind ${expression} (fun x => Done _ _ _ (-x)))`,
+                      expression: `(${expression} >>= fun x => Done _ _ _ (-x))`,
                       type,
                     }
                   }
@@ -581,7 +581,7 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                   finalExpression = 'fst (' + finalExpression + ')'
                 finalExpression = `(snd (${finalExpression}))`
                 return {
-                  expression: `(bind ${expression} (fun element_tuple => Done _ _ _ ${finalExpression}))`,
+                  expression: `(${expression} >>= (fun element_tuple => Done _ _ _ ${finalExpression})`,
                   type: type[index],
                 }
               }
@@ -593,24 +593,24 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                   const { expression, type } = dfs(value)
                   assert(isNumeric(type) || type === 'bool')
                   if (isNumeric(type)) {
-                    numberMap = `(bind ${numberMap} (fun x => bind ${expression} (fun y => Done _ _ _ (update x (${sanitizeVariable(
+                    numberMap = `(${numberMap} >>= fun x => ${expression} >>= fun y => Done _ _ _ (update x (${sanitizeVariable(
                       moduleName,
                       procedure,
                       name
-                    )}) y))))`
+                    )}) y))`
                   } else {
-                    booleanMap = `(bind ${booleanMap} (fun x => bind ${expression} (fun y => Done _ _ _ (update x (${sanitizeVariable(
+                    booleanMap = `(${booleanMap} >>= fun x => ${expression} >>= fun y => Done _ _ _ (update x (${sanitizeVariable(
                       moduleName,
                       procedure,
                       name
-                    )}) y))))`
+                    )}) y))`
                   }
                 }
                 return {
-                  expression: `(bind ${numberMap} (fun x => bind ${booleanMap} (fun y => liftToWithLocalVariables (${sanitizeFunction(
+                  expression: `(${numberMap} >>= fun x => ${booleanMap} >>= fun y => liftToWithLocalVariables (${sanitizeFunction(
                     moduleName,
                     procedure
-                  )} y x))))`,
+                  )} y x))`,
                   type: 'statement',
                 }
               }
@@ -624,7 +624,7 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                   alternate.map(dfs).map((x) => liftExpression(x))
                 )
                 return {
-                  expression: `(bind ${liftExpression(processedCondition)} (fun x => if x then ${bodyExpression} else ${alternateExpression}))`,
+                  expression: `(${liftExpression(processedCondition)} >>= fun x => if x then ${bodyExpression} else ${alternateExpression})`,
                   type: 'condition',
                 }
               }
@@ -665,14 +665,14 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                   return {
                     expression: `(loopString (${getCoqString(
                       end.raw
-                    )}) (fun binder_${binderCounter}_intermediate => let binder_${binderCounter} := Done (WithLocalVariables ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex}) withLocalVariablesReturnValue _ binder_${binderCounter}_intermediate in dropWithinLoop (bind (${bodyExpression}) (fun ignored => Done _ _ _ tt))))`,
+                    )}) (fun binder_${binderCounter}_intermediate => let binder_${binderCounter} := Done (WithLocalVariables ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex}) withLocalVariablesReturnValue _ binder_${binderCounter}_intermediate in dropWithinLoop (${bodyExpression})))`,
                     type: 'statement',
                   }
                 } else {
                   return {
-                    expression: `(bind ${
+                    expression: `(${
                       dfs(end).expression
-                    } (fun x => loop (Z.to_nat x) (fun binder_${binderCounter}_intermediate => let binder_${binderCounter} := Done (WithLocalVariables ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex}) withLocalVariablesReturnValue _ (Z.sub (Z.sub x (Z.of_nat binder_${binderCounter}_intermediate)) 1%Z) in dropWithinLoop (bind (${bodyExpression}) (fun ignored => Done _ _ _ tt)))))`,
+                    } >>= fun x => loop (Z.to_nat x) (fun binder_${binderCounter}_intermediate => let binder_${binderCounter} := Done (WithLocalVariables ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex}) withLocalVariablesReturnValue _ (Z.sub (Z.sub x (Z.of_nat binder_${binderCounter}_intermediate)) 1%Z) in dropWithinLoop (${bodyExpression})))`,
                     type: 'statement',
                   }
                 }
@@ -690,17 +690,17 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                   const { expression, type } = dfs(value)
                   assert(isNumeric(type) || type === 'bool')
                   if (isNumeric(type)) {
-                    numberMap = `(bind ${numberMap} (fun x => bind ${expression} (fun y => Done _ _ _ (update x (${sanitizeVariable(
+                    numberMap = `(${numberMap} >>= fun x => ${expression} >>= fun y => Done _ _ _ (update x (${sanitizeVariable(
                       foreignModule,
                       procedure,
                       name
-                    )}) y))))`
+                    )}) y))`
                   } else {
-                    booleanMap = `(bind ${booleanMap} (fun x => bind ${expression} (fun y => Done _ _ _ (update x (${sanitizeVariable(
+                    booleanMap = `(${booleanMap} >>= fun x => ${expression} >>= fun y => Done _ _ _ (update x (${sanitizeVariable(
                       foreignModule,
                       procedure,
                       name
-                    )}) y))))`
+                    )}) y))`
                   }
                 }
                 const { arrayMappingText, congruence } = (() => {
@@ -723,10 +723,10 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                   return { arrayMappingText, congruence }
                 })()
                 return {
-                  expression: `(bind ${numberMap} (fun x => bind ${booleanMap} (fun y => liftToWithLocalVariables (translateArrays (${sanitizeFunction(
+                  expression: `(${numberMap} >>= fun x => ${booleanMap} >>= fun y => liftToWithLocalVariables (translateArrays (${sanitizeFunction(
                     foreignModule,
                     procedure
-                  )} y x) (arrayType _ environment${moduleIndex}) ${arrayMappingText} ${congruence}))))`,
+                  )} y x) (arrayType _ environment${moduleIndex}) ${arrayMappingText} ${congruence}))`,
                   type: 'statement',
                 }
               }
@@ -742,7 +742,7 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
             '(' +
             statements.reduce(
               (accumulated, current) =>
-                'bind (' + accumulated + ') (fun ignored => ' + current + ')',
+                accumulated + ' >>= fun _ => ' + current,
               'Done _ _ _ tt'
             ) +
             ')'
