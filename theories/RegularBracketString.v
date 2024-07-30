@@ -316,7 +316,7 @@ Proof.
                   assert (H2 : BracketOpen :: s `prefix_of` BracketOpen :: s ++ [BracketOpen]).
                   { exists [BracketOpen]. easy. }
                   pose proof h1 (BracketOpen :: s) H2 as H0. autorewrite with rewriteCount in H0. lia. }
-                { rewrite firstn_all, Nat.sub_diag. simpl. now rewrite app_nil_r. }
+                { reflexivity. }
             + destruct h as [_ h].
               pose proof h [BracketClose] as H0.
               assert (H2 : [BracketClose] `prefix_of` BracketClose :: s).
@@ -351,7 +351,7 @@ Proof.
               { apply prefix_cons, prefix_app_r. assumption. }
               pose proof h2 (BracketOpen :: prefix) H4 as H6. autorewrite with rewriteCount in H6.
               assert (H5 : take (length prefix) (w ++ [BracketClose]) = prefix).
-              { destruct h as [w1 h]. rewrite h, <- app_assoc, take_app, Nat.sub_diag, firstn_all, firstn_O, app_nil_r. reflexivity. }
+              { destruct h as [w1 h]. rewrite h, <- app_assoc, take_app. reflexivity. }
               rewrite H5 in *.
               lia. }
           assert (H2 : balanceFactorBasedDefinition w). { split; assumption. }
