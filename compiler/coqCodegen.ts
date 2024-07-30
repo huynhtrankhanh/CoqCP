@@ -130,8 +130,8 @@ export const coqCodegen = (sortedModules: CoqCPAST[]): string => {
               itemTypes.length === 0
                 ? 'unit'
                 : itemTypes
-                  .map((x) => (x === 'bool' ? 'bool' : 'Z'))
-                  .join(' * ')
+                    .map((x) => (x === 'bool' ? 'bool' : 'Z'))
+                    .join(' * ')
             return '| ' + sanitizeArray(moduleName, name) + ' => ' + coqType
           })
           .join(' ') +
@@ -151,10 +151,10 @@ export const coqCodegen = (sortedModules: CoqCPAST[]): string => {
                 itemTypes.length === 0
                   ? 'tt'
                   : '(' +
-                  itemTypes
-                    .map((x) => (x === 'bool' ? 'false' : '0%Z'))
-                    .join(', ') +
-                  ')'
+                    itemTypes
+                      .map((x) => (x === 'bool' ? 'false' : '0%Z'))
+                      .join(', ') +
+                    ')'
               return (
                 '| ' +
                 sanitizeArray(moduleName, name) +
@@ -208,11 +208,11 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
           const liftExpression = (x: {
             expression: string
             type:
-            | PrimitiveType
-            | 'statement'
-            | 'loop control'
-            | 'condition'
-            | PrimitiveType[]
+              | PrimitiveType
+              | 'statement'
+              | 'loop control'
+              | 'condition'
+              | PrimitiveType[]
           }): string => {
             if (binderCounter === 0) return x.expression
             if (x.type === 'loop control' || x.type === 'condition')
@@ -225,11 +225,11 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
           ): {
             expression: string
             type:
-            | PrimitiveType
-            | 'statement'
-            | 'loop control'
-            | 'condition'
-            | PrimitiveType[]
+              | PrimitiveType
+              | 'statement'
+              | 'loop control'
+              | 'condition'
+              | PrimitiveType[]
           } => {
             const getBitWidth = (
               type: 'int8' | 'int16' | 'int32' | 'int64'
@@ -252,8 +252,9 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                 value.map((_, i) => 'tuple_element_' + i).join(', ') +
                 ')'
               for (const [index, element] of value.entries()) {
-                tuple = `(${dfs(element).expression
-                  } >>= fun tuple_element_${index} => ${tuple})`
+                tuple = `(${
+                  dfs(element).expression
+                } >>= fun tuple_element_${index} => ${tuple})`
               }
               return tuple
             }
@@ -677,8 +678,9 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                   }
                 } else {
                   return {
-                    expression: `(${dfs(end).expression
-                      } >>= fun x => loop (Z.to_nat x) (fun binder_${binderCounter}_intermediate => let binder_${binderCounter} := Done (WithLocalVariables ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex}) withLocalVariablesReturnValue _ (Z.sub (Z.sub x (Z.of_nat binder_${binderCounter}_intermediate)) 1%Z) in dropWithinLoop (${bodyExpression})))`,
+                    expression: `(${
+                      dfs(end).expression
+                    } >>= fun x => loop (Z.to_nat x) (fun binder_${binderCounter}_intermediate => let binder_${binderCounter} := Done (WithLocalVariables ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex}) withLocalVariablesReturnValue _ (Z.sub (Z.sub x (Z.of_nat binder_${binderCounter}_intermediate)) 1%Z) in dropWithinLoop (${bodyExpression})))`,
                     type: 'statement',
                   }
                 }
