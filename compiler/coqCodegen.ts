@@ -746,6 +746,7 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
         return header + joinStatements(statements, 0) + '.\n'
 
         function joinStatements(statements: string[], nestLevel: number) {
+          statements.push('Done _ _ _ tt')
           return (
             '(' +
             (nestLevel ? '\n' : '') +
@@ -755,8 +756,7 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                 ' >>=\n' +
                 indent.repeat(nestLevel) +
                 'fun _ => ' +
-                current,
-              indent.repeat(nestLevel) + 'Done _ _ _ tt'
+                current
             ) +
             (nestLevel ? '\n' : '') +
             indent.repeat(Math.max(nestLevel - 1, 0)) +
