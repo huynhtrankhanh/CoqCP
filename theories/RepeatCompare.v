@@ -150,9 +150,9 @@ Proof.
   assert (hTake : forall a b: list nat, forall n : nat, a = b -> take n a = take n b).
   { intros. congruence. }
   pose proof hTake _ _ (length a * length b) hExtended.
-  pose proof take_app (multiply (length b) a) (multiply (length a) b).
-  pose proof take_app (multiply (length a) b) (multiply (length b) a).
-  rewrite multiplyLength, (ltac:(lia) : length a * length b = length b * length a) in *. congruence.
+  pose proof take_app (multiply (length b) a) (multiply (length a) b) (length (multiply (length b) a)).
+  pose proof take_app (multiply (length a) b) (multiply (length b) a) (length (multiply (length a) b)).
+  rewrite Nat.sub_diag, firstn_O, app_nil_r, firstn_all, multiplyLength, (ltac:(lia) : length a * length b = length b * length a) in *. congruence.
 Qed.
 
 Lemma repeatABLexLess (a b : list nat) (h : lexLess (a ++ b) (b ++ a)) : lexLess (multiply (length b) a) (multiply (length a) b).
