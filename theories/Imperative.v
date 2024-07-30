@@ -32,6 +32,8 @@ Fixpoint bind {effectType effectResponse A B} (a : Action effectType effectRespo
   | Dispatch _ _ _ effect continuation => Dispatch _ _ _ effect (fun response => bind (continuation response) f)
   end.
 
+Notation "x >>= f" := (bind x f) (at level 50, left associativity).
+
 Lemma identicalSelf {effectType effectResponse A} (a : Action effectType effectResponse A) (hEffectType : EqDecision effectType) : identical a a.
 Proof.
   induction a as [| effect continuation IH]; simpl; try easy. split; try easy. intro no. unfold eq_rect_r. now rewrite <- (eq_rect_eq_dec hEffectType).
