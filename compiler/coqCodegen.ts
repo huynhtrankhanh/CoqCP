@@ -130,8 +130,8 @@ export const coqCodegen = (sortedModules: CoqCPAST[]): string => {
               itemTypes.length === 0
                 ? 'unit'
                 : itemTypes
-                    .map((x) => (x === 'bool' ? 'bool' : 'Z'))
-                    .join(' * ')
+                  .map((x) => (x === 'bool' ? 'bool' : 'Z'))
+                  .join(' * ')
             return '| ' + sanitizeArray(moduleName, name) + ' => ' + coqType
           })
           .join(' ') +
@@ -151,10 +151,10 @@ export const coqCodegen = (sortedModules: CoqCPAST[]): string => {
                 itemTypes.length === 0
                   ? 'tt'
                   : '(' +
-                    itemTypes
-                      .map((x) => (x === 'bool' ? 'false' : '0%Z'))
-                      .join(', ') +
-                    ')'
+                  itemTypes
+                    .map((x) => (x === 'bool' ? 'false' : '0%Z'))
+                    .join(', ') +
+                  ')'
               return (
                 '| ' +
                 sanitizeArray(moduleName, name) +
@@ -208,27 +208,28 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
           const liftExpression = (x: {
             expression: string
             type:
-              | PrimitiveType
-              | 'statement'
-              | 'loop control'
-              | 'condition'
-              | PrimitiveType[]
+            | PrimitiveType
+            | 'statement'
+            | 'loop control'
+            | 'condition'
+            | PrimitiveType[]
           }): string => {
             if (binderCounter === 0) return x.expression
             if (x.type === 'loop control' || x.type === 'condition')
               return x.expression
             return `(liftToWithinLoop ${x.expression})`
           }
+          let nestLevel = 0;
           const dfs = (
             value: ValueType
           ): {
             expression: string
             type:
-              | PrimitiveType
-              | 'statement'
-              | 'loop control'
-              | 'condition'
-              | PrimitiveType[]
+            | PrimitiveType
+            | 'statement'
+            | 'loop control'
+            | 'condition'
+            | PrimitiveType[]
           } => {
             const getBitWidth = (
               type: 'int8' | 'int16' | 'int32' | 'int64'
@@ -251,9 +252,8 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                 value.map((_, i) => 'tuple_element_' + i).join(', ') +
                 ')'
               for (const [index, element] of value.entries()) {
-                tuple = `(${
-                  dfs(element).expression
-                } >>= fun tuple_element_${index} => ${tuple})`
+                tuple = `(${dfs(element).expression
+                  } >>= fun tuple_element_${index} => ${tuple})`
               }
               return tuple
             }
@@ -617,12 +617,12 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
               case 'condition': {
                 const { condition, body, alternate } = value
                 const processedCondition = dfs(condition)
+                nestLevel++
                 const bodyExpression = joinStatements(
-                  body.map(dfs).map((x) => liftExpression(x))
-                )
+                  body.map(dfs).map((x) => liftExpression(x)), nestLevel)
                 const alternateExpression = joinStatements(
-                  alternate.map(dfs).map((x) => liftExpression(x))
-                )
+                  alternate.map(dfs).map((x) => liftExpression(x)), nestLevel)
+                nestLevel--
                 return {
                   expression: `(${liftExpression(processedCondition)} >>= fun x => if x then ${bodyExpression} else ${alternateExpression})`,
                   type: 'condition',
@@ -652,9 +652,11 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                     number: binderCounter++,
                   })
 
+                nestLevel++
                 const bodyExpression = joinStatements(
-                  loopBody.map(dfs).map((x) => liftExpression(x))
+                  loopBody.map(dfs).map((x) => liftExpression(x)), nestLevel
                 )
+                nestLevel--
 
                 if (previousBinderValue === undefined)
                   localBinderMap.delete(functionName)
@@ -670,9 +672,8 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                   }
                 } else {
                   return {
-                    expression: `(${
-                      dfs(end).expression
-                    } >>= fun x => loop (Z.to_nat x) (fun binder_${binderCounter}_intermediate => let binder_${binderCounter} := Done (WithLocalVariables ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex}) withLocalVariablesReturnValue _ (Z.sub (Z.sub x (Z.of_nat binder_${binderCounter}_intermediate)) 1%Z) in dropWithinLoop (${bodyExpression})))`,
+                    expression: `(${dfs(end).expression
+                      } >>= fun x => loop (Z.to_nat x) (fun binder_${binderCounter}_intermediate => let binder_${binderCounter} := Done (WithLocalVariables ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex}) withLocalVariablesReturnValue _ (Z.sub (Z.sub x (Z.of_nat binder_${binderCounter}_intermediate)) 1%Z) in dropWithinLoop (${bodyExpression})))`,
                     type: 'statement',
                   }
                 }
@@ -735,16 +736,16 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
           return dfs(statement).expression
         })
 
-        return header + joinStatements(statements) + '.\n'
+        return header + joinStatements(statements, 0) + '.\n'
 
-        function joinStatements(statements: string[]) {
+        function joinStatements(statements: string[], nestLevel: number) {
           return (
-            '(' +
+            '(' + (nestLevel ? '\n' : '') +
             statements.reduce(
               (accumulated, current) =>
-                accumulated + ' >>= fun _ => ' + current,
-              'Done _ _ _ tt'
-            ) +
+                accumulated + ' >>=\n' + indent.repeat(nestLevel) + 'fun _ => ' + current,
+              indent.repeat(nestLevel) + 'Done _ _ _ tt'
+            ) + (nestLevel ? '\n' : '') + indent.repeat(Math.max(nestLevel - 1, 0)) +
             ')'
           )
         }
