@@ -387,7 +387,7 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                     case 'coerceInt64':
                       return 'int64'
                   }
-                })();
+                })()
                 const bitWidth = (() => {
                   switch (value.type) {
                     case 'coerceInt8':
@@ -399,11 +399,14 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                     case 'coerceInt64':
                       return 64
                   }
-                })();
+                })()
                 const { type, expression } = dfs(value.value)
                 assert(isNumeric(type) || type === 'bool')
                 if (type === 'bool') {
-                  return { expression: `(coerceBool ${expression})`, type: integralType }
+                  return {
+                    expression: `(coerceBool ${expression})`,
+                    type: integralType,
+                  }
                 }
                 return {
                   expression: `(${expression} >>= fun x => Done _ _ _ (coerceInt ${bitWidth} x))`,
