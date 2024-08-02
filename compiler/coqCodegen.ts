@@ -286,11 +286,11 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                     const functionName = ((): string => {
                       switch (value.operator) {
                         case 'add':
-                          return 'addInt' + bitWidth
+                          return 'addInt ' + bitWidth
                         case 'subtract':
-                          return 'subInt' + bitWidth
+                          return 'subInt ' + bitWidth
                         case 'multiply':
-                          return 'multInt' + bitWidth
+                          return 'multInt ' + bitWidth
                         case 'mod':
                           return 'modIntUnsigned'
                         case 'bitwise and':
@@ -376,25 +376,38 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
               case 'coerceInt16':
               case 'coerceInt32':
               case 'coerceInt64': {
+                const integralType = (() => {
+                  switch (value.type) {
+                    case 'coerceInt8':
+                      return 'int8'
+                    case 'coerceInt16':
+                      return 'int16'
+                    case 'coerceInt32':
+                      return 'int32'
+                    case 'coerceInt64':
+                      return 'int64'
+                  }
+                })();
+                const bitWidth = (() => {
+                  switch (value.type) {
+                    case 'coerceInt8':
+                      return 8
+                    case 'coerceInt16':
+                      return 16
+                    case 'coerceInt32':
+                      return 32
+                    case 'coerceInt64':
+                      return 64
+                  }
+                })();
                 const { type, expression } = dfs(value.value)
                 assert(isNumeric(type) || type === 'bool')
                 if (type === 'bool') {
-                  return { expression: `(coerceBool ${expression})`, type }
+                  return { expression: `(coerceBool ${expression})`, type: integralType }
                 }
                 return {
-                  expression: `(${expression} >>= fun x => Done _ _ _ (${value.type} x))`,
-                  type: (() => {
-                    switch (value.type) {
-                      case 'coerceInt8':
-                        return 'int8'
-                      case 'coerceInt16':
-                        return 'int16'
-                      case 'coerceInt32':
-                        return 'int32'
-                      case 'coerceInt64':
-                        return 'int64'
-                    }
-                  })(),
+                  expression: `(${expression} >>= fun x => Done _ _ _ (coerceInt ${bitWidth} x))`,
+                  type: integralType,
                 }
               }
               case 'continue': {

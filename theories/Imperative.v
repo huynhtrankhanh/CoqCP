@@ -210,51 +210,8 @@ Definition continue arrayIndex arrayType variableIndex := Dispatch (WithinLoop a
 
 Definition break arrayIndex arrayType variableIndex := Dispatch (WithinLoop arrayIndex arrayType variableIndex) withinLoopReturnValue () (DoBreak _ _ _) (fun x => Done _ _ _ tt).
 
-(* Coercion functions *)
-Definition coerceInt8 (n : Z) : Z := n mod 256.
-Definition coerceInt16 (n : Z) : Z := n mod 65536.
-Definition coerceInt32 (n : Z) : Z := n mod 4294967296.
-Definition coerceInt64 (n : Z) : Z := n mod 18446744073709551616.
-
-(* Helper functions for signed conversion *)
-Definition toSigned8 (n : Z) : Z :=
-  if decide (n < 128) then n else n - 256.
-
-Definition toSigned16 (n : Z) : Z :=
-  if decide (n < 32768) then n else n - 65536.
-
-Definition toSigned32 (n : Z) : Z :=
-  if decide (n < 2147483648) then n else n - 4294967296.
-
-Definition toSigned64 (n : Z) : Z :=
-  if decide (n < 9223372036854775808) then n else n - 18446744073709551616.
-
 Definition divIntUnsigned {arrayIndex arrayType variableIndex} (a b : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue Z) : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue Z := bind a (fun a => bind b (fun b => if decide (b = 0) then trap arrayIndex arrayType variableIndex Z else Done _ _ _ (a / b))).
 Definition modIntUnsigned {arrayIndex arrayType variableIndex} (a b : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue Z) : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue Z := bind a (fun a => bind b (fun b => if decide (b = 0) then trap arrayIndex arrayType variableIndex Z else Done _ _ _ (a mod b))).
-
-(* Arithmetic operations for 8-bit integers *)
-Definition addInt8 {u v} (a b : Action u v Z) : Action u v Z := bind a (fun a => bind b (fun b => Done _ _ _ (coerceInt8 (a + b)))).
-Definition subInt8 {u v} (a b : Action u v Z) : Action u v Z := bind a (fun a => bind b (fun b => Done _ _ _ (coerceInt8 (a - b)))).
-Definition multInt8 {u v} (a b : Action u v Z) : Action u v Z := bind a (fun a => bind b (fun b => Done _ _ _ (coerceInt8 (a * b)))).
-Definition divInt8Signed {arrayIndex arrayType variableIndex} (a b : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue Z) : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue Z := bind a (fun a => bind b (fun b => if decide (b = 0) then trap arrayIndex arrayType variableIndex Z else if decide (toSigned8 a = -128 /\ toSigned8 b = -1) then trap arrayIndex arrayType variableIndex Z else Done _ _ _ (coerceInt8 (a / b)))).
-
-(* Arithmetic operations for 16-bit integers *)
-Definition addInt16 {u v} (a b : Action u v Z) : Action u v Z := bind a (fun a => bind b (fun b => Done _ _ _ (coerceInt16 (a + b)))).
-Definition subInt16 {u v} (a b : Action u v Z) : Action u v Z := bind a (fun a => bind b (fun b => Done _ _ _ (coerceInt16 (a - b)))).
-Definition multInt16 {u v} (a b : Action u v Z) : Action u v Z := bind a (fun a => bind b (fun b => Done _ _ _ (coerceInt16 (a * b)))).
-Definition divInt16Signed {arrayIndex arrayType variableIndex} (a b : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue Z) : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue Z := bind a (fun a => bind b (fun b => if decide (b = 0) then trap arrayIndex arrayType variableIndex Z else if decide (toSigned16 a = -32768 /\ toSigned16 b = -1) then trap arrayIndex arrayType variableIndex Z else Done _ _ _ (coerceInt16 (a / b)))).
-
-(* Arithmetic operations for 32-bit integers *)
-Definition addInt32 {u v} (a b : Action u v Z) : Action u v Z := bind a (fun a => bind b (fun b => Done _ _ _ (coerceInt32 (a + b)))).
-Definition subInt32 {u v} (a b : Action u v Z) : Action u v Z := bind a (fun a => bind b (fun b => Done _ _ _ (coerceInt32 (a - b)))).
-Definition multInt32 {u v} (a b : Action u v Z) : Action u v Z := bind a (fun a => bind b (fun b => Done _ _ _ (coerceInt32 (a * b)))).
-Definition divInt32Signed {arrayIndex arrayType variableIndex} (a b : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue Z) : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue Z := bind a (fun a => bind b (fun b => if decide (b = 0) then trap arrayIndex arrayType variableIndex Z else if decide (toSigned32 a = -2147483648 /\ toSigned32 b = -1) then trap arrayIndex arrayType variableIndex Z else Done _ _ _ (coerceInt32 (a / b)))).
-
-(* Arithmetic operations for 64-bit integers *)
-Definition addInt64 {u v} (a b : Action u v Z) : Action u v Z := bind a (fun a => bind b (fun b => Done _ _ _ (coerceInt64 (a + b)))).
-Definition subInt64 {u v} (a b : Action u v Z) : Action u v Z := bind a (fun a => bind b (fun b => Done _ _ _ (coerceInt64 (a - b)))).
-Definition multInt64 {u v} (a b : Action u v Z) : Action u v Z := bind a (fun a => bind b (fun b => Done _ _ _ (coerceInt64 (a * b)))).
-Definition divInt64Signed {arrayIndex arrayType variableIndex} (a b : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue Z) : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue Z := bind a (fun a => bind b (fun b => if decide (b = 0) then trap arrayIndex arrayType variableIndex Z else if decide (toSigned64 a = -9223372036854775808 /\ toSigned64 b = -1) then trap arrayIndex arrayType variableIndex Z else Done _ _ _ (coerceInt64 (a / b)))).
 
 (* Bitwise operations for any bit width *)
 Definition andBits {u v} (a b : Action u v Z) : Action u v Z := bind a (fun a => bind b (fun b => Done _ _ _ (Z.land a b))).
@@ -277,6 +234,33 @@ Definition notBits {u v} (bitWidth : Z) (a : Action u v Z) : Action u v Z := bin
 Definition coerceBool {u v} (a : Action u v bool) : Action u v Z := bind a (fun a =>
   if a then Done _ _ _ 1 else Done _ _ _ 0
 ).
+
+(* Generic coercion function based on bit width *)
+Definition coerceInt (n bitWidth : Z) : Z :=
+  n mod (2 ^ bitWidth).
+
+(* Helper function for signed conversion based on bit width *)
+Definition toSigned (n bitWidth : Z) : Z :=
+  let half := 2 ^ (bitWidth - 1) in
+  if decide (n < half) then n else n - 2 ^ bitWidth.
+
+(* Generic arithmetic operations *)
+Definition addInt {u v} (bitWidth : Z) (a b : Action u v Z) : Action u v Z :=
+  bind a (fun a => bind b (fun b => Done _ _ _ (coerceInt (a + b) bitWidth))).
+
+Definition subInt {u v} (bitWidth : Z) (a b : Action u v Z) : Action u v Z :=
+  bind a (fun a => bind b (fun b => Done _ _ _ (coerceInt (a - b) bitWidth))).
+
+Definition multInt {u v} (bitWidth : Z) (a b : Action u v Z) : Action u v Z :=
+  bind a (fun a => bind b (fun b => Done _ _ _ (coerceInt (a * b) bitWidth))).
+
+Definition divIntSigned {arrayIndex arrayType variableIndex} (bitWidth : Z) (a b : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue Z) : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue Z :=
+  bind a (fun a => bind b (fun b =>
+    let signedA := toSigned a bitWidth in
+    let signedB := toSigned b bitWidth in
+    if decide (b = 0) then trap arrayIndex arrayType variableIndex Z
+    else if decide (signedA = - (2 ^ (bitWidth - 1)) /\ signedB = -1) then trap arrayIndex arrayType variableIndex Z
+    else Done _ _ _ (coerceInt (a / b) bitWidth))).
 
 Fixpoint liftToWithLocalVariables {arrayIndex arrayType variableIndex r} (x : Action (WithArrays arrayIndex arrayType) withArraysReturnValue r) : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue r :=
   match x with
