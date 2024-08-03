@@ -101,10 +101,10 @@ export type Instruction = (
   | BinaryOperationInstruction
   | UnaryOperationInstruction
   | {
-    type: 'subscript'
-    value: ValueType
-    index: ValueType
-  }
+      type: 'subscript'
+      value: ValueType
+      index: ValueType
+    }
   | {
       type: 'condition'
       condition: ValueType

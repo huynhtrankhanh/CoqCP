@@ -11,94 +11,106 @@ import {
 
 export type ValidationError =
   | ((
-    | {
-      type:
-      | 'binary expression expects numeric'
-      | 'instruction expects numeric'
-      actualType1: PrimitiveType | PrimitiveType[] | 'string'
-      actualType2: PrimitiveType | PrimitiveType[] | 'string'
-    }
-    | {
-      type: 'binary expression expects boolean'
-      actualType1: PrimitiveType | PrimitiveType[] | 'string'
-      actualType2: PrimitiveType | PrimitiveType[] | 'string'
-    }
-    | {
-      type: 'binary expression type mismatch' | 'instruction type mismatch'
-      actualType1: PrimitiveType | PrimitiveType[] | 'string'
-      actualType2: PrimitiveType | PrimitiveType[] | 'string'
-    }
-    | { type: 'expression no statement' }
-    | { type: 'procedure not found'; name: string }
-    | { type: 'module not found'; name: string }
-    | { type: 'variable not present'; variables: string[] }
-    | {
-      type: 'variable type mismatch'
-      expectedType: PrimitiveType | PrimitiveType[] | 'string'
-      actualType: PrimitiveType | PrimitiveType[] | 'string'
-    }
-    | {
-      type: 'condition must be boolean'
-      actualType: PrimitiveType | PrimitiveType[] | 'string'
-    }
-    | { type: 'no surrounding range command' }
-    | { type: 'undefined variable' | 'undefined binder' }
-    | { type: 'not representable int64' }
-    | { type: 'bad number literal' }
-    | { type: 'range end must be int64 or string' }
-    | {
-      type:
-      | 'instruction expects int8'
-      | 'instruction expects int64'
-      | 'instruction expects tuple'
-      | 'instruction expects address or tuple'
-    }
-    | { type: 'undefined array' }
-    | { type: 'index out of bounds' }
-    | {
-      type:
-      | 'unary operator expects numeric'
-      | "unary operator can't operate on tuples"
-      | "unary operator can't operate on strings"
-      | "unary operator can't operate on addresses"
-      | 'unary operator expects boolean'
-    }
-    | { type: "array length can't be less than 1" }
-    | { type: 'string not allowed' }
-    | { type: 'call implicated in cycle' }
-    | { type: 'must specify all arrays' }
-    | {
-      type: 'array shape mismatch'
-      procedureModuleArrayShape: PrimitiveType[]
-      currentModuleArrayShape: PrimitiveType[]
-    }
-    | {
-      type:
-      | 'array shape mismatch'
-      | "array doesn't exist in procedure module"
-      procedureModuleArray: string
-    }
-    | {
-      type: "array doesn't exist in current module"
-      currentModuleArray: string
-    }
-    | { type: 'duplicate procedure'; procedureName: string }
-    | { type: 'index must be a number literal' }
-  ) & { location: Location & { moduleName: string } })
+      | {
+          type:
+            | 'binary expression expects numeric'
+            | 'instruction expects numeric'
+          actualType1: PrimitiveType | PrimitiveType[] | 'string'
+          actualType2: PrimitiveType | PrimitiveType[] | 'string'
+        }
+      | {
+          type: 'binary expression expects boolean'
+          actualType1: PrimitiveType | PrimitiveType[] | 'string'
+          actualType2: PrimitiveType | PrimitiveType[] | 'string'
+        }
+      | {
+          type: 'binary expression type mismatch' | 'instruction type mismatch'
+          actualType1: PrimitiveType | PrimitiveType[] | 'string'
+          actualType2: PrimitiveType | PrimitiveType[] | 'string'
+        }
+      | { type: 'expression no statement' }
+      | { type: 'procedure not found'; name: string }
+      | { type: 'module not found'; name: string }
+      | { type: 'variable not present'; variables: string[] }
+      | {
+          type: 'variable type mismatch'
+          expectedType: PrimitiveType | PrimitiveType[] | 'string'
+          actualType: PrimitiveType | PrimitiveType[] | 'string'
+        }
+      | {
+          type: 'condition must be boolean'
+          actualType: PrimitiveType | PrimitiveType[] | 'string'
+        }
+      | { type: 'no surrounding range command' }
+      | { type: 'undefined variable' | 'undefined binder' }
+      | { type: 'not representable int64' }
+      | { type: 'bad number literal' }
+      | { type: 'range end must be int64 or string' }
+      | {
+          type:
+            | 'instruction expects int8'
+            | 'instruction expects int64'
+            | 'instruction expects tuple'
+            | 'instruction expects address or tuple'
+        }
+      | { type: 'undefined array' }
+      | { type: 'index out of bounds' }
+      | {
+          type:
+            | 'unary operator expects numeric'
+            | "unary operator can't operate on tuples"
+            | "unary operator can't operate on strings"
+            | "unary operator can't operate on addresses"
+            | 'unary operator expects boolean'
+        }
+      | { type: "array length can't be less than 1" }
+      | { type: 'string not allowed' }
+      | { type: 'call implicated in cycle' }
+      | { type: 'must specify all arrays' }
+      | {
+          type: 'array shape mismatch'
+          procedureModuleArrayShape: PrimitiveType[]
+          currentModuleArrayShape: PrimitiveType[]
+        }
+      | {
+          type:
+            | 'array shape mismatch'
+            | "array doesn't exist in procedure module"
+          procedureModuleArray: string
+        }
+      | {
+          type: "array doesn't exist in current module"
+          currentModuleArray: string
+        }
+      | { type: 'duplicate procedure'; procedureName: string }
+      | { type: 'index must be a number literal' }
+    ) & { location: Location & { moduleName: string } })
   | { type: 'duplicate module'; module: CoqCPAST; moduleName: string }
 
 export const isNumeric = (
   x: string | PrimitiveType[]
 ): x is 'int8' | 'int16' | 'int32' | 'int64' | 'int256' => {
-  return x === 'int8' || x === 'int16' || x === 'int32' || x === 'int64' || x === 'int256'
+  return (
+    x === 'int8' ||
+    x === 'int16' ||
+    x === 'int32' ||
+    x === 'int64' ||
+    x === 'int256'
+  )
 }
 
-export const sortAndValidateAST = (modules: CoqCPAST[], blockchain: boolean): ValidationError[] => {
+export const sortAndValidateAST = (
+  modules: CoqCPAST[],
+  blockchain: boolean
+): ValidationError[] => {
   const sortedModules = sortModules(modules)
   return validateAST(sortedModules, blockchain)
 }
 
-export const validateAST = (sortedModules: CoqCPAST[], blockchain: boolean): ValidationError[] => {
+export const validateAST = (
+  sortedModules: CoqCPAST[],
+  blockchain: boolean
+): ValidationError[] => {
   // Check for duplicate modules
   {
     const errors: ValidationError[] = []
@@ -468,7 +480,7 @@ export const validateAST = (sortedModules: CoqCPAST[], blockchain: boolean): Val
               }
               if (
                 currentModuleArrayDeclaration.itemTypes.length !==
-                procedureModuleArrayDeclaration.itemTypes.length ||
+                  procedureModuleArrayDeclaration.itemTypes.length ||
                 currentModuleArrayDeclaration.itemTypes.some(
                   (element, index) =>
                     procedureModuleArrayDeclaration.itemTypes[index] !== element
@@ -507,7 +519,9 @@ export const validateAST = (sortedModules: CoqCPAST[], blockchain: boolean): Val
               : instruction.type === 'coerceInt32'
                 ? 'int32'
                 : instruction.type === 'coerceInt64'
-                  ? 'int64' : instruction.type === 'coerceInt256' ? 'int256'
+                  ? 'int64'
+                  : instruction.type === 'coerceInt256'
+                    ? 'int256'
                     : 'int8'
           }
           case 'condition': {
@@ -855,7 +869,7 @@ export const validateAST = (sortedModules: CoqCPAST[], blockchain: boolean): Val
               if (index.type !== 'literal' || index.valueType !== 'number') {
                 errors.push({
                   type: 'index must be a number literal',
-                  location: { ...index.location, moduleName }
+                  location: { ...index.location, moduleName },
                 })
                 return 'illegal'
               }
@@ -878,14 +892,16 @@ export const validateAST = (sortedModules: CoqCPAST[], blockchain: boolean): Val
               if (indexType !== 'int64') {
                 errors.push({
                   type: 'instruction expects int64',
-                  location: { ...index.location, moduleName }
+                  location: { ...index.location, moduleName },
                 })
               }
               return 'int8'
             }
 
             errors.push({
-              type: blockchain ? 'instruction expects address or tuple' : 'instruction expects tuple',
+              type: blockchain
+                ? 'instruction expects address or tuple'
+                : 'instruction expects tuple',
               location: { ...instruction.location, moduleName },
             })
             return 'illegal'
