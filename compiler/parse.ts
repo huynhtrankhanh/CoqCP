@@ -1,7 +1,7 @@
 import acorn, { ExtendNode } from 'acorn'
 import * as ESTree from 'estree'
 
-export type PrimitiveType = 'bool' | 'int8' | 'int16' | 'int32' | 'int64'
+export type PrimitiveType = 'bool' | 'int8' | 'int16' | 'int32' | 'int64' | 'int256' | 'address'
 
 export interface ArrayDeclaration {
   itemTypes: PrimitiveType[]
@@ -133,6 +133,10 @@ export type Instruction = (
     }
   | {
       type: 'coerceInt64'
+      value: ValueType
+    }
+    | {
+      type: 'coerceInt256'
       value: ValueType
     }
   | { type: 'less'; left: ValueType; right: ValueType }
@@ -296,6 +300,8 @@ export class CoqCPASTTransformer {
                 itemType.name !== 'int16' &&
                 itemType.name !== 'int32' &&
                 itemType.name !== 'int64' &&
+                itemType.name !== 'int256' &&
+                itemType.name !== 'address' &&
                 itemType.name !== 'bool')
             ) {
               throw new ParseError(
@@ -414,6 +420,8 @@ export class CoqCPASTTransformer {
             declaredType !== 'int16' &&
             declaredType !== 'int32' &&
             declaredType !== 'int64' &&
+            declaredType !== 'int256' &&
+            declaredType !== 'address' &&
             declaredType !== 'bool'
           )
             throw new ParseError(
@@ -583,7 +591,6 @@ export class CoqCPASTTransformer {
         location: node.loc,
       }
     } else if (node.type === 'LogicalExpression') {
-      const x = node
       const left = this.processNode(node.left)
       const right = this.processNode(node.right)
       const operator = this.getBinaryOperator(node.operator, node.loc)
@@ -894,12 +901,24 @@ export class CoqCPASTTransformer {
       case 'coerceInt64': {
         if (args.length !== 1) {
           throw new ParseError(
-            'coerceInt8() function accepts exactly 1 argument. ' +
+            'coerceInt64() function accepts exactly 1 argument. ' +
               formatLocation(location)
           )
         }
         const value = this.processNode(args[0])
         instruction = { type: 'coerceInt64', value, location }
+        break
+      }
+
+      case 'coerceInt256': {
+        if (args.length !== 1) {
+          throw new ParseError(
+            'coerceInt256() function accepts exactly 1 argument. ' +
+              formatLocation(location)
+          )
+        }
+        const value = this.processNode(args[0])
+        instruction = { type: 'coerceInt256', value, location }
         break
       }
 
