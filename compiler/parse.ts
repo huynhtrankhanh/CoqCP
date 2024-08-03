@@ -101,15 +101,10 @@ export type Instruction = (
   | BinaryOperationInstruction
   | UnaryOperationInstruction
   | {
-      type: 'subscript'
-      value: ValueType
-      index: {
-        type: 'literal'
-        valueType: 'number'
-        raw: string
-        location: Location
-      }
-    }
+    type: 'subscript'
+    value: ValueType
+    index: ValueType
+  }
   | {
       type: 'condition'
       condition: ValueType
@@ -570,17 +565,7 @@ export class CoqCPASTTransformer {
       }
     } else if (node.type === 'MemberExpression') {
       const instruction = this.processNode(node.object)
-      if (node.property.type !== 'Literal') {
-        throw new ParseError(
-          'only literal indices allowed. ' + formatLocation(node.loc)
-        )
-      }
-      const index = node.property.raw
-      if (index === undefined) {
-        throw new ParseError(
-          'index must be defined. ' + formatLocation(node.loc)
-        )
-      }
+      const index = this.processNode(node.property)
       if (instruction.type === 'literal') {
         throw new ParseError(
           "left hand side can't be a literal. " + formatLocation(node.loc)
@@ -589,12 +574,7 @@ export class CoqCPASTTransformer {
       return {
         type: 'subscript',
         value: instruction,
-        index: {
-          type: 'literal',
-          valueType: 'number',
-          raw: index,
-          location: node.property.loc,
-        },
+        index,
         location: node.loc,
       }
     } else if (node.type === 'LogicalExpression') {
