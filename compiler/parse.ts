@@ -157,9 +157,9 @@ export type Instruction = (
       arrayMapping: Map<string, string>
     }
   | {
-    type: 'break' | 'continue' | 'flush'
-  }
-  | { type: 'construct address', bytes: ValueType[] }
+      type: 'break' | 'continue' | 'flush'
+    }
+  | { type: 'construct address'; bytes: ValueType[] }
 ) & { location: Location }
 
 export class ParseError extends Error {
@@ -756,9 +756,15 @@ export class CoqCPASTTransformer {
       case 'address': {
         if (args.length !== 20) {
           throw new ParseError(
-            'address() function accepts exactly 20 arguments. ' + formatLocation(location))
+            'address() function accepts exactly 20 arguments. ' +
+              formatLocation(location)
+          )
         }
-        instruction = { type: 'construct address', bytes: args.map(x => ({ ...this.processNode(x), location: x.loc })), location }
+        instruction = {
+          type: 'construct address',
+          bytes: args.map((x) => ({ ...this.processNode(x), location: x.loc })),
+          location,
+        }
         break
       }
 
