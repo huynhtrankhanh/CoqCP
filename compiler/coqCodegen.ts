@@ -232,8 +232,8 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
               | PrimitiveType[]
           } => {
             const getBitWidth = (
-              type: 'int8' | 'int16' | 'int32' | 'int64'
-            ): 8 | 16 | 32 | 64 => {
+              type: 'int8' | 'int16' | 'int32' | 'int64' | 'int256'
+            ): 8 | 16 | 32 | 64 | 256 => {
               switch (type) {
                 case 'int8':
                   return 8
@@ -243,6 +243,8 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                   return 32
                 case 'int64':
                   return 64
+                case 'int256':
+                  return 256
               }
             }
 
