@@ -1,13 +1,13 @@
-import { CoqCPAST } from "./parse";
+import { CoqCPAST } from './parse'
 
 export const solidityCodegen = (sortedModules: CoqCPAST[]): string => {
-    let joined = '// SPDX-License-Identifier: UNLICENSED\ncontract GeneratedCode {\n'
+  let joined =
+    '// SPDX-License-Identifier: UNLICENSED\ncontract GeneratedCode {\n'
 
-    for (const module of sortedModules) {
+  for (const module of sortedModules) {
+  }
 
-    }
+  joined += '}\n'
 
-    joined += '}\n'
-
-    return joined
+  return joined
 }
