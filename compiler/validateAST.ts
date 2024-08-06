@@ -871,7 +871,7 @@ export const validateAST = (
                 })
               }
             }
-            if (actualType.includes('statement')) invalid = true
+            if (actualType.includes('statement')) return 'illegal'
             const coercedActualType = filterNotPermissible(actualType)
             const elementType = environment?.arrays.get(name)?.itemTypes
             if (elementType === undefined) {
