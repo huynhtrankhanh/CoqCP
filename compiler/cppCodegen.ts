@@ -199,6 +199,7 @@ export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
                   )
                 }
                 if (instruction.type === 'store') {
+                  assert(typeof instruction.name === 'string')
                   return adorn(
                     'environment_' +
                       environmentNameMap.get(instruction.name) +
@@ -211,6 +212,7 @@ export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
                   )
                 }
                 if (instruction.type === 'retrieve') {
+                  assert(typeof instruction.name === 'string')
                   return adorn(
                     'environment_' +
                       environmentNameMap.get(instruction.name) +
@@ -226,6 +228,7 @@ export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
                   return adorn('writeChar(' + print(instruction.value) + ')')
                 }
                 if (instruction.type === 'subscript') {
+                  assert(instruction.index.type === 'literal')
                   return adorn(
                     'get<' +
                       instruction.index.raw +
@@ -555,6 +558,14 @@ export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
                       ')'
                   )
                 }
+
+                assert(instruction.type !== 'coerceInt256')
+                assert(instruction.type !== 'communication area size')
+                assert(instruction.type !== 'construct address')
+                assert(instruction.type !== 'donate')
+                assert(instruction.type !== 'get money')
+                assert(instruction.type !== 'get sender')
+                assert(instruction.type !== 'invoke')
 
                 return consumeNever(instruction.type)
               }
