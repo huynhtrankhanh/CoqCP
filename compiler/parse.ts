@@ -99,8 +99,8 @@ export type Instruction = (
     }
   | { type: 'retrieve'; name: string | typeof COMMUNICATION; index: ValueType }
   | { type: 'communication area size' }
-  | { type: 'invoke', address: ValueType, money: ValueType, array: string }
-  | { type: 'donate', address: ValueType, money: ValueType }
+  | { type: 'invoke'; address: ValueType; money: ValueType; array: string }
+  | { type: 'donate'; address: ValueType; money: ValueType }
   | { type: 'get sender' }
   | { type: 'get money' }
   | {
@@ -798,13 +798,21 @@ export class CoqCPASTTransformer {
       }
 
       case 'getSender': {
-        if (args.length !== 0) { throw new ParseError('getSender() takes no arguments. ' + formatLocation(location)) }
+        if (args.length !== 0) {
+          throw new ParseError(
+            'getSender() takes no arguments. ' + formatLocation(location)
+          )
+        }
         instruction = { type: 'get sender', location }
         break
       }
 
       case 'getMoney': {
-        if (args.length !== 0) { throw new ParseError('getMoney() takes no arguments. ' + formatLocation(location)) }
+        if (args.length !== 0) {
+          throw new ParseError(
+            'getMoney() takes no arguments. ' + formatLocation(location)
+          )
+        }
         instruction = { type: 'get money', location }
         break
       }
