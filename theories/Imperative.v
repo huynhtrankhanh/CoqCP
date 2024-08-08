@@ -70,7 +70,9 @@ Inductive BasicEffect :=
 | Trap
 | Flush
 | ReadChar
-| WriteChar (value : Z).
+| WriteChar (value : Z)
+| Donate (money : Z) (address : list Z)
+| Invoke (money : Z) (address : list Z).
 
 #[export] Instance basicEffectEqualityDecidable : EqDecision BasicEffect := ltac:(solve_decision).
 
@@ -80,6 +82,8 @@ Definition basicEffectReturnValue (effect : BasicEffect): Type :=
   | Flush => unit
   | ReadChar => Z
   | WriteChar _ => unit
+  | Donate _ _ => unit
+  | Invoke _ _ => list Z
   end.
 
 Inductive WithArrays (arrayIndex : Type) (arrayType : arrayIndex -> Type) :=
@@ -324,11 +328,13 @@ Proof.
   induction x as [x | effect continuation IH] in captured |- *.
   - exact (Done _ _ _ captured).
   - destruct effect as [effect | arrayName index | arrayName index value].
-    + destruct effect as [| | | x].
+    + destruct effect as [| | | x | |].
       * exact (Dispatch _ _ _ (DoBasicEffect _ _ Trap) (fun returnValue => IH returnValue captured)).
       * exact (Dispatch _ _ _ (DoBasicEffect _ _ Flush) (fun returnValue => IH returnValue captured)).
       * exact (Dispatch _ _ _ (DoBasicEffect _ _ ReadChar) (fun returnValue => IH returnValue captured)).
       * exact (Dispatch _ _ _ (DoBasicEffect _ _ (WriteChar x)) (fun returnValue => IH returnValue (captured ++ [x]))).
+      * exact (Dispatch _ _ _ (DoBasicEffect _ _ Trap) (fun returnValue => Done _ _ _ captured)).
+      * exact (Dispatch _ _ _ (DoBasicEffect _ _ Trap) (fun returnValue => Done _ _ _ captured)).
     + exact (Dispatch _ _ _ (Retrieve _ arrayType arrayName index) (fun x => IH x captured)).
     + exact (Dispatch _ _ _ (Store _ arrayType arrayName index value) (fun x => IH x captured)).
 Defined.
