@@ -72,7 +72,7 @@ Inductive BasicEffect :=
 | ReadChar
 | WriteChar (value : Z)
 | Donate (money : Z) (address : list Z)
-| Invoke (money : Z) (address : list Z)
+| Invoke (money : Z) (address : list Z) (array : list Z)
 | GetSender
 | GetMoney
 | GetCommunicationSize
@@ -88,7 +88,7 @@ Definition basicEffectReturnValue (effect : BasicEffect): Type :=
   | ReadChar => Z
   | WriteChar _ => unit
   | Donate _ _ => unit
-  | Invoke _ _ => list Z
+  | Invoke _ _ _ => list Z
   | GetSender => list Z
   | GetMoney => Z
   | GetCommunicationSize => Z
@@ -208,6 +208,20 @@ Definition flush arrayIndex arrayType variableIndex := Dispatch (WithLocalVariab
 
 Definition trap arrayIndex arrayType variableIndex returnType := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue returnType (DoWithArrays _ _ _ (DoBasicEffect _ _ Trap)) (fun x => False_rect _ x).
 
+Definition readByte arrayIndex arrayType variableIndex index := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue _ (DoWithArrays _ _ _ (DoBasicEffect _ _ (ReadByte index))) (fun x => Done _ _ _ x).
+
+Definition setByte arrayIndex arrayType variableIndex  index value := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue _ (DoWithArrays _ _ _ (DoBasicEffect _ _ (SetByte index value))) (fun x => Done _ _ _ x).
+
+Definition getSender arrayIndex arrayType variableIndex := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue _ (DoWithArrays _ _ _ (DoBasicEffect _ _ GetSender)) (fun x => Done _ _ _ x).
+
+Definition getMoney arrayIndex arrayType variableIndex := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue _ (DoWithArrays _ _ _ (DoBasicEffect _ _ GetMoney)) (fun x => Done _ _ _ x).
+
+Definition getCommunicationSize arrayIndex arrayType variableIndex := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue _ (DoWithArrays _ _ _ (DoBasicEffect _ _ GetCommunicationSize)) (fun x => Done _ _ _ x).
+
+Definition donate arrayIndex arrayType variableIndex money address := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue _ (DoWithArrays _ _ _ (DoBasicEffect _ _ (Donate money address))) (fun x => Done _ _ _ x).
+
+Definition invoke arrayIndex arrayType variableIndex money address array := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue _ (DoWithArrays _ _ _ (DoBasicEffect _ _ (Invoke money address array))) (fun x => Done _ _ _ x).
+
 Definition booleanLocalSet arrayIndex arrayType variableIndex name value := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue _ (BooleanLocalSet _ _ _ name value) (fun x => Done _ _ _ x).
 
 Definition booleanLocalGet arrayIndex arrayType variableIndex name := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue _ (BooleanLocalGet _ _ _ name) (fun x => Done _ _ _ x).
@@ -292,6 +306,20 @@ Lemma nth_lt {A} (l : list A) (n : nat) (isLess : Nat.lt n (length l)) : A.
 Proof.
   destruct l as [| head tail]; simpl in *; (lia || exact (nth n (head :: tail) head)).
 Defined.
+
+Fixpoint getArray {arrayIndex arrayType variableIndex} (arrayName : arrayIndex) (length : nat) : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue (list (arrayType arrayName)) :=
+  match length with
+  | O => Done _ _ _ []
+  | S length => retrieve _ _ _ arrayName (Z.of_nat length) >>= fun x => getArray arrayName length >>= fun y => Done _ _ _ (y ++ [x])
+  end.
+
+Fixpoint applyArray {arrayIndex arrayType variableIndex} (arrayName : arrayIndex) (l : list (arrayType arrayName)) (startIndex : Z) : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue () :=
+  match l with
+  | [] => Done _ _ _ tt
+  | head :: tail => store _ _ _ arrayName startIndex head >>= fun x => applyArray arrayName tail (startIndex + 1)
+  end.
+
+Definition invokeWithArrays {arrayIndex arrayType variableIndex} (money : Z) (address : list Z) (arrayName : arrayIndex) (length : Z) (hEq : arrayType arrayName = Z) : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue () := getArray arrayName (Z.to_nat length) >>= fun array => invoke arrayIndex arrayType variableIndex money address ltac:(rewrite hEq in *; exact array) >>= fun array => applyArray arrayName ltac:(rewrite hEq in *; exact array) 0.
 
 Lemma getNewArrays {arrayIndex arrayType} `{EqDecision arrayIndex} (x : Action (WithArrays arrayIndex arrayType) withArraysReturnValue ()) (arrays : forall x, list (arrayType x)) : (Action BasicEffect basicEffectReturnValue (forall x, list (arrayType x))).
 Proof.
