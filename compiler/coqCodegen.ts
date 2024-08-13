@@ -496,7 +496,7 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                   const { expression: indexExpression } = dfs(value.index)
                   return {
                     expression: `(${indexExpression} >>= fun x => readByte ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex} x)`,
-                    type: 'int8'
+                    type: 'int8',
                   }
                 }
                 assert(environment !== null)
@@ -513,11 +513,11 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
               }
               case 'store': {
                 if (value.name === COMMUNICATION) {
-                  const { expression: indexExpression} = dfs(value.index)
-                  const { expression: valueExpression} = dfs(value.value)
+                  const { expression: indexExpression } = dfs(value.index)
+                  const { expression: valueExpression } = dfs(value.value)
                   return {
                     expression: `(${indexExpression} >>= fun x => ${valueExpression} >>= fun y => setByte ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex} x y)`,
-                    type: 'statement'
+                    type: 'statement',
                   }
                 }
                 const { expression: indexExpression } = dfs(value.index)
