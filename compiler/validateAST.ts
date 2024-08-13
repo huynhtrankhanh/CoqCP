@@ -12,85 +12,85 @@ import {
 
 export type ValidationError =
   | ((
-      | {
-          type:
-            | 'binary expression expects numeric'
-            | 'instruction expects numeric'
-          actualType1: PrimitiveType | PrimitiveType[] | 'string'
-          actualType2: PrimitiveType | PrimitiveType[] | 'string'
-        }
-      | {
-          type: 'binary expression expects boolean'
-          actualType1: PrimitiveType | PrimitiveType[] | 'string'
-          actualType2: PrimitiveType | PrimitiveType[] | 'string'
-        }
-      | {
-          type: 'binary expression type mismatch' | 'instruction type mismatch'
-          actualType1: PrimitiveType | PrimitiveType[] | 'string'
-          actualType2: PrimitiveType | PrimitiveType[] | 'string'
-        }
-      | { type: 'expression no statement' }
-      | { type: 'procedure not found'; name: string }
-      | { type: 'module not found'; name: string }
-      | { type: 'variable not present'; variables: string[] }
-      | {
-          type: 'variable type mismatch'
-          expectedType: PrimitiveType | PrimitiveType[] | 'string'
-          actualType: PrimitiveType | PrimitiveType[] | 'string'
-        }
-      | {
-          type: 'condition must be boolean'
-          actualType: PrimitiveType | PrimitiveType[] | 'string'
-        }
-      | { type: 'no surrounding range command' }
-      | { type: 'undefined variable' | 'undefined binder' }
-      | { type: 'not representable int64' }
-      | { type: 'bad number literal' }
-      | { type: 'range end must be int64 or string' }
-      | {
-          type:
-            | 'instruction expects int8'
-            | 'instruction expects int64'
-            | 'instruction expects address'
-            | 'instruction expects int256'
-            | 'instruction expects tuple'
-            | 'instruction expects address or tuple'
-        }
-      | { type: 'instruction expects [int8] array' }
-      | { type: 'instruction only available in blockchain environment' }
-      | { type: 'instruction not available in blockchain environment' }
-      | { type: 'undefined array' }
-      | { type: 'index out of bounds' }
-      | {
-          type:
-            | 'unary operator expects numeric'
-            | "unary operator can't operate on tuples"
-            | "unary operator can't operate on strings"
-            | "unary operator can't operate on addresses"
-            | 'unary operator expects boolean'
-        }
-      | { type: "array length can't be less than 1" }
-      | { type: 'string not allowed' }
-      | { type: 'call implicated in cycle' }
-      | { type: 'must specify all arrays' }
-      | {
-          type: 'array shape mismatch'
-          procedureModuleArrayShape: PrimitiveType[]
-          currentModuleArrayShape: PrimitiveType[]
-        }
-      | {
-          type:
-            | 'array shape mismatch'
-            | "array doesn't exist in procedure module"
-          procedureModuleArray: string
-        }
-      | {
-          type: "array doesn't exist in current module"
-          currentModuleArray: string
-        }
-      | { type: 'duplicate procedure'; procedureName: string }
-      | { type: 'index must be a number literal' }
-    ) & { location: Location & { moduleName: string } })
+    | {
+      type:
+      | 'binary expression expects numeric'
+      | 'instruction expects numeric'
+      actualType1: PrimitiveType | PrimitiveType[] | 'string'
+      actualType2: PrimitiveType | PrimitiveType[] | 'string'
+    }
+    | {
+      type: 'binary expression expects boolean'
+      actualType1: PrimitiveType | PrimitiveType[] | 'string'
+      actualType2: PrimitiveType | PrimitiveType[] | 'string'
+    }
+    | {
+      type: 'binary expression type mismatch' | 'instruction type mismatch'
+      actualType1: PrimitiveType | PrimitiveType[] | 'string'
+      actualType2: PrimitiveType | PrimitiveType[] | 'string'
+    }
+    | { type: 'expression no statement' }
+    | { type: 'procedure not found'; name: string }
+    | { type: 'module not found'; name: string }
+    | { type: 'variable not present'; variables: string[] }
+    | {
+      type: 'variable type mismatch'
+      expectedType: PrimitiveType | PrimitiveType[] | 'string'
+      actualType: PrimitiveType | PrimitiveType[] | 'string'
+    }
+    | {
+      type: 'condition must be boolean'
+      actualType: PrimitiveType | PrimitiveType[] | 'string'
+    }
+    | { type: 'no surrounding range command' }
+    | { type: 'undefined variable' | 'undefined binder' }
+    | { type: 'not representable int64' }
+    | { type: 'bad number literal' }
+    | { type: 'range end must be int64 or string' }
+    | {
+      type:
+      | 'instruction expects int8'
+      | 'instruction expects int64'
+      | 'instruction expects address'
+      | 'instruction expects int256'
+      | 'instruction expects tuple'
+      | 'instruction expects address or tuple'
+    }
+    | { type: 'instruction expects [int8] array' }
+    | { type: 'instruction only available in blockchain environment' }
+    | { type: 'instruction not available in blockchain environment' }
+    | { type: 'undefined array' }
+    | { type: 'index out of bounds' }
+    | {
+      type:
+      | 'unary operator expects numeric'
+      | "unary operator can't operate on tuples"
+      | "unary operator can't operate on strings"
+      | "unary operator can't operate on addresses"
+      | 'unary operator expects boolean'
+    }
+    | { type: "array length can't be less than 1" }
+    | { type: 'string not allowed' }
+    | { type: 'call implicated in cycle' }
+    | { type: 'must specify all arrays' }
+    | {
+      type: 'array shape mismatch'
+      procedureModuleArrayShape: PrimitiveType[]
+      currentModuleArrayShape: PrimitiveType[]
+    }
+    | {
+      type:
+      | 'array shape mismatch'
+      | "array doesn't exist in procedure module"
+      procedureModuleArray: string
+    }
+    | {
+      type: "array doesn't exist in current module"
+      currentModuleArray: string
+    }
+    | { type: 'duplicate procedure'; procedureName: string }
+    | { type: 'index must be a number literal' }
+  ) & { location: Location & { moduleName: string } })
   | { type: 'duplicate module'; module: CoqCPAST; moduleName: string }
 
 export const isNumeric = (
@@ -488,7 +488,7 @@ export const validateAST = (
               }
               if (
                 currentModuleArrayDeclaration.itemTypes.length !==
-                  procedureModuleArrayDeclaration.itemTypes.length ||
+                procedureModuleArrayDeclaration.itemTypes.length ||
                 currentModuleArrayDeclaration.itemTypes.some(
                   (element, index) =>
                     procedureModuleArrayDeclaration.itemTypes[index] !== element
@@ -1118,9 +1118,10 @@ export const validateAST = (
               return 'illegal'
             }
             let invalid = false
-            const { money, address, array } = instruction
+            const { money, address, array, communicationSize } = instruction
             const moneyType = dfs(money)
             const addressType = dfs(address)
+            const communicationSizeType = dfs(communicationSize)
             if (moneyType === 'illegal') invalid = true
             else if (moneyType !== 'int256') {
               invalid = true
@@ -1135,6 +1136,14 @@ export const validateAST = (
               errors.push({
                 type: 'instruction expects address',
                 location: { ...address.location, moduleName },
+              })
+            }
+            if (communicationSizeType === 'illegal') invalid = true
+            else if (communicationSizeType !== 'int64') {
+              invalid = true
+              errors.push({
+                type: 'instruction expects int64',
+                location: { ...communicationSize.location, moduleName }
               })
             }
             const environmentArray = environment?.arrays.get(array)
