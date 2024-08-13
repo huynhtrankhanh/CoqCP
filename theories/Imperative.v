@@ -210,7 +210,7 @@ Definition trap arrayIndex arrayType variableIndex returnType := Dispatch (WithL
 
 Definition readByte arrayIndex arrayType variableIndex index := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue _ (DoWithArrays _ _ _ (DoBasicEffect _ _ (ReadByte index))) (fun x => Done _ _ _ x).
 
-Definition setByte arrayIndex arrayType variableIndex  index value := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue _ (DoWithArrays _ _ _ (DoBasicEffect _ _ (SetByte index value))) (fun x => Done _ _ _ x).
+Definition setByte arrayIndex arrayType variableIndex index value := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue _ (DoWithArrays _ _ _ (DoBasicEffect _ _ (SetByte index value))) (fun x => Done _ _ _ x).
 
 Definition getSender arrayIndex arrayType variableIndex := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue _ (DoWithArrays _ _ _ (DoBasicEffect _ _ GetSender)) (fun x => Done _ _ _ x).
 

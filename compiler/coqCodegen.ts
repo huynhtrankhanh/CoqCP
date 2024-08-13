@@ -1,6 +1,6 @@
 import { PairMap } from './PairMap'
 import { assert } from './assert'
-import { CoqCPAST, PrimitiveType, ValueType } from './parse'
+import { COMMUNICATION, CoqCPAST, PrimitiveType, ValueType } from './parse'
 import { isNumeric } from './validateAST'
 
 const getCoqString = (text: string): string => {
@@ -492,6 +492,13 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                 }
               }
               case 'retrieve': {
+                if (value.name === COMMUNICATION) {
+                  const { expression: indexExpression } = dfs(value.index)
+                  return {
+                    expression: `(${indexExpression} >>= fun x => readByte ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex} x)`,
+                    type: 'int8'
+                  }
+                }
                 assert(environment !== null)
                 const declaration = environment.arrays.get(value.name)
                 assert(declaration !== undefined)
@@ -505,6 +512,14 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                 }
               }
               case 'store': {
+                if (value.name === COMMUNICATION) {
+                  const { expression: indexExpression} = dfs(value.index)
+                  const { expression: valueExpression} = dfs(value.value)
+                  return {
+                    expression: `(${indexExpression} >>= fun x => ${valueExpression} >>= fun y => setByte ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex} x y)`,
+                    type: 'statement'
+                  }
+                }
                 const { expression: indexExpression } = dfs(value.index)
                 let tuple = getTuple(value.tuple)
                 return {
