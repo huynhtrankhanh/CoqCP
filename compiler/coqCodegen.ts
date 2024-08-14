@@ -130,8 +130,8 @@ export const coqCodegen = (sortedModules: CoqCPAST[]): string => {
               itemTypes.length === 0
                 ? 'unit'
                 : itemTypes
-                    .map((x) => (x === 'bool' ? 'bool' : 'Z'))
-                    .join(' * ')
+                  .map((x) => (x === 'bool' ? 'bool' : 'Z'))
+                  .join(' * ')
             return '| ' + sanitizeArray(moduleName, name) + ' => ' + coqType
           })
           .join(' ') +
@@ -151,10 +151,10 @@ export const coqCodegen = (sortedModules: CoqCPAST[]): string => {
                 itemTypes.length === 0
                   ? 'tt'
                   : '(' +
-                    itemTypes
-                      .map((x) => (x === 'bool' ? 'false' : '0%Z'))
-                      .join(', ') +
-                    ')'
+                  itemTypes
+                    .map((x) => (x === 'bool' ? 'false' : '0%Z'))
+                    .join(', ') +
+                  ')'
               return (
                 '| ' +
                 sanitizeArray(moduleName, name) +
@@ -208,11 +208,11 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
           const liftExpression = (x: {
             expression: string
             type:
-              | PrimitiveType
-              | 'statement'
-              | 'loop control'
-              | 'condition'
-              | PrimitiveType[]
+            | PrimitiveType
+            | 'statement'
+            | 'loop control'
+            | 'condition'
+            | PrimitiveType[]
           }): string => {
             if (binderCounter === 0) return x.expression
             if (x.type === 'loop control' || x.type === 'condition')
@@ -225,11 +225,11 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
           ): {
             expression: string
             type:
-              | PrimitiveType
-              | 'statement'
-              | 'loop control'
-              | 'condition'
-              | PrimitiveType[]
+            | PrimitiveType
+            | 'statement'
+            | 'loop control'
+            | 'condition'
+            | PrimitiveType[]
           } => {
             const getBitWidth = (
               type: 'int8' | 'int16' | 'int32' | 'int64' | 'int256'
@@ -254,9 +254,8 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                 value.map((_, i) => 'tuple_element_' + i).join(', ') +
                 ')'
               for (const [index, element] of value.entries()) {
-                tuple = `(${
-                  dfs(element).expression
-                } >>= fun tuple_element_${index} => ${tuple})`
+                tuple = `(${dfs(element).expression
+                  } >>= fun tuple_element_${index} => ${tuple})`
               }
               return tuple
             }
@@ -377,7 +376,8 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
               case 'coerceInt8':
               case 'coerceInt16':
               case 'coerceInt32':
-              case 'coerceInt64': {
+              case 'coerceInt64':
+              case 'coerceInt256': {
                 const integralType = (() => {
                   switch (value.type) {
                     case 'coerceInt8':
@@ -388,6 +388,8 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                       return 'int32'
                     case 'coerceInt64':
                       return 'int64'
+                    case 'coerceInt256':
+                      return 'int256'
                   }
                 })()
                 const bitWidth = (() => {
@@ -400,6 +402,8 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                       return 32
                     case 'coerceInt64':
                       return 64
+                    case 'coerceInt256':
+                      return 256
                   }
                 })()
                 const { type, expression } = dfs(value.value)
@@ -604,8 +608,16 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
               }
               case 'subscript': {
                 const { expression, type } = dfs(value.value)
+                if (type === "address") {
+                  const { expression: indexExpression } = dfs(value.index)
+                  return {
+                    expression: `(${expression} >>= fun address => ${indexExpression} >>= fun index => nthTrap address index)`,
+                    type: 'int8'
+                  }
+                }
                 assert(Array.isArray(type))
                 const length = type.length
+                assert(value.index.type === "literal")
                 const index = Number(value.index.raw)
                 // because of validation, this is nonnegative and less than length
                 if (type.length === 1) return { expression, type: type[0] }
@@ -711,9 +723,8 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                   }
                 } else {
                   return {
-                    expression: `(${
-                      dfs(end).expression
-                    } >>= fun x => loop (Z.to_nat x) (fun binder_${binderCounter}_intermediate => let binder_${binderCounter} := Done (WithLocalVariables ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex}) withLocalVariablesReturnValue _ (Z.sub (Z.sub x (Z.of_nat binder_${binderCounter}_intermediate)) 1%Z) in dropWithinLoop (${bodyExpression})))`,
+                    expression: `(${dfs(end).expression
+                      } >>= fun x => loop (Z.to_nat x) (fun binder_${binderCounter}_intermediate => let binder_${binderCounter} := Done (WithLocalVariables ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex}) withLocalVariablesReturnValue _ (Z.sub (Z.sub x (Z.of_nat binder_${binderCounter}_intermediate)) 1%Z) in dropWithinLoop (${bodyExpression})))`,
                     type: 'statement',
                   }
                 }
@@ -770,6 +781,30 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                   )} y x) (arrayType _ environment${moduleIndex}) ${arrayMappingText} ${congruence}))`,
                   type: 'statement',
                 }
+              }
+              case "communication area size": {
+                return { expression: `(getCommunicationSize _ _ _)`, type: 'int64' }
+              }
+              case 'get money': {
+                return { expression: '(getMoney _ _ _)', type: 'int256' }
+              }
+              case 'get sender': {
+                return { expression: `(getSender _ _ _)`, type: 'address' }
+              }
+              case 'donate': {
+                const { address, money } = value
+                const { expression: addressExpression } = dfs(address)
+                const { expression: moneyExpression } = dfs(money)
+                return { expression: `(${addressExpression} >>= fun address => ${moneyExpression} >>= fun money => donate _ _ _ money address)`, type: 'statement' }
+              }
+              case 'construct address': {
+                return { expression: "(" + value.bytes.map((x, index) => `${dfs(x).expression} >>= fun byte${index} => `).join("") + "[" + value.bytes.map((_, index) => "byte" + index).join(",") + "])", type: "address" }
+              }
+              case 'invoke': {
+                const { address, money, array, communicationSize } = value
+                const { expression: addressExpression } = dfs(address)
+                const { expression: moneyExpression } = dfs(money)
+                return { expression: `(${addressExpression} >>= fun address => ${moneyExpression} >>= fun money => ${communicationSize} >>= fun size => invokeWithArrays money address ${sanitizeArray(moduleName, array)} size ltac:(reflexivity))`, type: "statement" }
               }
             }
           }

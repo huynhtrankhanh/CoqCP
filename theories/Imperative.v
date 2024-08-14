@@ -307,6 +307,13 @@ Proof.
   destruct l as [| head tail]; simpl in *; (lia || exact (nth n (head :: tail) head)).
 Defined.
 
+Lemma nthTrap {A arrayIndex arrayType variableIndex} (l : list A) (n : Z) : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue A.
+Proof.
+  destruct (decide (Nat.lt (Z.to_nat n) (length l))) as [h |].
+  - exact (Done _ _ _ (nth_lt l (Z.to_nat n) h)).
+  - exact (trap _ _ _ _).
+Defined.
+
 Fixpoint getArray {arrayIndex arrayType variableIndex} (arrayName : arrayIndex) (length : nat) : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue (list (arrayType arrayName)) :=
   match length with
   | O => Done _ _ _ []
