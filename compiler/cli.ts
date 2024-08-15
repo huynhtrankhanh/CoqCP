@@ -72,7 +72,7 @@ function generateOutput(
 }
 
 // Compile function
-function compile(files: string[], coqOutput: string, cppOutput: string) {
+function compile(files: string[], coqOutput: string, cppOutput: string, blockchain: boolean) {
   const { modules, errors: parseErrors } = parseFiles(files)
 
   if (parseErrors.length > 0) {
@@ -90,7 +90,8 @@ function compile(files: string[], coqOutput: string, cppOutput: string) {
   const validationErrors = validateModules(
     sortedModules,
     modulePathMap,
-    moduleNameToPath
+    moduleNameToPath,
+    blockchain
   )
 
   if (validationErrors.length > 0) {
@@ -106,12 +107,13 @@ function compile(files: string[], coqOutput: string, cppOutput: string) {
 function watchAndCompile(
   files: string[],
   coqOutput: string,
-  cppOutput: string
+  cppOutput: string,
+  blockchain: boolean
 ) {
-  compile(files, coqOutput, cppOutput)
+  compile(files, coqOutput, cppOutput, blockchain)
   chokidar.watch(files).on('change', () => {
     console.log(chalk.blue('File change detected. Recompiling...'))
-    compile(files, coqOutput, cppOutput)
+    compile(files, coqOutput, cppOutput, blockchain)
   })
 }
 
@@ -127,11 +129,12 @@ function main() {
     )
     .arguments('<coqOutput> <cppOutput> <inputFiles...>')
     .option('-w, --watch', 'Enable watch mode')
+    .option('-b, --blockchain', 'Enable blockchain mode')
     .action((coqOutput, cppOutput, inputFiles, options) => {
       if (options.watch) {
-        watchAndCompile(inputFiles, coqOutput, cppOutput)
+        watchAndCompile(inputFiles, coqOutput, cppOutput, blockchain)
       } else {
-        compile(inputFiles, coqOutput, cppOutput)
+        compile(inputFiles, coqOutput, cppOutput, blockchain)
       }
     })
 
