@@ -72,7 +72,12 @@ function generateOutput(
 }
 
 // Compile function
-function compile(files: string[], coqOutput: string, cppOutput: string, blockchain: boolean) {
+function compile(
+  files: string[],
+  coqOutput: string,
+  cppOutput: string,
+  blockchain: boolean
+) {
   const { modules, errors: parseErrors } = parseFiles(files)
 
   if (parseErrors.length > 0) {
