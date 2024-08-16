@@ -9,7 +9,7 @@ import { validateAST } from './validateAST'
 import { sortModules } from './dependencyGraph'
 import { coqCodegen } from './coqCodegen'
 import { cppCodegen } from './cppCodegen'
-
+import { solidityCodegen } from './solidityCodegen'
 // Utility function to parse files
 function parseFiles(files: string[]): {
   modules: CoqCPAST[]
@@ -58,19 +58,6 @@ function validateModules(
   return errors
 }
 
-// Utility function to generate output files
-function generateOutput(
-  sortedModules: CoqCPAST[],
-  coqOutput: string,
-  cppOutput: string
-) {
-  const coqCode = coqCodegen(sortedModules)
-  fs.writeFileSync(coqOutput, coqCode, 'utf-8')
-
-  const cppCode = cppCodegen(sortedModules)
-  fs.writeFileSync(cppOutput, cppCode, 'utf-8')
-}
-
 // Compile function
 function compile(
   files: string[],
@@ -104,7 +91,16 @@ function compile(
     return
   }
 
-  generateOutput(sortedModules, coqOutput, cppOutput)
+  const coqCode = coqCodegen(sortedModules)
+  fs.writeFileSync(coqOutput, coqCode, 'utf-8')
+
+  if (blockchain) {
+    const solidityCode = solidityCodegen(sortedModules)
+    fs.writeFileSync(cppOutput, solidityCode, 'utf-8')
+  } else {
+    const cppCode = cppCodegen(sortedModules)
+    fs.writeFileSync(cppOutput, cppCode, 'utf-8')
+  }
   console.log(chalk.green('Compilation successful!'))
 }
 
