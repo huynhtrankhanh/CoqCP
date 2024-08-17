@@ -39,10 +39,10 @@ function parseFiles(files: string[]): {
 function validateModules(
   modules: CoqCPAST[],
   modulePathMap: Map<CoqCPAST, string>,
-  moduleNameToPath: Map<string, string>
+  moduleNameToPath: Map<string, string>, blockchain: boolean
 ): string[] {
   const errors: string[] = []
-  const validationErrors = validateAST(modules)
+  const validationErrors = validateAST(modules, blockchain)
 
   validationErrors.forEach((error) => {
     const filePath =
@@ -133,9 +133,9 @@ function main() {
     .option('-b, --blockchain', 'Enable blockchain mode')
     .action((coqOutput, cppOutput, inputFiles, options) => {
       if (options.watch) {
-        watchAndCompile(inputFiles, coqOutput, cppOutput, blockchain)
+        watchAndCompile(inputFiles, coqOutput, cppOutput, options.blockchain)
       } else {
-        compile(inputFiles, coqOutput, cppOutput, blockchain)
+        compile(inputFiles, coqOutput, cppOutput, options.blockchain)
       }
     })
 
