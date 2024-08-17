@@ -9,12 +9,10 @@ const isPure = (value: ValueType): boolean => {
     case 'call':
       return false
     case 'coerceInt16':
-      return isPure(value.value)
     case 'coerceInt32':
-      return isPure(value.value)
     case 'coerceInt64':
-      return isPure(value.value)
     case 'coerceInt8':
+    case 'coerceInt256':
       return isPure(value.value)
     case 'condition':
       return false
@@ -53,6 +51,18 @@ const isPure = (value: ValueType): boolean => {
     case 'writeChar':
       return false
     case 'cross module call':
+      return false
+    case 'communication area size':
+      return true
+    case 'construct address':
+      return value.bytes.every((x) => isPure(x))
+    case 'donate':
+      return false
+    case 'get money':
+      return true
+    case 'get sender':
+      return true
+    case 'invoke':
       return false
   }
 }
