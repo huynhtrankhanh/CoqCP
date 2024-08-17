@@ -39,7 +39,8 @@ function parseFiles(files: string[]): {
 function validateModules(
   modules: CoqCPAST[],
   modulePathMap: Map<CoqCPAST, string>,
-  moduleNameToPath: Map<string, string>, blockchain: boolean
+  moduleNameToPath: Map<string, string>,
+  blockchain: boolean
 ): string[] {
   const errors: string[] = []
   const validationErrors = validateAST(modules, blockchain)
