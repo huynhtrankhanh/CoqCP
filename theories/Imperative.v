@@ -125,7 +125,9 @@ Inductive WithLocalVariables (arrayIndex : Type) (arrayType : arrayIndex -> Type
 | BooleanLocalGet (name : variableIndex)
 | BooleanLocalSet (name : variableIndex) (value : bool)
 | NumberLocalGet (name : variableIndex)
-| NumberLocalSet (name : variableIndex) (value : Z).
+| NumberLocalSet (name : variableIndex) (value : Z)
+| AddressLocalGet (name : variableIndex)
+| AddressLocalSet (name : variableIndex) (value : list Z).
 
 #[export] Instance withLocalVariablesEqualityDecidable {arrayIndex arrayType variableIndex} (hArrayIndex : EqDecision arrayIndex) (hArrayType : forall name, EqDecision (arrayType name)) (hVariableIndex : EqDecision variableIndex) : EqDecision (WithLocalVariables arrayIndex arrayType variableIndex) := ltac:(solve_decision).
 
@@ -136,6 +138,8 @@ Definition withLocalVariablesReturnValue {arrayIndex arrayType variableIndex} (e
   | BooleanLocalSet _ _ _ _ _ => unit
   | NumberLocalGet _ _ _ _ => Z
   | NumberLocalSet _ _ _ _ _ => unit
+  | AddressLocalGet _ _ _ _ => list Z
+  | AddressLocalSet _ _ _ _ _ => unit
   end.
 
 Inductive LoopOutcome :=
@@ -187,17 +191,19 @@ Fixpoint loopString (s : string) {arrayIndex arrayType variableIndex} (body : Z 
 
 Definition update {indexType : Type} {A} (map : indexType -> A) (key : indexType) (value : A) `{EqDecision indexType} := fun x => if decide (x = key) then value else map x.
 
-Lemma eliminateLocalVariables {arrayIndex arrayType variableIndex} `{EqDecision variableIndex} (bools : variableIndex -> bool) (numbers : variableIndex -> Z) (action : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue unit) : Action (WithArrays arrayIndex arrayType) withArraysReturnValue unit.
+Lemma eliminateLocalVariables {arrayIndex arrayType variableIndex} `{EqDecision variableIndex} (bools : variableIndex -> bool) (numbers : variableIndex -> Z) (addresses : variableIndex -> list Z) (action : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue unit) : Action (WithArrays arrayIndex arrayType) withArraysReturnValue unit.
 Proof.
-  induction action as [x | effect continuation IH] in bools, numbers |- *;
+  induction action as [x | effect continuation IH] in bools, numbers, addresses |- *;
   [exact (Done _ _ _ x) |].
-  destruct effect as [effect | name | name value | name | name value].
+  destruct effect as [effect | name | name value | name | name value | name | name value].
   - apply (Dispatch (WithArrays arrayIndex arrayType) withArraysReturnValue unit effect).
-    simpl in IH, continuation. intro value. exact (IH value bools numbers).
-  - simpl in IH, continuation. exact (IH (bools name) bools numbers).
-  - simpl in IH, continuation. exact (IH tt (update bools name value) numbers).
-  - simpl in IH, continuation. exact (IH (numbers name) bools numbers).
-  - simpl in IH, continuation. exact (IH tt bools (update numbers name value)).
+    simpl in IH, continuation. intro value. exact (IH value bools numbers addresses).
+  - simpl in IH, continuation. exact (IH (bools name) bools numbers addresses).
+  - simpl in IH, continuation. exact (IH tt (update bools name value) numbers addresses).
+  - simpl in IH, continuation. exact (IH (numbers name) bools numbers addresses).
+  - simpl in IH, continuation. exact (IH tt bools (update numbers name value) addresses).
+  - simpl in IH, continuation. exact (IH (addresses name) bools numbers addresses).
+  - simpl in IH, continuation. exact (IH tt bools numbers (update addresses name value)).
 Defined.
 
 Definition readChar arrayIndex arrayType variableIndex := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue Z (DoWithArrays _ _ _ (DoBasicEffect _ _ ReadChar)) (fun x => Done _ _ Z x).
@@ -225,6 +231,10 @@ Definition invoke arrayIndex arrayType variableIndex money address array := Disp
 Definition booleanLocalSet arrayIndex arrayType variableIndex name value := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue _ (BooleanLocalSet _ _ _ name value) (fun x => Done _ _ _ x).
 
 Definition booleanLocalGet arrayIndex arrayType variableIndex name := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue _ (BooleanLocalGet _ _ _ name) (fun x => Done _ _ _ x).
+
+Definition addressLocalSet arrayIndex arrayType variableIndex name value := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue _ (AddressLocalSet _ _ _ name value) (fun x => Done _ _ _ x).
+
+Definition addressLocalGet arrayIndex arrayType variableIndex name := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue _ (AddressLocalGet _ _ _ name) (fun x => Done _ _ _ x).
 
 Definition numberLocalSet arrayIndex arrayType variableIndex name value := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue _ (NumberLocalSet _ _ _ name value) (fun x => Done _ _ _ x).
 
