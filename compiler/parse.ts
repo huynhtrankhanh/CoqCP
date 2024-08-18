@@ -759,7 +759,7 @@ export class CoqCPASTTransformer {
           }
         } else {
           throw new ParseError(
-            'store() function accepts 3 arguments: array name, index, tuple or 2 arguments: index, tuple. ' +
+            'store() function accepts 3 arguments: array name, index, tuple or 2 arguments: index, value. ' +
               formatLocation(location)
           )
         }
