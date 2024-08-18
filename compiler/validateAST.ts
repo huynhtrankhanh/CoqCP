@@ -634,10 +634,6 @@ export const validateAST = (
               })
               return 'illegal'
             }
-            if (!isNumeric(variable.type) && variable.type !== 'bool')
-              throw new Error(
-                'unexpected! variable type not checked during parsing stage'
-              )
             return variable.type
           }
           case 'literal': {
