@@ -198,7 +198,7 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
 ` +
           'Definition ' +
           sanitizeFunction(moduleName, functionName) +
-          ` (bools : ${variableIndex} -> bool) (numbers : ${variableIndex} -> Z) : Action (WithArrays _ (arrayType _ environment${moduleIndex})) withArraysReturnValue unit := eliminateLocalVariables bools numbers `
+          ` (bools : ${variableIndex} -> bool) (numbers : ${variableIndex} -> Z) (addresses : ${variableIndex} -> list Z): Action (WithArrays _ (arrayType _ environment${moduleIndex})) withArraysReturnValue unit := eliminateLocalVariables bools numbers addresses `
 
         // every element of body is an Action returning absolutely anything
         const statements = body.map((statement) => {
@@ -463,15 +463,26 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                     )}))`,
                     type: variable.type,
                   }
+                } else if (variable.type === 'bool') {
+                  return {
+                    expression: `(booleanLocalGet ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex} (${sanitizeVariable(
+                      moduleName,
+                      functionName,
+                      value.name
+                    )}))`,
+                    type: variable.type,
+                  }
+                } else if (variable.type === 'address') {
+                  return {
+                    expression: `(addressLocalGet ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex} (${sanitizeVariable(
+                      moduleName,
+                      functionName,
+                      value.name
+                    )}))`,
+                    type: variable.type,
+                  }
                 }
-                return {
-                  expression: `(booleanLocalGet ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex} (${sanitizeVariable(
-                    moduleName,
-                    functionName,
-                    value.name
-                  )}))`,
-                  type: variable.type,
-                }
+                assert(false)
               }
               case 'set': {
                 const variable = variables.get(value.name)
@@ -486,15 +497,26 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                     )}) x)`,
                     type: 'statement',
                   }
+                } else if (variable.type === 'bool') {
+                  return {
+                    expression: `(booleanLocalSet ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex} (${sanitizeVariable(
+                      moduleName,
+                      functionName,
+                      value.name
+                    )}) ${expression})`,
+                    type: 'statement',
+                  }
+                } else if (variable.type === 'address') {
+                  return {
+                    expression: `(addressLocalSet ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex} (${sanitizeVariable(
+                      moduleName,
+                      functionName,
+                      value.name
+                    )}) ${expression})`,
+                    type: 'statement',
+                  }
                 }
-                return {
-                  expression: `(booleanLocalSet ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex} (${sanitizeVariable(
-                    moduleName,
-                    functionName,
-                    value.name
-                  )}) ${expression})`,
-                  type: 'statement',
-                }
+                assert(false)
               }
               case 'retrieve': {
                 if (value.name === COMMUNICATION) {
@@ -675,7 +697,9 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                 )
                 nestLevel--
                 return {
-                  expression: `(${liftExpression(processedCondition)} >>= fun x => if x then ${bodyExpression} else ${alternateExpression})`,
+                  expression: `(${liftExpression(
+                    processedCondition
+                  )} >>= fun x => if x then ${bodyExpression} else ${alternateExpression})`,
                   type: 'condition',
                 }
               }
@@ -768,7 +792,10 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                     [...arrayMapping.entries()]
                       .map(
                         ([inForeign, inCurrent]) =>
-                          `| ${sanitizeArray(foreignModule, inForeign)} => ${sanitizeArray(moduleName, inCurrent)}`
+                          `| ${sanitizeArray(
+                            foreignModule,
+                            inForeign
+                          )} => ${sanitizeArray(moduleName, inCurrent)}`
                       )
                       .join(' ') +
                     ' end)'
@@ -825,8 +852,12 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                 const { address, money, array, communicationSize } = value
                 const { expression: addressExpression } = dfs(address)
                 const { expression: moneyExpression } = dfs(money)
+                const { expression: communicationSizeExpression } = dfs(communicationSize)
                 return {
-                  expression: `(${addressExpression} >>= fun address => ${moneyExpression} >>= fun money => ${communicationSize} >>= fun size => invokeWithArrays money address ${sanitizeArray(moduleName, array)} size ltac:(reflexivity))`,
+                  expression: `(${addressExpression} >>= fun address => ${moneyExpression} >>= fun money => ${communicationSizeExpression} >>= fun size => @invokeWithArrays _ (arrayType _ environment${moduleIndex}) _ money address ${sanitizeArray(
+                    moduleName,
+                    array
+                  )} size ltac:(reflexivity))`,
                   type: 'statement',
                 }
               }

@@ -324,19 +324,19 @@ Proof.
   - exact (trap _ _ _ _).
 Defined.
 
-Fixpoint getArray {arrayIndex arrayType variableIndex} (arrayName : arrayIndex) (length : nat) : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue (list (arrayType arrayName)) :=
+Fixpoint getArray {arrayIndex} {arrayType : arrayIndex -> Type} {variableIndex} (arrayName : arrayIndex) (length : nat) : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue (list (arrayType arrayName)) :=
   match length with
   | O => Done _ _ _ []
   | S length => retrieve _ _ _ arrayName (Z.of_nat length) >>= fun x => getArray arrayName length >>= fun y => Done _ _ _ (y ++ [x])
   end.
 
-Fixpoint applyArray {arrayIndex arrayType variableIndex} (arrayName : arrayIndex) (l : list (arrayType arrayName)) (startIndex : Z) : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue () :=
+Fixpoint applyArray {arrayIndex} {arrayType : arrayIndex -> Type} {variableIndex} (arrayName : arrayIndex) (l : list (arrayType arrayName)) (startIndex : Z) : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue () :=
   match l with
   | [] => Done _ _ _ tt
   | head :: tail => store _ _ _ arrayName startIndex head >>= fun x => applyArray arrayName tail (startIndex + 1)
   end.
 
-Definition invokeWithArrays {arrayIndex arrayType variableIndex} (money : Z) (address : list Z) (arrayName : arrayIndex) (length : Z) (hEq : arrayType arrayName = Z) : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue () := getArray arrayName (Z.to_nat length) >>= fun array => invoke arrayIndex arrayType variableIndex money address ltac:(rewrite hEq in *; exact array) >>= fun array => applyArray arrayName ltac:(rewrite hEq in *; exact array) 0.
+Definition invokeWithArrays {arrayIndex} {arrayType : arrayIndex -> Type} {variableIndex} (money : Z) (address : list Z) (arrayName : arrayIndex) (length : Z) (hEq : arrayType arrayName = Z) : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue () := getArray arrayName (Z.to_nat length) >>= fun array => invoke arrayIndex arrayType variableIndex money address ltac:(rewrite hEq in *; exact array) >>= fun array => applyArray arrayName ltac:(rewrite hEq in *; exact array) 0.
 
 Lemma getNewArrays {arrayIndex arrayType} `{EqDecision arrayIndex} (x : Action (WithArrays arrayIndex arrayType) withArraysReturnValue ()) (arrays : forall x, list (arrayType x)) : (Action BasicEffect basicEffectReturnValue (forall x, list (arrayType x))).
 Proof.
