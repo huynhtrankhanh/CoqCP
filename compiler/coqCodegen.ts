@@ -852,7 +852,8 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                 const { address, money, array, communicationSize } = value
                 const { expression: addressExpression } = dfs(address)
                 const { expression: moneyExpression } = dfs(money)
-                const { expression: communicationSizeExpression } = dfs(communicationSize)
+                const { expression: communicationSizeExpression } =
+                  dfs(communicationSize)
                 return {
                   expression: `(${addressExpression} >>= fun address => ${moneyExpression} >>= fun money => ${communicationSizeExpression} >>= fun size => @invokeWithArrays _ (arrayType _ environment${moduleIndex}) _ money address ${sanitizeArray(
                     moduleName,
