@@ -260,12 +260,15 @@ getMoney()
 This returns an `int256`. It returns the amount of money in wei that is transferred as part of the smart contract call.
 
 ## Transfer money
+
 ```js
 donate(address, money)
 ```
+
 `address` is of type `address`, `money` is of type `int256`. This call transfers `money` wei to the address.
 
 ## Invoke smart contract
+
 ```js
 invoke(address, money, 'array name', communicationLength)
 ```
@@ -275,19 +278,25 @@ invoke(address, money, 'array name', communicationLength)
 At the EVM level, the array is transferred to the callee as calldata and transferred back to the caller as return data.
 
 ## Get communication size
+
 ```js
 communicationSize()
 ```
+
 Returns an `int64`. This is the size of the array passed to the smart contract in the `invoke()` call.
 
 ## Read communication array
+
 ```js
 retrieve(index)
 ```
+
 `index` is an `int64`. Returns `int8`.
 
 ## Modify communication array
+
 ```js
 store(index, value)
 ```
+
 `index` is an `int64`, `value` is an `int8`. Doesn't return.
