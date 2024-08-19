@@ -843,7 +843,7 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                       )
                       .join('') +
                     '[' +
-                    value.bytes.map((_, index) => 'byte' + index).join(',') +
+                    value.bytes.map((_, index) => 'byte' + index).join(';') +
                     '])',
                   type: 'address',
                 }
