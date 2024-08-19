@@ -242,12 +242,17 @@ These features can only be used if you use blockchain mode.
 In blockchain mode, there are two new types: `address` and `int256`.
 
 ## Get sender
+
 ```js
 getSender()
 ```
+
 This returns an `address`.
+
 ## Get money (equivalent to `msg.value` in Solidity)
+
 ```js
 getMoney()
 ```
+
 This returns an `int256`.
