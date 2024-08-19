@@ -842,7 +842,7 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                           `${dfs(x).expression} >>= fun byte${index} => `
                       )
                       .join('') +
-                    '[' +
+                    'Done _ _ _ [' +
                     value.bytes.map((_, index) => 'byte' + index).join(';') +
                     '])',
                   type: 'address',
