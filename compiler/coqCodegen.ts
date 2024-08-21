@@ -416,7 +416,7 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                   }
                 }
                 return {
-                  expression: `(${expression} >>= fun x => Done _ _ _ (coerceInt ${bitWidth} x))`,
+                  expression: `(${expression} >>= fun x => Done _ _ _ (coerceInt x ${bitWidth}))`,
                   type: integralType,
                 }
               }
