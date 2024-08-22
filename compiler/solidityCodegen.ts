@@ -2,7 +2,15 @@ import { PairMap } from './PairMap'
 import { assert } from './assert'
 import { consumeNever } from './consumeNever'
 import isPure from './isPure'
-import { CoqCPAST, Procedure, ValueType, Instruction, PrimitiveType, BinaryOp, UnaryOp } from './parse'
+import {
+  CoqCPAST,
+  Procedure,
+  ValueType,
+  Instruction,
+  PrimitiveType,
+  BinaryOp,
+  UnaryOp,
+} from './parse'
 
 const indent = '    '
 
@@ -12,7 +20,8 @@ export const solidityCodegen = (sortedModules: CoqCPAST[]): string => {
   const seenModules = new Map<string, CoqCPAST>()
   const mainModule = sortedModules.find((x) => x.moduleName === '')
 
-  let joined = '// SPDX-License-Identifier: UNLICENSED\npragma solidity ^0.8.0;\n\n'
+  let joined =
+    '// SPDX-License-Identifier: UNLICENSED\npragma solidity ^0.8.0;\n\n'
 
   // Generate structs for unique tuple types
   const structTypes = new Map<string, string>()
@@ -37,43 +46,70 @@ export const solidityCodegen = (sortedModules: CoqCPAST[]): string => {
 
   const solTypeName = (type: PrimitiveType): string => {
     switch (type) {
-      case 'bool': return 'bool'
-      case 'int8': return 'uint8'
-      case 'int16': return 'uint16'
-      case 'int32': return 'uint32'
-      case 'int64': return 'uint64'
-      case 'int256': return 'uint256'
-      case 'address': return 'address'
-      default: return consumeNever(type)
+      case 'bool':
+        return 'bool'
+      case 'int8':
+        return 'uint8'
+      case 'int16':
+        return 'uint16'
+      case 'int32':
+        return 'uint32'
+      case 'int64':
+        return 'uint64'
+      case 'int256':
+        return 'uint256'
+      case 'address':
+        return 'address'
+      default:
+        return consumeNever(type)
     }
   }
 
   const binaryOpToSolidity = (op: BinaryOp): string => {
     switch (op) {
-      case 'add': return '+'
-      case 'subtract': return '-'
-      case 'multiply': return '*'
-      case 'mod': return '%'
-      case 'bitwise or': return '|'
-      case 'bitwise xor': return '^'
-      case 'bitwise and': return '&'
-      case 'boolean and': return '&&'
-      case 'boolean or': return '||'
-      case 'shift right': return '>>'
-      case 'shift left': return '<<'
-      case 'equal': return '=='
-      case 'noteq': return '!='
-      default: return consumeNever(op)
+      case 'add':
+        return '+'
+      case 'subtract':
+        return '-'
+      case 'multiply':
+        return '*'
+      case 'mod':
+        return '%'
+      case 'bitwise or':
+        return '|'
+      case 'bitwise xor':
+        return '^'
+      case 'bitwise and':
+        return '&'
+      case 'boolean and':
+        return '&&'
+      case 'boolean or':
+        return '||'
+      case 'shift right':
+        return '>>'
+      case 'shift left':
+        return '<<'
+      case 'equal':
+        return '=='
+      case 'noteq':
+        return '!='
+      default:
+        return consumeNever(op)
     }
   }
 
   const unaryOpToSolidity = (op: UnaryOp): string => {
     switch (op) {
-      case 'minus': return '-'
-      case 'plus': return '+'
-      case 'bitwise not': return '~'
-      case 'boolean not': return '!'
-      default: return consumeNever(op)
+      case 'minus':
+        return '-'
+      case 'plus':
+        return '+'
+      case 'bitwise not':
+        return '~'
+      case 'boolean not':
+        return '!'
+      default:
+        return consumeNever(op)
     }
   }
 
@@ -98,13 +134,15 @@ export const solidityCodegen = (sortedModules: CoqCPAST[]): string => {
       const index = procedureNameMap.size
       procedureNameMap.set([module.moduleName, name], index)
 
-      const envParams = environment ? [...environment.arrays.entries()].map(([arrayName, description]) => {
-        const structType = generateStructType(description.itemTypes)
-        return `${structType}[] memory ${arrayName}`
-      }) : []
+      const envParams = environment
+        ? [...environment.arrays.entries()].map(([arrayName, description]) => {
+            const structType = generateStructType(description.itemTypes)
+            return `${structType}[] memory ${arrayName}`
+          })
+        : []
 
-      const varParams = [...variables].map(([varName, value]) => 
-        `${solTypeName(value.type)} ${varName}`
+      const varParams = [...variables].map(
+        ([varName, value]) => `${solTypeName(value.type)} ${varName}`
       )
 
       const allParams = [...envParams, ...varParams].join(', ')
@@ -112,9 +150,12 @@ export const solidityCodegen = (sortedModules: CoqCPAST[]): string => {
       joined += `${indent}function ${name}(${allParams}) public {\n`
 
       // Generate function body
-      const generateInstruction = (instruction: Instruction, indentLevel: number = 2): string => {
+      const generateInstruction = (
+        instruction: Instruction,
+        indentLevel: number = 2
+      ): string => {
         const currentIndent = indent.repeat(indentLevel)
-        
+
         switch (instruction.type) {
           case 'get':
             return `${currentIndent}${instruction.name}\n`
@@ -124,7 +165,9 @@ export const solidityCodegen = (sortedModules: CoqCPAST[]): string => {
             if (instruction.name === 'communication') {
               return `${currentIndent}abi.encode(${instruction.tuple.map(generateValueType).join(', ')});\n`
             }
-            const structType = generateStructType(instruction.tuple.map(v => v.type as PrimitiveType))
+            const structType = generateStructType(
+              instruction.tuple.map((v) => v.type as PrimitiveType)
+            )
             return `${currentIndent}${instruction.name}[${generateValueType(instruction.index)}] = ${structType}(${instruction.tuple.map(generateValueType).join(', ')});\n`
           case 'retrieve':
             if (instruction.name === 'communication') {
@@ -154,9 +197,13 @@ export const solidityCodegen = (sortedModules: CoqCPAST[]): string => {
           case 'get money':
             return `${currentIndent}msg.value\n`
           case 'range':
-            return `${currentIndent}for (uint ${instruction.loopVariable} = 0; ${instruction.loopVariable} < ${generateValueType(instruction.end)}; ${instruction.loopVariable}++) {\n` +
-              instruction.loopBody.map(i => generateInstruction(i, indentLevel + 1)).join('') +
+            return (
+              `${currentIndent}for (uint ${instruction.loopVariable} = 0; ${instruction.loopVariable} < ${generateValueType(instruction.end)}; ${instruction.loopVariable}++) {\n` +
+              instruction.loopBody
+                .map((i) => generateInstruction(i, indentLevel + 1))
+                .join('') +
               `${currentIndent}}\n`
+            )
           case 'readChar':
           case 'writeChar':
           case 'flush':
@@ -168,11 +215,17 @@ export const solidityCodegen = (sortedModules: CoqCPAST[]): string => {
           case 'subscript':
             return `${currentIndent}${generateValueType(instruction.value)}.item${generateValueType(instruction.index)}\n`
           case 'condition':
-            return `${currentIndent}if (${generateValueType(instruction.condition)}) {\n` +
-              instruction.body.map(i => generateInstruction(i, indentLevel + 1)).join('') +
+            return (
+              `${currentIndent}if (${generateValueType(instruction.condition)}) {\n` +
+              instruction.body
+                .map((i) => generateInstruction(i, indentLevel + 1))
+                .join('') +
               `${currentIndent}} else {\n` +
-              instruction.alternate.map(i => generateInstruction(i, indentLevel + 1)).join('') +
+              instruction.alternate
+                .map((i) => generateInstruction(i, indentLevel + 1))
+                .join('') +
               `${currentIndent}}\n`
+            )
           case 'sDivide':
             return `${currentIndent}(int256(${generateValueType(instruction.left)}) / int256(${generateValueType(instruction.right)}))\n`
           case 'divide':
@@ -226,7 +279,9 @@ export const solidityCodegen = (sortedModules: CoqCPAST[]): string => {
         }
       }
 
-      joined += body.map(instruction => generateInstruction(instruction)).join('')
+      joined += body
+        .map((instruction) => generateInstruction(instruction))
+        .join('')
       joined += `${indent}}\n\n`
     }
 
@@ -235,12 +290,13 @@ export const solidityCodegen = (sortedModules: CoqCPAST[]): string => {
 
   // Generate fallback function
   if (mainModule) {
-    const mainProcedure = mainModule.procedures.find(p => p.name === 'main')
+    const mainProcedure = mainModule.procedures.find((p) => p.name === 'main')
     if (mainProcedure) {
       const mainIndex = procedureNameMap.get([mainModule.moduleName, 'main'])
       if (mainIndex !== undefined) {
-        const envArgs = mainModule.environment ? 
-          [...mainModule.environment.arrays.keys()].join(', ') : ''
+        const envArgs = mainModule.environment
+          ? [...mainModule.environment.arrays.keys()].join(', ')
+          : ''
         const varArgs = Array(mainProcedure.variables.size).fill('0').join(', ')
         joined += `${indent}fallback() external payable {
         ${indent}${indent}main(${envArgs}${envArgs && varArgs ? ', ' : ''}${varArgs});
