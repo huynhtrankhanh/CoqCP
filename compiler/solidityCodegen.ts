@@ -10,6 +10,7 @@ import {
   PrimitiveType,
   BinaryOp,
   UnaryOp,
+  COMMUNICATION,
 } from './parse'
 
 const indent = '    '
@@ -131,7 +132,7 @@ export const solidityCodegen = (sortedModules: CoqCPAST[]): string => {
     // Define functions
     for (const procedure of procedures) {
       const { name, body, variables } = procedure
-      const index = procedureNameMap.size
+      const index = procedureNameMap.size()
       procedureNameMap.set([module.moduleName, name], index)
 
       const envParams = environment
@@ -162,15 +163,15 @@ export const solidityCodegen = (sortedModules: CoqCPAST[]): string => {
           case 'set':
             return `${currentIndent}${instruction.name} = ${generateValueType(instruction.value)};\n`
           case 'store':
-            if (instruction.name === 'communication') {
-              return `${currentIndent}abi.encode(${instruction.tuple.map(generateValueType).join(', ')});\n`
+            if (instruction.name === COMMUNICATION) {
+              return `;\n`
             }
             const structType = generateStructType(
               instruction.tuple.map((v) => v.type as PrimitiveType)
             )
             return `${currentIndent}${instruction.name}[${generateValueType(instruction.index)}] = ${structType}(${instruction.tuple.map(generateValueType).join(', ')});\n`
           case 'retrieve':
-            if (instruction.name === 'communication') {
+            if (instruction.name === COMMUNICATION) {
               return `${currentIndent}abi.decode(msg.data, (uint8[]));\n`
             }
             return `${currentIndent}${instruction.name}[${generateValueType(instruction.index)}]\n`
