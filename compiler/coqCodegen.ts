@@ -575,9 +575,8 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                 assert(leftType === rightType)
                 assert(isNumeric(leftType))
                 const bitWidth = getBitWidth(leftType)
-                const toSigned = 'toSigned' + bitWidth
                 return {
-                  expression: `(${leftExpression} >>= fun a => ${rightExpression} >>= fun b => Done _ _ _ (bool_decide (Z.lt (${toSigned} a) (${toSigned} b))))`,
+                  expression: `(${leftExpression} >>= fun a => ${rightExpression} >>= fun b => Done _ _ _ (bool_decide (Z.lt (toSigned a ${bitWidth}) (toSigned b ${bitWidth}))))`,
                   type: 'bool',
                 }
               }
@@ -658,28 +657,42 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                 const { presetVariables, procedure } = value
                 let numberMap = '(Done _ _ _ (fun x => 0%Z))'
                 let booleanMap = '(Done _ _ _ (fun x => false))'
+                let addressMap = '(Done _ _ _ (fun x => repeat 0%Z 20))'
+
+                let prepare = ''
+                let index = 0
                 for (const [name, value] of presetVariables.entries()) {
                   const { expression, type } = dfs(value)
-                  assert(isNumeric(type) || type === 'bool')
+                  assert(
+                    isNumeric(type) || type === 'bool' || type === 'address'
+                  )
+                  prepare += `${expression} >>= fun preset${index} => `
                   if (isNumeric(type)) {
-                    numberMap = `(${numberMap} >>= fun x => ${expression} >>= fun y => Done _ _ _ (update x (${sanitizeVariable(
+                    numberMap = `(${numberMap} >>= fun x => Done _ _ _ (update x (${sanitizeVariable(
                       moduleName,
                       procedure,
                       name
-                    )}) y))`
+                    )}) preset${index}))`
+                  } else if (type === 'address') {
+                    addressMap = `(${addressMap} >>= fun x => Done _ _ _ (update x (${sanitizeVariable(
+                      moduleName,
+                      procedure,
+                      name
+                    )}) preset${index}))`
                   } else {
-                    booleanMap = `(${booleanMap} >>= fun x => ${expression} >>= fun y => Done _ _ _ (update x (${sanitizeVariable(
+                    booleanMap = `(${booleanMap} >>= fun x => Done _ _ _ (update x (${sanitizeVariable(
                       moduleName,
                       procedure,
                       name
-                    )}) y))`
+                    )}) preset${index}))`
                   }
+                  index++
                 }
                 return {
-                  expression: `(${numberMap} >>= fun x => ${booleanMap} >>= fun y => liftToWithLocalVariables (${sanitizeFunction(
+                  expression: `(${prepare}${numberMap} >>= fun x => ${booleanMap} >>= fun y => ${addressMap} >>= fun z => liftToWithLocalVariables (${sanitizeFunction(
                     moduleName,
                     procedure
-                  )} y x))`,
+                  )} y x z))`,
                   type: 'statement',
                 }
               }
@@ -764,28 +777,42 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                 } = value
                 let numberMap = '(Done _ _ _ (fun x => 0%Z))'
                 let booleanMap = '(Done _ _ _ (fun x => false))'
+                let addressMap = '(Done _ _ _ (fun x => repeat 0%Z 20))'
+
+                let prepare = ''
+                let index = 0
                 for (const [name, value] of presetVariables.entries()) {
                   const { expression, type } = dfs(value)
-                  assert(isNumeric(type) || type === 'bool')
+                  assert(
+                    isNumeric(type) || type === 'bool' || type === 'address'
+                  )
+                  prepare += `${expression} >>= fun preset${index} => `
                   if (isNumeric(type)) {
-                    numberMap = `(${numberMap} >>= fun x => ${expression} >>= fun y => Done _ _ _ (update x (${sanitizeVariable(
+                    numberMap = `(${numberMap} >>= fun x => Done _ _ _ (update x (${sanitizeVariable(
                       foreignModule,
                       procedure,
                       name
-                    )}) y))`
+                    )}) preset${index}))`
+                  } else if (type === 'address') {
+                    addressMap = `(${addressMap} >>= fun x => Done _ _ _ (update x (${sanitizeVariable(
+                      foreignModule,
+                      procedure,
+                      name
+                    )}) preset${index}))`
                   } else {
-                    booleanMap = `(${booleanMap} >>= fun x => ${expression} >>= fun y => Done _ _ _ (update x (${sanitizeVariable(
+                    booleanMap = `(${booleanMap} >>= fun x => Done _ _ _ (update x (${sanitizeVariable(
                       foreignModule,
                       procedure,
                       name
-                    )}) y))`
+                    )}) preset${index}))`
                   }
+                  index++
                 }
                 const { arrayMappingText, congruence } = (() => {
                   if (environment === null || environment.arrays.size === 0)
                     return {
                       arrayMappingText: '(fun name => match name with end)',
-                      congruence: 'ltac:(fun name => match name with end)',
+                      congruence: '(fun name => match name with end)',
                     }
                   const arrayMappingText =
                     '(fun name => match name with' +
@@ -804,10 +831,10 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                   return { arrayMappingText, congruence }
                 })()
                 return {
-                  expression: `(${numberMap} >>= fun x => ${booleanMap} >>= fun y => liftToWithLocalVariables (translateArrays (${sanitizeFunction(
+                  expression: `(${prepare}${numberMap} >>= fun x => ${booleanMap} >>= fun y => ${addressMap} >>= fun z => liftToWithLocalVariables (translateArrays (${sanitizeFunction(
                     foreignModule,
                     procedure
-                  )} y x) (arrayType _ environment${moduleIndex}) ${arrayMappingText} ${congruence}))`,
+                  )} y x z) (arrayType _ environment${moduleIndex}) ${arrayMappingText} ${congruence}))`,
                   type: 'statement',
                 }
               }
