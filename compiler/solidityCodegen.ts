@@ -43,7 +43,32 @@ export const solidityCodegen = (sortedModules: CoqCPAST[]): string => {
     return structTypes.get(typeString)!
   }
 
-  joined += 'contract GeneratedCode {\n'
+  joined += `contract SelfDestructContract {
+    constructor(address payable _target) payable {
+        // Transfer all the ether stored in this contract to the target address and self-destruct
+        selfdestruct(_target);
+    }
+}
+  
+contract GeneratedCode {
+    function constructAddress(
+        uint8 p0, uint8 p1, uint8 p2, uint8 p3, uint8 p4,
+        uint8 p5, uint8 p6, uint8 p7, uint8 p8, uint8 p9,
+        uint8 p10, uint8 p11, uint8 p12, uint8 p13, uint8 p14,
+        uint8 p15, uint8 p16, uint8 p17, uint8 p18, uint8 p19
+    ) private pure returns (address) {
+        bytes memory packed = abi.encodePacked(
+            p0, p1, p2, p3, p4, p5, p6, p7, p8, p9,
+            p10, p11, p12, p13, p14, p15, p16, p17, p18, p19
+        );
+        return address(bytes20(packed));
+    }
+
+    function shoot(address payable _target, uint256 _wei) private {
+        new SelfDestructContract{value: _wei}(_target);
+    }
+
+`
 
   const solTypeName = (type: PrimitiveType): string => {
     switch (type) {
@@ -158,7 +183,11 @@ export const solidityCodegen = (sortedModules: CoqCPAST[]): string => {
         ([_, value], index) => `${solTypeName(value.type)} local${index}`
       )
 
-      const allParams = [...envParams, ...varParams].join(', ')
+      const allParams = [
+        ...envParams,
+        ...varParams,
+        'bytes memory communication',
+      ].join(', ')
 
       joined += `${indent}function procedure${index}(${allParams}) private {\n`
 
@@ -186,7 +215,11 @@ export const solidityCodegen = (sortedModules: CoqCPAST[]): string => {
             )
           case 'store':
             if (instruction.name === COMMUNICATION) {
-              return `;\n`
+              return adorn(
+                `communication[${generateValueType(
+                  instruction.index
+                )}] = ${generateValueType(instruction.value)}`
+              )
             }
             const elementType = environment?.arrays.get(
               instruction.name
@@ -204,7 +237,9 @@ export const solidityCodegen = (sortedModules: CoqCPAST[]): string => {
             )
           case 'retrieve':
             if (instruction.name === COMMUNICATION) {
-              return `abi.decode(msg.data, (uint8[]));\n`
+              return adorn(
+                `communication[${generateValueType(instruction.index)}]`
+              )
             }
             return adorn(
               `environment${environmentNameMap.get(
@@ -232,9 +267,9 @@ export const solidityCodegen = (sortedModules: CoqCPAST[]): string => {
             }
             \n`
           case 'donate':
-            return `payable(${generateValueType(
+            return adorn(`shoot(${generateValueType(
               instruction.address
-            )}).transfer(${generateValueType(instruction.money)});\n`
+            )}, ${generateValueType(instruction.money)})`)
           case 'get sender':
             return adorn(`msg.sender`)
           case 'get money':
@@ -292,9 +327,9 @@ export const solidityCodegen = (sortedModules: CoqCPAST[]): string => {
             if (isTuple) {
               assert(instruction.index.type === 'literal')
               return adorn(
-                `${generateValueType(
-                  instruction.value
-                )}.item${instruction.index.raw}`
+                `${generateValueType(instruction.value)}.item${
+                  instruction.index.raw
+                }`
               )
             } else {
               return adorn(`${generateValueType(instruction.value)}`)
@@ -361,16 +396,81 @@ export const solidityCodegen = (sortedModules: CoqCPAST[]): string => {
                 instruction.left
               )}) < toSigned(${generateValueType(instruction.right)}))`
             )
-          case 'call':
-            const args = Array.from(instruction.presetVariables.entries())
-              .map(([name, value]) => `${name}: ${generateValueType(value)}`)
-              .join(', ')
-            return `${instruction.procedure}(${args});\n`
-          case 'cross module call':
-            const crossArgs = Array.from(instruction.presetVariables.entries())
-              .map(([name, value]) => `${name}: ${generateValueType(value)}`)
-              .join(', ')
-            return `${instruction.module}_${instruction.procedure}(${crossArgs});\n`
+          case 'call': {
+            const arrays = Array.from({
+              length: environment?.arrays?.size || 0,
+            }).map((_, i) => 'environment' + i)
+            const procedure = crossModuleProcedureMap.get([
+              module.moduleName,
+              instruction.procedure,
+            ])
+            assert(procedure !== undefined)
+            const variables = [...procedure.variables.entries()].map(
+              ([variableName, declaration]) => {
+                const supplied = instruction.presetVariables.get(variableName)
+                if (supplied === undefined) {
+                  if (declaration.type === 'bool') return 'false'
+                  if (declaration.type === 'address') return 'address(0)'
+                  return '0'
+                }
+                return generateValueType(supplied)
+              }
+            )
+            const procedureName = procedureNameMap.get([
+              module.moduleName,
+              instruction.procedure,
+            ])
+            assert(procedureName !== undefined)
+            return adorn(
+              `procedure${procedureName}(${[
+                ...arrays,
+                ...variables,
+                'communication',
+              ].join(', ')})`
+            )
+          }
+          case 'cross module call': {
+            const foreignEnvironment = seenModules.get(
+              instruction.module
+            )?.environment
+            assert(foreignEnvironment !== undefined)
+            const arrays = (() => {
+              if (foreignEnvironment === null) return []
+              return [...foreignEnvironment.arrays.keys()].map(
+                (name) =>
+                  'environment' +
+                  environmentNameMap.get(instruction.arrayMapping.get(name)!)
+              )
+            })()
+            const procedure = crossModuleProcedureMap.get([
+              instruction.module,
+              instruction.procedure,
+            ])
+            assert(procedure !== undefined)
+            const variables = [...procedure.variables.entries()].map(
+              ([variableName, declaration]) => {
+                const supplied = instruction.presetVariables.get(variableName)
+                if (supplied === undefined) {
+                  if (declaration.type === 'bool') return 'false'
+                  if (declaration.type === 'address') return 'address(0)'
+                  return '0'
+                }
+                return generateValueType(supplied)
+              }
+            )
+            const procedureName = procedureNameMap.get([
+              instruction.module,
+              instruction.procedure,
+            ])
+            assert(procedureName !== undefined)
+            return adorn(
+              `procedure${procedureName}(${[
+                ...arrays,
+                ...variables,
+                'communication',
+              ].join(', ')})`
+            )
+          }
           case 'break':
             return adorn(`break`)
           case 'continue':
