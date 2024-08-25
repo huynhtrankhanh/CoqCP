@@ -68,6 +68,30 @@ contract GeneratedCode {
         new SelfDestructContract{value: _wei}(_target);
     }
 
+    // uint8 -> int8
+    function toSigned(uint8 x) private pure returns (int8) {
+        return int8(x);
+    }
+
+    // uint16 -> int16
+    function toSigned(uint16 x) private pure returns (int16) {
+        return int16(x);
+    }
+
+    // uint32 -> int32
+    function toSigned(uint32 x) private pure returns (int32) {
+        return int32(x);
+    }
+
+    // uint64 -> int64
+    function toSigned(uint64 x) private pure returns (int64) {
+        return int64(x);
+    }
+
+    // uint256 -> int256
+    function toSigned(uint256 x) private pure returns (int256) {
+        return int256(x);
+    }
 `
 
   const solTypeName = (type: PrimitiveType): string => {
@@ -296,11 +320,9 @@ ${currentIndent}}\n`
             assert(inBlock.type === 'inside block')
             const currentIndent = indent.repeat(inBlock.indentLevel)
             const expression =
-              `${currentIndent}for (uint64 binder${localBinderIndex} = 0; ${
-                instruction.loopVariable
-              } < ${generateValueType(instruction.end)}; ${
-                instruction.loopVariable
-              }++) {\n` +
+              `${currentIndent}for (uint64 binder${localBinderIndex} = 0; binder${localBinderIndex} < ${generateValueType(
+                instruction.end
+              )}; binder${localBinderIndex}++) {\n` +
               instruction.loopBody
                 .map((i) =>
                   generateInstruction(i, {
@@ -506,7 +528,7 @@ ${currentIndent}}\n`
             if (value.valueType === 'string') return `"${value.raw}"`
             return consumeNever(value.valueType)
           case 'local binder':
-            return value.name
+            return 'binder' + localBinderMap.get(value.name)
           default:
             return generateInstruction(value, { type: 'not in block' })
         }
