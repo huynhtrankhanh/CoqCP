@@ -587,11 +587,12 @@ ${currentIndent}}`,
       }
 
       joined += body
-        .map((instruction) =>
-          generateInstruction(instruction, {
-            type: 'inside block',
-            indentLevel: 2,
-          }).expression
+        .map(
+          (instruction) =>
+            generateInstruction(instruction, {
+              type: 'inside block',
+              indentLevel: 2,
+            }).expression
         )
         .join('')
       joined += `${indent}} }\n\n`
