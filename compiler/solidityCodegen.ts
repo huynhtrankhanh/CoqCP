@@ -267,9 +267,11 @@ contract GeneratedCode {
             }
             \n`
           case 'donate':
-            return adorn(`shoot(${generateValueType(
-              instruction.address
-            )}, ${generateValueType(instruction.money)})`)
+            return adorn(
+              `shoot(${generateValueType(
+                instruction.address
+              )}, ${generateValueType(instruction.money)})`
+            )
           case 'get sender':
             return adorn(`msg.sender`)
           case 'get money':
