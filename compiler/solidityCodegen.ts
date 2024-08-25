@@ -299,7 +299,7 @@ ${currentIndent}${indent}for (uint i = 0; i < communicationSize && i < returnDat
 ${currentIndent}${indent}${indent}environment${environmentNameMap.get(
                 instruction.array
               )}[i] = ${generateStructType(['int8'])}(uint8(returnData[i]));
-${currentIndent}}`,
+${currentIndent}}\n`,
               type: 'statement',
             }
           case 'donate':
