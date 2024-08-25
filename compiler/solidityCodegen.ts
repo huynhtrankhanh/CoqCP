@@ -32,11 +32,11 @@ export const solidityCodegen = (sortedModules: CoqCPAST[]): string => {
     const typeString = types.map(solTypeName).join(',')
     if (!structTypes.has(typeString)) {
       const structName = `Tuple${structCounter++}`
-      let struct = `struct ${structName} {\n`
+      let struct = indent + `struct ${structName} {\n`
       types.forEach((type, index) => {
-        struct += `${indent}${solTypeName(type)} item${index};\n`
+        struct += indent + `${indent}${solTypeName(type)} item${index};\n`
       })
-      struct += '}\n\n'
+      struct += indent + '}\n\n'
       joined += struct
       structTypes.set(typeString, structName)
     }
@@ -128,59 +128,99 @@ export const solidityCodegen = (sortedModules: CoqCPAST[]): string => {
   for (const module of sortedModules) {
     const { environment, procedures } = module
     const environmentNameMap = new Map<string, number>()
+    if (environment !== null)
+      for (const [index, name] of [...environment.arrays.keys()].entries()) {
+        environmentNameMap.set(name, index)
+      }
 
     // Define functions
     for (const procedure of procedures) {
       const { name, body, variables } = procedure
       const index = procedureNameMap.size()
       procedureNameMap.set([module.moduleName, name], index)
+      crossModuleProcedureMap.set([module.moduleName, name], procedure)
 
       const envParams = environment
-        ? [...environment.arrays.entries()].map(([arrayName, description]) => {
+        ? [...environment.arrays.entries()].map(([_, description], index) => {
             const structType = generateStructType(description.itemTypes)
-            return `${structType}[] memory ${arrayName}`
+            return `${structType}[] memory environment${index}`
           })
         : []
 
+      const localVariableIndex = new Map<string, number>()
+      const localBinderMap = new Map<string, number>()
+
+      for (const [index, variableName] of [...variables.keys()].entries()) {
+        localVariableIndex.set(variableName, index)
+      }
+
       const varParams = [...variables].map(
-        ([varName, value]) => `${solTypeName(value.type)} ${varName}`
+        ([_, value], index) => `${solTypeName(value.type)} local${index}`
       )
 
       const allParams = [...envParams, ...varParams].join(', ')
 
-      joined += `${indent}function ${name}(${allParams}) public {\n`
+      joined += `${indent}function procedure${index}(${allParams}) private {\n`
 
       // Generate function body
       const generateInstruction = (
         instruction: Instruction,
-        indentLevel: number = 2
+        inBlock:
+          | { type: 'inside block'; indentLevel: number }
+          | { type: 'not in block' } = {
+          type: 'not in block',
+        }
       ): string => {
-        const currentIndent = indent.repeat(indentLevel)
-
+        const adorn = (x: string): string => {
+          if (inBlock.type === 'not in block') return x
+          return indent.repeat(inBlock.indentLevel) + x + ';\n'
+        }
         switch (instruction.type) {
           case 'get':
-            return `${currentIndent}${instruction.name}\n`
+            return adorn(`local${localVariableIndex.get(instruction.name)}`)
           case 'set':
-            return `${currentIndent}${instruction.name} = ${generateValueType(instruction.value)};\n`
+            return adorn(
+              `local${localVariableIndex.get(
+                instruction.name
+              )} = ${generateValueType(instruction.value)}`
+            )
           case 'store':
             if (instruction.name === COMMUNICATION) {
               return `;\n`
             }
-            const structType = generateStructType(
-              instruction.tuple.map((v) => v.type as PrimitiveType)
+            const elementType = environment?.arrays.get(
+              instruction.name
+            )?.itemTypes
+            assert(elementType !== undefined)
+            const structType = generateStructType(elementType)
+            return adorn(
+              `environment${environmentNameMap.get(
+                instruction.name
+              )}[${generateValueType(
+                instruction.index
+              )}] = ${structType}(${instruction.tuple
+                .map(generateValueType)
+                .join(', ')})`
             )
-            return `${currentIndent}${instruction.name}[${generateValueType(instruction.index)}] = ${structType}(${instruction.tuple.map(generateValueType).join(', ')});\n`
           case 'retrieve':
             if (instruction.name === COMMUNICATION) {
-              return `${currentIndent}abi.decode(msg.data, (uint8[]));\n`
+              return `abi.decode(msg.data, (uint8[]));\n`
             }
-            return `${currentIndent}${instruction.name}[${generateValueType(instruction.index)}]\n`
+            return adorn(
+              `environment${environmentNameMap.get(
+                instruction.name
+              )}[${generateValueType(instruction.index)}]`
+            )
           case 'communication area size':
-            return `${currentIndent}msg.data.length\n`
+            return adorn(`msg.data.length`)
           case 'invoke':
-            return `${currentIndent}
-            (bool success, bytes memory returnData) = address(${generateValueType(instruction.address)}).call{value: ${generateValueType(instruction.money)}}(
-                abi.encodeWithSignature("${instruction.array}", ${generateValueType(instruction.communicationSize)})
+            return `
+            (bool success, bytes memory returnData) = address(${generateValueType(
+              instruction.address
+            )}).call{value: ${generateValueType(instruction.money)}}(
+                abi.encodeWithSignature("${
+                  instruction.array
+                }", ${generateValueType(instruction.communicationSize)})
             );
             require(success, "External call failed");
             assembly {
@@ -192,75 +232,155 @@ export const solidityCodegen = (sortedModules: CoqCPAST[]): string => {
             }
             \n`
           case 'donate':
-            return `${currentIndent}payable(${generateValueType(instruction.address)}).transfer(${generateValueType(instruction.money)});\n`
+            return `payable(${generateValueType(
+              instruction.address
+            )}).transfer(${generateValueType(instruction.money)});\n`
           case 'get sender':
-            return `${currentIndent}msg.sender\n`
+            return adorn(`msg.sender`)
           case 'get money':
-            return `${currentIndent}msg.value\n`
-          case 'range':
-            return (
-              `${currentIndent}for (uint ${instruction.loopVariable} = 0; ${instruction.loopVariable} < ${generateValueType(instruction.end)}; ${instruction.loopVariable}++) {\n` +
+            return adorn(`msg.value`)
+          case 'range': {
+            if (
+              instruction.end.type === 'literal' &&
+              instruction.end.valueType === 'string'
+            ) {
+              return 'bananas'
+            }
+            const previous = localBinderMap.get(instruction.loopVariable)
+            const localBinderIndex = localBinderMap.size
+            localBinderMap.set(instruction.loopVariable, localBinderMap.size)
+            assert(inBlock.type === 'inside block')
+            const currentIndent = indent.repeat(inBlock.indentLevel)
+            const expression =
+              `${currentIndent}for (uint64 binder${localBinderIndex} = 0; ${
+                instruction.loopVariable
+              } < ${generateValueType(instruction.end)}; ${
+                instruction.loopVariable
+              }++) {\n` +
               instruction.loopBody
-                .map((i) => generateInstruction(i, indentLevel + 1))
+                .map((i) =>
+                  generateInstruction(i, {
+                    type: 'inside block',
+                    indentLevel: inBlock.indentLevel + 1,
+                  })
+                )
                 .join('') +
               `${currentIndent}}\n`
-            )
+            if (previous === undefined)
+              localBinderMap.delete(instruction.loopVariable)
+            else localBinderMap.set(instruction.loopVariable, previous)
+            return expression
+          }
           case 'readChar':
           case 'writeChar':
           case 'flush':
-            return `${currentIndent}revert("Operation not supported in Solidity");\n`
+            return `revert("Operation not supported in Solidity");\n`
           case 'binaryOp':
-            return `${currentIndent}(${generateValueType(instruction.left)} ${binaryOpToSolidity(instruction.operator)} ${generateValueType(instruction.right)})\n`
+            return adorn(
+              `(${generateValueType(instruction.left)} ${binaryOpToSolidity(
+                instruction.operator
+              )} ${generateValueType(instruction.right)})`
+            )
           case 'unaryOp':
-            return `${currentIndent}(${unaryOpToSolidity(instruction.operator)}${generateValueType(instruction.value)})\n`
-          case 'subscript':
-            return `${currentIndent}${generateValueType(instruction.value)}.item${generateValueType(instruction.index)}\n`
-          case 'condition':
+            return adorn(
+              `(${unaryOpToSolidity(instruction.operator)}${generateValueType(
+                instruction.value
+              )})`
+            )
+          case 'subscript': {
+            const isTuple = instruction.value.type === 'retrieve'
+            if (isTuple) {
+              assert(instruction.index.type === "literal")
+              return adorn(
+                `${generateValueType(
+                  instruction.value
+                )}.item${instruction.index.raw}`
+              )
+            } else {
+              return adorn(`${generateValueType(instruction.value)}`)
+            }
+          }
+          case 'condition': {
+            assert(inBlock.type === 'inside block')
+            const currentIndent = indent.repeat(inBlock.indentLevel)
             return (
-              `${currentIndent}if (${generateValueType(instruction.condition)}) {\n` +
+              `${currentIndent}if (${generateValueType(
+                instruction.condition
+              )}) {\n` +
               instruction.body
-                .map((i) => generateInstruction(i, indentLevel + 1))
+                .map((i) =>
+                  generateInstruction(i, {
+                    type: 'inside block',
+                    indentLevel: inBlock.indentLevel + 1,
+                  })
+                )
                 .join('') +
               `${currentIndent}} else {\n` +
               instruction.alternate
-                .map((i) => generateInstruction(i, indentLevel + 1))
+                .map((i) =>
+                  generateInstruction(i, {
+                    type: 'inside block',
+                    indentLevel: inBlock.indentLevel + 1,
+                  })
+                )
                 .join('') +
               `${currentIndent}}\n`
             )
+          }
           case 'sDivide':
-            return `${currentIndent}(int256(${generateValueType(instruction.left)}) / int256(${generateValueType(instruction.right)}))\n`
+            return adorn(
+              `(toSigned(${generateValueType(
+                instruction.left
+              )}) / toSigned(${generateValueType(instruction.right)}))`
+            )
           case 'divide':
-            return `${currentIndent}(${generateValueType(instruction.left)} / ${generateValueType(instruction.right)})\n`
+            return adorn(
+              `(${generateValueType(instruction.left)} / ${generateValueType(
+                instruction.right
+              )})`
+            )
           case 'coerceInt8':
-            return `${currentIndent}uint8(${generateValueType(instruction.value)})\n`
+            return adorn(`uint8(${generateValueType(instruction.value)})`)
           case 'coerceInt16':
-            return `${currentIndent}uint16(${generateValueType(instruction.value)})\n`
+            return adorn(`uint16(${generateValueType(instruction.value)})`)
           case 'coerceInt32':
-            return `${currentIndent}uint32(${generateValueType(instruction.value)})\n`
+            return adorn(`uint32(${generateValueType(instruction.value)})`)
           case 'coerceInt64':
-            return `${currentIndent}uint64(${generateValueType(instruction.value)})\n`
+            return adorn(`uint64(${generateValueType(instruction.value)})`)
           case 'coerceInt256':
-            return `${currentIndent}uint256(${generateValueType(instruction.value)})\n`
+            return adorn(`uint256(${generateValueType(instruction.value)})`)
           case 'less':
-            return `${currentIndent}(${generateValueType(instruction.left)} < ${generateValueType(instruction.right)})\n`
+            return adorn(
+              `(${generateValueType(instruction.left)} < ${generateValueType(
+                instruction.right
+              )})`
+            )
           case 'sLess':
-            return `${currentIndent}(int256(${generateValueType(instruction.left)}) < int256(${generateValueType(instruction.right)}))\n`
+            return adorn(
+              `(toSigned(${generateValueType(
+                instruction.left
+              )}) < toSigned(${generateValueType(instruction.right)}))`
+            )
           case 'call':
             const args = Array.from(instruction.presetVariables.entries())
               .map(([name, value]) => `${name}: ${generateValueType(value)}`)
               .join(', ')
-            return `${currentIndent}${instruction.procedure}(${args});\n`
+            return `${instruction.procedure}(${args});\n`
           case 'cross module call':
             const crossArgs = Array.from(instruction.presetVariables.entries())
               .map(([name, value]) => `${name}: ${generateValueType(value)}`)
               .join(', ')
-            return `${currentIndent}${instruction.module}_${instruction.procedure}(${crossArgs});\n`
+            return `${instruction.module}_${instruction.procedure}(${crossArgs});\n`
           case 'break':
-            return `${currentIndent}break;\n`
+            return adorn(`break`)
           case 'continue':
-            return `${currentIndent}continue;\n`
+            return adorn(`continue`)
           case 'construct address':
-            return `${currentIndent}address(uint160(uint256(${instruction.bytes.map(generateValueType).join(' | ')})))\n`
+            return adorn(
+              `constructAddress(${instruction.bytes
+                .map((x) => generateValueType(x))
+                .join(', ')})`
+            )
           default:
             return consumeNever(instruction)
         }
@@ -270,18 +390,23 @@ export const solidityCodegen = (sortedModules: CoqCPAST[]): string => {
         switch (value.type) {
           case 'literal':
             if (value.valueType === 'boolean') return value.raw
-            if (value.valueType === 'number') return value.raw
+            if (value.valueType === 'number') return 'uint64(' + value.raw + ')'
             if (value.valueType === 'string') return `"${value.raw}"`
             return consumeNever(value.valueType)
           case 'local binder':
             return value.name
           default:
-            return generateInstruction(value, 0).trim()
+            return generateInstruction(value, { type: 'not in block' })
         }
       }
 
       joined += body
-        .map((instruction) => generateInstruction(instruction))
+        .map((instruction) =>
+          generateInstruction(instruction, {
+            type: 'inside block',
+            indentLevel: 2,
+          })
+        )
         .join('')
       joined += `${indent}}\n\n`
     }
@@ -300,7 +425,9 @@ export const solidityCodegen = (sortedModules: CoqCPAST[]): string => {
           : ''
         const varArgs = Array(mainProcedure.variables.size).fill('0').join(', ')
         joined += `${indent}fallback() external payable {
-        ${indent}${indent}main(${envArgs}${envArgs && varArgs ? ', ' : ''}${varArgs});
+        ${indent}${indent}main(${envArgs}${
+          envArgs && varArgs ? ', ' : ''
+        }${varArgs});
         ${indent}}\n\n`
       }
     }
