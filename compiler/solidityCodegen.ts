@@ -591,7 +591,7 @@ ${currentIndent}}`,
           generateInstruction(instruction, {
             type: 'inside block',
             indentLevel: 2,
-          })
+          }).expression
         )
         .join('')
       joined += `${indent}} }\n\n`
