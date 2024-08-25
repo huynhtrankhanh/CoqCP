@@ -548,6 +548,9 @@ ${indent}${indent}procedure${procedureNameMap.get(['', 'main'])}(${[
           ...varArgs,
           'data',
         ].join(', ')});
+${indent}${indent}assembly {
+${indent}${indent}${indent}return(add(data, 0x20), mload(data))
+${indent}${indent}}
 ${indent}}\n`
       }
     } else {

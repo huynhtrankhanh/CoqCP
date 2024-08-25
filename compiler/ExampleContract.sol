@@ -88,5 +88,8 @@ contract GeneratedCode {
     fallback() external payable {
         bytes memory data = msg.data;
         procedure0(environment0, environment1, environment2, 0, address(0), data);
+        assembly {
+            return(add(data, 0x20), mload(data))
+        }
     }
 }
