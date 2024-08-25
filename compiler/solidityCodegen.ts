@@ -189,7 +189,7 @@ contract GeneratedCode {
         'bytes memory communication',
       ].join(', ')
 
-      joined += `${indent}function procedure${index}(${allParams}) private {\n`
+      joined += `${indent}function procedure${index}(${allParams}) private { unchecked {\n`
 
       // Generate function body
       const generateInstruction = (
@@ -248,24 +248,26 @@ contract GeneratedCode {
             )
           case 'communication area size':
             return adorn(`msg.data.length`)
-          case 'invoke':
-            return `
-            (bool success, bytes memory returnData) = address(${generateValueType(
+          case 'invoke': {
+            assert(inBlock.type === 'inside block')
+            const currentIndent = indent.repeat(inBlock.indentLevel)
+            return `${currentIndent}{
+${currentIndent}${indent}uint64 communicationSize = ${generateValueType(
+              instruction.communicationSize
+            )};
+${currentIndent}${indent}(bool success, bytes memory returnData) = address(${generateValueType(
               instruction.address
-            )}).call{value: ${generateValueType(instruction.money)}}(
-                abi.encodeWithSignature("${
-                  instruction.array
-                }", ${generateValueType(instruction.communicationSize)})
-            );
-            require(success, "External call failed");
-            assembly {
-                let returnDataSize := mload(returnData)
-                let dest := mload(0x40)
-                mstore(0x40, add(dest, returnDataSize))
-                codecopy(dest, add(returnData, 0x20), returnDataSize)
-                ${instruction.array} := dest
-            }
-            \n`
+            )}).call{value: ${generateValueType(
+              instruction.money
+            )}}(environment${environmentNameMap.get(
+              instruction.array
+            )}[0:communicationSize]);
+${currentIndent}${indent}for (uint i = 0; i < communicationSize && i < returnData.length; i++)
+${currentIndent}${indent}${indent}environment${environmentNameMap.get(
+              instruction.array
+            )}[i] = returnData[i];
+${currentIndent}}\n`
+          }
           case 'donate':
             return adorn(
               `shoot(${generateValueType(
@@ -510,7 +512,7 @@ contract GeneratedCode {
           })
         )
         .join('')
-      joined += `${indent}}\n\n`
+      joined += `${indent}} }\n\n`
     }
 
     seenModules.set(module.moduleName, module)

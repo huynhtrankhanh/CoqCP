@@ -2,12 +2,10 @@ environment({
   current: array([int32], 1),
   count: array([int32], 1),
   scratchpad: array([int8], 1024),
-  member: array([int256], 200),
 })
 
 procedure('main', { what: int32, absolute: address }, () => {
   // extract number from calldata
-  store('member', 0, [2])
   set(
     'what',
     (coerceInt32(retrieve(0)) << coerceInt32(24)) +
