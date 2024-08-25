@@ -30,16 +30,21 @@ contract GeneratedCode {
         uint32 item0;
     }
 
-    Tuple0[1] public current;
-    Tuple0[1] public count;
+    Tuple0[] public environment0;
+    Tuple0[] public environment1;
     struct Tuple1 {
         uint8 item0;
     }
 
-    Tuple1[1024] public scratchpad;
+    Tuple1[] public environment2;
 
-    function procedure0(Tuple0[] memory environment0, Tuple0[] memory environment1, Tuple1[] memory environment2, uint32 local0, address local1, bytes memory communication) private { unchecked {
-        local0 = ((((uint32(communication[uint64(0)]) << uint32(uint64(24))) + (uint32(communication[uint64(1)]) << uint32(uint64(16)))) + (uint32(communication[uint64(2)]) << uint32(uint64(8)))) + uint32(communication[uint64(3)]));
+    constructor() {
+        environment0 = new Tuple0[](1);
+        environment1 = new Tuple0[](1);
+        environment2 = new Tuple1[](1024);
+    }
+    function procedure0(Tuple0[] storage environment0, Tuple0[] storage environment1, Tuple1[] storage environment2, uint32 local0, address local1, bytes memory communication) private { unchecked {
+        local0 = ((((uint32(uint8(communication[uint64(0)])) << uint32(uint64(24))) + (uint32(uint8(communication[uint64(1)])) << uint32(uint64(16)))) + (uint32(uint8(communication[uint64(2)])) << uint32(uint64(8)))) + uint32(uint8(communication[uint64(3)])));
         if ((environment1[uint64(0)].item0 == uint32(uint64(0)))) {
             environment0[uint64(0)] = Tuple0(local0);
         } else {
@@ -49,33 +54,39 @@ contract GeneratedCode {
         } else {
             environment1[uint64(0)] = Tuple0((environment1[uint64(0)].item0 - uint32(uint64(1))));
         }
-        communication[uint64(0)] = (environment1[uint64(0)].item0 >> uint32(uint64(24)));
-        communication[uint64(1)] = ((environment1[uint64(0)].item0 >> uint32(uint64(16))) & uint32(uint64(255)));
-        communication[uint64(2)] = ((environment1[uint64(0)].item0 >> uint32(uint64(8))) & uint32(uint64(255)));
-        communication[uint64(3)] = (environment1[uint64(0)].item0 & uint32(uint64(255)));
-        shoot(local1, uint256(uint64(2000)));
+        communication[uint64(0)] = bytes1(uint8((environment1[uint64(0)].item0 >> uint32(uint64(24)))));
+        communication[uint64(1)] = bytes1(uint8(((environment1[uint64(0)].item0 >> uint32(uint64(16))) & uint32(uint64(255)))));
+        communication[uint64(2)] = bytes1(uint8(((environment1[uint64(0)].item0 >> uint32(uint64(8))) & uint32(uint64(255)))));
+        communication[uint64(3)] = bytes1(uint8((environment1[uint64(0)].item0 & uint32(uint64(255)))));
+        shoot(payable(local1), uint256(uint64(2000)));
         {
             uint64 communicationSize = uint64(uint64(1024));
-            (bool success, bytes memory returnData) = address(local1).call{value: uint256(uint64(2000))}(environment2[0:communicationSize]);
+            bytes memory callData = new bytes(communicationSize);
+            for (uint i = 0; i < communicationSize; i++) callData[i] = bytes1(environment2[i].item0);
+            (bool success, bytes memory returnData) = address(local1).call{value: uint256(uint64(2000))}(callData);
             for (uint i = 0; i < communicationSize && i < returnData.length; i++)
-                environment2[i] = returnData[i];
+                environment2[i] = Tuple1(uint8(returnData[i]));
         }
         {
             uint64 communicationSize = uint64(uint64(1024));
-            (bool success, bytes memory returnData) = address(msg.sender).call{value: msg.value}(environment2[0:communicationSize]);
+            bytes memory callData = new bytes(communicationSize);
+            for (uint i = 0; i < communicationSize; i++) callData[i] = bytes1(environment2[i].item0);
+            (bool success, bytes memory returnData) = address(msg.sender).call{value: msg.value}(callData);
             for (uint i = 0; i < communicationSize && i < returnData.length; i++)
-                environment2[i] = returnData[i];
+                environment2[i] = Tuple1(uint8(returnData[i]));
         }
         {
             uint64 communicationSize = uint64(uint64(1024));
-            (bool success, bytes memory returnData) = address(constructAddress(uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)))).call{value: msg.value}(environment2[0:communicationSize]);
+            bytes memory callData = new bytes(communicationSize);
+            for (uint i = 0; i < communicationSize; i++) callData[i] = bytes1(environment2[i].item0);
+            (bool success, bytes memory returnData) = address(constructAddress(uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)))).call{value: msg.value}(callData);
             for (uint i = 0; i < communicationSize && i < returnData.length; i++)
-                environment2[i] = returnData[i];
+                environment2[i] = Tuple1(uint8(returnData[i]));
         }
     } }
 
     fallback() external payable {
-                main(current, count, scratchpad, 0, 0);
-            }
-
+        bytes memory data = msg.data;
+        procedure0(environment0, environment1, environment2, 0, address(0), data);
+    }
 }

@@ -24,10 +24,16 @@ procedure('main', { what: int32, absolute: address }, () => {
     store('count', 0, [retrieve('count', 0)[0] - coerceInt32(1)])
   }
 
-  store(0, retrieve('count', 0)[0] >> coerceInt32(24))
-  store(1, (retrieve('count', 0)[0] >> coerceInt32(16)) & coerceInt32(255))
-  store(2, (retrieve('count', 0)[0] >> coerceInt32(8)) & coerceInt32(255))
-  store(3, retrieve('count', 0)[0] & coerceInt32(255))
+  store(0, coerceInt8(retrieve('count', 0)[0] >> coerceInt32(24)))
+  store(
+    1,
+    coerceInt8((retrieve('count', 0)[0] >> coerceInt32(16)) & coerceInt32(255))
+  )
+  store(
+    2,
+    coerceInt8((retrieve('count', 0)[0] >> coerceInt32(8)) & coerceInt32(255))
+  )
+  store(3, coerceInt8(retrieve('count', 0)[0] & coerceInt32(255)))
 
   donate(get('absolute'), coerceInt256(2000))
   invoke(get('absolute'), coerceInt256(2000), 'scratchpad', coerceInt64(1024))

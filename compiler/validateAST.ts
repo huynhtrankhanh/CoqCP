@@ -525,12 +525,12 @@ export const validateAST = (
             return instruction.type === 'coerceInt16'
               ? 'int16'
               : instruction.type === 'coerceInt32'
-                ? 'int32'
-                : instruction.type === 'coerceInt64'
-                  ? 'int64'
-                  : instruction.type === 'coerceInt256'
-                    ? 'int256'
-                    : 'int8'
+              ? 'int32'
+              : instruction.type === 'coerceInt64'
+              ? 'int64'
+              : instruction.type === 'coerceInt256'
+              ? 'int256'
+              : 'int8'
           }
           case 'condition': {
             const { alternate, body, condition, location } = instruction
@@ -843,7 +843,23 @@ export const validateAST = (
                 return 'illegal'
               }
               if (invalid) return 'illegal'
-              return 'int8'
+              const valueType = dfs(instruction.value)
+              if (valueType === 'illegal') return 'illegal'
+              if (valueType === 'statement') {
+                errors.push({
+                  type: 'expression no statement',
+                  location: { ...instruction.value.location, moduleName },
+                })
+                return 'illegal'
+              }
+              if (valueType !== 'int8') {
+                errors.push({
+                  type: 'instruction expects int8',
+                  location: { ...instruction.value.location, moduleName },
+                })
+                return 'illegal'
+              }
+              return 'statement'
             }
             const { tuple } = instruction
             const actualType = tuple.map(dfs)

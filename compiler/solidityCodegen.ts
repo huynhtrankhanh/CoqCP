@@ -139,16 +139,21 @@ contract GeneratedCode {
     }
   }
 
+  let constructorBody = ''
+
   // Generate storage variables for main module arrays
   if (mainModule && mainModule.environment) {
-    for (const [name, description] of mainModule.environment.arrays) {
+    let index = 0
+    for (const [_, description] of mainModule.environment.arrays) {
       const { itemTypes, length } = description
       const structType = generateStructType(itemTypes)
-      joined += `${indent}${structType}[${length.raw}] public ${name};\n`
+      joined += `${indent}${structType}[] public environment${index};\n`
+      constructorBody += `${indent}${indent}environment${index} = new ${structType}[](${length.raw});\n`
+      index++
     }
   }
 
-  joined += '\n'
+  joined += `\n${indent}constructor() {\n${constructorBody}${indent}}\n`
 
   for (const module of sortedModules) {
     const { environment, procedures } = module
@@ -168,7 +173,7 @@ contract GeneratedCode {
       const envParams = environment
         ? [...environment.arrays.entries()].map(([_, description], index) => {
             const structType = generateStructType(description.itemTypes)
-            return `${structType}[] memory environment${index}`
+            return `${structType}[] storage environment${index}`
           })
         : []
 
@@ -218,7 +223,7 @@ contract GeneratedCode {
               return adorn(
                 `communication[${generateValueType(
                   instruction.index
-                )}] = ${generateValueType(instruction.value)}`
+                )}] = bytes1(${generateValueType(instruction.value)})`
               )
             }
             const elementType = environment?.arrays.get(
@@ -238,7 +243,7 @@ contract GeneratedCode {
           case 'retrieve':
             if (instruction.name === COMMUNICATION) {
               return adorn(
-                `communication[${generateValueType(instruction.index)}]`
+                `uint8(communication[${generateValueType(instruction.index)}])`
               )
             }
             return adorn(
@@ -255,24 +260,24 @@ contract GeneratedCode {
 ${currentIndent}${indent}uint64 communicationSize = ${generateValueType(
               instruction.communicationSize
             )};
+${currentIndent}${indent}bytes memory callData = new bytes(communicationSize);
+${currentIndent}${indent}for (uint i = 0; i < communicationSize; i++) callData[i] = bytes1(environment${environmentNameMap.get(
+              instruction.array
+            )}[i].item0);
 ${currentIndent}${indent}(bool success, bytes memory returnData) = address(${generateValueType(
               instruction.address
-            )}).call{value: ${generateValueType(
-              instruction.money
-            )}}(environment${environmentNameMap.get(
-              instruction.array
-            )}[0:communicationSize]);
+            )}).call{value: ${generateValueType(instruction.money)}}(callData);
 ${currentIndent}${indent}for (uint i = 0; i < communicationSize && i < returnData.length; i++)
 ${currentIndent}${indent}${indent}environment${environmentNameMap.get(
               instruction.array
-            )}[i] = returnData[i];
+            )}[i] = ${generateStructType(['int8'])}(uint8(returnData[i]));
 ${currentIndent}}\n`
           }
           case 'donate':
             return adorn(
-              `shoot(${generateValueType(
+              `shoot(payable(${generateValueType(
                 instruction.address
-              )}, ${generateValueType(instruction.money)})`
+              )}), ${generateValueType(instruction.money)})`
             )
           case 'get sender':
             return adorn(`msg.sender`)
@@ -401,9 +406,12 @@ ${currentIndent}}\n`
               )}) < toSigned(${generateValueType(instruction.right)}))`
             )
           case 'call': {
-            const arrays = Array.from({
-              length: environment?.arrays?.size || 0,
-            }).map((_, i) => 'environment' + i)
+            const arrays = Array.from(
+              {
+                length: environment?.arrays?.size || 0,
+              },
+              (_, i) => 'environment' + i
+            )
             const procedure = crossModuleProcedureMap.get([
               module.moduleName,
               instruction.procedure,
@@ -524,16 +532,26 @@ ${currentIndent}}\n`
     if (mainProcedure) {
       const mainIndex = procedureNameMap.get([mainModule.moduleName, 'main'])
       if (mainIndex !== undefined) {
-        const envArgs = mainModule.environment
-          ? [...mainModule.environment.arrays.keys()].join(', ')
-          : ''
-        const varArgs = Array(mainProcedure.variables.size).fill('0').join(', ')
+        const envArgs = Array.from(
+          { length: mainModule.environment?.arrays?.size || 0 },
+          (_, index) => 'environment' + index
+        )
+        const varArgs = [...mainProcedure.variables.values()].map((x) => {
+          if (x.type === 'bool') return 'false'
+          if (x.type === 'address') return 'address(0)'
+          return '0'
+        })
         joined += `${indent}fallback() external payable {
-        ${indent}${indent}main(${envArgs}${
-          envArgs && varArgs ? ', ' : ''
-        }${varArgs});
-        ${indent}}\n\n`
+${indent}${indent}bytes memory data = msg.data;
+${indent}${indent}procedure${procedureNameMap.get(['', 'main'])}(${[
+          ...envArgs,
+          ...varArgs,
+          'data',
+        ].join(', ')});
+${indent}}\n`
       }
+    } else {
+      joined += `${indent}fallback() external payable {}\n`
     }
   }
 
