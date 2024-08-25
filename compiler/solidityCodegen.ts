@@ -384,7 +384,7 @@ ${currentIndent}}`,
               case 'plus':
                 return value
               case 'minus':
-                return adorn(`(~${value.expression} + 1)`, value.type)
+                return adorn(`((~${value.expression}) + 1)`, value.type)
               case 'bitwise not':
                 resultType = value.type as PrimitiveType // Assuming it's not a tuple type
                 break
