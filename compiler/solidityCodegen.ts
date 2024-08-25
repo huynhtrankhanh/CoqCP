@@ -220,66 +220,79 @@ contract GeneratedCode {
 
       joined += `${indent}function procedure${index}(${allParams}) private { unchecked {\n`
 
-type GeneratedExpression = {
-  expression: string;
-  type: PrimitiveType | PrimitiveType[] | "statement";
-};
-
-const generateInstruction = (
-  instruction: Instruction,
-  inBlock:
-    | { type: 'inside block'; indentLevel: number }
-    | { type: 'not in block' } = {
-    type: 'not in block',
-  }
-): GeneratedExpression => {
-  const adorn = (x: string, type: PrimitiveType | PrimitiveType[] | "statement"): GeneratedExpression => {
-    if (inBlock.type === 'not in block') return { expression: x, type };
-    return { expression: indent.repeat(inBlock.indentLevel) + x + ';\n', type: "statement" };
-  };
-
-  switch (instruction.type) {
-    case 'get':
-      return adorn(`local${localVariableIndex.get(instruction.name)}`, variables.get(instruction.name)!.type);
-    case 'set':
-      return adorn(
-        `local${localVariableIndex.get(instruction.name)} = ${generateValueType(instruction.value).expression}`,
-        "statement"
-      );
-    case 'store':
-      if (instruction.name === COMMUNICATION) {
-        return adorn(
-          `communication[${generateValueType(instruction.index).expression}] = bytes1(${generateValueType(instruction.value).expression})`,
-          "statement"
-        );
+      type GeneratedExpression = {
+        expression: string
+        type: PrimitiveType | PrimitiveType[] | 'statement'
       }
-      const elementType = environment?.arrays.get(instruction.name)?.itemTypes;
-      assert(elementType !== undefined);
-      const structType = generateStructType(elementType);
-      return adorn(
-        `environment${environmentNameMap.get(instruction.name)}[${generateValueType(instruction.index).expression}] = ${structType}(${instruction.tuple.map(t => generateValueType(t).expression).join(', ')})`,
-        "statement"
-      );
-    case 'retrieve':
-      if (instruction.name === COMMUNICATION) {
-        return adorn(
-          `uint8(communication[${generateValueType(instruction.index).expression}])`,
-          'int8'
-        );
-      }
-      const retrievedType = environment?.arrays.get(instruction.name)?.itemTypes;
-      assert(retrievedType !== undefined);
-      return adorn(
-        `environment${environmentNameMap.get(instruction.name)}[${generateValueType(instruction.index).expression}]`,
-        retrievedType
-      );
-    case 'communication area size':
-      return adorn(`msg.data.length`, 'int256');
-    case 'invoke':
-      assert(inBlock.type === 'inside block');
-      const currentIndent = indent.repeat(inBlock.indentLevel);
-      return {
-        expression: `${currentIndent}{
+
+      const generateInstruction = (
+        instruction: Instruction,
+        inBlock:
+          | { type: 'inside block'; indentLevel: number }
+          | { type: 'not in block' } = {
+          type: 'not in block',
+        }
+      ): GeneratedExpression => {
+        const adorn = (
+          x: string,
+          type: PrimitiveType | PrimitiveType[] | 'statement'
+        ): GeneratedExpression => {
+          if (inBlock.type === 'not in block') return { expression: x, type }
+          return {
+            expression: indent.repeat(inBlock.indentLevel) + x + ';\n',
+            type: 'statement',
+          }
+        }
+
+        switch (instruction.type) {
+          case 'get':
+            return adorn(
+              `local${localVariableIndex.get(instruction.name)}`,
+              variables.get(instruction.name)!.type
+            )
+          case 'set':
+            return adorn(
+              `local${localVariableIndex.get(instruction.name)} = ${generateValueType(instruction.value).expression}`,
+              'statement'
+            )
+          case 'store':
+            if (instruction.name === COMMUNICATION) {
+              return adorn(
+                `communication[${generateValueType(instruction.index).expression}] = bytes1(${generateValueType(instruction.value).expression})`,
+                'statement'
+              )
+            }
+            const elementType = environment?.arrays.get(
+              instruction.name
+            )?.itemTypes
+            assert(elementType !== undefined)
+            const structType = generateStructType(elementType)
+            return adorn(
+              `environment${environmentNameMap.get(instruction.name)}[${generateValueType(instruction.index).expression}] = ${structType}(${instruction.tuple.map((t) => generateValueType(t).expression).join(', ')})`,
+              'statement'
+            )
+          case 'retrieve':
+            if (instruction.name === COMMUNICATION) {
+              return adorn(
+                `uint8(communication[${generateValueType(instruction.index).expression}])`,
+                'int8'
+              )
+            }
+            const retrievedType = environment?.arrays.get(
+              instruction.name
+            )?.itemTypes
+            assert(retrievedType !== undefined)
+            return adorn(
+              `environment${environmentNameMap.get(instruction.name)}[${generateValueType(instruction.index).expression}]`,
+              retrievedType
+            )
+          case 'communication area size':
+            return adorn(`msg.data.length`, 'int256')
+          case 'invoke':
+            assert(inBlock.type === 'inside block')
+            const currentIndent = indent.repeat(inBlock.indentLevel)
+            return {
+              expression: `${currentIndent}{
 ${currentIndent}${indent}uint64 communicationSize = ${generateValueType(instruction.communicationSize).expression};
 ${currentIndent}${indent}bytes memory callData = new bytes(communicationSize);
 ${currentIndent}${indent}for (uint i = 0; i < communicationSize; i++) callData[i] = bytes1(environment${environmentNameMap.get(instruction.array)}[i].item0);
@@ -287,206 +300,291 @@ ${currentIndent}${indent}(bool success, bytes memory returnData) = address(${gen
 ${currentIndent}${indent}for (uint i = 0; i < communicationSize && i < returnData.length; i++)
 ${currentIndent}${indent}${indent}environment${environmentNameMap.get(instruction.array)}[i] = ${generateStructType(['int8'])}(uint8(returnData[i]));
 ${currentIndent}}`,
-        type: "statement"
-      };
-    case 'donate':
-      return adorn(
-        `shoot(payable(${generateValueType(instruction.address).expression}), ${generateValueType(instruction.money).expression})`,
-        "statement"
-      );
-    case 'get sender':
-      return adorn(`msg.sender`, 'address');
-    case 'get money':
-      return adorn(`msg.value`, 'int256');
-    case 'range':
-      assert(inBlock.type === 'inside block');
-      const rangeIndent = indent.repeat(inBlock.indentLevel);
-      const localBinderIndex = localBinderMap.size;
-      localBinderMap.set(instruction.loopVariable, localBinderMap.size);
-      const rangeExpression = `${rangeIndent}for (uint64 binder${localBinderIndex} = 0; binder${localBinderIndex} < ${generateValueType(instruction.end).expression}; binder${localBinderIndex}++) {\n` +
-        instruction.loopBody.map((i) => generateInstruction(i, { type: 'inside block', indentLevel: inBlock.indentLevel + 1 }).expression).join('') +
-        `${rangeIndent}}`;
-      return { expression: rangeExpression, type: "statement" };
-    case 'readChar':
-    case 'writeChar':
-    case 'flush':
-      return adorn(`revert("Operation not supported in Solidity")`, "statement");
-    case 'binaryOp': {
-      const left = generateValueType(instruction.left);
-      const right = generateValueType(instruction.right);
-      let resultType: PrimitiveType;
+              type: 'statement',
+            }
+          case 'donate':
+            return adorn(
+              `shoot(payable(${generateValueType(instruction.address).expression}), ${generateValueType(instruction.money).expression})`,
+              'statement'
+            )
+          case 'get sender':
+            return adorn(`msg.sender`, 'address')
+          case 'get money':
+            return adorn(`msg.value`, 'int256')
+          case 'range':
+            assert(inBlock.type === 'inside block')
+            const rangeIndent = indent.repeat(inBlock.indentLevel)
+            const localBinderIndex = localBinderMap.size
+            localBinderMap.set(instruction.loopVariable, localBinderMap.size)
+            const rangeExpression =
+              `${rangeIndent}for (uint64 binder${localBinderIndex} = 0; binder${localBinderIndex} < ${generateValueType(instruction.end).expression}; binder${localBinderIndex}++) {\n` +
+              instruction.loopBody
+                .map(
+                  (i) =>
+                    generateInstruction(i, {
+                      type: 'inside block',
+                      indentLevel: inBlock.indentLevel + 1,
+                    }).expression
+                )
+                .join('') +
+              `${rangeIndent}}`
+            return { expression: rangeExpression, type: 'statement' }
+          case 'readChar':
+          case 'writeChar':
+          case 'flush':
+            return adorn(
+              `revert("Operation not supported in Solidity")`,
+              'statement'
+            )
+          case 'binaryOp': {
+            const left = generateValueType(instruction.left)
+            const right = generateValueType(instruction.right)
+            let resultType: PrimitiveType
 
-      switch (instruction.operator) {
-        case 'equal':
-        case 'noteq':
-          resultType = 'bool';
-          break;
-        case 'add':
-        case 'subtract':
-        case 'multiply':
-        case 'mod':
-        case 'bitwise or':
-        case 'bitwise xor':
-        case 'bitwise and':
-        case 'shift right':
-        case 'shift left':
-          resultType = getBinaryOpResultType(left.type, right.type);
-          break;
-        case 'boolean and':
-        case 'boolean or':
-          resultType = 'bool';
-          break;
-        default:
-          return consumeNever(instruction.operator);
-      }
+            switch (instruction.operator) {
+              case 'equal':
+              case 'noteq':
+                resultType = 'bool'
+                break
+              case 'add':
+              case 'subtract':
+              case 'multiply':
+              case 'mod':
+              case 'bitwise or':
+              case 'bitwise xor':
+              case 'bitwise and':
+              case 'shift right':
+              case 'shift left':
+                resultType = getBinaryOpResultType(left.type, right.type)
+                break
+              case 'boolean and':
+              case 'boolean or':
+                resultType = 'bool'
+                break
+              default:
+                return consumeNever(instruction.operator)
+            }
 
-      return adorn(
-        `(${left.expression} ${binaryOpToSolidity(instruction.operator)} ${right.expression})`,
-        resultType
-      );
-    }
-    case 'unaryOp': {
-      const value = generateValueType(instruction.value);
-      let resultType: PrimitiveType;
-
-      switch (instruction.operator) {
-        case 'minus':
-        case 'plus':
-        case 'bitwise not':
-          resultType = value.type as PrimitiveType;  // Assuming it's not a tuple type
-          break;
-        case 'boolean not':
-          resultType = 'bool';
-          break;
-        default:
-          return consumeNever(instruction.operator);
-      }
-
-      return adorn(
-        `(${unaryOpToSolidity(instruction.operator)}${value.expression})`,
-        resultType
-      );
-    }
-    case 'sDivide':
-    case 'divide': {
-      const left = generateValueType(instruction.left);
-      const right = generateValueType(instruction.right);
-      const resultType = getBinaryOpResultType(left.type, right.type);
-      const op = instruction.type === 'sDivide' ? 'toSigned' : '';
-
-      return adorn(
-        `(${op}(${left.expression}) / ${op}(${right.expression}))`,
-        resultType
-      );
-    }
-    case 'coerceInt8':
-      return adorn(`uint8(${generateValueType(instruction.value).expression})`, 'int8');
-    case 'coerceInt16':
-      return adorn(`uint16(${generateValueType(instruction.value).expression})`, 'int16');
-    case 'coerceInt32':
-      return adorn(`uint32(${generateValueType(instruction.value).expression})`, 'int32');
-    case 'coerceInt64':
-      return adorn(`uint64(${generateValueType(instruction.value).expression})`, 'int64');
-    case 'coerceInt256':
-      return adorn(`uint256(${generateValueType(instruction.value).expression})`, 'int256');
-    case 'less':
-      return adorn(
-        `(${generateValueType(instruction.left).expression} < ${generateValueType(instruction.right).expression})`,
-        'bool'
-      );
-    case 'sLess':
-      return adorn(
-        `(toSigned(${generateValueType(instruction.left).expression}) < toSigned(${generateValueType(instruction.right).expression}))`,
-        'bool'
-      );
-    case 'call':
-    case 'cross module call': {
-      const procedureName = instruction.type === 'call' 
-        ? procedureNameMap.get([module.moduleName, instruction.procedure])
-        : procedureNameMap.get([instruction.module, instruction.procedure]);
-      assert(procedureName !== undefined);
-      const procedure = instruction.type === 'call'
-        ? crossModuleProcedureMap.get([module.moduleName, instruction.procedure])
-        : crossModuleProcedureMap.get([instruction.module, instruction.procedure]);
-      assert(procedure !== undefined);
-      
-      const arrays = instruction.type === 'call'
-        ? Array.from({ length: environment?.arrays?.size || 0 }, (_, i) => 'environment' + i)
-        : (() => {
-            const foreignEnvironment = seenModules.get(instruction.module)?.environment;
-            assert(foreignEnvironment !== undefined);
-            if (foreignEnvironment === null) return [];
-            return [...foreignEnvironment.arrays.keys()].map(
-              (name) => 'environment' + environmentNameMap.get(instruction.arrayMapping.get(name)!)
-            );
-          })();
-
-      const variables = [...procedure.variables.entries()].map(
-        ([variableName, declaration]) => {
-          const supplied = instruction.presetVariables.get(variableName);
-          if (supplied === undefined) {
-            if (declaration.type === 'bool') return 'false';
-            if (declaration.type === 'address') return 'address(0)';
-            return '0';
+            return adorn(
+              `(${left.expression} ${binaryOpToSolidity(instruction.operator)} ${right.expression})`,
+              resultType
+            )
           }
-          return generateValueType(supplied).expression;
+          case 'unaryOp': {
+            const value = generateValueType(instruction.value)
+            let resultType: PrimitiveType
+
+            switch (instruction.operator) {
+              case 'minus':
+              case 'plus':
+              case 'bitwise not':
+                resultType = value.type as PrimitiveType // Assuming it's not a tuple type
+                break
+              case 'boolean not':
+                resultType = 'bool'
+                break
+              default:
+                return consumeNever(instruction.operator)
+            }
+
+            return adorn(
+              `(${unaryOpToSolidity(instruction.operator)}${value.expression})`,
+              resultType
+            )
+          }
+          case 'sDivide':
+          case 'divide': {
+            const left = generateValueType(instruction.left)
+            const right = generateValueType(instruction.right)
+            const resultType = getBinaryOpResultType(left.type, right.type)
+            const op = instruction.type === 'sDivide' ? 'toSigned' : ''
+
+            return adorn(
+              `(${op}(${left.expression}) / ${op}(${right.expression}))`,
+              resultType
+            )
+          }
+          case 'coerceInt8':
+            return adorn(
+              `uint8(${generateValueType(instruction.value).expression})`,
+              'int8'
+            )
+          case 'coerceInt16':
+            return adorn(
+              `uint16(${generateValueType(instruction.value).expression})`,
+              'int16'
+            )
+          case 'coerceInt32':
+            return adorn(
+              `uint32(${generateValueType(instruction.value).expression})`,
+              'int32'
+            )
+          case 'coerceInt64':
+            return adorn(
+              `uint64(${generateValueType(instruction.value).expression})`,
+              'int64'
+            )
+          case 'coerceInt256':
+            return adorn(
+              `uint256(${generateValueType(instruction.value).expression})`,
+              'int256'
+            )
+          case 'less':
+            return adorn(
+              `(${generateValueType(instruction.left).expression} < ${generateValueType(instruction.right).expression})`,
+              'bool'
+            )
+          case 'sLess':
+            return adorn(
+              `(toSigned(${generateValueType(instruction.left).expression}) < toSigned(${generateValueType(instruction.right).expression}))`,
+              'bool'
+            )
+          case 'call':
+          case 'cross module call': {
+            const procedureName =
+              instruction.type === 'call'
+                ? procedureNameMap.get([
+                    module.moduleName,
+                    instruction.procedure,
+                  ])
+                : procedureNameMap.get([
+                    instruction.module,
+                    instruction.procedure,
+                  ])
+            assert(procedureName !== undefined)
+            const procedure =
+              instruction.type === 'call'
+                ? crossModuleProcedureMap.get([
+                    module.moduleName,
+                    instruction.procedure,
+                  ])
+                : crossModuleProcedureMap.get([
+                    instruction.module,
+                    instruction.procedure,
+                  ])
+            assert(procedure !== undefined)
+
+            const arrays =
+              instruction.type === 'call'
+                ? Array.from(
+                    { length: environment?.arrays?.size || 0 },
+                    (_, i) => 'environment' + i
+                  )
+                : (() => {
+                    const foreignEnvironment = seenModules.get(
+                      instruction.module
+                    )?.environment
+                    assert(foreignEnvironment !== undefined)
+                    if (foreignEnvironment === null) return []
+                    return [...foreignEnvironment.arrays.keys()].map(
+                      (name) =>
+                        'environment' +
+                        environmentNameMap.get(
+                          instruction.arrayMapping.get(name)!
+                        )
+                    )
+                  })()
+
+            const variables = [...procedure.variables.entries()].map(
+              ([variableName, declaration]) => {
+                const supplied = instruction.presetVariables.get(variableName)
+                if (supplied === undefined) {
+                  if (declaration.type === 'bool') return 'false'
+                  if (declaration.type === 'address') return 'address(0)'
+                  return '0'
+                }
+                return generateValueType(supplied).expression
+              }
+            )
+
+            return adorn(
+              `procedure${procedureName}(${[...arrays, ...variables, 'communication'].join(', ')})`,
+              'statement'
+            )
+          }
+          case 'break':
+            return adorn(`break`, 'statement')
+          case 'continue':
+            return adorn(`continue`, 'statement')
+          case 'construct address':
+            return adorn(
+              `constructAddress(${instruction.bytes.map((x) => generateValueType(x).expression).join(', ')})`,
+              'address'
+            )
+          case 'condition': {
+            assert(inBlock.type === 'inside block')
+            const conditionIndent = indent.repeat(inBlock.indentLevel)
+            const conditionExpression =
+              `${conditionIndent}if (${generateValueType(instruction.condition).expression}) {\n` +
+              instruction.body
+                .map(
+                  (i) =>
+                    generateInstruction(i, {
+                      type: 'inside block',
+                      indentLevel: inBlock.indentLevel + 1,
+                    }).expression
+                )
+                .join('') +
+              `${conditionIndent}} else {\n` +
+              instruction.alternate
+                .map(
+                  (i) =>
+                    generateInstruction(i, {
+                      type: 'inside block',
+                      indentLevel: inBlock.indentLevel + 1,
+                    }).expression
+                )
+                .join('') +
+              `${conditionIndent}}`
+            return { expression: conditionExpression, type: 'statement' }
+          }
+          default:
+            return consumeNever(instruction)
         }
-      );
-
-      return adorn(
-        `procedure${procedureName}(${[...arrays, ...variables, 'communication'].join(', ')})`,
-        "statement"
-      );
-    }
-    case 'break':
-      return adorn(`break`, "statement");
-    case 'continue':
-      return adorn(`continue`, "statement");
-    case 'construct address':
-      return adorn(
-        `constructAddress(${instruction.bytes.map((x) => generateValueType(x).expression).join(', ')})`,
-        'address'
-      );
-    case 'condition': {
-      assert(inBlock.type === 'inside block');
-      const conditionIndent = indent.repeat(inBlock.indentLevel);
-      const conditionExpression = 
-        `${conditionIndent}if (${generateValueType(instruction.condition).expression}) {\n` +
-        instruction.body.map((i) => generateInstruction(i, { type: 'inside block', indentLevel: inBlock.indentLevel + 1 }).expression).join('') +
-        `${conditionIndent}} else {\n` +
-        instruction.alternate.map((i) => generateInstruction(i, { type: 'inside block', indentLevel: inBlock.indentLevel + 1 }).expression).join('') +
-        `${conditionIndent}}`;
-      return { expression: conditionExpression, type: "statement" };
-    }
-    default:
-      return consumeNever(instruction);
-  }
-};
-
-const getBinaryOpResultType = (left: PrimitiveType | PrimitiveType[], right: PrimitiveType | PrimitiveType[]): PrimitiveType => {
-  if (Array.isArray(left) || Array.isArray(right)) {
-    throw new Error("Cannot perform binary operations on tuple types");
-  }
-
-  const typeOrder = ['bool', 'int8', 'int16', 'int32', 'int64', 'int256', 'address'];
-  return typeOrder[Math.max(typeOrder.indexOf(left), typeOrder.indexOf(right))];
-};
-
-const generateValueType = (value: ValueType): GeneratedExpression => {
-  switch (value.type) {
-    case 'literal':
-      if (value.valueType === 'boolean') return { expression: value.raw, type: 'bool' };
-      if (value.valueType === 'number') {
-        return { expression: value.raw, type: 'int64' };
       }
-      if (value.valueType === 'string') return { expression: `"${value.raw}"`, type: 'int8' }; // Assuming string is treated as byte array
-      return consumeNever(value.valueType);
-    case 'local binder':
-      return { expression: 'binder' + localBinderMap.get(value.name), type: 'int64' }; // Assuming binders are always int64
-    default:
-      return generateInstruction(value, { type: 'not in block' });
-  }
-};
+
+      const getBinaryOpResultType = (
+        left: PrimitiveType | PrimitiveType[],
+        right: PrimitiveType | PrimitiveType[]
+      ): PrimitiveType => {
+        if (Array.isArray(left) || Array.isArray(right)) {
+          throw new Error('Cannot perform binary operations on tuple types')
+        }
+
+        const typeOrder = [
+          'bool',
+          'int8',
+          'int16',
+          'int32',
+          'int64',
+          'int256',
+          'address',
+        ]
+        return typeOrder[
+          Math.max(typeOrder.indexOf(left), typeOrder.indexOf(right))
+        ]
+      }
+
+      const generateValueType = (value: ValueType): GeneratedExpression => {
+        switch (value.type) {
+          case 'literal':
+            if (value.valueType === 'boolean')
+              return { expression: value.raw, type: 'bool' }
+            if (value.valueType === 'number') {
+              return { expression: value.raw, type: 'int64' }
+            }
+            if (value.valueType === 'string')
+              return { expression: `"${value.raw}"`, type: 'int8' } // Assuming string is treated as byte array
+            return consumeNever(value.valueType)
+          case 'local binder':
+            return {
+              expression: 'binder' + localBinderMap.get(value.name),
+              type: 'int64',
+            } // Assuming binders are always int64
+          default:
+            return generateInstruction(value, { type: 'not in block' })
+        }
+      }
 
       joined += body
         .map((instruction) =>
