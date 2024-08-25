@@ -68,30 +68,6 @@ contract GeneratedCode {
         new SelfDestructContract{value: _wei}(_target);
     }
 
-    // uint8 -> int8
-    function toSigned(uint8 x) private pure returns (int8) {
-        return int8(x);
-    }
-
-    // uint16 -> int16
-    function toSigned(uint16 x) private pure returns (int16) {
-        return int16(x);
-    }
-
-    // uint32 -> int32
-    function toSigned(uint32 x) private pure returns (int32) {
-        return int32(x);
-    }
-
-    // uint64 -> int64
-    function toSigned(uint64 x) private pure returns (int64) {
-        return int64(x);
-    }
-
-    // uint256 -> int256
-    function toSigned(uint256 x) private pure returns (int256) {
-        return int256(x);
-    }
 `
 
   const solTypeName = (type: PrimitiveType): string => {
@@ -252,13 +228,19 @@ contract GeneratedCode {
             )
           case 'set':
             return adorn(
-              `local${localVariableIndex.get(instruction.name)} = ${generateValueType(instruction.value).expression}`,
+              `local${localVariableIndex.get(instruction.name)} = ${
+                generateValueType(instruction.value).expression
+              }`,
               'statement'
             )
           case 'store':
             if (instruction.name === COMMUNICATION) {
               return adorn(
-                `communication[${generateValueType(instruction.index).expression}] = bytes1(${generateValueType(instruction.value).expression})`,
+                `communication[${
+                  generateValueType(instruction.index).expression
+                }] = bytes1(${
+                  generateValueType(instruction.value).expression
+                })`,
                 'statement'
               )
             }
@@ -268,13 +250,19 @@ contract GeneratedCode {
             assert(elementType !== undefined)
             const structType = generateStructType(elementType)
             return adorn(
-              `environment${environmentNameMap.get(instruction.name)}[${generateValueType(instruction.index).expression}] = ${structType}(${instruction.tuple.map((t) => generateValueType(t).expression).join(', ')})`,
+              `environment${environmentNameMap.get(instruction.name)}[${
+                generateValueType(instruction.index).expression
+              }] = ${structType}(${instruction.tuple
+                .map((t) => generateValueType(t).expression)
+                .join(', ')})`,
               'statement'
             )
           case 'retrieve':
             if (instruction.name === COMMUNICATION) {
               return adorn(
-                `uint8(communication[${generateValueType(instruction.index).expression}])`,
+                `uint8(communication[${
+                  generateValueType(instruction.index).expression
+                }])`,
                 'int8'
               )
             }
@@ -283,7 +271,9 @@ contract GeneratedCode {
             )?.itemTypes
             assert(retrievedType !== undefined)
             return adorn(
-              `environment${environmentNameMap.get(instruction.name)}[${generateValueType(instruction.index).expression}]`,
+              `environment${environmentNameMap.get(instruction.name)}[${
+                generateValueType(instruction.index).expression
+              }]`,
               retrievedType
             )
           case 'communication area size':
@@ -293,18 +283,30 @@ contract GeneratedCode {
             const currentIndent = indent.repeat(inBlock.indentLevel)
             return {
               expression: `${currentIndent}{
-${currentIndent}${indent}uint64 communicationSize = ${generateValueType(instruction.communicationSize).expression};
+${currentIndent}${indent}uint64 communicationSize = ${
+                generateValueType(instruction.communicationSize).expression
+              };
 ${currentIndent}${indent}bytes memory callData = new bytes(communicationSize);
-${currentIndent}${indent}for (uint i = 0; i < communicationSize; i++) callData[i] = bytes1(environment${environmentNameMap.get(instruction.array)}[i].item0);
-${currentIndent}${indent}(bool success, bytes memory returnData) = address(${generateValueType(instruction.address).expression}).call{value: ${generateValueType(instruction.money).expression}}(callData);
+${currentIndent}${indent}for (uint i = 0; i < communicationSize; i++) callData[i] = bytes1(environment${environmentNameMap.get(
+                instruction.array
+              )}[i].item0);
+${currentIndent}${indent}(bool success, bytes memory returnData) = address(${
+                generateValueType(instruction.address).expression
+              }).call{value: ${
+                generateValueType(instruction.money).expression
+              }}(callData);
 ${currentIndent}${indent}for (uint i = 0; i < communicationSize && i < returnData.length; i++)
-${currentIndent}${indent}${indent}environment${environmentNameMap.get(instruction.array)}[i] = ${generateStructType(['int8'])}(uint8(returnData[i]));
+${currentIndent}${indent}${indent}environment${environmentNameMap.get(
+                instruction.array
+              )}[i] = ${generateStructType(['int8'])}(uint8(returnData[i]));
 ${currentIndent}}`,
               type: 'statement',
             }
           case 'donate':
             return adorn(
-              `shoot(payable(${generateValueType(instruction.address).expression}), ${generateValueType(instruction.money).expression})`,
+              `shoot(payable(${
+                generateValueType(instruction.address).expression
+              }), ${generateValueType(instruction.money).expression})`,
               'statement'
             )
           case 'get sender':
@@ -317,7 +319,9 @@ ${currentIndent}}`,
             const localBinderIndex = localBinderMap.size
             localBinderMap.set(instruction.loopVariable, localBinderMap.size)
             const rangeExpression =
-              `${rangeIndent}for (uint64 binder${localBinderIndex} = 0; binder${localBinderIndex} < ${generateValueType(instruction.end).expression}; binder${localBinderIndex}++) {\n` +
+              `${rangeIndent}for (uint64 binder${localBinderIndex} = 0; binder${localBinderIndex} < ${
+                generateValueType(instruction.end).expression
+              }; binder${localBinderIndex}++) {\n` +
               instruction.loopBody
                 .map(
                   (i) =>
@@ -327,7 +331,7 @@ ${currentIndent}}`,
                     }).expression
                 )
                 .join('') +
-              `${rangeIndent}}`
+              `${rangeIndent}}\n`
             return { expression: rangeExpression, type: 'statement' }
           case 'readChar':
           case 'writeChar':
@@ -362,11 +366,13 @@ ${currentIndent}}`,
                 resultType = 'bool'
                 break
               default:
-                return consumeNever(instruction.operator)
+                return consumeNever(instruction)
             }
 
             return adorn(
-              `(${left.expression} ${binaryOpToSolidity(instruction.operator)} ${right.expression})`,
+              `(${left.expression} ${binaryOpToSolidity(
+                instruction.operator
+              )} ${right.expression})`,
               resultType
             )
           }
@@ -384,7 +390,7 @@ ${currentIndent}}`,
                 resultType = 'bool'
                 break
               default:
-                return consumeNever(instruction.operator)
+                return consumeNever(instruction)
             }
 
             return adorn(
@@ -397,7 +403,7 @@ ${currentIndent}}`,
             const left = generateValueType(instruction.left)
             const right = generateValueType(instruction.right)
             const resultType = getBinaryOpResultType(left.type, right.type)
-            const op = instruction.type === 'sDivide' ? 'toSigned' : ''
+            const op = instruction.type === 'sDivide' ? left.type : ''
 
             return adorn(
               `(${op}(${left.expression}) / ${op}(${right.expression}))`,
@@ -431,14 +437,20 @@ ${currentIndent}}`,
             )
           case 'less':
             return adorn(
-              `(${generateValueType(instruction.left).expression} < ${generateValueType(instruction.right).expression})`,
+              `(${generateValueType(instruction.left).expression} < ${
+                generateValueType(instruction.right).expression
+              })`,
               'bool'
             )
-          case 'sLess':
+          case 'sLess': {
+            const left = generateValueType(instruction.left)
             return adorn(
-              `(toSigned(${generateValueType(instruction.left).expression}) < toSigned(${generateValueType(instruction.right).expression}))`,
+              `(${left.type}(${left.expression}) < ${left.type}(${
+                generateValueType(instruction.right).expression
+              }))`,
               'bool'
             )
+          }
           case 'call':
           case 'cross module call': {
             const procedureName =
@@ -498,7 +510,11 @@ ${currentIndent}}`,
             )
 
             return adorn(
-              `procedure${procedureName}(${[...arrays, ...variables, 'communication'].join(', ')})`,
+              `procedure${procedureName}(${[
+                ...arrays,
+                ...variables,
+                'communication',
+              ].join(', ')})`,
               'statement'
             )
           }
@@ -508,14 +524,18 @@ ${currentIndent}}`,
             return adorn(`continue`, 'statement')
           case 'construct address':
             return adorn(
-              `constructAddress(${instruction.bytes.map((x) => generateValueType(x).expression).join(', ')})`,
+              `constructAddress(${instruction.bytes
+                .map((x) => generateValueType(x).expression)
+                .join(', ')})`,
               'address'
             )
           case 'condition': {
             assert(inBlock.type === 'inside block')
             const conditionIndent = indent.repeat(inBlock.indentLevel)
             const conditionExpression =
-              `${conditionIndent}if (${generateValueType(instruction.condition).expression}) {\n` +
+              `${conditionIndent}if (${
+                generateValueType(instruction.condition).expression
+              }) {\n` +
               instruction.body
                 .map(
                   (i) =>
@@ -535,8 +555,22 @@ ${currentIndent}}`,
                     }).expression
                 )
                 .join('') +
-              `${conditionIndent}}`
+              `${conditionIndent}}\n`
             return { expression: conditionExpression, type: 'statement' }
+          }
+          case 'subscript': {
+            const isTuple = instruction.value.type === 'retrieve'
+            if (isTuple) {
+              assert(instruction.index.type === 'literal')
+              const value = generateValueType(instruction.value)
+              assert(Array.isArray(value.type))
+              return adorn(
+                `${value.expression}.item${instruction.index.raw}`,
+                value.type[Number(instruction.index.raw)]
+              )
+            } else {
+              return adorn(`${generateValueType(instruction.value)}`, 'int8')
+            }
           }
           default:
             return consumeNever(instruction)
@@ -544,22 +578,32 @@ ${currentIndent}}`,
       }
 
       const getBinaryOpResultType = (
-        left: PrimitiveType | PrimitiveType[],
-        right: PrimitiveType | PrimitiveType[]
+        left: PrimitiveType | PrimitiveType[] | 'statement',
+        right: PrimitiveType | PrimitiveType[] | 'statement'
       ): PrimitiveType => {
-        if (Array.isArray(left) || Array.isArray(right)) {
-          throw new Error('Cannot perform binary operations on tuple types')
+        if (
+          Array.isArray(left) ||
+          Array.isArray(right) ||
+          left === 'statement' ||
+          right === 'statement'
+        ) {
+          throw new Error(
+            'Cannot perform binary operations on tuple types ' +
+              JSON.stringify(left) +
+              ' ' +
+              JSON.stringify(right)
+          )
         }
 
-        const typeOrder = [
-          'bool',
-          'int8',
-          'int16',
-          'int32',
-          'int64',
-          'int256',
-          'address',
-        ]
+        const typeOrder: (
+          | 'bool'
+          | 'int8'
+          | 'int16'
+          | 'int32'
+          | 'int64'
+          | 'int256'
+          | 'address'
+        )[] = ['bool', 'int8', 'int16', 'int32', 'int64', 'int256', 'address']
         return typeOrder[
           Math.max(typeOrder.indexOf(left), typeOrder.indexOf(right))
         ]
