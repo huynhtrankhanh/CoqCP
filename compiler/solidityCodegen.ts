@@ -290,7 +290,7 @@ export const solidityCodegen = (sortedModules: CoqCPAST[]): string => {
           case 'subscript': {
             const isTuple = instruction.value.type === 'retrieve'
             if (isTuple) {
-              assert(instruction.index.type === "literal")
+              assert(instruction.index.type === 'literal')
               return adorn(
                 `${generateValueType(
                   instruction.value
