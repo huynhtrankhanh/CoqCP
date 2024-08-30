@@ -251,9 +251,7 @@ contract GeneratedCode {
               return adorn(
                 `communicationSet(communication, ${
                   generateValueType(instruction.index).expression
-                }, ${
-                  generateValueType(instruction.value).expression
-                })`,
+                }, ${generateValueType(instruction.value).expression})`,
                 'statement'
               )
             }
