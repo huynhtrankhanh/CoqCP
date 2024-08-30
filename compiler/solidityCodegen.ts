@@ -36,7 +36,10 @@ export const solidityCodegen = (sortedModules: CoqCPAST[]): string => {
       types.forEach((type, index) => {
         struct += indent + `${indent}${solTypeName(type)} item${index};\n`
       })
-      struct += indent + '}\n\n' + `${indent}function arrayGet(${structName}[] storage array, uint64 index) private returns (${structName} memory) {\n${indent}${indent}if (index >= array.length) { assembly { revert(0, 0) } }\n${indent}${indent}return array[index];\n${indent}}\n\n${indent}function arraySet(${structName}[] storage array, uint64 index, ${structName} memory value) private {\n${indent}${indent}if (index >= array.length) { assembly { revert(0, 0) } }\n${indent}${indent}array[index] = value;\n${indent}}\n\n`
+      struct +=
+        indent +
+        '}\n\n' +
+        `${indent}function arrayGet(${structName}[] storage array, uint64 index) private returns (${structName} memory) {\n${indent}${indent}if (index >= array.length) { assembly { revert(0, 0) } }\n${indent}${indent}return array[index];\n${indent}}\n\n${indent}function arraySet(${structName}[] storage array, uint64 index, ${structName} memory value) private {\n${indent}${indent}if (index >= array.length) { assembly { revert(0, 0) } }\n${indent}${indent}array[index] = value;\n${indent}}\n\n`
       joined += struct
       structTypes.set(typeString, structName)
     }
