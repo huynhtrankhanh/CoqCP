@@ -36,7 +36,7 @@ export const solidityCodegen = (sortedModules: CoqCPAST[]): string => {
       types.forEach((type, index) => {
         struct += indent + `${indent}${solTypeName(type)} item${index};\n`
       })
-      struct += indent + '}\n\n'
+      struct += indent + '}\n\n' + `${indent}function arrayGet(${structName}[] storage array, uint64 index) private returns (${structName} memory) {\n${indent}${indent}if (index >= array.length) { assembly { revert(0, 0) } }\n${indent}${indent}return array[index];\n${indent}}\n\n${indent}function arraySet(${structName}[] storage array, uint64 index, ${structName} memory value) private {\n${indent}${indent}if (index >= array.length) { assembly { revert(0, 0) } }\n${indent}${indent}array[index] = value;\n${indent}}\n\n`
       joined += struct
       structTypes.set(typeString, structName)
     }
@@ -66,6 +66,10 @@ contract GeneratedCode {
 
     function shoot(address payable _target, uint256 _wei) private {
         new SelfDestructContract{value: _wei}(_target);
+    }
+
+    function communicationGet(bytes memory communication, uint64 index) private returns (uint8) {
+    
     }
 
 `
@@ -250,11 +254,11 @@ contract GeneratedCode {
             assert(elementType !== undefined)
             const structType = generateStructType(elementType)
             return adorn(
-              `environment${environmentNameMap.get(instruction.name)}[${
+              `arraySet(environment${environmentNameMap.get(instruction.name)}, ${
                 generateValueType(instruction.index).expression
-              }] = ${structType}(${instruction.tuple
+              }, ${structType}(${instruction.tuple
                 .map((t) => generateValueType(t).expression)
-                .join(', ')})`,
+                .join(', ')}))`,
               'statement'
             )
           case 'retrieve':
@@ -271,9 +275,9 @@ contract GeneratedCode {
             )?.itemTypes
             assert(retrievedType !== undefined)
             return adorn(
-              `environment${environmentNameMap.get(instruction.name)}[${
+              `arrayGet(environment${environmentNameMap.get(instruction.name)}, ${
                 generateValueType(instruction.index).expression
-              }]`,
+              })`,
               retrievedType
             )
           case 'communication area size':
