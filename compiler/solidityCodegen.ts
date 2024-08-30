@@ -72,7 +72,13 @@ contract GeneratedCode {
     }
 
     function communicationGet(bytes memory communication, uint64 index) private returns (uint8) {
-    
+        if (index >= communication.length) { assembly { revert(0, 0) } }
+        return uint8(communication[index]);
+    }
+
+    function communicationSet(bytes memory communication, uint64 index, uint8 value) private {
+        if (index >= communication.length) { assembly { revert(0, 0) } }
+        communication[index] = bytes1(value);
     }
 
 `
@@ -243,9 +249,9 @@ contract GeneratedCode {
           case 'store':
             if (instruction.name === COMMUNICATION) {
               return adorn(
-                `communication[${
+                `communicationSet(communication, ${
                   generateValueType(instruction.index).expression
-                }] = bytes1(${
+                }, ${
                   generateValueType(instruction.value).expression
                 })`,
                 'statement'
@@ -267,9 +273,9 @@ contract GeneratedCode {
           case 'retrieve':
             if (instruction.name === COMMUNICATION) {
               return adorn(
-                `uint8(communication[${
+                `communicationGet(communication, ${
                   generateValueType(instruction.index).expression
-                }])`,
+                })`,
                 'int8'
               )
             }
