@@ -298,18 +298,18 @@ ${currentIndent}${indent}uint64 communicationSize = ${
                 generateValueType(instruction.communicationSize).expression
               };
 ${currentIndent}${indent}bytes memory callData = new bytes(communicationSize);
-${currentIndent}${indent}for (uint i = 0; i < communicationSize; i++) callData[i] = bytes1(environment${environmentNameMap.get(
+${currentIndent}${indent}for (uint64 i = 0; i < communicationSize; i++) callData[i] = bytes1(arrayGet(environment${environmentNameMap.get(
                 instruction.array
-              )}[i].item0);
+              )}, i).item0);
 ${currentIndent}${indent}(bool success, bytes memory returnData) = address(${
                 generateValueType(instruction.address).expression
               }).call{value: ${
                 generateValueType(instruction.money).expression
               }}(callData);
-${currentIndent}${indent}for (uint i = 0; i < communicationSize && i < returnData.length; i++)
-${currentIndent}${indent}${indent}environment${environmentNameMap.get(
+${currentIndent}${indent}for (uint64 i = 0; i < communicationSize && i < returnData.length; i++)
+${currentIndent}${indent}${indent}arraySet(environment${environmentNameMap.get(
                 instruction.array
-              )}[i] = ${generateStructType(['int8'])}(uint8(returnData[i]));
+              )}, i, ${generateStructType(['int8'])}(uint8(returnData[i])));
 ${currentIndent}}\n`,
               type: 'statement',
             }
