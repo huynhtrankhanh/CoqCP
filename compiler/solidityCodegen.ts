@@ -46,7 +46,8 @@ export const solidityCodegen = (sortedModules: CoqCPAST[]): string => {
     return structTypes.get(typeString)!
   }
 
-  joined += `contract SelfDestructContract {
+  joined +=
+    `contract SelfDestructContract {
     constructor(address payable _target) payable {
         // Transfer all the ether stored in this contract to the target address and self-destruct
         selfdestruct(_target);
@@ -81,7 +82,12 @@ contract GeneratedCode {
         communication[index] = bytes1(value);
     }
 
-`+[8,16,32,64,256].map(width => `    function sdivint${width}(int${width} a, int${width} b) private returns (int${width}) {
+` +
+    [8, 16, 32, 64, 256]
+      .map(
+        (
+          width
+        ) => `    function sdivint${width}(int${width} a, int${width} b) private returns (int${width}) {
         if ((b == -1 && a == type(int${width}).min) || b == 0) { assembly { revert(0, 0) } }
         return a / b;
     }
@@ -91,7 +97,9 @@ contract GeneratedCode {
         return a / b;
     }
 
-`).join('')
+`
+      )
+      .join('')
 
   const solTypeName = (type: PrimitiveType): string => {
     switch (type) {
@@ -427,7 +435,8 @@ ${currentIndent}}\n`,
             const right = generateValueType(instruction.right)
             const resultType = getBinaryOpResultType(left.type, right.type)
             const op = instruction.type === 'sDivide' ? left.type : ''
-            const divideFn = (instruction.type === 'sDivide' ? 'sdiv' : 'div')+resultType
+            const divideFn =
+              (instruction.type === 'sDivide' ? 'sdiv' : 'div') + resultType
 
             return adorn(
               `${divideFn}(${op}(${left.expression}), ${op}(${right.expression}))`,
