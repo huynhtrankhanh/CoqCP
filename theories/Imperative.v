@@ -398,3 +398,37 @@ Proof.
     + exact (Dispatch _ _ _ (Retrieve _ arrayType arrayName index) (fun x => IH x captured)).
     + exact (Dispatch _ _ _ (Store _ arrayType arrayName index value) (fun x => IH x captured)).
 Defined.
+
+Inductive BlockchainAccount :=
+| ExternallyOwned (money : Z)
+| BlockchainContract (arrayIndex : Type) (arrayType : arrayIndex -> Type) (arrays : forall (name : arrayIndex), list (arrayType name)) (money : Z) (code : Action BasicEffect basicEffectReturnValue ()).
+
+Definition BlockchainState := list Z -> BlockchainAccount.
+
+Definition getBalance (x : BlockchainAccount) : Z :=
+  match x with
+  | ExternallyOwned money => money
+  | BlockchainContract _ _ _ balance _ => balance
+  end.
+
+Definition updateBalance (x : BlockchainAccount) (newBalance : Z) : BlockchainAccount :=
+  match x with
+  | ExternallyOwned _ => ExternallyOwned newBalance
+  | BlockchainContract a b c _ d => BlockchainContract a b c newBalance d
+  end.
+
+Lemma invokeContract (sender target : list Z) (money : Z) (state : BlockchainState) (communication : list Z) (depth : nat) : option (list Z * BlockchainState).
+Proof.
+  induction depth as [| n parentIH] in sender, target, money, state, communication |- *.
+  - exact None.
+  - destruct (decide (money <= getBalance (state sender))).
+    + pose (update state sender (updateBalance (state sender) (getBalance (state sender) - money))) as intermediateState.
+      pose (update intermediateState target (updateBalance (state target) (getBalance (state target) + money))) as newState.
+      destruct (state target) as [balance | arrayIndex arrayType arrays balance code].
+      * exact (Some ([], newState)).
+      * assert (h : list Z -> option (list Z * BlockchainState)).
+        { induction code as [| effect continuation IH]; intro communication'.
+          - admit.
+          - admit. }
+        exact (h communication).
+    + exact (Some ([], state)).
