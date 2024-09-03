@@ -107,7 +107,7 @@ procedure('main', {}, () => {
       call(PrintInt64, { buffer: 'printBuffer' }, 'unsigned', {
         num: retrieve('resultArray', 0)[0],
       })
-      writeChar(coerceInt8(10)) // Print newline
+      //writeChar(coerceInt8(10)) // Print newline
     }
   })
 })

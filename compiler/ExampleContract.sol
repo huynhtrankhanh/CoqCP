@@ -26,14 +26,94 @@ contract GeneratedCode {
         new SelfDestructContract{value: _wei}(_target);
     }
 
+    function communicationGet(bytes memory communication, uint64 index) private returns (uint8) {
+        if (index >= communication.length) { assembly { revert(0, 0) } }
+        return uint8(communication[index]);
+    }
+
+    function communicationSet(bytes memory communication, uint64 index, uint8 value) private {
+        if (index >= communication.length) { assembly { revert(0, 0) } }
+        communication[index] = bytes1(value);
+    }
+
+    function sdivint8(int8 a, int8 b) private returns (int8) {
+        if ((b == -1 && a == type(int8).min) || b == 0) { assembly { revert(0, 0) } }
+        return a / b;
+    }
+
+    function divint8(uint8 a, uint8 b) private returns (uint8) {
+        if (b == 0) { assembly { revert(0, 0) } }
+        return a / b;
+    }
+
+    function sdivint16(int16 a, int16 b) private returns (int16) {
+        if ((b == -1 && a == type(int16).min) || b == 0) { assembly { revert(0, 0) } }
+        return a / b;
+    }
+
+    function divint16(uint16 a, uint16 b) private returns (uint16) {
+        if (b == 0) { assembly { revert(0, 0) } }
+        return a / b;
+    }
+
+    function sdivint32(int32 a, int32 b) private returns (int32) {
+        if ((b == -1 && a == type(int32).min) || b == 0) { assembly { revert(0, 0) } }
+        return a / b;
+    }
+
+    function divint32(uint32 a, uint32 b) private returns (uint32) {
+        if (b == 0) { assembly { revert(0, 0) } }
+        return a / b;
+    }
+
+    function sdivint64(int64 a, int64 b) private returns (int64) {
+        if ((b == -1 && a == type(int64).min) || b == 0) { assembly { revert(0, 0) } }
+        return a / b;
+    }
+
+    function divint64(uint64 a, uint64 b) private returns (uint64) {
+        if (b == 0) { assembly { revert(0, 0) } }
+        return a / b;
+    }
+
+    function sdivint256(int256 a, int256 b) private returns (int256) {
+        if ((b == -1 && a == type(int256).min) || b == 0) { assembly { revert(0, 0) } }
+        return a / b;
+    }
+
+    function divint256(uint256 a, uint256 b) private returns (uint256) {
+        if (b == 0) { assembly { revert(0, 0) } }
+        return a / b;
+    }
+
     struct Tuple0 {
         uint32 item0;
+    }
+
+    function arrayGet(Tuple0[] storage array, uint64 index) private returns (Tuple0 memory) {
+        if (index >= array.length) { assembly { revert(0, 0) } }
+        return array[index];
+    }
+
+    function arraySet(Tuple0[] storage array, uint64 index, Tuple0 memory value) private {
+        if (index >= array.length) { assembly { revert(0, 0) } }
+        array[index] = value;
     }
 
     Tuple0[] public environment0;
     Tuple0[] public environment1;
     struct Tuple1 {
         uint8 item0;
+    }
+
+    function arrayGet(Tuple1[] storage array, uint64 index) private returns (Tuple1 memory) {
+        if (index >= array.length) { assembly { revert(0, 0) } }
+        return array[index];
+    }
+
+    function arraySet(Tuple1[] storage array, uint64 index, Tuple1 memory value) private {
+        if (index >= array.length) { assembly { revert(0, 0) } }
+        array[index] = value;
     }
 
     Tuple1[] public environment2;
@@ -44,44 +124,46 @@ contract GeneratedCode {
         environment2 = new Tuple1[](1024);
     }
     function procedure0(Tuple0[] storage environment0, Tuple0[] storage environment1, Tuple1[] storage environment2, uint32 local0, address local1, bytes memory communication) private { unchecked {
-        local0 = ((((uint32(uint8(communication[uint64(0)])) << uint32(uint64(24))) + (uint32(uint8(communication[uint64(1)])) << uint32(uint64(16)))) + (uint32(uint8(communication[uint64(2)])) << uint32(uint64(8)))) + uint32(uint8(communication[uint64(3)])));
-        if ((environment1[uint64(0)].item0 == uint32(uint64(0)))) {
-            environment0[uint64(0)] = Tuple0(local0);
+        local0 = ((((uint32(communicationGet(communication, 0)) << uint32(24)) + (uint32(communicationGet(communication, 1)) << uint32(16))) + (uint32(communicationGet(communication, 2)) << uint32(8))) + uint32(communicationGet(communication, 3)));
+        if ((arrayGet(environment1, 0).item0 == uint32(0))) {
+            arraySet(environment0, 0, Tuple0(local0));
         } else {
         }
-        if ((local0 == environment0[uint64(0)].item0)) {
-            environment1[uint64(0)] = Tuple0((environment1[uint64(0)].item0 + uint32(uint64(1))));
+        if ((local0 == arrayGet(environment0, 0).item0)) {
+            arraySet(environment1, 0, Tuple0((arrayGet(environment1, 0).item0 + uint32(1))));
         } else {
-            environment1[uint64(0)] = Tuple0((environment1[uint64(0)].item0 - uint32(uint64(1))));
+            arraySet(environment1, 0, Tuple0((arrayGet(environment1, 0).item0 - uint32(1))));
         }
-        communication[uint64(0)] = bytes1(uint8((environment1[uint64(0)].item0 >> uint32(uint64(24)))));
-        communication[uint64(1)] = bytes1(uint8(((environment1[uint64(0)].item0 >> uint32(uint64(16))) & uint32(uint64(255)))));
-        communication[uint64(2)] = bytes1(uint8(((environment1[uint64(0)].item0 >> uint32(uint64(8))) & uint32(uint64(255)))));
-        communication[uint64(3)] = bytes1(uint8((environment1[uint64(0)].item0 & uint32(uint64(255)))));
-        shoot(payable(local1), uint256(uint64(2000)));
+        communicationSet(communication, 0, uint8((arrayGet(environment1, 0).item0 >> uint32(24))));
+        communicationSet(communication, 1, uint8(((arrayGet(environment1, 0).item0 >> uint32(16)) & uint32(255))));
+        communicationSet(communication, 2, uint8(((arrayGet(environment1, 0).item0 >> uint32(8)) & uint32(255))));
+        divint64((3), (5));
+        sdivint64(int64(3), int64(5));
+        communicationSet(communication, 3, uint8((arrayGet(environment1, 0).item0 & uint32(255))));
+        shoot(payable(local1), uint256(2000));
         {
-            uint64 communicationSize = uint64(uint64(1024));
+            uint64 communicationSize = uint64(1024);
             bytes memory callData = new bytes(communicationSize);
-            for (uint i = 0; i < communicationSize; i++) callData[i] = bytes1(environment2[i].item0);
-            (bool success, bytes memory returnData) = address(local1).call{value: uint256(uint64(2000))}(callData);
-            for (uint i = 0; i < communicationSize && i < returnData.length; i++)
-                environment2[i] = Tuple1(uint8(returnData[i]));
+            for (uint64 i = 0; i < communicationSize; i++) callData[i] = bytes1(arrayGet(environment2, i).item0);
+            (bool success, bytes memory returnData) = address(local1).call{value: uint256(2000)}(callData);
+            for (uint64 i = 0; i < communicationSize && i < returnData.length; i++)
+                arraySet(environment2, i, Tuple1(uint8(returnData[i])));
         }
         {
-            uint64 communicationSize = uint64(uint64(1024));
+            uint64 communicationSize = uint64(1024);
             bytes memory callData = new bytes(communicationSize);
-            for (uint i = 0; i < communicationSize; i++) callData[i] = bytes1(environment2[i].item0);
+            for (uint64 i = 0; i < communicationSize; i++) callData[i] = bytes1(arrayGet(environment2, i).item0);
             (bool success, bytes memory returnData) = address(msg.sender).call{value: msg.value}(callData);
-            for (uint i = 0; i < communicationSize && i < returnData.length; i++)
-                environment2[i] = Tuple1(uint8(returnData[i]));
+            for (uint64 i = 0; i < communicationSize && i < returnData.length; i++)
+                arraySet(environment2, i, Tuple1(uint8(returnData[i])));
         }
         {
-            uint64 communicationSize = uint64(uint64(1024));
+            uint64 communicationSize = uint64(1024);
             bytes memory callData = new bytes(communicationSize);
-            for (uint i = 0; i < communicationSize; i++) callData[i] = bytes1(environment2[i].item0);
-            (bool success, bytes memory returnData) = address(constructAddress(uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)), uint8(uint64(0)))).call{value: msg.value}(callData);
-            for (uint i = 0; i < communicationSize && i < returnData.length; i++)
-                environment2[i] = Tuple1(uint8(returnData[i]));
+            for (uint64 i = 0; i < communicationSize; i++) callData[i] = bytes1(arrayGet(environment2, i).item0);
+            (bool success, bytes memory returnData) = address(constructAddress(uint8(0), uint8(0), uint8(0), uint8(0), uint8(0), uint8(0), uint8(0), uint8(0), uint8(0), uint8(0), uint8(0), uint8(0), uint8(0), uint8(0), uint8(0), uint8(0), uint8(0), uint8(0), uint8(0), uint8(0))).call{value: msg.value}(callData);
+            for (uint64 i = 0; i < communicationSize && i < returnData.length; i++)
+                arraySet(environment2, i, Tuple1(uint8(returnData[i])));
         }
     } }
 

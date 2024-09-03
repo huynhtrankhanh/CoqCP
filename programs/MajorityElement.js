@@ -33,6 +33,8 @@ procedure('main', { what: int32, absolute: address }, () => {
     2,
     coerceInt8((retrieve('count', 0)[0] >> coerceInt32(8)) & coerceInt32(255))
   )
+  divide(3, 5)
+  sDivide(3, 5)
   store(3, coerceInt8(retrieve('count', 0)[0] & coerceInt32(255)))
 
   donate(get('absolute'), coerceInt256(2000))

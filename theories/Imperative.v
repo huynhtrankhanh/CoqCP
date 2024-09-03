@@ -422,12 +422,6 @@ Definition transferMoney (state : BlockchainState) (sender target : list Z) (mon
   let intermediateState := update state sender (updateBalance (state sender) (getBalance (state sender) - money)) in
   update intermediateState target (updateBalance (state target) (getBalance (state target) + money)).
 
-Definition matchApply (bundle : option (list Z * BlockchainState)) (fn : list Z -> BlockchainState -> option (list Z * BlockchainState)) :=
-  match bundle with
-  | None => None
-  | Some (returned, newState) => fn returned newState
-  end.
-
 Program Fixpoint invokeContractAux (sender target : list Z) (money : Z) (revertTo state : BlockchainState) (communication : list Z) (fuel : nat) (arrayIndex : Type) (arrayType : arrayIndex -> Type) (code : Action (WithArrays arrayIndex arrayType) withArraysReturnValue ()) {measure fuel} : option (list Z * BlockchainState) :=
   match fuel, code with
   | O, _ => None
