@@ -4,6 +4,7 @@ Import Coq.Lists.List.
 Require Import Coq.Logic.Eqdep_dec.
 Require Import ZArith.
 Require Import Coq.Strings.Ascii.
+Require Import Coq.Program.Wf.
 Open Scope Z_scope.
 
 Record Environment (arrayIndex : Type) := { arrayType: arrayIndex -> Type; arrays: forall (name : arrayIndex), list (arrayType name) }.
@@ -421,21 +422,47 @@ Definition transferMoney (state : BlockchainState) (sender target : list Z) (mon
   let intermediateState := update state sender (updateBalance (state sender) (getBalance (state sender) - money)) in
   update intermediateState target (updateBalance (state target) (getBalance (state target) + money)).
 
-Fixpoint invokeContractAux (sender target : list Z) (money : Z) (revertTo state : BlockchainState) (communication : list Z) (depth : nat) (arrayIndex : Type) (arrayType : arrayIndex -> Type) (code : Action (WithArrays arrayIndex arrayType) withArraysReturnValue ()) : option (list Z * BlockchainState) :=
-  match depth, code with
+Definition matchApply (bundle : option (list Z * BlockchainState)) (fn : list Z -> BlockchainState -> option (list Z * BlockchainState)) :=
+  match bundle with
+  | None => None
+  | Some (returned, newState) => fn returned newState
+  end.
+
+Program Fixpoint invokeContractAux (sender target : list Z) (money : Z) (revertTo state : BlockchainState) (communication : list Z) (fuel : nat) (arrayIndex : Type) (arrayType : arrayIndex -> Type) (code : Action (WithArrays arrayIndex arrayType) withArraysReturnValue ()) {measure fuel} : option (list Z * BlockchainState) :=
+  match fuel, code with
   | O, _ => None
-  | S depth, Done _ _ _ _ => Some (communication, state)
-  | S depth, Dispatch _ _ _ (DoBasicEffect _ _ Trap) continuation => Some ([], revertTo)
-  | S depth, Dispatch _ _ _ (DoBasicEffect _ _ Flush) continuation => Some ([], revertTo)
-  | S depth, Dispatch _ _ _ (DoBasicEffect _ _ ReadChar) continuation => Some ([], revertTo)
-  | S depth, Dispatch _ _ _ (DoBasicEffect _ _ (WriteChar x)) continuation => Some ([], revertTo)
-  | S depth, Dispatch _ _ _ (DoBasicEffect _ _ (Donate money address)) continuation =>
+  | S fuel, Done _ _ _ _ => Some (communication, state)
+  | S fuel, Dispatch _ _ _ (DoBasicEffect _ _ Trap) continuation => Some ([], revertTo)
+  | S fuel, Dispatch _ _ _ (DoBasicEffect _ _ Flush) continuation => Some ([], revertTo)
+  | S fuel, Dispatch _ _ _ (DoBasicEffect _ _ ReadChar) continuation => Some ([], revertTo)
+  | S fuel, Dispatch _ _ _ (DoBasicEffect _ _ (WriteChar x)) continuation => Some ([], revertTo)
+  | S fuel, Dispatch _ _ _ (DoBasicEffect _ _ (Donate money address)) continuation =>
     if decide (money <= getBalance (state target)) then
-      invokeContractAux sender target money revertTo (transferMoney state target address money) communication (S depth) arrayIndex arrayType (continuation tt)
+      invokeContractAux sender target money revertTo (transferMoney state target address money) communication (S fuel) arrayIndex arrayType (continuation tt)
     else Some ([], revertTo)
-  | S depth, Dispatch _ _ _ (DoBasicEffect _ _ (Invoke money address passedArray)) continuation =>
-    if decide (money <= getBalance (state target)) then
-      None
+  | S fuel, Dispatch _ _ _ (DoBasicEffect _ _ (Invoke money' address passedArray)) continuation =>
+    if decide (money' <= getBalance (state target)) then
+      match (state address) with
+      | ExternallyOwned _ => invokeContractAux sender target money revertTo (transferMoney state target address money') communication (S fuel) arrayIndex arrayType (continuation [])
+      | BlockchainContract newArrayIndex newArrayType _ _ newCode =>
+        let invocation := invokeContractAux target address money' state (transferMoney state target address money') passedArray fuel newArrayIndex newArrayType newCode in
+        match invocation with
+        | None => None
+        | Some (returned, newState) => invokeContractAux sender target money revertTo newState communication fuel arrayIndex arrayType (continuation returned) (* we shouldn't have to decrease fuel here, there must be a workaround *)
+        end
+      end
     else Some ([], revertTo)
-  | S depth, _ => None
+  | S fuel, Dispatch _ _ _ (DoBasicEffect _ _ GetSender) continuation => invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayType (continuation sender)
+  | S fuel, Dispatch _ _ _ (DoBasicEffect _ _ GetMoney) continuation => invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayType (continuation money)
+  | S fuel, Dispatch _ _ _ (DoBasicEffect _ _ GetCommunicationSize) continuation => invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayType (continuation (Z.of_nat (length communication)))
+  | S fuel, Dispatch _ _ _ (DoBasicEffect _ _ (ReadByte index)) continuation =>
+    if decide (index < Z.of_nat (length communication)) then
+    invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayType (continuation (nth (Z.to_nat index) communication 0%Z))
+    else Some ([], revertTo)
+  | S fuel, Dispatch _ _ _ (DoBasicEffect _ _ (SetByte index value)) continuation =>
+    if decide (index < Z.of_nat (length communication)) then
+    invokeContractAux sender target money revertTo state (<[Z.to_nat index := value]> communication) (S fuel) arrayIndex arrayType (continuation tt)
+    else Some ([], revertTo)
+  | S fuel, Dispatch _ _ _ (Retrieve _ _ arrayName index) continuation => None
+  | S fuel, Dispatch _ _ _ (Store _ _ arrayName index value) continuation => None
   end.
