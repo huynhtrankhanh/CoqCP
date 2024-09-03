@@ -22,8 +22,7 @@ procedure('unsigned', { num: int64, i: int64, tmpChar: int8 }, () => {
     })
 
     // Print digits in reverse order
-    range(get('i'), (j) => {
-    })
+    range(get('i'), (j) => {})
   }
 })
 
