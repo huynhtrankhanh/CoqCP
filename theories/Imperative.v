@@ -401,7 +401,7 @@ Defined.
 
 Inductive BlockchainAccount :=
 | ExternallyOwned (money : Z)
-| BlockchainContract (arrayIndex : Type) (arrayType : arrayIndex -> Type) (arrays : forall (name : arrayIndex), list (arrayType name)) (money : Z) (code : Action BasicEffect basicEffectReturnValue ()).
+| BlockchainContract (arrayIndex : Type) (arrayType : arrayIndex -> Type) (arrays : forall (name : arrayIndex), list (arrayType name)) (money : Z) (code : Action (WithArrays arrayIndex arrayType) withArraysReturnValue ()).
 
 Definition BlockchainState := list Z -> BlockchainAccount.
 
@@ -417,18 +417,25 @@ Definition updateBalance (x : BlockchainAccount) (newBalance : Z) : BlockchainAc
   | BlockchainContract a b c _ d => BlockchainContract a b c newBalance d
   end.
 
-Lemma invokeContract (sender target : list Z) (money : Z) (state : BlockchainState) (communication : list Z) (depth : nat) : option (list Z * BlockchainState).
-Proof.
-  induction depth as [| n parentIH] in sender, target, money, state, communication |- *.
-  - exact None.
-  - destruct (decide (money <= getBalance (state sender))).
-    + pose (update state sender (updateBalance (state sender) (getBalance (state sender) - money))) as intermediateState.
-      pose (update intermediateState target (updateBalance (state target) (getBalance (state target) + money))) as newState.
-      destruct (state target) as [balance | arrayIndex arrayType arrays balance code].
-      * exact (Some ([], newState)).
-      * assert (h : list Z -> option (list Z * BlockchainState)).
-        { induction code as [| effect continuation IH]; intro communication'.
-          - admit.
-          - admit. }
-        exact (h communication).
-    + exact (Some ([], state)).
+Definition transferMoney (state : BlockchainState) (sender target : list Z) (money : Z) :=
+  let intermediateState := update state sender (updateBalance (state sender) (getBalance (state sender) - money)) in
+  update intermediateState target (updateBalance (state target) (getBalance (state target) + money)).
+
+Fixpoint invokeContractAux (sender target : list Z) (money : Z) (revertTo state : BlockchainState) (communication : list Z) (depth : nat) (arrayIndex : Type) (arrayType : arrayIndex -> Type) (code : Action (WithArrays arrayIndex arrayType) withArraysReturnValue ()) : option (list Z * BlockchainState) :=
+  match depth, code with
+  | O, _ => None
+  | S depth, Done _ _ _ _ => Some (communication, state)
+  | S depth, Dispatch _ _ _ (DoBasicEffect _ _ Trap) continuation => Some ([], revertTo)
+  | S depth, Dispatch _ _ _ (DoBasicEffect _ _ Flush) continuation => Some ([], revertTo)
+  | S depth, Dispatch _ _ _ (DoBasicEffect _ _ ReadChar) continuation => Some ([], revertTo)
+  | S depth, Dispatch _ _ _ (DoBasicEffect _ _ (WriteChar x)) continuation => Some ([], revertTo)
+  | S depth, Dispatch _ _ _ (DoBasicEffect _ _ (Donate money address)) continuation =>
+    if decide (money <= getBalance (state target)) then
+      invokeContractAux sender target money revertTo (transferMoney state target address money) communication (S depth) arrayIndex arrayType (continuation tt)
+    else Some ([], revertTo)
+  | S depth, Dispatch _ _ _ (DoBasicEffect _ _ (Invoke money address passedArray)) continuation =>
+    if decide (money <= getBalance (state target)) then
+      None
+    else Some ([], revertTo)
+  | S depth, _ => None
+  end.
