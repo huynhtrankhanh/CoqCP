@@ -422,7 +422,7 @@ Definition transferMoney (state : BlockchainState) (sender target : list Z) (mon
   let intermediateState := update state sender (updateBalance (state sender) (getBalance (state sender) - money)) in
   update intermediateState target (updateBalance (state target) (getBalance (state target) + money)).
 
-(* this assume the money has already been transferred before the contract gets invoked *)
+(* this assumes the money has already been transferred before the contract gets invoked *)
 (* so initially this function doesn't deduct the balance of the sender and credit the balance of the target *)
 (* revertTo: state before the money transfer and the subsequent contract invocation, state: current state *)
 Fixpoint invokeContractAux (sender target : list Z) (money : Z) (revertTo state : BlockchainState) (communication : list Z) (fuel : nat) : option (list Z * BlockchainState) :=
