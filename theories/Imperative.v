@@ -442,10 +442,10 @@ Fixpoint invokeContractAux (sender target : list Z) (money : Z) (revertTo state 
         | Dispatch _ _ _ (Store _ _ arrayName index value) continuation =>
           match decide (Nat.lt (Z.to_nat index) (length (arrays arrayName))) with
           | left h => inner (continuation tt) communication (fun currentName =>
-              match decide (currentName = arrayName) with
-              | left h => ltac:(rewrite h; exact (<[Z.to_nat index := value]> (arrays arrayName)))
-              | right _ => arrays currentName
-              end)
+            match decide (currentName = arrayName) with
+            | left h => ltac:(rewrite h; exact (<[Z.to_nat index := value]> (arrays arrayName)))
+            | right _ => arrays currentName
+            end)
           | right _ => Some ([], revertTo)
           end
           | Dispatch _ _ _ (DoBasicEffect _ _ _) continuation => None
