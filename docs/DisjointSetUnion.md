@@ -1,4 +1,5 @@
 # Disjoint Set Union
+
 ```python3
 import sys
 
@@ -25,11 +26,11 @@ def norm_tree(x: Tree) -> Tree:
         return join(currentRight, currentLeft)
     if currentRight is None:
         return x
-    
+
     # Destructure left and right
     c1, c2 = currentLeft.left, currentLeft.right
     c3, c4 = currentRight.left, currentRight.right
-    
+
     return norm_tree(join(norm_tree(join(norm_tree(join(c1, c2)), c3)), c4))
 
 def tree_print(x: Tree = None) -> str:
@@ -59,7 +60,7 @@ def parse_tree(s: str) -> Tree:
             elif char == ',' and depth == 0:
                 split_idx = i
                 break
-        
+
         # Split the inner part into left and right subtree descriptions.
         left_str = inner[:split_idx]
         right_str = inner[split_idx + 1:]
@@ -70,7 +71,7 @@ def parse_tree(s: str) -> Tree:
 
         # Return a new Tree node with the parsed left and right children.
         return Tree(left=left_tree, right=right_tree)
-    
+
     raise ValueError("Invalid tree string format")
 
 print(tree_print(norm_tree(parse_tree(output_data))))
