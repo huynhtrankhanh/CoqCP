@@ -25,7 +25,9 @@ procedure('unite', { u: int8, v: int8, z: int8 }, () => {
       set('u', get('v'))
       set('v', get('z'))
     }
-    store('dsu', get('v'), [retrieve('dsu', get('u'))[0] + retrieve('dsu', get('v'))[0]])
+    store('dsu', get('v'), [
+      retrieve('dsu', get('u'))[0] + retrieve('dsu', get('v'))[0],
+    ])
     store('dsu', get('u'), [get('v')])
   }
 })
