@@ -452,11 +452,11 @@ Fixpoint invokeContractAux (sender target : list Z) (money : Z) (revertTo state 
           | Dispatch _ _ _ (DoBasicEffect _ _ ReadChar) continuation => Some ([], revertTo)
           | Dispatch _ _ _ (DoBasicEffect _ _ (WriteChar _)) continuation => Some ([], revertTo)
           | Dispatch _ _ _ (DoBasicEffect _ _ (Donate money address)) continuation =>
-            if decide (money <= getBalance (state target)) then
+       if decide (money <= getBalance (state target) /\ 0 <= money /\ money < 2^256) then
               inner (continuation tt) communication arrays (transferMoney state target address money)
             else Some ([], revertTo)
           | Dispatch _ _ _ (DoBasicEffect _ _ (Invoke money address passedArray)) continuation =>
-            if decide (money <= getBalance (state target)) then
+              if decide (money <= getBalance (state target) /\ 0 <= money /\ money < 2^256) then
               let alteredState := update state target (BlockchainContract arrayIndex _ arrayType arrays (getBalance (state target)) originalCode) in
               match invokeContractAux target address money alteredState (transferMoney alteredState target address money) passedArray fuel with
               | None => None
