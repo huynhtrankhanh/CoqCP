@@ -29,6 +29,7 @@ procedure('unite', { u: int8, v: int8, z: int8 }, () => {
       retrieve('dsu', get('u'))[0] + retrieve('dsu', get('v'))[0],
     ])
     store('dsu', get('u'), [get('v')])
+    donate(getSender(), -retrieve('dsu', get('v')))
   }
 })
 
