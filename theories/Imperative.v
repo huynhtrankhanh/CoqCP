@@ -4,7 +4,6 @@ Import Coq.Lists.List.
 Require Import Coq.Logic.Eqdep_dec.
 Require Import ZArith.
 Require Import Coq.Strings.Ascii.
-Require Import Coq.Program.Wf.
 Open Scope Z_scope.
 
 Record Environment (arrayIndex : Type) := { arrayType: arrayIndex -> Type; arrays: forall (name : arrayIndex), list (arrayType name) }.
