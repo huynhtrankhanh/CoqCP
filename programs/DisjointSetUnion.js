@@ -40,4 +40,5 @@ procedure('main', {}, () => {
       store('dsu', i, [coerceInt8(-1)])
     })
   }
+  call('unite', { u: retrieve(0), v: retrieval(1) })
 })
