@@ -29,16 +29,25 @@ procedure('unite', { u: int8, v: int8, z: int8 }, () => {
   call('ancestor', { vertex: get('v') })
   set('v', retrieve('result', 0)[0])
   if (get('u') != get('v')) {
-    if (sLess(retrieve('dsu', coerceInt64(get('u')))[0], retrieve('dsu', coerceInt64(get('v')))[0])) {
+    if (
+      sLess(
+        retrieve('dsu', coerceInt64(get('u')))[0],
+        retrieve('dsu', coerceInt64(get('v')))[0]
+      )
+    ) {
       set('z', get('u'))
       set('u', get('v'))
       set('v', get('z'))
     }
     store('dsu', coerceInt64(get('v')), [
-      retrieve('dsu', coerceInt64(get('u')))[0] + retrieve('dsu', coerceInt64(get('v')))[0],
+      retrieve('dsu', coerceInt64(get('u')))[0] +
+        retrieve('dsu', coerceInt64(get('v')))[0],
     ])
     store('dsu', coerceInt64(get('u')), [get('v')])
-    donate(getSender(), coerceInt256(-retrieve('dsu', coerceInt64(get('v')))[0]))
+    donate(
+      getSender(),
+      coerceInt256(-retrieve('dsu', coerceInt64(get('v')))[0])
+    )
   }
 })
 
