@@ -4,14 +4,23 @@ environment({
   result: array([int8], 1),
 })
 
-procedure('ancestor', { vertex: int8 }, () => {
+procedure('ancestor', { vertex: int8, work: int8 }, () => {
+  set('work', get('vertex'))
   range(100, (_) => {
-    if (sLess(retrieve('dsu', vertex)[0], coerceInt8(0))) {
+    if (sLess(retrieve('dsu', get('work'))[0], coerceInt8(0))) {
       ;('break')
     }
-    set('vertex', retrieve('dsu', vertex)[0])
+    set('work', retrieve('dsu', get('work'))[0])
   })
-  store('result', [get('vertex')])
+  store('result', [get('work')])
+  set('work', get('vertex'))
+  range(100, (_) => {
+    if (sLess(retrieve('dsu', get('work'))[0], coerceInt8(0))) {
+      ;('break')
+    }
+    store('dsu', get('work'), [retrieve('result', 0)[0]])
+    set('work', retrieve('dsu', get('work'))[0])
+  })
 })
 
 procedure('unite', { u: int8, v: int8, z: int8 }, () => {
