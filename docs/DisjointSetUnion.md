@@ -78,5 +78,14 @@ The rewrite rules preserve `uniteCount`. For every tree x, `uniteLeftCount x <= 
 - uniteLeftCount (Unite (Unite (Unite a b) c) d) = 1 + 1 + 1 + uniteLeftCount a
 - uniteLeftCount increases
 
-**Rewrite rule 3:** oh no argument is dead
-_note to self: not dead yet, score strictly increases here, we can prove a loose upper bound on the score, so the rewrite system still terminates_
+**Rewrite rule 3:** We can't prove uniteLeftCount increases here. But we can still resuscitate the argument, as the score strictly increases and we can prove a loose upper bound on the score. When we prove the upper bound on the score, we can conclude that the rewrite system terminates.
+
+So the termination measure we use here is actually a pair `(uniteCount x - uniteLeftCount x, subtreeSum x * subtreeSum x - treeScore x)`. We now prove `treeScore x <= subtreeSum x * subtreeSum x`.
+
+We do induction on the tree.
+- **Base case:** The tree is Unit. treeScore is 0, subtreeSum is 1.
+- **Induction step:** The tree is Unite a b. We assume treeScore a <= (subtreeSum a)^2, treeScore b <= (subtreeSum b)^2. Now, treeScore (Unite a b) = treeScore a + treeScore b + subtreeSum a + subtreeSum b <= (subtreeSum a)^2 + (subtreeSum b)^2 + subtreeSum a + subtreeSum b. Now we prove for all a and b such that 1 <= a and 1 <= b, a^2 + b^2 + a + b <= (a + b)^2.
+  We have (a^2 + b^2 + a + b) - (a + b)^2 = a + b - 2ab = a(1 - b) + b(1 - a). a is positive, 1 - b is nonpositive so a(1 - b) is nonpositive. Similary b(1 - a) is nonpositive. Therefore a(1 - b) + b(1 - a) <= 0, so a^2 + b^2 + a + b <= (a + b)^2.
+  Now, we can conclude treeScore (Unite a b) <= (subtreeSum (Unite a b))^2.
+
+We've established an upper bound on the score. Now we conclude the rewrite system terminates.
