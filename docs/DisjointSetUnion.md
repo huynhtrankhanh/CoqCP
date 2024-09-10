@@ -83,6 +83,7 @@ The rewrite rules preserve `uniteCount`. For every tree x, `uniteLeftCount x <= 
 So the termination measure we use here is actually a pair `(uniteCount x - uniteLeftCount x, subtreeSum x * subtreeSum x - treeScore x)`. We now prove `treeScore x <= subtreeSum x * subtreeSum x`.
 
 We do induction on the tree.
+
 - **Base case:** The tree is Unit. treeScore is 0, subtreeSum is 1.
 - **Induction step:** The tree is Unite a b. We assume treeScore a <= (subtreeSum a)^2, treeScore b <= (subtreeSum b)^2. Now, treeScore (Unite a b) = treeScore a + treeScore b + subtreeSum a + subtreeSum b <= (subtreeSum a)^2 + (subtreeSum b)^2 + subtreeSum a + subtreeSum b. Now we prove for all a and b such that 1 <= a and 1 <= b, a^2 + b^2 + a + b <= (a + b)^2.
   We have (a^2 + b^2 + a + b) - (a + b)^2 = a + b - 2ab = a(1 - b) + b(1 - a). a is positive, 1 - b is nonpositive so a(1 - b) is nonpositive. Similary b(1 - a) is nonpositive. Therefore a(1 - b) + b(1 - a) <= 0, so a^2 + b^2 + a + b <= (a + b)^2.
