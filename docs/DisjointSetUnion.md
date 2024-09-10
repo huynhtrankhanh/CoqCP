@@ -79,3 +79,4 @@ The rewrite rules preserve `uniteCount`. For every tree x, `uniteLeftCount x <= 
 - uniteLeftCount increases
 
 **Rewrite rule 3:** oh no argument is dead
+*note to self: not dead yet, score strictly increases here, we can prove a loose upper bound on the score, so the rewrite system still terminates*
