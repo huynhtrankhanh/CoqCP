@@ -47,3 +47,19 @@ Now that we have a scoring function, here are three rewrite rules that don't mak
 **Termination:** We can apply the three rules repeatedly and eventually we will run out of subterms to replace.
 
 To prove this, we need another scoring function solely for proving termination. Then, we have to prove that as we apply the rules, the score reduces.
+
+```coq
+Fixpoint uniteLeftCount (x : Tree) :=
+  match x with
+  | Unit => 0
+  | Unite (Unite a _) _ => 1 + uniteLeftCount a
+  end.
+
+Fixpoint uniteCount (x : Tree) :=
+  match x with
+  | Unit => 0
+  | Unite a b => 1 + uniteCount a + uniteCount b
+  end.
+
+Definition terminationMeasure (x : Tree) := uniteCount x - uniteLeftCount x.
+```
