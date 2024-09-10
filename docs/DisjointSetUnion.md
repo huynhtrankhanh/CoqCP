@@ -90,3 +90,5 @@ We do induction on the tree.
   Now, we can conclude treeScore (Unite a b) <= (subtreeSum (Unite a b))^2.
 
 We've established an upper bound on the score. Now we conclude the rewrite system terminates.
+
+Now we grab an arbitrary optimal tree, then we apply all the rewrite rules repeatedly. As the rules don't make the score worse, we get another tree which is also optimal, but all subterms of the tree can only be of the form `Unit` or `Unite (Unite a b) Unit`.
