@@ -63,3 +63,5 @@ Fixpoint uniteCount (x : Tree) :=
 
 Definition terminationMeasure (x : Tree) := uniteCount x - uniteLeftCount x.
 ```
+
+The rewrite rules preserve `uniteCount`. For every tree x, `uniteLeftCount x <= uniteCount x`. Therefore, to prove termination, we prove `uniteLeftCount` increases as we rewrite.
