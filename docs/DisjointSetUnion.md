@@ -1,4 +1,4 @@
-# Disjoint Set Union
+# Disjoint set union
 
 **Problem statement:** Given the smart contract [`DisjointSetUnion.js`](../programs/DisjointSetUnion.js), find a way to get the most money from the contract.
 
