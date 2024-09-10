@@ -80,7 +80,7 @@ The rewrite rules preserve `uniteCount`. For every tree x, `uniteLeftCount x <= 
 
 **Rewrite rule 3:** We can't prove uniteLeftCount increases here. But we can still resuscitate the argument, as the score strictly increases and we can prove a loose upper bound on the score. When we prove the upper bound on the score, we can conclude that the rewrite system terminates.
 
-So the termination measure we use here is actually a pair `(uniteCount x - uniteLeftCount x, subtreeSum x * subtreeSum x - treeScore x)`. We now prove `treeScore x <= subtreeSum x * subtreeSum x`.
+So the termination measure we use here is actually the pair `(uniteCount x - uniteLeftCount x, subtreeSum x * subtreeSum x - treeScore x)`. We now prove `treeScore x <= subtreeSum x * subtreeSum x`.
 
 We do induction on the tree.
 
