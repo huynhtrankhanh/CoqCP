@@ -67,10 +67,11 @@ Definition terminationMeasure (x : Tree) := uniteCount x - uniteLeftCount x.
 The rewrite rules preserve `uniteCount`. For every tree x, `uniteLeftCount x <= uniteCount x`. Therefore, to prove termination, we prove `uniteLeftCount` increases as we rewrite.
 
 **Rewrite rule 1:** Unite Unit (Unite a b) ⟶ Unite (Unite a b) Unit
-* uniteLeftCount (Unite Unit (Unite a b)) = 0
-* uniteLeftCount (Unite (Unite a b) Unit) = 1 + 1 + uniteLeftCount a
-* uniteLeftCount increases
-**Rewrite rule 2:** If subtreeSum a ≥ subtreeSum d, Unite (Unite a b) (Unite c d) ⟶ Unite (Unite (Unite a b) c) d
-* uniteLeftCount (Unite (Unite a b) (Unite c d)) = 1 + 1 + uniteLeftCount a
-* uniteLeftCount (Unite (Unite (Unite a b) c) d) = 1 + 1 + 1 + uniteLeftCount a
-* uniteLeftCount increases
+
+- uniteLeftCount (Unite Unit (Unite a b)) = 0
+- uniteLeftCount (Unite (Unite a b) Unit) = 1 + 1 + uniteLeftCount a
+- uniteLeftCount increases
+  **Rewrite rule 2:** If subtreeSum a ≥ subtreeSum d, Unite (Unite a b) (Unite c d) ⟶ Unite (Unite (Unite a b) c) d
+- uniteLeftCount (Unite (Unite a b) (Unite c d)) = 1 + 1 + uniteLeftCount a
+- uniteLeftCount (Unite (Unite (Unite a b) c) d) = 1 + 1 + 1 + uniteLeftCount a
+- uniteLeftCount increases
