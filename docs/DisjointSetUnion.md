@@ -26,11 +26,15 @@ Fixpoint treeScore (x : Tree) :=
 
 Now that we have a scoring function, here are two rewrite rules that don't make the score worse.
 
-**Rewrite rule 1:** `Unite Unit (Unite a b)` ⟶ `Unite (Unite a b) Unit`
+**Rewrite rule 1:** Unite Unit (Unite a b) ⟶ Unite (Unite a b) Unit
 
 - This rewrite rule doesn't change the score.
 
-**Rewrite rule 2:** If a ≥ d, `Unite (Unite a b) (Unite c d)` ⟶ `Unite (Unite (Unite a b) c) d`
+**Rewrite rule 2:** If subtreeSum a ≥ subtreeSum d, Unite (Unite a b) (Unite c d) ⟶ Unite (Unite (Unite a b) c) d
 
-- The score for the left hand side is: `subtreeSum (Unite a b) + subtreeSum (Unite c d) + treeScore (Unite a b) + treeScore (Unite c d) = subtreeSum a + subtreeSum b + subtreeSum c + subtreeSum d + subtreeSum a + subtreeSum b + treeScore a + treeScore b + subtreeSum c + subtreeSum d + treeScore c + treeScore d = 2 * subtreeSum a + 2 * subtreeSum b + 2 * subtreeSum c + 2 * subtreeSum d + treeScore a + treeScore b + treeScore c + treeScore d`
-- The score for the right hand side is:
+- The score for the left hand side is: subtreeSum (Unite a b) + subtreeSum (Unite c d) + treeScore (Unite a b) + treeScore (Unite c d) = subtreeSum a + subtreeSum b + subtreeSum c + subtreeSum d + subtreeSum a + subtreeSum b + treeScore a + treeScore b + subtreeSum c + subtreeSum d + treeScore c + treeScore d = 2 \* subtreeSum a + 2 \* subtreeSum b + 2 \* subtreeSum c + 2 \* subtreeSum d + treeScore a + treeScore b + treeScore c + treeScore d
+- The score for the right hand side is: 3 \* subtreeSum a + 3 \* subtreeSum b + 2 \* subtreeSum c + subtreeSum d + treeScore a + treeScore b + treeScore c + treeScore d ≥ 2 \* subtreeSum a + subtreeSum d + 3 \* subtreeSum b + 2 \* subtreeSum c + subtreeSum d = 2 \* subtreeSum a + 3 \* subtreeSum b + 2 \* subtreeSum c + 2 \* subtreeSum d
+- This rule doesn't make the score worse.
+
+**Rewrite rule 3:** If subtreeSum a < subtreeSum d, Unite (Unite a b) (Unite c d) ⟶ Unite (Unite (Unite d c) b) a
+- The score for the left hand side is: 2 \* subtreeSum a + 2 \* subtreeSum b + 2 \* subtreeSum c + 2 \* subtreeSum d + treeScore a + treeScore b + treeScore c + treeScore d
