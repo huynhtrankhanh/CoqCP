@@ -73,6 +73,7 @@ The rewrite rules preserve `uniteCount`. For every tree x, `uniteLeftCount x <= 
 - uniteLeftCount increases
 
 **Rewrite rule 2:** If subtreeSum a ≥ subtreeSum d, Unite (Unite a b) (Unite c d) ⟶ Unite (Unite (Unite a b) c) d
+
 - uniteLeftCount (Unite (Unite a b) (Unite c d)) = 1 + 1 + uniteLeftCount a
 - uniteLeftCount (Unite (Unite (Unite a b) c) d) = 1 + 1 + 1 + uniteLeftCount a
 - uniteLeftCount increases
