@@ -27,4 +27,5 @@ Fixpoint treeScore (x : Tree) :=
 Now that we have a scoring function, here are two rewrite rules that don't make the score worse.
 
 **Rewrite rule 1:** `Unite Unit (Unite a b)` ⟶ `Unite (Unite a b) Unit`
-* This rewrite rule doesn't change the score.
+
+- This rewrite rule doesn't change the score.
