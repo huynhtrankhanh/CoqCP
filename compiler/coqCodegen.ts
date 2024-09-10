@@ -601,8 +601,10 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                     return { expression, type }
                   }
                   case 'minus': {
+                    assert(isNumeric(type))
+                    const bitWidth = getBitWidth(type)
                     return {
-                      expression: `(${expression} >>= fun x => Done _ _ _ (-x))`,
+                      expression: `(${expression} >>= fun x => Done _ _ _ (coerceInt (-x) ${bitWidth}))`,
                       type,
                     }
                   }
