@@ -39,3 +39,5 @@ Now that we have a scoring function, here are three rewrite rules that don't mak
 **Rewrite rule 3:** If subtreeSum a < subtreeSum d, Unite (Unite a b) (Unite c d) ⟶ Unite (Unite (Unite d c) b) a
 
 - The score for the left hand side is: 2 \* subtreeSum a + 2 \* subtreeSum b + 2 \* subtreeSum c + 2 \* subtreeSum d + treeScore a + treeScore b + treeScore c + treeScore d
+- The score for the right hand side is 3 \* subtreeSum d + 3 \* subtreeSum c + 2 \* subtreeSum b + subtreeSum a + treeScore d + treeScore c + treeScore b + treeScore a ≥ 2 \* subtreeSum d + subtreeSum a + 3 \* subtreeSum c + 2 \* subtreeSum b + subtreeSum a = 2 \* subtreeSum d + 3 \* subtreeSum c + 2 \* subtreeSum b + 2 \* subtreeSum a
+- This rule doesn't make the score worse.
