@@ -51,8 +51,8 @@ To prove this, we need another scoring function solely for proving termination. 
 ```coq
 Fixpoint uniteLeftCount (x : Tree) :=
   match x with
-  | Unit => 0
   | Unite (Unite a _) _ => 1 + uniteLeftCount a
+  | _ => 0
   end.
 
 Fixpoint uniteCount (x : Tree) :=
