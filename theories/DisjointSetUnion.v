@@ -167,3 +167,7 @@ Proof.
                 pose proof hPrevious (Unite aa bb) as step. simpl in step. rewrite <- step in H. lia. }
           pose proof h2 (n - 1) ltac:(lia) ltac:(lia) as [l hl].
           apply (exist _ l).
+          destruct tree as [| a b].
+          { split. { simpl. intro. lia. } pose proof hl Unit as step. simpl in step. rewrite <- step. easy. }
+          rewrite <- (hl (Unite a b)). simpl. pose proof oneLeqLeafCount b. lia.
+Defined.
