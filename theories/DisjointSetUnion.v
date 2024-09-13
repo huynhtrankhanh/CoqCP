@@ -173,3 +173,12 @@ Proof.
 Defined.
 
 Definition optimalTree (x : Tree) := forall y, leafCount x = leafCount y -> score y <= score x.
+
+Fixpoint bestTree (l : list Tree) (currentBest : Tree) :=
+  match l with
+  | [] => currentBest
+  | head :: tail =>
+    if decide (score currentBest < score head) then
+      bestTree tail head
+    else bestTree tail currentBest
+  end.
