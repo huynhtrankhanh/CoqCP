@@ -182,3 +182,55 @@ Fixpoint bestTree (l : list Tree) (currentBest : Tree) :=
       bestTree tail head
     else bestTree tail currentBest
   end.
+
+Lemma currentBestLeqBestTree (l : list Tree) (currentBest : Tree) : score currentBest <= score (bestTree l currentBest).
+Proof.
+  induction l as [| head tail IH] in currentBest |- *.
+  - simpl. lia.
+  - simpl. case_decide. { pose proof IH head. lia. } apply IH.
+Qed.
+
+Lemma differentCurrentBest (l : list Tree) (currentBest currentBest1 : Tree) (hLeq : score currentBest <= score currentBest1) : score (bestTree l currentBest) <= score (bestTree l currentBest1).
+Proof.
+  induction l as [| head tail IH] in currentBest, hLeq |- *. { simpl. lia. }
+  simpl. pose proof IH currentBest. pose proof IH head. repeat case_decide; lia.
+Qed.
+
+Lemma bestTreeIsBest (l : list Tree) (x : Tree) (hIn : In x l) (arbitrary : Tree) (hIn2 : In arbitrary l) : score arbitrary <= score (bestTree l x).
+Proof.
+  induction l as [| head tail IH].
+  - simpl in hIn. exfalso. exact hIn.
+  - destruct hIn as [hIn | hIn]. { subst x. destruct hIn2 as [hIn2 | hIn2]. { subst head. simpl. case_decide; apply currentBestLeqBestTree. } clear IH. induction tail as [| hh ta IH]. { simpl in hIn2. lia. } simpl. case_decide; try lia. simpl in IH. case_decide; try lia. case_decide. 
+    - destruct hIn2 as [h | h]. { subst hh. apply currentBestLeqBestTree. } pose proof IH h. pose proof differentCurrentBest ta head hh ltac:(lia). lia.
+    - destruct hIn2 as [h | h]. { subst hh. pose proof currentBestLeqBestTree ta arbitrary. pose proof differentCurrentBest ta arbitrary head ltac:(lia). lia. } exact (IH h). }
+    destruct hIn2 as [hIn2 | hIn2]. { subst arbitrary. simpl. case_decide; pose proof currentBestLeqBestTree tail head. { lia. } pose proof differentCurrentBest tail head x. lia. }
+    pose proof IH hIn hIn2. simpl. case_decide; try lia. pose proof differentCurrentBest tail x head ltac:(lia). lia.
+Qed.
+
+Lemma bestTreeInList (l : list Tree) (x : Tree) : In (bestTree l x) l \/ bestTree l x = x.
+Proof.
+  induction l as [| head tail IH] in x |- *.
+  - simpl. right. trivial.
+  - simpl. case_decide.
+    + pose proof IH head as [a | b]. { left. right. exact a. } { left. left. symmetry. exact b. }
+    + pose proof IH x as [a | b]. { left. right. exact a. } { right. exact b. }
+Qed.
+
+Lemma bestTreeInList2 (l : list Tree) (x : Tree) (hX : In x l) : In (bestTree l x) l.
+Proof.
+  pose proof bestTreeInList l x as [a | a].
+  - assumption.
+  - rewrite a. assumption.
+Qed.
+
+Lemma getOptimalTree (n : nat) : { x : Tree | optimalTree x /\ leafCount x = S n }.
+Proof.
+  pose proof enumerateTrees (S n) as [l spec].
+  pose proof spec (constructTree n) as [h _].
+  pose proof h (constructTreeSize n) as h1.
+  pose proof bestTreeIsBest l _ h1 as H.
+  apply (exist _ (bestTree l (constructTree n))).
+  split.
+  - intros arbitrary h2. pose proof H arbitrary as step. rewrite <- spec in step. rewrite <- h2 in step. pose proof (bestTreeInList2 l (constructTree n) h1) as g. rewrite <- spec in g. exact (step g).
+  - pose proof (bestTreeInList2 l (constructTree n) h1) as g. rewrite <- spec in g. exact g.
+Defined.
