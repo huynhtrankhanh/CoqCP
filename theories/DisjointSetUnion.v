@@ -171,3 +171,5 @@ Proof.
           { split. { simpl. intro. lia. } pose proof hl Unit as step. simpl in step. rewrite <- step. easy. }
           rewrite <- (hl (Unite a b)). simpl. pose proof oneLeqLeafCount b. lia.
 Defined.
+
+Definition optimalTree (x : Tree) := forall y, leafCount x = leafCount y -> score y <= score x.
