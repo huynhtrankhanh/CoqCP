@@ -60,6 +60,26 @@ Proof.
   - destruct head; simpl; lia.
 Qed.
 
+Lemma listToNatTruePowerOfTwo (x : list bool) : listToNat (x ++ [true]) = listToNat x + 2^(length x).
+Proof.
+  induction x as [| head tail IH].
+  - simpl. lia.
+  - destruct head; simpl; lia.
+Qed.
+
+Lemma listToNatAppLt' (x a b : list bool) (h : listToNat a < listToNat b) (hLength : length a = length b) : listToNat (a ++ x) < listToNat (b ++ x).
+Proof.
+  induction x as [| head tail IH] using rev_ind.
+  - now rewrite !app_nil_r.
+  - destruct head.
+    + clear h. rewrite !app_assoc. remember (a ++ tail) as x eqn:hX. remember (b ++ tail) as y eqn:hY.
+      assert (hLength2 : length x = length y).
+      { subst x. subst y. rewrite !app_length. lia. }
+      clear hLength hX hY a b tail. rename IH into h.
+      rewrite !listToNatTruePowerOfTwo. rewrite hLength2. lia.
+    + rewrite !app_assoc, !listToNatFalse. assumption.
+Qed.
+
 Lemma listToNatAppFirst (x a : list bool) : listToNat a <= listToNat (x ++ a).
 Proof.
   induction x as [| head tail IH].
@@ -67,11 +87,31 @@ Proof.
   - destruct head; simpl; lia.
 Qed.
 
+Lemma encodeToNatSubtermLt1 (a b c : Tree) (h : encodeToNat a < encodeToNat c) : encodeToNat (Unite a b) < encodeToNat (Unite c b).
+Proof.
+  unfold encodeToNat. simpl. rewrite !app_assoc, !listToNatFalse. apply listToNatAppLt. exact h.
+Qed.
+
 Fixpoint leafCount (x : Tree) :=
   match x with
   | Unit => 1
   | Unite a b => leafCount a + leafCount b
   end.
+
+Lemma oneLeqLeafCount (a : Tree) : 1 <= leafCount a.
+Proof. induction a as [| a IHa b IHb]; simpl; now (done || lia). Qed.
+
+Lemma leafCountToLengthEncode (a : Tree) : length (encodeToList a) = 2 * leafCount a - 1.
+Proof.
+  induction a as [| a IHa b IHb].
+  - simpl. lia.
+  - simpl. rewrite !app_length. simpl. pose proof oneLeqLeafCount a. pose proof oneLeqLeafCount b. lia.
+Qed.
+
+Lemma encodeToNatSubtermLt2 (a b c : Tree) (h : encodeToNat a < encodeToNat c) (hLength : leafCount a = leafCount c): encodeToNat (Unite b a) < encodeToNat (Unite b c).
+Proof.
+  unfold encodeToNat. pose proof leafCountToLengthEncode a. pose proof leafCountToLengthEncode c. simpl. rewrite !app_assoc, !listToNatFalse. apply listToNatAppLt'. { exact h. } lia.
+Qed.
 
 Fixpoint score (x : Tree) :=
   match x with
@@ -84,9 +124,6 @@ Fixpoint leftUniteCount (x : Tree) :=
   | Unite a _ => 1 + leftUniteCount a
   | Unit => 0
   end.
-
-Lemma oneLeqLeafCount (a : Tree) : 1 <= leafCount a.
-Proof. induction a as [| a IHa b IHb]; simpl; now (done || lia). Qed.
 
 Lemma leftUniteCountLeqLeafCount (x : Tree) : leftUniteCount x <= leafCount x.
 Proof.
