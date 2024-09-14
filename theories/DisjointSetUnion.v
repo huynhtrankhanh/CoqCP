@@ -1,9 +1,71 @@
-From CoqCP Require Import Options.
+From CoqCP Require Import Options ListsEqual.
 From stdpp Require Import numbers list.
 
 Inductive Tree :=
 | Unit
 | Unite (a b : Tree).
+
+Fixpoint encodeToList (x : Tree) : list bool :=
+  match x with
+  | Unit => [true]
+  | Unite a b => encodeToList b ++ encodeToList a ++ [false]
+  end.
+
+Fixpoint listToNat (x : list bool) :=
+  match x with
+  | [] => 0
+  | false :: rest => 2 * listToNat rest
+  | true :: rest => 2 * listToNat rest + 1
+  end.
+
+Definition encodeToNat (x : Tree) := listToNat (encodeToList x).
+
+Lemma encodeToListFirstTrue (x : Tree) : exists s, encodeToList x = true :: s.
+Proof.
+  induction x as [| a [s1 IHa] b [s2 IHb]].
+  - exists []. easy.
+  - exists (s2 ++ true :: s1 ++ [false]). simpl. rewrite IHa, IHb. listsEqual.
+Qed.
+
+Lemma zeroLtEncodeToNat (x : Tree) : 0 < encodeToNat x.
+Proof.
+  pose proof encodeToListFirstTrue x as [s h]. unfold encodeToNat. rewrite h. simpl. lia.
+Qed.
+
+Lemma listToNatFalse (x : list bool) : listToNat (x ++ [false]) = listToNat x.
+Proof.
+  induction x as [| head tail IH].
+  - simpl. lia.
+  - destruct head; simpl; lia.
+Qed.
+
+Lemma listToNatTrue (x : list bool) : listToNat (x ++ [true]) > listToNat x + listToNat x.
+Proof.
+  induction x as [| head tail IH].
+  - simpl. lia.
+  - destruct head; simpl; lia.
+Qed.
+
+Lemma listToNatFalseTrue (x : list bool) : listToNat ((x ++ [false]) ++ [true]) > listToNat x + listToNat x + 1.
+Proof.
+  induction x as [| head tail IH].
+  - simpl. lia.
+  - destruct head; simpl; lia.
+Qed.
+
+Lemma listToNatAppLt (x a b : list bool) (h : listToNat a < listToNat b) : listToNat (x ++ a) < listToNat (x ++ b).
+Proof.
+  induction x as [| head tail IH].
+  - easy.
+  - destruct head; simpl; lia.
+Qed.
+
+Lemma listToNatAppFirst (x a : list bool) : listToNat a <= listToNat (x ++ a).
+Proof.
+  induction x as [| head tail IH].
+  - easy.
+  - destruct head; simpl; lia.
+Qed.
 
 Fixpoint leafCount (x : Tree) :=
   match x with
@@ -79,6 +141,15 @@ Fixpoint replaceRule1 (x : Tree) : Tree :=
 Lemma rule1_a (a b : Tree) : leftUniteCount (Unite Unit (Unite a b)) < leftUniteCount (Unite (Unite a b) Unit).
 Proof. simpl. lia. Qed.
 
+Lemma rule1_a1 (a b : Tree) : encodeToNat (Unite Unit (Unite a b)) > encodeToNat (Unite (Unite a b) Unit).
+Proof.
+  unfold encodeToNat.
+  simpl. rewrite !listToNatFalse. rewrite app_assoc, !listToNatFalse.
+  rewrite (ltac:(listsEqual) : ((encodeToList b ++ encodeToList a) ++ [false]) ++ [true; false] = (((encodeToList b ++ encodeToList a) ++ [false]) ++ [true]) ++ [false]). rewrite !listToNatFalse.
+  pose proof listToNatFalseTrue (encodeToList b ++ encodeToList a) as h.
+  lia.
+Qed.
+
 Lemma rule1_b (a b : Tree) : totalUniteCount (Unite Unit (Unite a b)) = totalUniteCount (Unite (Unite a b) Unit).
 Proof. simpl. lia. Qed.
 
@@ -90,6 +161,17 @@ Proof. simpl. lia. Qed.
 
 Lemma rule2_a (a b c d : Tree) : leftUniteCount (Unite (Unite a b) (Unite c d)) < leftUniteCount (Unite (Unite (Unite a b) c) d).
 Proof. simpl. lia. Qed.
+
+Lemma rule2_a1 (a b c d : Tree) : encodeToNat (Unite (Unite a b) (Unite c d)) > encodeToNat (Unite (Unite (Unite a b) c) d).
+Proof.
+  unfold encodeToNat. simpl. rewrite !app_assoc, !listToNatFalse, <- !app_assoc. apply listToNatAppLt. apply listToNatAppLt. simpl.
+  assert (h : 0 < listToNat (encodeToList b ++ encodeToList a)).
+  { pose proof encodeToListFirstTrue b as [s1 h1].
+    pose proof encodeToListFirstTrue a as [s2 h2].
+    rewrite h1, h2. simpl. pose proof listToNatAppFirst s1 (true :: s2).
+    pose proof (ltac:(simpl; lia) : 0 < listToNat (true :: s2)).
+    lia. } lia.
+Qed.
 
 Lemma rule2_b (a b c d : Tree) : totalUniteCount (Unite (Unite a b) (Unite c d)) = totalUniteCount (Unite (Unite (Unite a b) c) d).
 Proof. simpl. lia. Qed.
