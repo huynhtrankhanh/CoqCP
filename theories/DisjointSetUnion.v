@@ -23,6 +23,22 @@ Fixpoint leftUniteCount (x : Tree) :=
   | Unit => 0
   end.
 
+Lemma oneLeqLeafCount (a : Tree) : 1 <= leafCount a.
+Proof. induction a as [| a IHa b IHb]; simpl; now (done || lia). Qed.
+
+Lemma leftUniteCountLeqLeafCount (x : Tree) : leftUniteCount x <= leafCount x.
+Proof.
+  induction x as [| a IHa b IHb].
+  - simpl. lia.
+  - simpl. pose proof oneLeqLeafCount a. pose proof oneLeqLeafCount b. lia.
+Qed.
+
+Fixpoint maxLeftUniteCount (x : Tree) :=
+  match x with
+  | Unite a b => max (leftUniteCount x) (max (maxLeftUniteCount a) (maxLeftUniteCount b))
+  | Unit => 0
+  end.
+
 Fixpoint totalUniteCount (x : Tree) :=
   match x with
   | Unite a b => 1 + totalUniteCount a + totalUniteCount b
@@ -36,8 +52,29 @@ Proof.
   - simpl. lia.
 Qed.
 
+Lemma totalUniteCountPlusOne (x : Tree) : 1 + totalUniteCount x = leafCount x.
+Proof.
+  induction x as [| a IHa b IHb].
+  - easy.
+  - simpl. lia.
+Qed.
+
 Lemma rewriteRule1 (a b : Tree) : score (Unite Unit (Unite a b)) = score (Unite (Unite a b) Unit).
 Proof. simpl. lia. Qed.
+
+Fixpoint hasRule1 (x : Tree) : bool :=
+  match x with
+  | Unite Unit (Unite a b) => true
+  | Unite a b => orb (hasRule1 a) (hasRule1 b)
+  | Unit => false
+  end.
+
+Fixpoint replaceRule1 (x : Tree) : Tree :=
+  match x with
+  | Unite Unit (Unite a b) => Unite (Unite a b) Unit
+  | Unite a b => Unite (replaceRule1 a) (replaceRule1 b)
+  | Unit => Unit
+  end.
 
 Lemma rule1_a (a b : Tree) : leftUniteCount (Unite Unit (Unite a b)) < leftUniteCount (Unite (Unite a b) Unit).
 Proof. simpl. lia. Qed.
@@ -68,9 +105,6 @@ Proof. simpl. lia. Qed.
 
 Lemma rule3_c (a b c d : Tree) : leafCount (Unite (Unite a b) (Unite c d)) = leafCount (Unite (Unite (Unite d c) b) a).
 Proof. simpl. lia. Qed.
-
-Lemma oneLeqLeafCount (a : Tree) : 1 <= leafCount a.
-Proof. induction a as [| a IHa b IHb]; simpl; now (done || lia). Qed.
 
 Lemma scoreUpperBound (x : Tree) : score x <= (leafCount x) * (leafCount x).
 Proof.
