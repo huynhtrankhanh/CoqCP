@@ -187,6 +187,26 @@ Proof.
   lia.
 Qed.
 
+Lemma rule1_replace' (a : Tree) : encodeToNat a >= encodeToNat (replaceRule1 a).
+Proof.
+Admitted.
+
+Lemma rule1_replace (a : Tree) (h : hasRule1 a) : encodeToNat a > encodeToNat (replaceRule1 a).
+Proof.
+  induction a as [| a IHa b IHb]. { simpl in h. easy. }
+  destruct a as [| a1 a2]; destruct b as [| b1 b2]; try (simpl in h; lia).
+  - simpl. apply rule1_a1.
+  - assert (h1 : hasRule1 (Unite (Unite a1 a2) Unit) = hasRule1 (Unite a1 a2) || false). { easy. }
+    rewrite orb_false_r in h1. rewrite h1 in h. pose proof IHa h.
+    apply encodeToNatSubtermLt1. assumption.
+  - assert (h1 : hasRule1 (Unite (Unite a1 a2) (Unite b1 b2)) = hasRule1 (Unite a1 a2) || hasRule1 (Unite b1 b2)). { easy. }
+    rewrite h1 in h.
+    assert (h2 : encodeToNat (replaceRule1 (Unite (Unite a1 a2) (Unite b1 b2))) = encodeToNat (Unite (replaceRule1 (Unite a1 a2)) (replaceRule1 (Unite b1 b2)))). { easy. } rewrite h2. clear h2.
+    destruct (orb_prop_elim _ _ h) as [H | H].
+    + pose proof IHa H. admit.
+    + admit.
+Admitted.
+
 Lemma rule1_b (a b : Tree) : totalUniteCount (Unite Unit (Unite a b)) = totalUniteCount (Unite (Unite a b) Unit).
 Proof. simpl. lia. Qed.
 
