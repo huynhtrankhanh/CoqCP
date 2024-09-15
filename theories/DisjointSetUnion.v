@@ -343,9 +343,9 @@ Proof.
   - simpl. lia.
   - rewrite (ltac:(easy) : leafCount (Unite a b) = leafCount a + leafCount b).
     simpl.
-    + destruct a.
+    + destruct a as [| a1 a2].
       * simpl. lia.
-      * destruct b.
+      * destruct b as [| b1 b2].
         { rewrite !(ltac:(easy) : forall a b, leafCount (Unite a b) = leafCount a + leafCount b), <- !IHa. simpl. lia. }
         { destruct (leafCount b2 <=? leafCount a1); rewrite !(ltac:(easy) : forall a b, leafCount (Unite a b) = leafCount a + leafCount b) in *; lia. }
 Qed.
@@ -498,7 +498,7 @@ Proof.
                 { rewrite in_map_iff in H. destruct H as [[a1 b1] [hinj hin]]. injection hinj. intros hbb haa. subst bb aa. pose proof inProductList2 _ _ _ _ hin as [hina hinb]. rewrite <- ha in hina. split. { lia. } rewrite hina. rewrite hb. exact hinb. }
                 pose proof hPrevious (Unite aa bb) as step. simpl in step. rewrite <- step in H. lia. }
           pose proof h2 (n - 1) ltac:(lia) ltac:(lia) as [l hl].
-          apply (exist _ l).
+          apply (exist _ l). intro tree.
           destruct tree as [| a b].
           { split. { simpl. intro. lia. } pose proof hl Unit as step. simpl in step. rewrite <- step. easy. }
           rewrite <- (hl (Unite a b)). simpl. pose proof oneLeqLeafCount b. lia.
