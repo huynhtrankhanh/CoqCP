@@ -60,6 +60,13 @@ Proof.
   - destruct head; simpl; lia.
 Qed.
 
+Lemma listToNatAppLeq (x a b : list bool) (h : listToNat a <= listToNat b) : listToNat (x ++ a) <= listToNat (x ++ b).
+Proof.
+  induction x as [| head tail IH].
+  - easy.
+  - destruct head; simpl; lia.
+Qed.
+
 Lemma listToNatTruePowerOfTwo (x : list bool) : listToNat (x ++ [true]) = listToNat x + 2^(length x).
 Proof.
   induction x as [| head tail IH].
@@ -80,6 +87,26 @@ Proof.
     + rewrite !app_assoc, !listToNatFalse. assumption.
 Qed.
 
+Lemma listToNatAppend (a b : list bool) : listToNat (a ++ b) = 2^(length a) * listToNat b + listToNat a.
+Proof.
+  induction a as [| head tail IH].
+  - simpl. lia.
+  - destruct head; simpl; lia.
+Qed.
+
+Lemma zeroLtPowerOfTwo (x : nat) : 0 < 2^x.
+Proof.
+  induction x as [| x IH].
+  - simpl. lia.
+  - simpl. lia.
+Qed.
+
+Lemma listToNatAppLeq' (x a b : list bool) (h : listToNat a <= listToNat b) (hLength : length a = length b) : listToNat (a ++ x) <= listToNat (b ++ x).
+Proof.
+  rewrite !listToNatAppend. rewrite hLength.
+  lia.
+Qed.
+
 Lemma listToNatAppFirst (x a : list bool) : listToNat a <= listToNat (x ++ a).
 Proof.
   induction x as [| head tail IH].
@@ -90,6 +117,11 @@ Qed.
 Lemma encodeToNatSubtermLt1 (a b c : Tree) (h : encodeToNat a < encodeToNat c) : encodeToNat (Unite a b) < encodeToNat (Unite c b).
 Proof.
   unfold encodeToNat. simpl. rewrite !app_assoc, !listToNatFalse. apply listToNatAppLt. exact h.
+Qed.
+
+Lemma encodeToNatSubtermLeq1 (a b c : Tree) (h : encodeToNat a <= encodeToNat c) : encodeToNat (Unite a b) <= encodeToNat (Unite c b).
+Proof.
+  unfold encodeToNat. simpl. rewrite !app_assoc, !listToNatFalse. apply listToNatAppLeq. exact h.
 Qed.
 
 Fixpoint leafCount (x : Tree) :=
@@ -106,6 +138,18 @@ Proof.
   induction a as [| a IHa b IHb].
   - simpl. lia.
   - simpl. rewrite !app_length. simpl. pose proof oneLeqLeafCount a. pose proof oneLeqLeafCount b. lia.
+Qed.
+
+Lemma encodeToNatSubtermLeq2 (a b c : Tree) (h : encodeToNat a <= encodeToNat c) (hLeafCount : leafCount a = leafCount c) : encodeToNat (Unite b a) <= encodeToNat (Unite b c).
+Proof.
+  pose proof leafCountToLengthEncode a.
+  pose proof leafCountToLengthEncode c.
+  pose proof oneLeqLeafCount a.
+  pose proof oneLeqLeafCount c.
+  pose proof (ltac:(lia) : length (encodeToList a) = length (encodeToList c)) as hLength.
+  unfold encodeToNat. simpl. rewrite !app_assoc. rewrite !listToNatFalse, !listToNatAppend.
+  assert (step : 2^(length (encodeToList a)) * listToNat (encodeToList b) <= 2^(length (encodeToList c)) * listToNat (encodeToList b)).
+  { rewrite hLength. apply (proj1 (Nat.mul_le_mono_pos_l _ _ _ (zeroLtPowerOfTwo (length (encodeToList c))))). lia. } unfold encodeToNat in h. lia.
 Qed.
 
 Lemma encodeToNatSubtermLt2 (a b c : Tree) (h : encodeToNat a < encodeToNat c) (hLength : leafCount a = leafCount c): encodeToNat (Unite b a) < encodeToNat (Unite b c).
@@ -187,9 +231,38 @@ Proof.
   lia.
 Qed.
 
+Lemma rule1_replace_leafCount (a : Tree) : leafCount a = leafCount (replaceRule1 a).
+Proof.
+  induction a as [| a IHa b IHb].
+  - simpl. lia.
+  - simpl. destruct a.
+    + destruct b; rewrite ?IHa, ?IHb.
+      * simpl. lia.
+      * rewrite <- !IHa, <- !IHb. simpl. lia.
+    + rewrite !(ltac:(easy) : forall a b, leafCount (Unite a b) = leafCount a + leafCount b), <- !IHa, <- !IHb. simpl. reflexivity.
+Qed.
+
 Lemma rule1_replace' (a : Tree) : encodeToNat a >= encodeToNat (replaceRule1 a).
 Proof.
-Admitted.
+  induction a as [| a IHa b IHb].
+  - simpl. lia.
+  - destruct a as [| a1 a2]; destruct b as [| [| b11 b12] b2]; simpl in *; try lia; try apply (Nat.lt_le_incl _ _ (rule1_a1 _ _)).
+    + apply encodeToNatSubtermLeq1. exact IHa.
+    + pose proof encodeToNatSubtermLeq1 _ (Unite Unit b2) _ IHa as step.
+    assert (hL : leafCount match b2 with | Unit => Unite Unit (replaceRule1 b2) | Unite a b => Unite (Unite a b) Unit end = leafCount (Unite Unit b2)).
+    { destruct b2.
+      - easy.
+      - simpl. lia. }
+    pose proof encodeToNatSubtermLeq2 _ (match a1 with | Unit => match a2 with | Unit => Unite (replaceRule1 a1) (replaceRule1 a2) | Unite a b => Unite (Unite a b) Unit end | Unite _ _ => Unite (replaceRule1 a1) (replaceRule1 a2) end) _ IHb hL. lia.
+    + pose proof encodeToNatSubtermLeq1 _ (Unite (Unite b11 b12) b2) _ IHa.
+      assert (hL : leafCount (Unite match b11 with | Unit => match b12 with | Unit => Unite (replaceRule1 b11) (replaceRule1 b12) | Unite a b => Unite (Unite a b) Unit end | Unite _ _ => Unite (replaceRule1 b11) (replaceRule1 b12) end (replaceRule1 b2)) = leafCount (Unite (Unite b11 b12) b2)).
+      { destruct b11.
+        - destruct b12.
+          + rewrite !(ltac:(easy) : forall a b, leafCount (Unite a b) = leafCount a + leafCount b), <- !rule1_replace_leafCount. lia.
+          + rewrite !(ltac:(easy) : forall a b, leafCount (Unite a b) = leafCount a + leafCount b), <- !rule1_replace_leafCount. lia.
+        - rewrite !(ltac:(easy) : forall a b, leafCount (Unite a b) = leafCount a + leafCount b), <- !rule1_replace_leafCount. simpl. lia. }
+      pose proof encodeToNatSubtermLeq2 _ (match a1 with | Unit => match a2 with | Unit => Unite (replaceRule1 a1) (replaceRule1 a2) | Unite a b => Unite (Unite a b) Unit end | Unite _ _ => Unite (replaceRule1 a1) (replaceRule1 a2) end) _ IHb hL. lia.
+Qed.
 
 Lemma rule1_replace (a : Tree) (h : hasRule1 a) : encodeToNat a > encodeToNat (replaceRule1 a).
 Proof.
@@ -203,9 +276,11 @@ Proof.
     rewrite h1 in h.
     assert (h2 : encodeToNat (replaceRule1 (Unite (Unite a1 a2) (Unite b1 b2))) = encodeToNat (Unite (replaceRule1 (Unite a1 a2)) (replaceRule1 (Unite b1 b2)))). { easy. } rewrite h2. clear h2.
     destruct (orb_prop_elim _ _ h) as [H | H].
-    + pose proof IHa H. admit.
-    + admit.
-Admitted.
+    + pose proof IHa H. pose proof encodeToNatSubtermLt1 (replaceRule1 (Unite a1 a2)) (Unite b1 b2) (Unite a1 a2) ltac:(pose proof rule1_replace' (Unite a1 a2); lia).
+      pose proof encodeToNatSubtermLeq2 _ (replaceRule1 (Unite a1 a2)) _ (rule1_replace' (Unite b1 b2)) ltac:(now rewrite <- rule1_replace_leafCount). lia.
+    + pose proof IHb H. pose proof encodeToNatSubtermLt2 (replaceRule1 (Unite b1 b2)) (Unite a1 a2) (Unite b1 b2) ltac:(pose proof rule1_replace' (Unite b1 b2); lia) ltac:(now rewrite <- rule1_replace_leafCount).
+      pose proof encodeToNatSubtermLeq1 (replaceRule1 (Unite a1 a2)) (replaceRule1 (Unite b1 b2)) (Unite a1 a2) (rule1_replace' (Unite a1 a2)). lia.
+Qed.
 
 Lemma rule1_b (a b : Tree) : totalUniteCount (Unite Unit (Unite a b)) = totalUniteCount (Unite (Unite a b) Unit).
 Proof. simpl. lia. Qed.
