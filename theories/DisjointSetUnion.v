@@ -291,6 +291,38 @@ Proof. simpl. lia. Qed.
 Lemma rewriteRule2 (a b c d : Tree) (h : leafCount a >= leafCount d) : score (Unite (Unite a b) (Unite c d)) <= score (Unite (Unite (Unite a b) c) d).
 Proof. simpl. lia. Qed.
 
+Fixpoint hasRule2 (x : Tree) : bool :=
+  match x with
+  | Unit => false
+  | Unite a b =>
+	  match a with
+    | Unit => hasRule2 b
+    | Unite a0 b0 =>
+      match b with
+      | Unit => hasRule2 a
+      | Unite c d =>
+        (leafCount d <=? leafCount a0) || hasRule2 a || hasRule2 b
+      end
+    end
+  end.
+
+Fixpoint replaceRule2 (x : Tree) : Tree :=
+  match x with
+  | Unit => Unit
+  | Unite a b =>
+	  match a with
+    | Unit => Unite (replaceRule2 a) (replaceRule2 b)
+    | Unite a0 b0 =>
+      match b with
+      | Unit => Unite (replaceRule2 a) (replaceRule2 b)
+      | Unite c d =>
+        if leafCount d <=? leafCount a0
+        then Unite (Unite (Unite a0 b0) c) d
+        else Unite (replaceRule2 a) (replaceRule2 b)
+      end
+    end
+  end.
+
 Lemma rule2_a (a b c d : Tree) : leftUniteCount (Unite (Unite a b) (Unite c d)) < leftUniteCount (Unite (Unite (Unite a b) c) d).
 Proof. simpl. lia. Qed.
 
@@ -303,6 +335,19 @@ Proof.
     rewrite h1, h2. simpl. pose proof listToNatAppFirst s1 (true :: s2).
     pose proof (ltac:(simpl; lia) : 0 < listToNat (true :: s2)).
     lia. } lia.
+Qed.
+
+Lemma rule2_replace_leafCount (a : Tree) : leafCount a = leafCount (replaceRule2 a).
+Proof.
+  induction a as [| a IHa b IHb].
+  - simpl. lia.
+  - rewrite (ltac:(easy) : leafCount (Unite a b) = leafCount a + leafCount b).
+    simpl.
+    + destruct a.
+      * simpl. lia.
+      * destruct b.
+        { rewrite !(ltac:(easy) : forall a b, leafCount (Unite a b) = leafCount a + leafCount b), <- !IHa. simpl. lia. }
+        { destruct (leafCount b2 <=? leafCount a1); rewrite !(ltac:(easy) : forall a b, leafCount (Unite a b) = leafCount a + leafCount b) in *; lia. }
 Qed.
 
 Lemma rule2_b (a b c d : Tree) : totalUniteCount (Unite (Unite a b) (Unite c d)) = totalUniteCount (Unite (Unite (Unite a b) c) d).
