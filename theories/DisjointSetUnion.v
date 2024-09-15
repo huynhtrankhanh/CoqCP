@@ -350,6 +350,45 @@ Proof.
         { destruct (leafCount b2 <=? leafCount a1); rewrite !(ltac:(easy) : forall a b, leafCount (Unite a b) = leafCount a + leafCount b) in *; lia. }
 Qed.
 
+Lemma rule2_replace' (a : Tree) : encodeToNat a >= encodeToNat (replaceRule2 a).
+Proof.
+  induction a as [| a IHa b IHb].
+  - simpl. lia.
+  - destruct a as [| a1 a2].
+    + simpl. apply encodeToNatSubtermLeq2. { assumption. } now rewrite <- rule2_replace_leafCount.
+    + destruct b as [| b1 b2].
+      * rewrite (ltac:(easy) : replaceRule2 (Unite (Unite a1 a2) Unit) = Unite (replaceRule2 (Unite a1 a2)) Unit).
+        apply encodeToNatSubtermLeq1. assumption.
+      * rewrite (ltac:(easy) : replaceRule2 (Unite (Unite a1 a2) (Unite b1 b2)) = if Nat.leb (leafCount b2) (leafCount a1) then Unite (Unite (Unite a1 a2) b1) b2 else Unite (replaceRule2 (Unite a1 a2)) (replaceRule2 (Unite b1 b2))). remember (leafCount b2 <=? leafCount a1) as val eqn:hIf.
+        symmetry in hIf. destruct val; rewrite ?Nat.leb_le, ?Nat.leb_gt in hIf.
+        { pose proof rule2_a1 a1 a2 b1 b2. lia. }
+        pose proof encodeToNatSubtermLeq1 _ (Unite b1 b2) _ IHa.
+        pose proof encodeToNatSubtermLeq2 _ (replaceRule2 (Unite a1 a2)) _ IHb ltac:(now rewrite <- rule2_replace_leafCount). lia.
+Qed.
+
+Lemma rule2_replace (a : Tree) (h : hasRule2 a) : encodeToNat a > encodeToNat (replaceRule2 a).
+Proof.
+  induction a as [| a IHa b IHb].
+  - simpl in h. lia.
+  - destruct a as [| a1 a2].
+    + simpl in h. pose proof IHb h as H.
+      rewrite (ltac:(easy) : replaceRule2 (Unite Unit b) = Unite Unit (replaceRule2 b)).
+      exact (encodeToNatSubtermLt2 _ Unit _ H ltac:(now rewrite <- rule2_replace_leafCount)).
+    + destruct b as [| b1 b2].
+      * rewrite (ltac:(easy) : hasRule2 (Unite (Unite a1 a2) Unit) = hasRule2 (Unite a1 a2)) in h.
+        pose proof IHa h as H.
+        rewrite (ltac:(easy) : replaceRule2 (Unite (Unite a1 a2) Unit) = Unite (replaceRule2 (Unite a1 a2)) Unit).
+        exact (encodeToNatSubtermLt1 _ Unit _ H).
+      * rewrite (ltac:(easy) : replaceRule2 (Unite (Unite a1 a2) (Unite b1 b2)) = if leafCount b2 <=? leafCount a1 then Unite (Unite (Unite a1 a2) b1) b2 else Unite (replaceRule2 (Unite a1 a2)) (replaceRule2 (Unite b1 b2))).
+        remember (leafCount b2 <=? leafCount a1) as val eqn:hIf. symmetry in hIf. destruct val. { apply rule2_a1. }
+        rewrite (ltac:(easy) : hasRule2 (Unite (Unite a1 a2) (Unite b1 b2)) = (leafCount b2 <=? leafCount a1) || hasRule2 (Unite a1 a2) || hasRule2 (Unite b1 b2)) in h. rewrite hIf in h. rewrite orb_false_l in h.
+        destruct (orb_prop_elim _ _ h) as [H | H].
+        { pose proof encodeToNatSubtermLt1 _ (Unite b1 b2) _ (IHa H). 
+          pose proof encodeToNatSubtermLeq2 (replaceRule2 (Unite b1 b2)) (replaceRule2 (Unite a1 a2)) (Unite b1 b2) ltac:(apply rule2_replace') ltac:(now rewrite <- rule2_replace_leafCount). lia. }
+        { pose proof encodeToNatSubtermLt2 _ (Unite a1 a2) _ (IHb H) ltac:(now rewrite <- rule2_replace_leafCount).
+          pose proof encodeToNatSubtermLeq1 (replaceRule2 (Unite a1 a2)) (replaceRule2 (Unite b1 b2)) (Unite a1 a2) ltac:(apply rule2_replace'). lia. }
+Qed.
+
 Lemma rule2_b (a b c d : Tree) : totalUniteCount (Unite (Unite a b) (Unite c d)) = totalUniteCount (Unite (Unite (Unite a b) c) d).
 Proof. simpl. lia. Qed.
 
