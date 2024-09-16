@@ -476,6 +476,40 @@ Proof.
         rewrite !(ltac:(easy) : forall a b, leafCount (Unite a b) = leafCount a + leafCount b) in *. lia.
 Qed.
 
+Lemma rule3_replace_identity (x : Tree) (h : hasRule3 x = false) : replaceRule3 x = x.
+Proof.
+  induction x as [| a IHa b IHb].
+  - reflexivity.
+  - destruct a as [| a1 a2].
+    + rewrite (ltac:(easy) : replaceRule3 (Unite Unit b) = Unite Unit (replaceRule3 b)). rewrite (ltac:(easy) : hasRule3 (Unite Unit b) = hasRule3 b) in h. rewrite (IHb h). reflexivity.
+    + destruct b as [| b1 b2].
+      * rewrite (ltac:(easy) : replaceRule3 (Unite (Unite a1 a2) Unit) = Unite (replaceRule3 (Unite a1 a2)) Unit).
+        rewrite (ltac:(easy) : hasRule3 (Unite (Unite a1 a2) Unit) = hasRule3 (Unite a1 a2)) in h.
+        rewrite (IHa h). reflexivity.
+      * rewrite (ltac:(easy) : hasRule3 (Unite (Unite a1 a2) (Unite b1 b2)) = (leafCount a1 <? leafCount b2) || hasRule3 (Unite a1 a2) || hasRule3 (Unite b1 b2)) in h.
+        rewrite !orb_false_iff in h. destruct h as [[h3 h1] h2].
+        rewrite (ltac:(easy) : replaceRule3 (Unite (Unite a1 a2) (Unite b1 b2)) = if leafCount a1 <? leafCount b2 then Unite (Unite (Unite b2 b1) a2) a1 else Unite (replaceRule3 (Unite a1 a2)) (replaceRule3 (Unite b1 b2))). rewrite h3, (IHa h1), (IHb h2). reflexivity.
+Qed.
+
+Lemma rule3_replace_score (x : Tree) (h : hasRule3 x) : score x < score (replaceRule3 x).
+Proof.
+  induction x as [| a IHa b IHb].
+  - simpl in h. lia.
+  - destruct a as [| a1 a2].
+    + rewrite (ltac:(easy) : hasRule3 (Unite Unit b) = hasRule3 b) in h. pose proof IHb h. rewrite (ltac:(easy) : replaceRule3 (Unite Unit b) = Unite Unit (replaceRule3 b)). rewrite !(ltac:(easy) : forall x y, score (Unite x y) = leafCount x + leafCount y + score x + score y). rewrite <- !rule3_replace_leafCount. lia.
+    + destruct b as [| b1 b2].
+      * rewrite (ltac:(easy) : hasRule3 (Unite (Unite a1 a2) Unit) = hasRule3 (Unite a1 a2)) in *. pose proof IHa h. rewrite (ltac:(easy) : replaceRule3 (Unite (Unite a1 a2) Unit) = Unite (replaceRule3 (Unite a1 a2)) Unit). rewrite !((ltac:(easy) : forall x y, score (Unite x y) = leafCount x + leafCount y + score x + score y) _ Unit). rewrite <- ! rule3_replace_leafCount. lia.
+      * rewrite (ltac:(easy) : replaceRule3 (Unite (Unite a1 a2) (Unite b1 b2)) = if leafCount a1 <? leafCount b2 then Unite (Unite (Unite b2 b1) a2) a1 else Unite (replaceRule3 (Unite a1 a2)) (replaceRule3 (Unite b1 b2))).
+        rewrite (ltac:(easy) : hasRule3 (Unite (Unite a1 a2) (Unite b1 b2)) = (leafCount a1 <? leafCount b2) || hasRule3 (Unite a1 a2) || hasRule3 (Unite b1 b2)) in h.
+        remember (leafCount a1 <? leafCount b2) as val eqn:hIf. symmetry in hIf. destruct val.
+        { rewrite Nat.ltb_lt in hIf. rewrite !(ltac:(easy) : forall a b, score (Unite a b) = leafCount a + leafCount b + score a + score b). rewrite !(ltac:(easy) : forall a b, leafCount (Unite a b) = leafCount a + leafCount b). lia. }
+        rewrite orb_false_l in h. rewrite !((ltac:(easy) : forall x y, score (Unite x y) = leafCount x + leafCount y + score x + score y) _ (Unite _ _)). rewrite !((ltac:(easy) : forall x y, score (Unite x y) = leafCount x + leafCount y + score x + score y) _ (replaceRule3 _)). rewrite <- !rule3_replace_leafCount.
+        remember (hasRule3 (Unite a1 a2)) as val eqn:hL. symmetry in hL. destruct val; remember (hasRule3 (Unite b1 b2)) as val eqn:hR; symmetry in hR; destruct val; try (simpl in h; lia); try pose proof IHa ltac:(easy); try pose proof IHb ltac:(easy).
+        { lia. }
+        { rewrite (rule3_replace_identity _ hR). pose proof IHa ltac:(trivial). lia. }
+        rewrite (rule3_replace_identity _ hL). lia.
+Qed.
+
 Lemma rule3_b (a b c d : Tree) : totalUniteCount (Unite (Unite a b) (Unite c d)) = totalUniteCount (Unite (Unite (Unite d c) b) a).
 Proof. simpl. lia. Qed.
 
