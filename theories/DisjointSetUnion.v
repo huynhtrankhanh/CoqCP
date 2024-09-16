@@ -308,7 +308,7 @@ Fixpoint hasRule2 (x : Tree) : bool :=
   match x with
   | Unit => false
   | Unite a b =>
-	  match a with
+    match a with
     | Unit => hasRule2 b
     | Unite a0 b0 =>
       match b with
@@ -323,7 +323,7 @@ Fixpoint replaceRule2 (x : Tree) : Tree :=
   match x with
   | Unit => Unit
   | Unite a b =>
-	  match a with
+    match a with
     | Unit => Unite (replaceRule2 a) (replaceRule2 b)
     | Unite a0 b0 =>
       match b with
@@ -431,7 +431,7 @@ Fixpoint hasRule3 (x : Tree) : bool :=
   match x with
   | Unit => false
   | Unite a b =>
-	  match a with
+    match a with
     | Unit => hasRule3 b
     | Unite a0 b0 =>
       match b with
@@ -446,7 +446,7 @@ Fixpoint replaceRule3 (x : Tree) : Tree :=
   match x with
   | Unit => Unit
   | Unite a b =>
-	  match a with
+    match a with
     | Unit => Unite (replaceRule3 a) (replaceRule3 b)
     | Unite a0 b0 =>
       match b with
