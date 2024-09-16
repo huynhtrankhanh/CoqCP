@@ -459,6 +459,23 @@ Fixpoint replaceRule3 (x : Tree) : Tree :=
     end
   end.
 
+Lemma rule3_replace_leafCount (x : Tree) : leafCount x = leafCount (replaceRule3 x).
+Proof.
+  induction x as [| a IHa b IHb].
+  - simpl. lia.
+  - destruct a as [| a1 a2].
+    + destruct b as [| b1 b2].
+      * simpl. lia.
+      * rewrite (ltac:(easy) : replaceRule3 (Unite Unit (Unite b1 b2)) = Unite Unit (replaceRule3 (Unite b1 b2))). rewrite !(ltac:(easy) : forall x, leafCount (Unite Unit x) = 1 + leafCount x). lia.
+    + destruct b as [| b1 b2].
+      * rewrite (ltac:(easy) : replaceRule3 (Unite (Unite a1 a2) Unit) = Unite (replaceRule3 (Unite a1 a2)) Unit). rewrite !(ltac:(easy) : forall x, leafCount (Unite x Unit) = leafCount x + 1). lia.
+      * rewrite (ltac:(easy) : replaceRule3 (Unite (Unite a1 a2) (Unite b1 b2)) = if leafCount a1 <? leafCount b2 then Unite (Unite (Unite b2 b1) a2) a1 else Unite (replaceRule3 (Unite a1 a2)) (replaceRule3 (Unite b1 b2))).
+        remember (leafCount a1 <? leafCount b2) as val eqn:hIf.
+        symmetry in hIf. destruct val.
+        { rewrite Nat.ltb_lt in hIf. rewrite !(ltac:(easy) : forall a b, leafCount (Unite a b) = leafCount a + leafCount b). lia. }
+        rewrite !(ltac:(easy) : forall a b, leafCount (Unite a b) = leafCount a + leafCount b) in *. lia.
+Qed.
+
 Lemma rule3_b (a b c d : Tree) : totalUniteCount (Unite (Unite a b) (Unite c d)) = totalUniteCount (Unite (Unite (Unite d c) b) a).
 Proof. simpl. lia. Qed.
 
