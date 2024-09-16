@@ -678,3 +678,21 @@ Proof.
   - intros arbitrary h2. pose proof H arbitrary as step. rewrite <- spec in step. rewrite <- h2 in step. pose proof (bestTreeInList2 l (constructTree n) h1) as g. rewrite <- spec in g. exact (step g).
   - pose proof (bestTreeInList2 l (constructTree n) h1) as g. rewrite <- spec in g. exact g.
 Defined.
+
+Lemma noThreeRules (x : Tree) (h1 : hasRule1 x = false) (h2 : hasRule2 x = false) (h3 : hasRule3 x = false) : x = constructTree (leafCount x - 1).
+Proof.
+  induction x as [| a IHa b IHb].
+  - easy.
+  - destruct a as [| a1 a2].
+    + destruct b as [| b1 b2].
+      * easy.
+      * simpl in h1. lia.
+    + destruct b as [| b1 b2].
+      * rewrite (ltac:(easy) : hasRule1 (Unite (Unite a1 a2) Unit) = hasRule1 (Unite a1 a2) || hasRule1 Unit) in h1. rewrite (ltac:(easy) : hasRule1 Unit = false) in h1. rewrite orb_false_r in h1.
+        rewrite (ltac:(easy) : hasRule2 (Unite (Unite a1 a2) Unit) = hasRule2 (Unite a1 a2)) in h2.
+        rewrite (ltac:(easy) : hasRule3 (Unite (Unite a1 a2) Unit) = hasRule3 (Unite a1 a2)) in h3.
+        pose proof IHa h1 h2 h3 as h. rewrite (ltac:(easy) : forall x, leafCount (Unite x Unit) = leafCount x + 1). pose proof oneLeqLeafCount (Unite a1 a2). rewrite (ltac:(lia) : leafCount (Unite a1 a2) + 1 - 1 = S (leafCount (Unite a1 a2) - 1)). now rewrite (ltac:(now rewrite <- h) : Unite (Unite a1 a2) Unit = Unite (constructTree (leafCount (Unite a1 a2) - 1)) Unit).
+      * rewrite (ltac:(easy) : hasRule1 (Unite (Unite a1 a2) (Unite b1 b2)) = hasRule1 (Unite a1 a2) || hasRule1 (Unite b1 b2)) in h1.
+        rewrite orb_false_iff in h1. rewrite (ltac:(easy) : hasRule2 (Unite (Unite a1 a2) (Unite b1 b2)) = (leafCount b2 <=? leafCount a1) || hasRule2 (Unite a1 a2) || hasRule2 (Unite b1 b2)) in h2.
+        rewrite (ltac:(easy) : hasRule3 (Unite (Unite a1 a2) (Unite b1 b2)) = (leafCount a1 <? leafCount b2) || hasRule3 (Unite a1 a2) || hasRule3 (Unite b1 b2)) in h3. rewrite orb_false_iff in *. destruct h2 as [h21 h22]. destruct h3 as [h31 h32]. rewrite orb_false_iff in *. rewrite Nat.leb_gt in h21. rewrite Nat.ltb_ge in h31. lia.
+Qed.
