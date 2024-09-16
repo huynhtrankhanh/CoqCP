@@ -242,6 +242,19 @@ Proof.
     + rewrite !(ltac:(easy) : forall a b, leafCount (Unite a b) = leafCount a + leafCount b), <- !IHa, <- !IHb. simpl. reflexivity.
 Qed.
 
+Lemma rule1_replace_score (a : Tree) : score a = score (replaceRule1 a).
+Proof.
+  induction a as [| a IHa b IHb].
+  - simpl. lia.
+  - destruct b as [| b1 b2].
+    + destruct a as [| a1 a2]. { simpl. lia. }
+      rewrite (ltac:(easy) : replaceRule1 (Unite (Unite a1 a2) Unit) = Unite (replaceRule1 (Unite a1 a2)) Unit).
+      rewrite !(ltac:(easy) : forall a b, score (Unite a b) = leafCount a + leafCount b + score a + score b) in *. rewrite <- !IHa, rule1_replace_leafCount. lia.
+    + destruct a as [| a1 a2]. { simpl. lia. }
+      rewrite (ltac:(easy) : replaceRule1 (Unite (Unite a1 a2) (Unite b1 b2)) = Unite (replaceRule1 (Unite a1 a2)) (replaceRule1 (Unite b1 b2))).
+      rewrite !(ltac:(easy) : forall a b, score (Unite a b) = leafCount a + leafCount b + score a + score b) in *. rewrite <- !IHa , <- !IHb. rewrite <- !rule1_replace_leafCount. lia.
+Qed.
+
 Lemma rule1_replace' (a : Tree) : encodeToNat a >= encodeToNat (replaceRule1 a).
 Proof.
   induction a as [| a IHa b IHb].
@@ -350,6 +363,22 @@ Proof.
         { destruct (leafCount b2 <=? leafCount a1); rewrite !(ltac:(easy) : forall a b, leafCount (Unite a b) = leafCount a + leafCount b) in *; lia. }
 Qed.
 
+Lemma rule2_replace_score (x : Tree) : score x <= score (replaceRule2 x).
+Proof.
+  induction x as [| a IHa b IHb].
+  - simpl. lia.
+  - destruct a as [| a1 a2].
+    + rewrite (ltac:(easy) : replaceRule2 (Unite Unit b) = Unite Unit (replaceRule2 b)).
+      rewrite !(ltac:(easy) : forall a b, score (Unite a b) = leafCount a + leafCount b + score a + score b). rewrite <- !rule2_replace_leafCount. lia.
+    + destruct b as [| b1 b2].
+      * rewrite (ltac:(easy) : replaceRule2 (Unite (Unite a1 a2) Unit) = Unite (replaceRule2 (Unite a1 a2)) Unit).
+        rewrite !(ltac:(easy) : forall a b, score (Unite a b) = leafCount a + leafCount b + score a + score b) in *. rewrite <- rule2_replace_leafCount. lia.
+      * rewrite (ltac:(easy) : replaceRule2 (Unite (Unite a1 a2) (Unite b1 b2)) = if leafCount b2 <=? leafCount a1 then Unite (Unite (Unite a1 a2) b1) b2 else Unite (replaceRule2 (Unite a1 a2)) (replaceRule2 (Unite b1 b2))).
+        remember (leafCount b2 <=? leafCount a1) as val eqn:hIf. symmetry in hIf. destruct val.
+        { rewrite !(ltac:(easy) : forall a b, score (Unite a b) = leafCount a + leafCount b + score a + score b). rewrite !(ltac:(easy) : forall a b, leafCount (Unite a b) = leafCount a + leafCount b). rewrite Nat.leb_le in hIf. lia. }
+        { rewrite !(ltac:(easy) : forall a b, score (Unite a b) = leafCount a + leafCount b + score a + score b) in *. rewrite !(ltac:(easy) : forall a b, leafCount (Unite a b) = leafCount a + leafCount b) in *. rewrite <- !rule2_replace_leafCount. rewrite !(ltac:(easy) : forall a b, leafCount (Unite a b) = leafCount a + leafCount b) in *. lia. }
+Qed.
+
 Lemma rule2_replace' (a : Tree) : encodeToNat a >= encodeToNat (replaceRule2 a).
 Proof.
   induction a as [| a IHa b IHb].
@@ -397,6 +426,38 @@ Proof. simpl. lia. Qed.
 
 Lemma rewriteRule3 (a b c d : Tree) (h : leafCount a < leafCount d) : score (Unite (Unite a b) (Unite c d)) < score (Unite (Unite (Unite d c) b) a).
 Proof. simpl. lia. Qed.
+
+Fixpoint hasRule3 (x : Tree) : bool :=
+  match x with
+  | Unit => false
+  | Unite a b =>
+	  match a with
+    | Unit => hasRule3 b
+    | Unite a0 b0 =>
+      match b with
+      | Unit => hasRule3 a
+      | Unite c d =>
+        (leafCount a0 <? leafCount d) || hasRule3 a || hasRule3 b
+      end
+    end
+  end.
+
+Fixpoint replaceRule3 (x : Tree) : Tree :=
+  match x with
+  | Unit => Unit
+  | Unite a b =>
+	  match a with
+    | Unit => Unite (replaceRule3 a) (replaceRule3 b)
+    | Unite a0 b0 =>
+      match b with
+      | Unit => Unite (replaceRule3 a) (replaceRule3 b)
+      | Unite c d =>
+        if leafCount a0 <? leafCount d
+        then Unite (Unite (Unite d c) b0) a0
+        else Unite (replaceRule3 a) (replaceRule3 b)
+      end
+    end
+  end.
 
 Lemma rule3_b (a b c d : Tree) : totalUniteCount (Unite (Unite a b) (Unite c d)) = totalUniteCount (Unite (Unite (Unite d c) b) a).
 Proof. simpl. lia. Qed.
