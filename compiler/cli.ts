@@ -70,6 +70,7 @@ function compile(
 
   if (parseErrors.length > 0) {
     parseErrors.forEach((error) => console.error(error))
+    process.exit(1)
     return
   }
 
@@ -89,6 +90,7 @@ function compile(
 
   if (validationErrors.length > 0) {
     validationErrors.forEach((error) => console.error(error))
+    process.exit(1)
     return
   }
 
@@ -121,6 +123,64 @@ function watchAndCompile(
 
 // Main function
 function main() {
+  if (process.argv[3] === "?json") {
+    const filename = process.argv[4]
+    if (filename === undefined) {
+      console.log("No file name specified")
+      process.exit(1)
+      return
+    }
+    const content = fs.readFileSync(filename,{encoding:"utf8"})
+    const {type} = content
+    if (type === "blockchain") {
+      const {inputs,solidityOutput,coqOutput} = content
+      if (!Array.isArray(inputs)) {
+        console.log("inputs must be an array")
+        process.exit(1)
+        return
+      }
+      const newInputs: string = []
+      for (const input of inputs) {
+        if (typeof input !== "string"){
+          console.log(JSON.stringify(input) + " isn't a string")
+          process.exit(1)
+          return
+        }
+        newInputs.push(input)
+      }
+      if (typeof coqOutput!=="string")
+      {console.log("coqOutput must be a string");process.exit(1);return;}
+      if (typeof solidityOutput!=="string")
+      {console.log("solidityOutput must be a string");process.exit(1);return}
+    } else if (type === "competitive") {
+      
+      const {inputs,cppOutput,coqOutput} = content
+      if (!Array.isArray(inputs)) {
+        console.log("inputs must be an array")
+        process.exit(1)
+        return
+      }
+      const newInputs: string = []
+      for (const input of inputs) {
+        if (typeof input !== "string"){
+          console.log(JSON.stringify(input) + " isn't a string")
+          process.exit(1)
+          return
+        }
+        newInputs.push(input)
+      }
+      if (typeof coqOutput!=="string")
+      {console.log("coqOutput must be a string");process.exit(1);return;}
+      if (typeof cppOutput!=="string")
+      {console.log("cppOutput must be a string");process.exit(1);return}
+    } else {
+      console.log("Unrecognized type")
+      process.exit(1)
+      return
+    }
+    return
+  }
+
   const program = new Command()
 
   program
