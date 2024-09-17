@@ -4,9 +4,16 @@ on:
   push:
     branches:
       - main
+    paths:
+      - '**.js'
+      - '**.ts'
+      - '**.module.json'
   pull_request:
     branches:
       - main
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -22,7 +29,7 @@ jobs:
           node-version: 'latest'
 
       - name: Install dependencies
-        run: npm install
+        run: cd compiler && npm install && cd ..
 
       - name: Compile TypeScript with SWC
         run: npx swc compiler/ --out-dir compiler/dist --source-maps --config-file ./swc.config.json
@@ -32,3 +39,17 @@ jobs:
           find . -name '*.module.json' | while read path; do
             node compiler/dist/cli ?json "$path"
           done
+
+      - name: Commit formatted Go files
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "<>"
+          git add -A
+          git diff --quiet && git diff --staged --quiet || git commit -m "Formatted Go files"
+      - name: Push changes
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
