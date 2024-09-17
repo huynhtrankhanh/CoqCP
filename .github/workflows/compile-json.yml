@@ -29,7 +29,7 @@ jobs:
           node-version: 'latest'
 
       - name: Install dependencies
-        run: cd compiler && npm install && npm install --global @swc/core && cd ..
+        run: cd compiler && npm install && npm install --global @swc/core @swc/cli && cd ..
 
       - name: Compile TypeScript with SWC
         run: npx swc compiler/ --out-dir compiler/dist --source-maps --config-file ./swc.config.json
@@ -40,14 +40,14 @@ jobs:
             node compiler/dist/cli ?json "$path"
           done
 
-      - name: Commit formatted Go files
+      - name: Commit generated code
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config user.name "GitHub Actions Bot"
           git config user.email "<>"
           git add -A
-          git diff --quiet && git diff --staged --quiet || git commit -m "Formatted Go files"
+          git diff --quiet && git diff --staged --quiet || git commit -m "Generated code"
       - name: Push changes
         uses: ad-m/github-push-action@v0.6.0
         with:
