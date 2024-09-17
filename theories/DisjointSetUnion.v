@@ -1,5 +1,6 @@
 From CoqCP Require Import Options ListsEqual.
 From stdpp Require Import numbers list.
+Require Import Wellfounded.
 
 Inductive Tree :=
 | Unit
@@ -696,3 +697,23 @@ Proof.
         rewrite orb_false_iff in h1. rewrite (ltac:(easy) : hasRule2 (Unite (Unite a1 a2) (Unite b1 b2)) = (leafCount b2 <=? leafCount a1) || hasRule2 (Unite a1 a2) || hasRule2 (Unite b1 b2)) in h2.
         rewrite (ltac:(easy) : hasRule3 (Unite (Unite a1 a2) (Unite b1 b2)) = (leafCount a1 <? leafCount b2) || hasRule3 (Unite a1 a2) || hasRule3 (Unite b1 b2)) in h3. rewrite orb_false_iff in *. destruct h2 as [h21 h22]. destruct h3 as [h31 h32]. rewrite orb_false_iff in *. rewrite Nat.leb_gt in h21. rewrite Nat.ltb_ge in h31. lia.
 Qed.
+
+Lemma encodeToNatLtPowerOfTwo (x : Tree) : encodeToNat x < 2^(2 * leafCount x - 1).
+Proof.
+  pose proof leafCountToLengthEncode x as h. rewrite <- h. unfold encodeToNat. remember (encodeToList x) as l eqn:hL. clear hL h x. induction l as [| [|] tail IH]; simpl; lia.
+Qed.
+
+Lemma turnIntoOptimalTree (x : Tree) (h : optimalTree x) : optimalTree (constructTree (leafCount x - 1)).
+Proof.
+  induction x as [x H] using (well_founded_induction (wf_inverse_image _ nat _ (fun x => 2^(2 * leafCount x - 1) * (leafCount x * leafCount x - score x) + encodeToNat x) PeanoNat.Nat.lt_wf_0)).
+  assert (aid : forall (y : Tree) (h1 : score y >= score x) (h2 : encodeToNat y < encodeToNat x) (h3 : leafCount y = leafCount x), 2^(2 * leafCount y - 1) * (leafCount y * leafCount y - score y) + encodeToNat y < 2^(2 * leafCount x - 1) * (leafCount x * leafCount x - score x) + encodeToNat x).
+  { intros y h1 h2 h3. rewrite !h3. remember (2^(2 * leafCount x - 1)) as a eqn:hA. pose proof zeroLtPowerOfTwo (2 * leafCount x - 1) as h4. rewrite <- hA in h4. pose proof proj1 (Nat.mul_le_mono_pos_l (leafCount x * leafCount x - score y) (leafCount x * leafCount x - score x) _ h4) ltac:(lia). lia. }
+  assert (aid2 : forall (y : Tree) (h1 : score y > score x) (h2 : leafCount y = leafCount x), 2^(2 * leafCount y - 1) * (leafCount y * leafCount y - score y) + encodeToNat y < 2^(2 * leafCount x - 1) * (leafCount x * leafCount x - score x) + encodeToNat x).
+  { intros y h1 h2. rewrite !h2. remember (2^(2 * leafCount x - 1)) as a eqn:hA. pose proof zeroLtPowerOfTwo (2 * leafCount x - 1) as h4. rewrite <- hA in h4. pose proof scoreUpperBound x. pose proof scoreUpperBound y. rewrite h2 in *. pose proof proj1 (Nat.mul_lt_mono_pos_l _ (leafCount x * leafCount x - score y) (leafCount x * leafCount x - score x) h4) ltac:(lia). pose proof encodeToNatLtPowerOfTwo x. pose proof encodeToNatLtPowerOfTwo y. rewrite h2 in *. rewrite <- hA in *. pose proof (ltac:(lia) : a * (score x - score y) < encodeToNat x - encodeToNat y  -> a * (leafCount x * leafCount x - score y) + encodeToNat y < a * (leafCount x * leafCount x - score x) + encodeToNat x) as step. admit. }
+  destruct (decide (hasRule1 x)) as [h1 | H1].
+  { pose proof rule1_replace_score x. pose proof rule1_replace _ h1. pose proof rule1_replace_leafCount x as hCount. pose proof H (replaceRule1 x) ltac:(pose proof aid (replaceRule1 x) ltac:(lia) ltac:(lia) ltac:(lia); lia) ltac:(intros another hLeaf; pose proof h another ltac:(lia); lia). now rewrite <- hCount in *. }
+  destruct (decide (hasRule2 x)) as [h1 | H2].
+  { pose proof rule2_replace_score x. pose proof rule2_replace _ h1. pose proof rule2_replace_leafCount x as hCount. pose proof H (replaceRule2 x) ltac:(pose proof aid (replaceRule2 x) ltac:(lia) ltac:(lia) ltac:(lia); lia) ltac:(intros another hLeaf; pose proof h another ltac:(lia); lia). now rewrite <- hCount in *. }
+  destruct (decide (hasRule3 x)) as [h1 | H3].
+  { pose proof rule3_replace_score x. pose proof rule3_replace_score _ h1. pose proof rule3_replace_leafCount x as hCount. pose proof scoreUpperBound x. pose proof scoreUpperBound (replaceRule3 x). pose proof H (replaceRule3 x) ltac:(lia) ltac:(intros another hLeaf; pose proof h another ltac:(lia); lia). now rewrite <- hCount in *. }
+Admitted.
