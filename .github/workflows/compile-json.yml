@@ -28,14 +28,8 @@ jobs:
         with:
           node-version: 'latest'
 
-      - name: Install SWC
-        run: cd compiler && npm install --global @swc/core @swc/cli && cd ..
-
-      - name: Compile TypeScript with SWC
-        run: npx swc compiler/ --out-dir compiler/dist
-
-      - name: Install dependencies
-        run: cd compiler && npm install && cd ..
+      - name: Install dependencies and transpile TypeScript
+        run: cd compiler && npm install && npx tsc --noCheck && cd ..
 
       - name: Find and process *.module.json files
         run: |
