@@ -131,7 +131,7 @@ function main() {
       return
     }
     const folderPath = path.dirname(filename)
-    const content = fs.readFileSync(filename, { encoding: 'utf8' })
+    const content = JSON.parse(fs.readFileSync(filename, { encoding: 'utf8' }))
     const { type } = content
     if (type === 'blockchain') {
       const { inputs, solidityOutput, coqOutput } = content
@@ -140,7 +140,7 @@ function main() {
         process.exit(1)
         return
       }
-      const newInputs: string = []
+      const newInputs: string[] = []
       for (const input of inputs) {
         if (typeof input !== 'string') {
           console.log(JSON.stringify(input) + " isn't a string")
@@ -172,7 +172,7 @@ function main() {
         process.exit(1)
         return
       }
-      const newInputs: string = []
+      const newInputs: string[] = []
       for (const input of inputs) {
         if (typeof input !== 'string') {
           console.log(JSON.stringify(input) + " isn't a string")
