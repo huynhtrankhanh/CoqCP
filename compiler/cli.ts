@@ -123,8 +123,8 @@ function watchAndCompile(
 
 // Main function
 function main() {
-  if (process.argv[3] === '?json') {
-    const filename = process.argv[4]
+  if (process.argv[2] === '?json') {
+    const filename = process.argv[3]
     if (filename === undefined) {
       console.log('No file name specified')
       process.exit(1)
