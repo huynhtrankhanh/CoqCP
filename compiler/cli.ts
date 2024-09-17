@@ -159,7 +159,12 @@ function main() {
         process.exit(1)
         return
       }
-      compile(newInputs.map(x => path.join(folderPath,x)),path.join(folderPath,coqOutput),path.join(folderPath,solidityOutput),true)
+      compile(
+        newInputs.map((x) => path.join(folderPath, x)),
+        path.join(folderPath, coqOutput),
+        path.join(folderPath, solidityOutput),
+        true
+      )
     } else if (type === 'competitive') {
       const { inputs, cppOutput, coqOutput } = content
       if (!Array.isArray(inputs)) {
@@ -186,8 +191,12 @@ function main() {
         process.exit(1)
         return
       }
-        compile(newInputs.map(x => path.join(folderPath,x)),path.join(folderPath,coqOutput),path.join(folderPath,cppOutput),true)
-    
+      compile(
+        newInputs.map((x) => path.join(folderPath, x)),
+        path.join(folderPath, coqOutput),
+        path.join(folderPath, cppOutput),
+        true
+      )
     } else {
       console.log('Unrecognized type')
       process.exit(1)
