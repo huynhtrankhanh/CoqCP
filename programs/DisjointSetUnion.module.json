@@ -1,1 +1,6 @@
-{"type":"blockchain","inputs":["DisjointSetUnion.js"],"solidityOutput":"../generated-solidity/DisjointSetUnion.sol","coqOutput":"../generated-coq/DisjointSetUnion.v"}
+{
+  "type": "blockchain",
+  "inputs": ["DisjointSetUnion.js"],
+  "solidityOutput": "../generated-solidity/DisjointSetUnion.sol",
+  "coqOutput": "../generated-coq/DisjointSetUnion.v"
+}
