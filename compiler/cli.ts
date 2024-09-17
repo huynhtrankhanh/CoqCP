@@ -195,7 +195,7 @@ function main() {
         newInputs.map((x) => path.join(folderPath, x)),
         path.join(folderPath, coqOutput),
         path.join(folderPath, cppOutput),
-        true
+        false
       )
     } else {
       console.log('Unrecognized type')
