@@ -34,7 +34,7 @@ jobs:
       - name: Find and process *.module.json files
         run: |
           find . -name '*.module.json' | while read path; do
-            node compiler/dist/compiler/cli ?json "$path"
+            node compiler/dist/cli ?json "$path"
           done
 
       - name: Commit generated code
