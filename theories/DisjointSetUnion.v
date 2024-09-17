@@ -709,11 +709,21 @@ Proof.
   assert (aid : forall (y : Tree) (h1 : score y >= score x) (h2 : encodeToNat y < encodeToNat x) (h3 : leafCount y = leafCount x), 2^(2 * leafCount y - 1) * (leafCount y * leafCount y - score y) + encodeToNat y < 2^(2 * leafCount x - 1) * (leafCount x * leafCount x - score x) + encodeToNat x).
   { intros y h1 h2 h3. rewrite !h3. remember (2^(2 * leafCount x - 1)) as a eqn:hA. pose proof zeroLtPowerOfTwo (2 * leafCount x - 1) as h4. rewrite <- hA in h4. pose proof proj1 (Nat.mul_le_mono_pos_l (leafCount x * leafCount x - score y) (leafCount x * leafCount x - score x) _ h4) ltac:(lia). lia. }
   assert (aid2 : forall (y : Tree) (h1 : score y > score x) (h2 : leafCount y = leafCount x), 2^(2 * leafCount y - 1) * (leafCount y * leafCount y - score y) + encodeToNat y < 2^(2 * leafCount x - 1) * (leafCount x * leafCount x - score x) + encodeToNat x).
-  { intros y h1 h2. rewrite !h2. remember (2^(2 * leafCount x - 1)) as a eqn:hA. pose proof zeroLtPowerOfTwo (2 * leafCount x - 1) as h4. rewrite <- hA in h4. pose proof scoreUpperBound x. pose proof scoreUpperBound y. rewrite h2 in *. pose proof proj1 (Nat.mul_lt_mono_pos_l _ (leafCount x * leafCount x - score y) (leafCount x * leafCount x - score x) h4) ltac:(lia). pose proof encodeToNatLtPowerOfTwo x. pose proof encodeToNatLtPowerOfTwo y. rewrite h2 in *. rewrite <- hA in *. pose proof (ltac:(lia) : a * (score x - score y) < encodeToNat x - encodeToNat y  -> a * (leafCount x * leafCount x - score y) + encodeToNat y < a * (leafCount x * leafCount x - score x) + encodeToNat x) as step. admit. }
+  { intros y h1 h2. rewrite !h2. remember (2^(2 * leafCount x - 1)) as a eqn:hA. pose proof zeroLtPowerOfTwo (2 * leafCount x - 1) as h4. rewrite <- hA in h4. pose proof scoreUpperBound x. pose proof scoreUpperBound y. rewrite h2 in *. pose proof proj1 (Nat.mul_lt_mono_pos_l _ (leafCount x * leafCount x - score y) (leafCount x * leafCount x - score x) h4) ltac:(lia). pose proof encodeToNatLtPowerOfTwo x. pose proof encodeToNatLtPowerOfTwo y. rewrite h2 in *. rewrite <- hA in *. pose proof (ltac:(lia) : a * (leafCount x * leafCount x - score y) + encodeToNat y < a * (leafCount x * leafCount x - score y) + a) as step. rewrite mult_n_Sm in step. pose proof (ltac:(lia) : leafCount x * leafCount x - score y < leafCount x * leafCount x - score x) as step2. rewrite <- Nat.le_succ_l in step2. pose proof proj1 (Nat.mul_le_mono_pos_l _ _ _ h4) step2. lia. }
   destruct (decide (hasRule1 x)) as [h1 | H1].
   { pose proof rule1_replace_score x. pose proof rule1_replace _ h1. pose proof rule1_replace_leafCount x as hCount. pose proof H (replaceRule1 x) ltac:(pose proof aid (replaceRule1 x) ltac:(lia) ltac:(lia) ltac:(lia); lia) ltac:(intros another hLeaf; pose proof h another ltac:(lia); lia). now rewrite <- hCount in *. }
   destruct (decide (hasRule2 x)) as [h1 | H2].
   { pose proof rule2_replace_score x. pose proof rule2_replace _ h1. pose proof rule2_replace_leafCount x as hCount. pose proof H (replaceRule2 x) ltac:(pose proof aid (replaceRule2 x) ltac:(lia) ltac:(lia) ltac:(lia); lia) ltac:(intros another hLeaf; pose proof h another ltac:(lia); lia). now rewrite <- hCount in *. }
   destruct (decide (hasRule3 x)) as [h1 | H3].
-  { pose proof rule3_replace_score x. pose proof rule3_replace_score _ h1. pose proof rule3_replace_leafCount x as hCount. pose proof scoreUpperBound x. pose proof scoreUpperBound (replaceRule3 x). pose proof H (replaceRule3 x) ltac:(lia) ltac:(intros another hLeaf; pose proof h another ltac:(lia); lia). now rewrite <- hCount in *. }
-Admitted.
+  { pose proof rule3_replace_score x. pose proof rule3_replace_score _ h1. pose proof rule3_replace_leafCount x as hCount. pose proof aid2 (replaceRule3 x) ltac:(lia) ltac:(lia). pose proof H (replaceRule3 x) ltac:(lia) ltac:(intros another hLeaf; pose proof h another ltac:(lia); lia). now rewrite <- hCount in *. }
+  rewrite Is_true_false in H1, H2, H3. pose proof noThreeRules _ H1 H2 H3 as d. rewrite <- d in *. assumption.
+Qed.
+
+Lemma constructTreeIsOptimal (n : nat) : optimalTree (constructTree n).
+Proof.
+  destruct n as [| n].
+  - intros x h. destruct x as [| a b].
+    + simpl. lia.
+    + simpl in h. pose proof oneLeqLeafCount a. pose proof oneLeqLeafCount b. lia.
+  - pose proof getOptimalTree (S n) as [x [h1 h2]]. pose proof turnIntoOptimalTree _ h1. rewrite (ltac:(lia) : leafCount x - 1 = S n) in *. assumption.
+Qed.
