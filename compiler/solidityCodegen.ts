@@ -279,7 +279,9 @@ contract GeneratedCode {
             assert(elementType !== undefined)
             const structType = generateStructType(elementType)
             return adorn(
-              `arraySet(environment${environmentNameMap.get(instruction.name)}, ${
+              `arraySet(environment${environmentNameMap.get(
+                instruction.name
+              )}, ${
                 generateValueType(instruction.index).expression
               }, ${structType}(${instruction.tuple
                 .map((t) => generateValueType(t).expression)
@@ -300,9 +302,9 @@ contract GeneratedCode {
             )?.itemTypes
             assert(retrievedType !== undefined)
             return adorn(
-              `arrayGet(environment${environmentNameMap.get(instruction.name)}, ${
-                generateValueType(instruction.index).expression
-              })`,
+              `arrayGet(environment${environmentNameMap.get(
+                instruction.name
+              )}, ${generateValueType(instruction.index).expression})`,
               retrievedType
             )
           case 'communication area size':
@@ -648,7 +650,7 @@ ${currentIndent}}\n`,
             if (value.valueType === 'boolean')
               return { expression: value.raw, type: 'bool' }
             if (value.valueType === 'number') {
-              return { expression: value.raw, type: 'int64' }
+              return { expression: 'uint64(' + value.raw + ')', type: 'int64' }
             }
             if (value.valueType === 'string')
               return { expression: `"${value.raw}"`, type: 'int8' } // Assuming string is treated as byte array
