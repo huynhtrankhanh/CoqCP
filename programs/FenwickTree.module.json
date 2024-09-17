@@ -1,3 +1,6 @@
-{ "type": "competitive", "inputs": [
-"FenwickTree.js", "IO/PrintInt64.js", "IO/ReadUnsignedInt64.js"
-], "coqOutput": "../generated-coq/FenwickTree.v", "cppOutput": "../generated-cpp/FenwickTree.cpp" }
+{
+  "type": "competitive",
+  "inputs": ["FenwickTree.js", "IO/PrintInt64.js", "IO/ReadUnsignedInt64.js"],
+  "coqOutput": "../generated-coq/FenwickTree.v",
+  "cppOutput": "../generated-cpp/FenwickTree.cpp"
+}
