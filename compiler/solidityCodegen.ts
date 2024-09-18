@@ -178,7 +178,7 @@ contract GeneratedCode {
     for (const [_, description] of mainModule.environment.arrays) {
       const { itemTypes, length } = description
       const structType = generateStructType(itemTypes)
-      joined += `${indent}${structType}[] public environment${index};\n`
+      joined += `${indent}${structType}[] private environment${index};\n`
       constructorBody += `${indent}${indent}for (uint i = 0; i < ${length.raw}; i++) environment${index}.push(${structType}(${'0'.repeat(itemTypes.length).split('').join(', ')}));\n`
       index++
     }
