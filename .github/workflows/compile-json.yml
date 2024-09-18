@@ -45,6 +45,7 @@ jobs:
           git config user.email "<>"
           git add -A
           git diff --quiet && git diff --staged --quiet || git commit -m "Generated code"
+          git pull --rebase
       - name: Push changes
         uses: ad-m/github-push-action@v0.6.0
         with:
