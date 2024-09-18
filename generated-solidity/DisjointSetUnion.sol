@@ -105,9 +105,9 @@ contract GeneratedCode {
     Tuple0[] public environment2;
 
     constructor() {
-        environment0 = new Tuple0[](100);
-        environment1 = new Tuple0[](1);
-        environment2 = new Tuple0[](1);
+        for (uint i = 0; i < 100; i++) environment0.push(Tuple0(0));
+        for (uint i = 0; i < 1; i++) environment1.push(Tuple0(0));
+        for (uint i = 0; i < 1; i++) environment2.push(Tuple0(0));
     }
     function procedure0(Tuple0[] storage environment0, Tuple0[] storage environment1, Tuple0[] storage environment2, uint8 local0, uint8 local1, bytes memory communication) private { unchecked {
         local1 = local0;
