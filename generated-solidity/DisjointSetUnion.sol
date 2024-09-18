@@ -100,9 +100,9 @@ contract GeneratedCode {
         array[index] = value;
     }
 
-    Tuple0[] public environment0;
-    Tuple0[] public environment1;
-    Tuple0[] public environment2;
+    Tuple0[] private environment0;
+    Tuple0[] private environment1;
+    Tuple0[] private environment2;
 
     constructor() {
         for (uint i = 0; i < 100; i++) environment0.push(Tuple0(0));
