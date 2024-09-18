@@ -4,7 +4,3 @@
   "solidityOutput": "../generated-solidity/DisjointSetUnion.sol",
   "coqOutput": "../generated-coq/DisjointSetUnion.v"
 }
-
-
-
-
