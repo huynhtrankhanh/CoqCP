@@ -94,7 +94,22 @@ Therefore, encodeToNat decreases for rewrite rule 1.
 
 **Rewrite rule 2:** If subtreeSum a ≥ subtreeSum d, Unite (Unite a b) (Unite c d) ⟶ Unite (Unite (Unite a b) c) d
 
-- encodeToNat decreases
+Let's prove that encodeToNat decreases:
+
+1) First, let's expand the encodeToNat function for the left side of the rule:
+   encodeToNat(Unite (Unite a b) (Unite c d))
+   = listToNat(encodeToList(Unite c d) ++ encodeToList(Unite a b) ++ [false])
+   = listToNat(encodeToList(d) ++ encodeToList(c) ++ [false] ++ encodeToList(b) ++ encodeToList(a) ++ [false] ++ [false])
+
+2) Now for the right side:
+   encodeToNat(Unite (Unite (Unite a b) c) d)
+   = listToNat(encodeToList(d) ++ encodeToList(Unite (Unite a b) c) ++ [false])
+   = listToNat(encodeToList(d) ++ encodeToList(c) ++ encodeToList(Unite a b) ++ [false] ++ [false])
+   = listToNat(encodeToList(d) ++ encodeToList(c) ++ encodeToList(b) ++ encodeToList(a) ++ [false] ++ [false] ++ [false])
+
+3) Comparing these, we see that the difference is the position of [false]:
+   Left:  [d, c, false, b, a, false, false]
+   Right: [d, c, b, a, false, false, false]
 
 **Rewrite rule 3:** We can't prove encodeToNat decreases here. But we can still resuscitate the argument, as the score strictly increases and we can prove a loose upper bound on the score. When we prove the upper bound on the score, we can conclude that the rewrite system terminates.
 
