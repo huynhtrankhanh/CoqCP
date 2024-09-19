@@ -45,6 +45,8 @@ Definition performMerge (dsu : list Slot) (tree1 tree2 : Tree) (u v : nat) :=
   <[u := ReferTo v]> (<[v := Ancestor (Unite tree2 tree1)]> dsu).
 
 Definition unite (dsu : list Slot) (a b : nat) :=
+  if decide (length dsu <= a) then dsu else
+  if decide (length dsu <= b) then dsu else
   let u := ancestor dsu (length dsu) a in
   let dsu1 := pathCompress dsu (length dsu) a u in
   let v := ancestor dsu1 (length dsu1) b in
@@ -64,3 +66,5 @@ Fixpoint dsuFromInteractions (dsu : list Slot) (interactions : list (nat * nat))
   | [] => dsu
   | (a, b)::tail => dsuFromInteractions (unite dsu a b) tail
   end.
+
+Definition modelScore (interactions : list (Z * Z)) := Z.of_nat (list_sum (map (fun x => match x with | ReferTo _ => 0 | Ancestor x => leafCount x end) (dsuFromInteractions (repeat (Ancestor Unit) 100) (map (fun (x : Z * Z) => let (a, b) := x in (Z.to_nat a, Z.to_nat b)) interactions)))).
