@@ -49,38 +49,33 @@ Now that we have a scoring function, here are three rewrite rules that don't mak
 To prove this, we need another scoring function solely for proving termination. Then, we have to prove that as we apply the rules, the score reduces.
 
 ```coq
-Fixpoint uniteLeftCount (x : Tree) :=
+Fixpoint encodeToList (x : Tree) : list bool :=
   match x with
-  | Unite a b => 1 + uniteLeftCount a
-  | Unit => 0
+  | Unit => [true]
+  | Unite a b => encodeToList b ++ encodeToList a ++ [false]
   end.
 
-Fixpoint uniteCount (x : Tree) :=
+Fixpoint listToNat (x : list bool) :=
   match x with
-  | Unit => 0
-  | Unite a b => 1 + uniteCount a + uniteCount b
+  | [] => 0
+  | false :: rest => 2 * listToNat rest
+  | true :: rest => 2 * listToNat rest + 1
   end.
 
-Definition terminationMeasure (x : Tree) := uniteCount x - uniteLeftCount x.
+Definition encodeToNat (x : Tree) := listToNat (encodeToList x).
 ```
 
-The rewrite rules preserve `uniteCount`. For every tree x, `uniteLeftCount x <= uniteCount x`. Therefore, to prove termination, we prove `uniteLeftCount` increases as we rewrite.
+To prove termination, we prove `encodeToNat` decreases as we rewrite.
 
 **Rewrite rule 1:** Unite Unit (Unite a b) ⟶ Unite (Unite a b) Unit
-
-- uniteLeftCount (Unite Unit (Unite a b)) = 0
-- uniteLeftCount (Unite (Unite a b) Unit) = 1 + 1 + uniteLeftCount a
-- uniteLeftCount increases
+- encodeToNat decreases
 
 **Rewrite rule 2:** If subtreeSum a ≥ subtreeSum d, Unite (Unite a b) (Unite c d) ⟶ Unite (Unite (Unite a b) c) d
+- encodeToNat decreases
 
-- uniteLeftCount (Unite (Unite a b) (Unite c d)) = 1 + 1 + uniteLeftCount a
-- uniteLeftCount (Unite (Unite (Unite a b) c) d) = 1 + 1 + 1 + uniteLeftCount a
-- uniteLeftCount increases
+**Rewrite rule 3:** We can't prove encodeToNat decreases here. But we can still resuscitate the argument, as the score strictly increases and we can prove a loose upper bound on the score. When we prove the upper bound on the score, we can conclude that the rewrite system terminates.
 
-**Rewrite rule 3:** We can't prove uniteLeftCount increases here. But we can still resuscitate the argument, as the score strictly increases and we can prove a loose upper bound on the score. When we prove the upper bound on the score, we can conclude that the rewrite system terminates.
-
-So the termination measure we use here is actually the pair `(uniteCount x - uniteLeftCount x, subtreeSum x * subtreeSum x - treeScore x)`. We now prove `treeScore x <= subtreeSum x * subtreeSum x`.
+So the termination measure we use here is actually the pair `(subtreeSum x * subtreeSum x - treeScore x, encodeToNat x)`. We now prove `treeScore x <= subtreeSum x * subtreeSum x`.
 
 We do induction on the tree.
 
