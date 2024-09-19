@@ -1,4 +1,4 @@
-From CoqCP Require Import Options Imperative.
+From CoqCP Require Import Options Imperative DisjointSetUnion.
 From Generated Require Import DisjointSetUnion.
 From stdpp Require Import numbers list.
 
@@ -7,8 +7,8 @@ Definition state : BlockchainState := fun address =>
     BlockchainContract arrayIndex0 _ (arrayType _ environment0) (arrays _ environment0) 100000%Z (funcdef_0__main (fun x => false) (fun x => 0%Z) (fun x => repeat 0%Z 20))
   else ExternallyOwned 0%Z.
 
-Fixpoint interact (state : BlockchainState) (interaction : list (Z * Z)) :=
-  match interaction with
+Fixpoint interact (state : BlockchainState) (interactions : list (Z * Z)) :=
+  match interactions with
   | [] => getBalance (state (repeat 1%Z 20))
   | (a, b) :: tail =>
     match invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0%Z state state [a; b] 1 with
@@ -17,4 +17,50 @@ Fixpoint interact (state : BlockchainState) (interaction : list (Z * Z)) :=
     end
   end.
 
-Definition optimalInteraction (x : list (Z * Z)) := forall x', Z.le (interact state x') (interact state x).
+Definition optimalInteractions (x : list (Z * Z)) := forall x', Z.le (interact state x') (interact state x).
+
+Inductive Slot :=
+| ReferTo (x : nat)
+| Ancestor (x : Tree).
+
+Fixpoint ancestor (dsu : list Slot) (fuel : nat) (index : nat) :=
+  match fuel with
+  | O => index
+  | S fuel => match nth index dsu (Ancestor Unit) with
+    | ReferTo x => ancestor dsu fuel x
+    | Ancestor _ => index
+    end
+  end.
+
+Fixpoint pathCompress (dsu : list Slot) (fuel : nat) (index ancestor : nat) :=
+  match fuel with
+  | O => dsu
+  | S fuel => match nth index dsu (Ancestor Unit) with
+    | ReferTo x => pathCompress (<[index := ReferTo ancestor]> dsu) fuel x ancestor
+    | Ancestor _ => dsu
+    end
+  end.
+
+Definition performMerge (dsu : list Slot) (tree1 tree2 : Tree) (u v : nat) :=
+  <[u := ReferTo v]> (<[v := Ancestor (Unite tree2 tree1)]> dsu).
+
+Definition unite (dsu : list Slot) (a b : nat) :=
+  let u := ancestor dsu (length dsu) a in
+  let dsu1 := pathCompress dsu (length dsu) a u in
+  let v := ancestor dsu1 (length dsu1) b in
+  let dsu2 := pathCompress dsu1 (length dsu1) b v in
+  if decide (u = v) then dsu2 else
+  match nth u dsu2 (Ancestor Unit) with
+  | ReferTo _ => dsu2
+  | Ancestor tree1 => match nth v dsu2 (Ancestor Unit) with
+    | ReferTo _ => dsu2
+    | Ancestor tree2 =>
+      if decide (leafCount tree2 < leafCount tree1) then performMerge dsu tree2 tree1 v u else performMerge dsu tree1 tree2 u v
+    end
+  end.
+
+Fixpoint dsuFromInteractions (dsu : list Slot) (interactions : list (nat * nat)) :=
+  match interactions with
+  | [] => dsu
+  | (a, b)::tail => dsuFromInteractions (unite dsu a b) tail
+  end.
