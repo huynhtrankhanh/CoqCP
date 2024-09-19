@@ -68,9 +68,11 @@ Definition encodeToNat (x : Tree) := listToNat (encodeToList x).
 To prove termination, we prove `encodeToNat` decreases as we rewrite.
 
 **Rewrite rule 1:** Unite Unit (Unite a b) ⟶ Unite (Unite a b) Unit
+
 - encodeToNat decreases
 
 **Rewrite rule 2:** If subtreeSum a ≥ subtreeSum d, Unite (Unite a b) (Unite c d) ⟶ Unite (Unite (Unite a b) c) d
+
 - encodeToNat decreases
 
 **Rewrite rule 3:** We can't prove encodeToNat decreases here. But we can still resuscitate the argument, as the score strictly increases and we can prove a loose upper bound on the score. When we prove the upper bound on the score, we can conclude that the rewrite system terminates.
