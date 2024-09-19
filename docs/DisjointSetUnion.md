@@ -69,7 +69,28 @@ To prove termination, we prove `encodeToNat` decreases as we rewrite.
 
 **Rewrite rule 1:** Unite Unit (Unite a b) ⟶ Unite (Unite a b) Unit
 
-- encodeToNat decreases
+Let's prove that encodeToNat decreases:
+
+1) First, let's expand the encodeToNat function for the left side of the rule:
+   encodeToNat(Unite Unit (Unite a b))
+   = listToNat(encodeToList(Unite Unit (Unite a b)))
+   = listToNat(encodeToList(Unite a b) ++ encodeToList(Unit) ++ [false])
+   = listToNat(encodeToList(b) ++ encodeToList(a) ++ [false] ++ [true] ++ [false])
+
+2) Now for the right side:
+   encodeToNat(Unite (Unite a b) Unit)
+   = listToNat(encodeToList(Unit) ++ encodeToList(Unite a b) ++ [false])
+   = listToNat([true] ++ encodeToList(b) ++ encodeToList(a) ++ [false] ++ [false])
+
+3) Comparing these, we see that the only difference is the position of [true]:
+   Left:  [...b...a...false, true, false]
+   Right: [true, ...b...a...false, false]
+
+4) In the listToNat function, each element's contribution to the final value is doubled for each position it is shifted right.
+
+5) Therefore, moving [true] from the second-to-last position to the first position will decrease its contribution to the final value, thus decreasing the overall encodeToNat value.
+
+Therefore, encodeToNat decreases for rewrite rule 1.
 
 **Rewrite rule 2:** If subtreeSum a ≥ subtreeSum d, Unite (Unite a b) (Unite c d) ⟶ Unite (Unite (Unite a b) c) d
 
