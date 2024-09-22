@@ -10,13 +10,13 @@ Prerequisites: Node.js and npm. Please install both first. Then follow these ins
 - Run `npm install` to install dependencies.
 - Run `npx tsc --noCheck`. Now compiled JavaScript files are in the `dist` subfolder.
 - Now you can use the command line interface. You can pass options to the compiler through arguments or a JSON file.
-  * Arguments:  
+  - Arguments:  
     For **blockchain mode**:
-    * `node dist/cli --blockchain coq_output_file solidity_output_file input_file_1 input_file_2 ... input_file_n`
-    * If you want the compiler to recompile on file changes: `node dist/cli --blockchain --watch coq_output_file solidity_output_file input_file_1 input_file_2 ... input_file_n`
-    For **competitive programming mode**:
-    * `node dist/cli coq_output_file cpp_output_file input_file_1 input_file_2 ... input_file_n`
-    * If you want the compiler to recompile on file changes: `node dist/cli --watch coq_output_file cpp_output_file input_file_1 input_file_2 ... input_file_n`
+    - `node dist/cli --blockchain coq_output_file solidity_output_file input_file_1 input_file_2 ... input_file_n`
+    - If you want the compiler to recompile on file changes: `node dist/cli --blockchain --watch coq_output_file solidity_output_file input_file_1 input_file_2 ... input_file_n`
+      For **competitive programming mode**:
+    - `node dist/cli coq_output_file cpp_output_file input_file_1 input_file_2 ... input_file_n`
+    - If you want the compiler to recompile on file changes: `node dist/cli --watch coq_output_file cpp_output_file input_file_1 input_file_2 ... input_file_n`
 
 ## Working on the compiler
 
