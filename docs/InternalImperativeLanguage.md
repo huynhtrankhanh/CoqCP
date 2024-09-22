@@ -21,6 +21,24 @@ Prerequisites: Node.js and npm. Please install both first. Then follow these ins
 
     - `node dist/cli coq_output_file cpp_output_file input_file_1 input_file_2 ... input_file_n`
     - If you want the compiler to recompile on file changes: `node dist/cli --watch coq_output_file cpp_output_file input_file_1 input_file_2 ... input_file_n`
+  - JSON file:  
+    `node dist/cli ?json json_file_path`
+
+    Here is the schema for the JSON file.
+
+    ```typescript
+    type Config = {
+        type: "competitive",
+        inputs: string[],
+        coqOutput: string,
+        cppOutput: string
+    } | {
+        type: "blockchain",
+        inputs: string[],
+        coqOutput: string,
+        solidityOutput: string
+    }
+    ```
 
 ## Working on the compiler
 
