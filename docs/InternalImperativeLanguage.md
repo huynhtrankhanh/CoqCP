@@ -196,7 +196,7 @@ You can coerce any boolean or number to a numeric type.
 
 **Booleans:** If you coerce `false`, you get `0`. If you coerce `true`, you get `1`.
 
-The coercion commands are `coerceInt8`, `coerceInt16`, `coerceInt32` and `coerceInt64`.
+The coercion commands are `coerceInt8`, `coerceInt16`, `coerceInt32` and `coerceInt64`. `coerceInt256` is also supported in blockchain mode.
 
 ## Get global array element
 
@@ -262,6 +262,8 @@ range('Hello, World!', (x) => {
 ```
 
 Iterates over all bytes of the UTF-8 representation of the string. `x` is of type `int8`. Each byte might or might not represent a character.
+
+Iteration over a string literal isn't supported in blockchain mode because I'm too lazy to implement it. Attempting to do so will not result in a compiler error but will not generate syntactically valid Solidity code. It's actually not difficult to implement, it's just that I don't have the motivation.
 
 ## Procedure call
 
