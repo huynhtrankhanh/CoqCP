@@ -305,6 +305,7 @@ These features can only be used if you use blockchain mode.
 In blockchain mode, there are two new types: `address` and `int256`.
 
 ## `coerceInt256()`
+
 As mentioned earlier, this command only exists in blockchain mode.
 
 ## Get sender
