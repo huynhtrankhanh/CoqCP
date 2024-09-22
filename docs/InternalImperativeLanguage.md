@@ -53,7 +53,23 @@ The internal imperative language steals JavaScript syntax and interprets the par
 
 The documentation for this language isn't very precise. I hope you can fill in the gaps by reading the generated Coq and C++ code.
 
-A source file consists of 0 or 1 `environment` block and any number of `procedure` blocks.
+A source file consists of 0 or 1 `environment` block, 0 or 1 `module` line and any number of `procedure` blocks.
+
+Every source file is a module. The `module` line can be placed at the top, at the bottom or between procedures. It declares the name of the module. Its syntax is as follows:
+
+```js
+module(ModuleName)
+```
+
+Here, `ModuleName` is any valid JavaScript identifier. It must be a JavaScript identifier, not a string. So for example, `module("module name")` is mot allowed.
+
+A program is a collection of modules. Modules can be shared between programs. A program isn't allowed to have two modules of the same name.
+
+If a module doesn't declare its name, it simply doesn't have a name. The module, instead, becomes the main module of the program. A program isn't allowed to have two main modules either.
+
+The entry point of a program is the `"main"` procedure in the main module of the program.
+
+Not having a main module or a `"main"` procedure within the main module doesn't cause a compilation error, the program just doesn't do anything in this case.
 
 The `environment` block can be placed at the top, at the bottom or between procedures.
 
