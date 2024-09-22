@@ -10,7 +10,7 @@ Prerequisites: Node.js and npm. Please install both first. Then follow these ins
 - Run `npm install` to install dependencies.
 - Run `npx tsc --noCheck`. Now compiled JavaScript files are in the `dist` subfolder.
 - Now you can use the command line interface. You can pass options to the compiler through arguments or a JSON file.
-  * Arguments:  
+  - Arguments:  
     For **blockchain mode**
 
 ## Working on the compiler
