@@ -1,6 +1,19 @@
 # Internal imperative language
 
-The CoqCP project now includes a compiler. The compiler compiles an internal imperative language to both Coq and C++.
+The CoqCP project now includes a compiler. The compiler compiles an internal imperative language to two files. The first file is a Coq file to be used for program verification. The second file is a Solidity file if blockchain mode is used or C++ file if competitive programming mode is used.
+
+## Using the compile
+
+Prerequisites: Node.js and npm. Please install both first. Then follow these instructions.
+
+- The compiler is in the `compiler` directory. Switch to that directory.
+- Run `npm install` to install dependencies.
+- Run `npx tsc --noCheck`. Now compiled JavaScript files are in the `dist` subfolder.
+- Now you can use the command line interface. You can pass options to the compiler through arguments or a JSON file.
+  * Arguments:  
+    For **blockchain mode**
+
+## Working on the compiler
 
 To work on the compiler, you will need to have Node.js installed. After that, switch to the `compiler` directory, and run `npm` to install the dependencies.
 
