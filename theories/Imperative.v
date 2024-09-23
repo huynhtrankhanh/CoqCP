@@ -424,7 +424,7 @@ Definition transferMoney (state : BlockchainState) (sender target : list Z) (mon
 (* this assumes the money has already been transferred before the contract gets invoked *)
 (* so initially this function doesn't deduct the balance of the sender and credit the balance of the target *)
 (* revertTo: state before the money transfer and the subsequent contract invocation, state: current state *)
-Fixpoint invokeContractAux (sender target : list Z) (money : Z) (revertTo state : BlockchainState) (communication : list Z) (fuel : nat) (arrayIndex : Type) (arrayIndexEqualityDecidable : EqDecision arrayIndex) (arrayType : arrayIndex -> Type) (arrays : forall (name : arrayIndex), list (arrayType name)) (originalCode : Action (WithArrays arrayIndex arrayType) withArraysReturnValue ()): option (list Z * BlockchainState) :=
+Fixpoint invokeContractAux (sender target : list Z) (money : Z) (revertTo state : BlockchainState) (communication : list Z) (fuel : nat) (arrayIndex : Type) (arrayIndexEqualityDecidable : EqDecision arrayIndex) (arrayType : arrayIndex -> Type) (arrays : forall (name : arrayIndex), list (arrayType name)) (originalCode code : Action (WithArrays arrayIndex arrayType) withArraysReturnValue ()): option (list Z * BlockchainState) :=
   match fuel with
   | O => None
   | S fuel => (fix inner (code : Action (WithArrays arrayIndex arrayType) withArraysReturnValue ()) (communication : list Z) (arrays : forall (name : arrayIndex), list (arrayType name)) (state : BlockchainState) :=
@@ -457,7 +457,7 @@ Fixpoint invokeContractAux (sender target : list Z) (money : Z) (revertTo state 
           let alteredState := update state target (BlockchainContract arrayIndex _ arrayType arrays (getBalance (state target)) originalCode) in
           match (state address) with
           | ExternallyOwned _ => inner (continuation []) communication arrays (transferMoney alteredState target address money)
-          | BlockchainContract arrayIndex arrayIndexEqualityDecidable arrayType arrays2 balance code => match invokeContractAux target address money alteredState (transferMoney alteredState target address money) passedArray fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays2 code with
+          | BlockchainContract arrayIndex arrayIndexEqualityDecidable arrayType arrays2 balance code => match invokeContractAux target address money alteredState (transferMoney alteredState target address money) passedArray fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays2 code code with
             | None => None
             | Some (newArray, newState) => inner (continuation newArray) communication arrays newState
             end
@@ -474,25 +474,25 @@ Fixpoint invokeContractAux (sender target : list Z) (money : Z) (revertTo state 
         if decide (Nat.lt (Z.to_nat index) (length communication)) then
           inner (continuation tt) (<[Z.to_nat index := value]> communication) arrays state
         else Some ([], revertTo)
-      end) originalCode communication arrays state
+      end) code communication arrays state
     end.
 
 Lemma unfoldInvoke_0 : 
-  forall sender target money revertTo state communication arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode,
-    invokeContractAux sender target money revertTo state communication 0 arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode = None.
+  forall sender target money revertTo state communication arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode code,
+    invokeContractAux sender target money revertTo state communication 0 arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode code = None.
 Proof. easy. Qed.
 
 Lemma unfoldInvoke_S_Done : 
-  forall sender target money revertTo state communication fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays returnValue,
-    invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays (Done _ returnValue) =
-      Some (communication, update state target (BlockchainContract arrayIndex _ arrayType arrays (getBalance (state target)) (Done _ returnValue))).
+  forall sender target money revertTo state communication fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays returnValue originalCode,
+    invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode (Done _ _ _ returnValue) =
+      Some (communication, update state target (BlockchainContract arrayIndex _ arrayType arrays (getBalance (state target)) originalCode)).
 Proof. easy. Qed.
 
 Lemma unfoldInvoke_S_Retrieve : 
-  forall sender target money revertTo state communication fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays arrayName index continuation,
-    invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays (Dispatch _ (Retrieve _ arrayName index) continuation) =
+  forall sender target money revertTo state communication fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode arrayName index continuation,
+    invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode (Dispatch _ _ _ (Retrieve _ _ arrayName index) continuation) =
       match decide (Nat.lt (Z.to_nat index) (length (arrays arrayName))) with
-      | left h => invokeContractAux sender target money revertTo state communication fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays (continuation (nth_lt (arrays arrayName) (Z.to_nat index) h))
+      | left h => invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode (continuation (nth_lt (arrays arrayName) (Z.to_nat index) h))
       | right _ => Some ([], revertTo)
       end.
 Proof. easy. Qed.
