@@ -476,3 +476,85 @@ Fixpoint invokeContractAux (sender target : list Z) (money : Z) (revertTo state 
         else Some ([], revertTo)
       end) originalCode communication arrays state
     end.
+
+Lemma unfoldInvoke_0 : 
+  forall sender target money revertTo state communication arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode,
+    invokeContractAux sender target money revertTo state communication 0 arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode = None.
+Proof. easy. Qed.
+
+Lemma unfoldInvoke_S_Done : 
+  forall sender target money revertTo state communication fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays returnValue,
+    invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays (Done _ returnValue) =
+      Some (communication, update state target (BlockchainContract arrayIndex _ arrayType arrays (getBalance (state target)) (Done _ returnValue))).
+Proof. easy. Qed.
+
+Lemma unfoldInvoke_S_Retrieve : 
+  forall sender target money revertTo state communication fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays arrayName index continuation,
+    invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays (Dispatch _ (Retrieve _ arrayName index) continuation) =
+      match decide (Nat.lt (Z.to_nat index) (length (arrays arrayName))) with
+      | left h => invokeContractAux sender target money revertTo state communication fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays (continuation (nth_lt (arrays arrayName) (Z.to_nat index) h))
+      | right _ => Some ([], revertTo)
+      end.
+Proof. easy. Qed.
+
+Lemma unfoldInvoke_S_Store : 
+  forall sender target money revertTo state communication fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays arrayName index value continuation,
+    invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays (Dispatch _ (Store _ arrayName index value) continuation) =
+      match decide (Nat.lt (Z.to_nat index) (length (arrays arrayName))) with
+      | left h =>
+          invokeContractAux sender target money revertTo state communication fuel arrayIndex arrayIndexEqualityDecidable arrayType 
+            (fun currentName => if decide (currentName = arrayName)
+                                then ltac:(rewrite h; exact (<[Z.to_nat index := value]> (arrays arrayName)))
+                                else arrays currentName)
+            (continuation tt)
+      | right _ => Some ([], revertTo)
+      end.
+Proof. easy. Qed.
+
+Lemma unfoldInvoke_S_Trap : 
+  forall sender target money revertTo state communication fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays continuation,
+    invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays (Dispatch _ (DoBasicEffect _ _ Trap) continuation) = 
+      Some ([], revertTo).
+Proof. easy. Qed.
+
+Lemma unfoldInvoke_S_Flush : 
+  forall sender target money revertTo state communication fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays continuation,
+    invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays (Dispatch _ (DoBasicEffect _ _ Flush) continuation) = 
+      Some ([], revertTo).
+Proof. easy. Qed.
+
+Lemma unfoldInvoke_S_ReadChar : 
+  forall sender target money revertTo state communication fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays continuation,
+    invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays (Dispatch _ (DoBasicEffect _ _ ReadChar) continuation) = 
+      Some ([], revertTo).
+Proof. easy. Qed.
+
+Lemma unfoldInvoke_S_WriteChar : 
+  forall sender target money revertTo state communication fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays value continuation,
+    invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays (Dispatch _ (DoBasicEffect _ _ (WriteChar value)) continuation) = 
+      Some ([], revertTo).
+Proof. easy. Qed.
+
+Lemma unfoldInvoke_S_Donate : 
+  forall sender target money revertTo state communication fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays donationMoney address continuation,
+    invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays (Dispatch _ (DoBasicEffect _ _ (Donate donationMoney address)) continuation) = 
+      if decide (donationMoney <= getBalance (state target) /\ 0 <= donationMoney /\ donationMoney < 2^256) then
+        invokeContractAux sender target money revertTo state communication fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays (continuation tt)
+      else Some ([], revertTo).
+Proof. easy. Qed.
+
+Lemma unfoldInvoke_S_Invoke : 
+  forall sender target money revertTo state communication fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays invokeMoney address passedArray continuation,
+    invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays (Dispatch _ (DoBasicEffect _ _ (Invoke invokeMoney address passedArray)) continuation) = 
+      if decide (invokeMoney <= getBalance (state target) /\ 0 <= invokeMoney /\ invokeMoney < 2^256) then
+        let alteredState := update state target (BlockchainContract arrayIndex _ arrayType arrays (getBalance (state target)) (Done _ tt)) in
+        match (state address) with
+        | ExternallyOwned _ => invokeContractAux sender target money revertTo state communication fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays (continuation [])
+        | BlockchainContract _ _ _ arrays2 _ code =>
+          match invokeContractAux target address invokeMoney alteredState (transferMoney alteredState target address invokeMoney) passedArray fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays2 code with
+          | None => None
+          | Some (newArray, newState) => invokeContractAux sender target money revertTo newState communication fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays (continuation newArray)
+          end
+        end
+      else Some ([], revertTo).
+Proof. easy. Qed.
