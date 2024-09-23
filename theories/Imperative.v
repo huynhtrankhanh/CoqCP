@@ -429,7 +429,7 @@ Fixpoint invokeContractAux (sender target : list Z) (money : Z) (revertTo state 
   | O => None
   | S fuel => match (state target) with
     | ExternallyOwned money => Some ([], state)
-    | BlockchainContract arrayIndex arrayIndexEqualityDecidable arrayType arrays money originalCode =>
+    | BlockchainContract arrayIndex arrayIndexEqualityDecidable arrayType arrays balance originalCode =>
       (fix inner (code : Action (WithArrays arrayIndex arrayType) withArraysReturnValue ()) (communication : list Z) (arrays : forall (name : arrayIndex), list (arrayType name)) (state : BlockchainState) :=
         match code with
         | Done _ _ _ _ => Some (communication, update state target (BlockchainContract arrayIndex _ arrayType arrays (getBalance (state target)) originalCode))
