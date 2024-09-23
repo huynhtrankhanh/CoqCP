@@ -424,56 +424,55 @@ Definition transferMoney (state : BlockchainState) (sender target : list Z) (mon
 (* this assumes the money has already been transferred before the contract gets invoked *)
 (* so initially this function doesn't deduct the balance of the sender and credit the balance of the target *)
 (* revertTo: state before the money transfer and the subsequent contract invocation, state: current state *)
-Fixpoint invokeContractAux (sender target : list Z) (money : Z) (revertTo state : BlockchainState) (communication : list Z) (fuel : nat) : option (list Z * BlockchainState) :=
+Fixpoint invokeContractAux (sender target : list Z) (money : Z) (revertTo state : BlockchainState) (communication : list Z) (fuel : nat) (arrayIndex : Type) (arrayIndexEqualityDecidable : EqDecision arrayIndex) (arrayType : arrayIndex -> Type) (arrays : forall (name : arrayIndex), list (arrayType name)) (originalCode : Action (WithArrays arrayIndex arrayType) withArraysReturnValue ()): option (list Z * BlockchainState) :=
   match fuel with
   | O => None
-  | S fuel => match (state target) with
-    | ExternallyOwned money => Some ([], state)
-    | BlockchainContract arrayIndex arrayIndexEqualityDecidable arrayType arrays balance originalCode =>
-      (fix inner (code : Action (WithArrays arrayIndex arrayType) withArraysReturnValue ()) (communication : list Z) (arrays : forall (name : arrayIndex), list (arrayType name)) (state : BlockchainState) :=
-        match code with
-        | Done _ _ _ _ => Some (communication, update state target (BlockchainContract arrayIndex _ arrayType arrays (getBalance (state target)) originalCode))
-        | Dispatch _ _ _ (Retrieve _ _ arrayName index) continuation =>
-          match decide (Nat.lt (Z.to_nat index) (length (arrays arrayName))) with
-          | left h => inner (continuation (nth_lt (arrays arrayName) (Z.to_nat index) h)) communication arrays state
-          | right _ => Some ([], revertTo)
+  | S fuel => (fix inner (code : Action (WithArrays arrayIndex arrayType) withArraysReturnValue ()) (communication : list Z) (arrays : forall (name : arrayIndex), list (arrayType name)) (state : BlockchainState) :=
+    match code with
+    | Done _ _ _ _ => Some (communication, update state target (BlockchainContract arrayIndex _ arrayType arrays (getBalance (state target)) originalCode))
+    | Dispatch _ _ _ (Retrieve _ _ arrayName index) continuation =>
+      match decide (Nat.lt (Z.to_nat index) (length (arrays arrayName))) with
+      | left h => inner (continuation (nth_lt (arrays arrayName) (Z.to_nat index) h)) communication arrays state
+      | right _ => Some ([], revertTo)
+      end
+    | Dispatch _ _ _ (Store _ _ arrayName index value) continuation =>
+      match decide (Nat.lt (Z.to_nat index) (length (arrays arrayName))) with
+      | left h => inner (continuation tt) communication (fun currentName =>
+        match decide (currentName = arrayName) with
+        | left h => ltac:(rewrite h; exact (<[Z.to_nat index := value]> (arrays arrayName)))
+        | right _ => arrays currentName
+        end) state
+      | right _ => Some ([], revertTo)
+      end
+      | Dispatch _ _ _ (DoBasicEffect _ _ Trap) continuation => Some ([], revertTo)
+      | Dispatch _ _ _ (DoBasicEffect _ _ Flush) continuation => Some ([], revertTo)
+      | Dispatch _ _ _ (DoBasicEffect _ _ ReadChar) continuation => Some ([], revertTo)
+      | Dispatch _ _ _ (DoBasicEffect _ _ (WriteChar _)) continuation => Some ([], revertTo)
+      | Dispatch _ _ _ (DoBasicEffect _ _ (Donate money address)) continuation =>
+        if decide (money <= getBalance (state target) /\ 0 <= money /\ money < 2^256) then
+          inner (continuation tt) communication arrays (transferMoney state target address money)
+        else Some ([], revertTo)
+      | Dispatch _ _ _ (DoBasicEffect _ _ (Invoke money address passedArray)) continuation =>
+        if decide (money <= getBalance (state target) /\ 0 <= money /\ money < 2^256) then
+          let alteredState := update state target (BlockchainContract arrayIndex _ arrayType arrays (getBalance (state target)) originalCode) in
+          match (state address) with
+          | ExternallyOwned _ => inner (continuation []) communication arrays (transferMoney alteredState target address money)
+          | BlockchainContract arrayIndex arrayIndexEqualityDecidable arrayType arrays2 balance code => match invokeContractAux target address money alteredState (transferMoney alteredState target address money) passedArray fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays2 code with
+            | None => None
+            | Some (newArray, newState) => inner (continuation newArray) communication arrays newState
+            end
           end
-        | Dispatch _ _ _ (Store _ _ arrayName index value) continuation =>
-          match decide (Nat.lt (Z.to_nat index) (length (arrays arrayName))) with
-          | left h => inner (continuation tt) communication (fun currentName =>
-            match decide (currentName = arrayName) with
-            | left h => ltac:(rewrite h; exact (<[Z.to_nat index := value]> (arrays arrayName)))
-            | right _ => arrays currentName
-            end) state
-          | right _ => Some ([], revertTo)
-          end
-          | Dispatch _ _ _ (DoBasicEffect _ _ Trap) continuation => Some ([], revertTo)
-          | Dispatch _ _ _ (DoBasicEffect _ _ Flush) continuation => Some ([], revertTo)
-          | Dispatch _ _ _ (DoBasicEffect _ _ ReadChar) continuation => Some ([], revertTo)
-          | Dispatch _ _ _ (DoBasicEffect _ _ (WriteChar _)) continuation => Some ([], revertTo)
-          | Dispatch _ _ _ (DoBasicEffect _ _ (Donate money address)) continuation =>
-            if decide (money <= getBalance (state target) /\ 0 <= money /\ money < 2^256) then
-              inner (continuation tt) communication arrays (transferMoney state target address money)
-            else Some ([], revertTo)
-          | Dispatch _ _ _ (DoBasicEffect _ _ (Invoke money address passedArray)) continuation =>
-            if decide (money <= getBalance (state target) /\ 0 <= money /\ money < 2^256) then
-              let alteredState := update state target (BlockchainContract arrayIndex _ arrayType arrays (getBalance (state target)) originalCode) in
-              match invokeContractAux target address money alteredState (transferMoney alteredState target address money) passedArray fuel with
-              | None => None
-              | Some (newArray, newState) => inner (continuation newArray) communication arrays newState
-              end
-            else Some ([], revertTo)
-          | Dispatch _ _ _ (DoBasicEffect _ _ GetSender) continuation => inner (continuation sender) communication arrays state
-          | Dispatch _ _ _ (DoBasicEffect _ _ GetMoney) continuation => inner (continuation money) communication arrays state
-          | Dispatch _ _ _ (DoBasicEffect _ _ GetCommunicationSize) continuation => inner (continuation (Z.of_nat (length communication))) communication arrays state
-          | Dispatch _ _ _ (DoBasicEffect _ _ (ReadByte index)) continuation =>
-            if decide (Nat.lt (Z.to_nat index) (length communication)) then
-              inner (continuation (nth (Z.to_nat index) communication 0)) communication arrays state
-            else Some ([], revertTo)
-          | Dispatch _ _ _ (DoBasicEffect _ _ (SetByte index value)) continuation =>
-            if decide (Nat.lt (Z.to_nat index) (length communication)) then
-              inner (continuation tt) (<[Z.to_nat index := value]> communication) arrays state
-            else Some ([], revertTo)
-          end) originalCode communication arrays state
-    end
-  end.
+        else Some ([], revertTo)
+      | Dispatch _ _ _ (DoBasicEffect _ _ GetSender) continuation => inner (continuation sender) communication arrays state
+      | Dispatch _ _ _ (DoBasicEffect _ _ GetMoney) continuation => inner (continuation money) communication arrays state
+      | Dispatch _ _ _ (DoBasicEffect _ _ GetCommunicationSize) continuation => inner (continuation (Z.of_nat (length communication))) communication arrays state
+      | Dispatch _ _ _ (DoBasicEffect _ _ (ReadByte index)) continuation =>
+        if decide (Nat.lt (Z.to_nat index) (length communication)) then
+          inner (continuation (nth (Z.to_nat index) communication 0)) communication arrays state
+        else Some ([], revertTo)
+      | Dispatch _ _ _ (DoBasicEffect _ _ (SetByte index value)) continuation =>
+        if decide (Nat.lt (Z.to_nat index) (length communication)) then
+          inner (continuation tt) (<[Z.to_nat index := value]> communication) arrays state
+        else Some ([], revertTo)
+      end) originalCode communication arrays state
+    end.
