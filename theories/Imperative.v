@@ -559,3 +559,18 @@ Lemma unfoldInvoke_S_Invoke :
         end
       else Some ([], revertTo).
 Proof. easy. Qed.
+
+Lemma unfoldInvoke_S_GetSender : 
+  forall sender target money revertTo state communication fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode continuation,
+    invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode (Dispatch _ _ _ (DoBasicEffect _ _ GetSender) continuation) = invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode (continuation sender).
+Proof. easy. Qed.
+
+Lemma unfoldInvoke_S_GetMoney : 
+  forall sender target money revertTo state communication fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode continuation,
+    invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode (Dispatch _ _ _ (DoBasicEffect _ _ GetMoney) continuation) = invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode (continuation money).
+Proof. easy. Qed.
+
+Lemma unfoldInvoke_S_GetCommunicationSize : 
+  forall sender target money revertTo state communication fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode continuation,
+    invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode (Dispatch _ _ _ (DoBasicEffect _ _ GetCommunicationSize) continuation) = invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode (continuation (Z.of_nat (length communication))).
+Proof. easy. Qed.
