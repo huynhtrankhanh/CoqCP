@@ -574,3 +574,19 @@ Lemma unfoldInvoke_S_GetCommunicationSize :
   forall sender target money revertTo state communication fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode continuation,
     invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode (Dispatch _ _ _ (DoBasicEffect _ _ GetCommunicationSize) continuation) = invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode (continuation (Z.of_nat (length communication))).
 Proof. easy. Qed.
+
+Lemma unfoldInvoke_S_ReadByte : 
+  forall sender target money revertTo state communication fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode index continuation,
+    invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode (Dispatch _ _ _ (DoBasicEffect _ _ (ReadByte index)) continuation) =
+    if decide (Nat.lt (Z.to_nat index) (length communication)) then
+    invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode (continuation (nth (Z.to_nat index) communication 0))
+    else Some ([], revertTo).
+Proof. easy. Qed.
+
+Lemma unfoldInvoke_S_SetByte : 
+  forall sender target money revertTo state communication fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode index value continuation,
+    invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode (Dispatch _ _ _ (DoBasicEffect _ _ (SetByte index value)) continuation) =
+    if decide (Nat.lt (Z.to_nat index) (length communication)) then
+    invokeContractAux sender target money revertTo state (<[Z.to_nat index := value]> communication) (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode (continuation tt)
+    else Some ([], revertTo).
+Proof. easy. Qed.
