@@ -545,16 +545,16 @@ Lemma unfoldInvoke_S_Donate :
 Proof. easy. Qed.
 
 Lemma unfoldInvoke_S_Invoke : 
-  forall sender target money revertTo state communication fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays invokeMoney address passedArray continuation,
-    invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays (Dispatch _ _ _ (DoBasicEffect _ _ (Invoke invokeMoney address passedArray)) continuation) = 
+  forall sender target money revertTo state communication fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode invokeMoney address passedArray continuation,
+    invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode (Dispatch _ _ _ (DoBasicEffect _ _ (Invoke invokeMoney address passedArray)) continuation) = 
       if decide (invokeMoney <= getBalance (state target) /\ 0 <= invokeMoney /\ invokeMoney < 2^256) then
-        let alteredState := update state target (BlockchainContract arrayIndex _ arrayType arrays (getBalance (state target)) (Done _ _ _ tt)) in
+        let alteredState := update state target (BlockchainContract arrayIndex _ arrayType arrays (getBalance (state target)) originalCode) in
         match (state address) with
-        | ExternallyOwned _ => invokeContractAux sender target money revertTo state communication fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays (continuation [])
-        | BlockchainContract _ _ _ arrays2 _ code =>
-          match invokeContractAux target address invokeMoney alteredState (transferMoney alteredState target address invokeMoney) passedArray fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays2 code with
+        | ExternallyOwned _ => invokeContractAux sender target money revertTo (transferMoney alteredState target address invokeMoney) communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode (continuation [])
+        | BlockchainContract arrayIndex2 arrayIndexEqualityDecidable2 arrayType2 arrays2 _ code =>
+          match invokeContractAux target address invokeMoney alteredState (transferMoney alteredState target address invokeMoney) passedArray fuel arrayIndex2 arrayIndexEqualityDecidable2 arrayType2 arrays2 code code with
           | None => None
-          | Some (newArray, newState) => invokeContractAux sender target money revertTo newState communication fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays (continuation newArray)
+          | Some (newArray, newState) => invokeContractAux sender target money revertTo newState communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode (continuation newArray)
           end
         end
       else Some ([], revertTo).
