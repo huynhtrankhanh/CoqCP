@@ -16,7 +16,7 @@ Fixpoint interact (state : BlockchainState) (interactions : list (Z * Z)) :=
   match interactions with
   | [] => getBalance (state (repeat 1%Z 20))
   | (a, b) :: tail =>
-    match invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0%Z state state [a; b] 1 with
+    match invokeContract (repeat 1%Z 20) (repeat 0%Z 20) 0%Z state state [a; b] 1 with
     | Some (_, changedState) => interact changedState tail
     | None => 0%Z
     end
@@ -86,12 +86,12 @@ Definition dsuLeafCount (dsu : list Slot) := Z.of_nat (list_sum (map (fun x => m
 Definition modelScore (interactions : list (Z * Z)) := dsuScore (dsuFromInteractions (repeat (Ancestor Unit) 100) (map (fun (x : Z * Z) => let (a, b) := x in (Z.to_nat a, Z.to_nat b)) interactions)).
 
 Definition getBalanceInvoke (state : BlockchainState) (communication : list Z) :=
-  match invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0 state state communication 1 with
+  match invokeContract (repeat 1%Z 20) (repeat 0%Z 20) 0 state state communication 1 with
   | Some (a, b) => getBalance (b (repeat 1%Z 20))
   | None => 0%Z
   end.
 
-Lemma invokeCodeNoNone arrays communication : invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0 (stateAfterInteractions arrays) (stateAfterInteractions arrays) communication 1 <> None.
+Lemma invokeCodeNoNone arrays communication : invokeContract (repeat 1%Z 20) (repeat 0%Z 20) 0 (stateAfterInteractions arrays) (stateAfterInteractions arrays) communication 1 <> None.
 Proof.
 Admitted.
 
