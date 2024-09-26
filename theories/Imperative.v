@@ -477,6 +477,12 @@ Fixpoint invokeContractAux (sender target : list Z) (money : Z) (revertTo state 
       end) code communication arrays state
     end.
 
+Definition invokeContract (sender target : list Z) (money : Z) (revertTo state : BlockchainState) (communication : list Z) (fuel : nat) :=
+  match state target with
+  | ExternallyOwned _ => Some ([], state)
+  | BlockchainContract arrayIndex arrayIndexEqualityDecidable arrayType arrays balance code => invokeContractAux sender target money revertTo state communication fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays code code
+  end.
+
 Lemma unfoldInvoke_0 : 
   forall sender target money revertTo state communication arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode code,
     invokeContractAux sender target money revertTo state communication 0 arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode code = None.
