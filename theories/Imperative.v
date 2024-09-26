@@ -206,6 +206,27 @@ Proof.
   - simpl in IH, continuation. exact (IH tt bools numbers (update addresses name value)).
 Defined.
 
+Lemma pushDispatch {arrayIndex arrayType variableIndex} `{EqDecision variableIndex} (bools : variableIndex -> bool) (numbers : variableIndex -> Z) (addresses : variableIndex -> list Z) effect continuation : eliminateLocalVariables bools numbers addresses (Dispatch _ _ _ (DoWithArrays arrayIndex arrayType _ effect) continuation) = Dispatch _ _ _ effect (fun x => eliminateLocalVariables bools numbers addresses (continuation x)).
+Proof. easy. Qed.
+
+Lemma pushBooleanGet {arrayIndex arrayType variableIndex} `{EqDecision variableIndex} (bools : variableIndex -> bool) (numbers : variableIndex -> Z) (addresses : variableIndex -> list Z) name continuation : eliminateLocalVariables bools numbers addresses (Dispatch _ _ _ (BooleanLocalGet arrayIndex arrayType _ name) continuation) = eliminateLocalVariables bools numbers addresses (continuation (bools name)).
+Proof. easy. Qed.
+
+Lemma pushNumberGet {arrayIndex arrayType variableIndex} `{EqDecision variableIndex} (bools : variableIndex -> bool) (numbers : variableIndex -> Z) (addresses : variableIndex -> list Z) name continuation : eliminateLocalVariables bools numbers addresses (Dispatch _ _ _ (NumberLocalGet arrayIndex arrayType _ name) continuation) = eliminateLocalVariables bools numbers addresses (continuation (numbers name)).
+Proof. easy. Qed.
+
+Lemma pushAddressGet {arrayIndex arrayType variableIndex} `{EqDecision variableIndex} (bools : variableIndex -> bool) (numbers : variableIndex -> Z) (addresses : variableIndex -> list Z) name continuation : eliminateLocalVariables bools numbers addresses (Dispatch _ _ _ (AddressLocalGet arrayIndex arrayType _ name) continuation) = eliminateLocalVariables bools numbers addresses (continuation (addresses name)).
+Proof. easy. Qed.
+
+Lemma pushBooleanSet {arrayIndex arrayType variableIndex} `{EqDecision variableIndex} (bools : variableIndex -> bool) (numbers : variableIndex -> Z) (addresses : variableIndex -> list Z) name value continuation : eliminateLocalVariables bools numbers addresses (Dispatch _ _ _ (BooleanLocalSet arrayIndex arrayType _ name value) continuation) = eliminateLocalVariables (update bools name value) numbers addresses (continuation tt).
+Proof. easy. Qed.
+
+Lemma pushNumberSet {arrayIndex arrayType variableIndex} `{EqDecision variableIndex} (bools : variableIndex -> bool) (numbers : variableIndex -> Z) (addresses : variableIndex -> list Z) name value continuation : eliminateLocalVariables bools numbers addresses (Dispatch _ _ _ (NumberLocalSet arrayIndex arrayType _ name value) continuation) = eliminateLocalVariables bools (update numbers name value) addresses (continuation tt).
+Proof. easy. Qed.
+
+Lemma pushAddressSet {arrayIndex arrayType variableIndex} `{EqDecision variableIndex} (bools : variableIndex -> bool) (numbers : variableIndex -> Z) (addresses : variableIndex -> list Z) name value continuation : eliminateLocalVariables bools numbers addresses (Dispatch _ _ _ (AddressLocalSet arrayIndex arrayType _ name value) continuation) = eliminateLocalVariables bools numbers (update addresses name value) (continuation tt).
+Proof. easy. Qed.
+
 Definition readChar arrayIndex arrayType variableIndex := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue Z (DoWithArrays _ _ _ (DoBasicEffect _ _ ReadChar)) (fun x => Done _ _ Z x).
 
 Definition writeChar arrayIndex arrayType variableIndex x := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue _ (DoWithArrays _ _ _ (DoBasicEffect _ _ (WriteChar x))) (fun x => Done _ _ _ x).
