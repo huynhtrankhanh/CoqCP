@@ -26,7 +26,7 @@ Notation "x >>= f" := (bind x f) (at level 50, left associativity).
 Lemma leftIdentity {effectType effectResponse A B} (x : A) (f : A -> Action effectType effectResponse B) : bind (Done _ _ _ x) f = f x.
 Proof. easy. Qed.
 
-Lemma rightIdentity {effectType effectResponse A} (x : Action effectType effectResponse A) (hEffectType : EqDecision effectType) : bind x (Done _ _ _) = x.
+Lemma rightIdentity {effectType effectResponse A} (x : Action effectType effectResponse A) : bind x (Done _ _ _) = x.
 Proof.
   induction x as [| a next IH]; try easy; simpl.
   assert (h : (λ _0 : effectResponse a, next _0 >>= Done effectType effectResponse A) = next).
@@ -34,7 +34,7 @@ Proof.
   now rewrite h.
 Qed.
 
-Lemma assoc {effectType effectResponse A B C} (x : Action effectType effectResponse A) (hEffectType : EqDecision effectType) (f : A -> Action effectType effectResponse B) (g : B -> Action effectType effectResponse C) : (bind x (fun x => bind (f x) g)) = (bind (bind x f) g).
+Lemma bindAssoc {effectType effectResponse A B C} (x : Action effectType effectResponse A) (f : A -> Action effectType effectResponse B) (g : B -> Action effectType effectResponse C) : (bind x (fun x => bind (f x) g)) = (bind (bind x f) g).
 Proof.
   induction x as [| a next IH]; try easy; simpl.
   assert (h : (λ _0 : effectResponse a, next _0 >>= λ _1 : A, f _1 >>= g) = (λ _0 : effectResponse a, next _0 >>= f >>= g)).
