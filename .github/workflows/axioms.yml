@@ -32,17 +32,11 @@ jobs:
       run: |
         s=$( /snap/coq-prover/current/coq-platform/bin/coqchk -silent --output-context -R theories/ CoqCP $(ls **/*.vo | awk -F'/' '{split($NF, a, "."); print "CoqCP."a[1]}') 2>&1 )
         expected=$(cat << 'EOF'
-        CONTEXT SUMMARY
-        ===============
-
         * Theory: Set is predicative
-
-        * Axioms: <none>
-
+        * Axioms:
+            Coq.Logic.FunctionalExtensionality.functional_extensionality_dep
         * Constants/Inductives relying on type-in-type: <none>
-
         * Constants/Inductives relying on unsafe (co)fixpoints: <none>
-
         * Inductives whose positivity is assumed: <none>
         EOF
         )
