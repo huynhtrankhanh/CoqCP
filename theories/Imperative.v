@@ -4,6 +4,7 @@ Import Coq.Lists.List.
 Require Import Coq.Logic.Eqdep_dec.
 Require Import ZArith.
 Require Import Coq.Strings.Ascii.
+Require Import Coq.Logic.FunctionalExtensionality.
 Open Scope Z_scope.
 
 Record Environment (arrayIndex : Type) := { arrayType: arrayIndex -> Type; arrays: forall (name : arrayIndex), list (arrayType name) }.
@@ -14,18 +15,6 @@ Inductive Action (effectType : Type) (effectResponse : effectType -> Type) (retu
 | Done (returnValue : returnType)
 | Dispatch (effect : effectType) (continuation : effectResponse effect -> Action effectType effectResponse returnType).
 
-Fixpoint identical {effectType effectResponse returnType} (a b : Action effectType effectResponse returnType) : Prop.
-Proof.
-  case a as [returnValue | effect continuation].
-  - case b as [returnValue2 |].
-    + exact (returnValue = returnValue2).
-    + exact False.
-  - case b as [| effect2 continuation2].
-    + exact False.
-    + pose proof (ltac:(intro hEffect; subst effect; exact (forall response, identical _ _ _ (continuation response) (continuation2 response))) : effect = effect2 -> Prop) as rhs.
-      exact (effect = effect2 /\ forall x: effect = effect2, rhs x).
-Defined.
-
 Fixpoint bind {effectType effectResponse A B} (a : Action effectType effectResponse A) (f : A -> Action effectType effectResponse B) : Action effectType effectResponse B :=
   match a with
   | Done _ _ _ value => f value
@@ -34,26 +23,23 @@ Fixpoint bind {effectType effectResponse A B} (a : Action effectType effectRespo
 
 Notation "x >>= f" := (bind x f) (at level 50, left associativity).
 
-Lemma identicalSelf {effectType effectResponse A} (a : Action effectType effectResponse A) (hEffectType : EqDecision effectType) : identical a a.
-Proof.
-  induction a as [| effect continuation IH]; simpl; try easy. split; try easy. intro no. unfold eq_rect_r. now rewrite <- (eq_rect_eq_dec hEffectType).
-Qed.
-
 Lemma leftIdentity {effectType effectResponse A B} (x : A) (f : A -> Action effectType effectResponse B) : bind (Done _ _ _ x) f = f x.
 Proof. easy. Qed.
 
-Lemma rightIdentity {effectType effectResponse A} (x : Action effectType effectResponse A) (hEffectType : EqDecision effectType) : identical (bind x (Done _ _ _)) x.
+Lemma rightIdentity {effectType effectResponse A} (x : Action effectType effectResponse A) (hEffectType : EqDecision effectType) : bind x (Done _ _ _) = x.
 Proof.
   induction x as [| a next IH]; try easy; simpl.
-  split; try easy. intros no. unfold eq_rect_r. rewrite <- (eq_rect_eq_dec hEffectType).
-  intros h. exact (IH h).
+  assert (h : (λ _0 : effectResponse a, next _0 >>= Done effectType effectResponse A) = next).
+  { apply functional_extensionality. assumption. }
+  now rewrite h.
 Qed.
 
-Lemma assoc {effectType effectResponse A B C} (x : Action effectType effectResponse A) (hEffectType : EqDecision effectType) (f : A -> Action effectType effectResponse B) (g : B -> Action effectType effectResponse C) : identical (bind x (fun x => bind (f x) g)) (bind (bind x f) g).
+Lemma assoc {effectType effectResponse A B C} (x : Action effectType effectResponse A) (hEffectType : EqDecision effectType) (f : A -> Action effectType effectResponse B) (g : B -> Action effectType effectResponse C) : (bind x (fun x => bind (f x) g)) = (bind (bind x f) g).
 Proof.
   induction x as [| a next IH]; try easy; simpl.
-  - now apply identicalSelf.
-  - split; try easy. intros no. unfold eq_rect_r. rewrite <- (eq_rect_eq_dec hEffectType). intros h. exact (IH h).
+  assert (h : (λ _0 : effectResponse a, next _0 >>= λ _1 : A, f _1 >>= g) = (λ _0 : effectResponse a, next _0 >>= f >>= g)).
+  { apply functional_extensionality. assumption. }
+  now rewrite h.
 Qed.
 
 Definition shortCircuitAnd {effectType effectResponse} (a b : Action effectType effectResponse bool) := bind a (fun x => match x with
