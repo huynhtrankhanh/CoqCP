@@ -624,4 +624,3 @@ Lemma unfoldInvoke_S_SetByte :
     invokeContractAux sender target money revertTo state (<[Z.to_nat index := value]> communication) (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode (continuation tt)
     else Some ([], revertTo).
 Proof. easy. Qed.
-
