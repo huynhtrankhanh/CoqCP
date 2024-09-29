@@ -93,6 +93,23 @@ Definition getBalanceInvoke (state : BlockchainState) (communication : list Z) :
 
 Lemma invokeCodeNoNone arrays communication : invokeContract (repeat 1%Z 20) (repeat 0%Z 20) 0 (stateAfterInteractions arrays) (stateAfterInteractions arrays) communication 1 <> None.
 Proof.
+  unfold invokeContract. assert (h : stateAfterInteractions arrays (repeat 0%Z 20) = BlockchainContract arrayIndex0 arrayIndexEqualityDecidable0
+  (arrayType arrayIndex0 environment0) arrays 100000
+  (funcdef_0__main (λ _ : varsfuncdef_0__main, false)
+     (λ _ : varsfuncdef_0__main, 0%Z)
+     (λ _ : varsfuncdef_0__main, repeat 0%Z 20))). { easy. } rewrite h. remember (funcdef_0__main (λ _ : varsfuncdef_0__main, false) (λ _ : varsfuncdef_0__main, 0%Z)
+     (λ _ : varsfuncdef_0__main, repeat 0%Z 20)) as oldCode eqn:hOldCode.
+  rewrite (ltac:(now rewrite <- hOldCode) : invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0 (stateAfterInteractions arrays)
+  (stateAfterInteractions arrays) communication 1 arrayIndex0
+  arrayIndexEqualityDecidable0 (arrayType arrayIndex0 environment0) arrays oldCode oldCode = invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0 (stateAfterInteractions arrays)
+  (stateAfterInteractions arrays) communication 1 arrayIndex0
+  arrayIndexEqualityDecidable0 (arrayType arrayIndex0 environment0) arrays oldCode (funcdef_0__main (λ _ : varsfuncdef_0__main, false)
+  (λ _ : varsfuncdef_0__main, 0%Z)
+  (λ _ : varsfuncdef_0__main, repeat 0%Z 20))). unfold funcdef_0__main.
+  rewrite !leftIdentity. unfold retrieve. rewrite <- !bindAssoc. pose proof pushDispatch2 (λ _ : varsfuncdef_0__main, false)
+  (λ _ : varsfuncdef_0__main, 0%Z)
+  (λ _ : varsfuncdef_0__main, repeat 0%Z 20) (Retrieve arrayIndex0 (arrayType arrayIndex0 environment0)
+  arraydef_0__hasBeenInitialized 0) as step. autorewrite with combined_unfold in step. rewrite step. clear step. rewrite unfoldInvoke_S_Retrieve. case_decide as hLt; [| easy]. rewrite !leftIdentity. case_bool_decide.
 Admitted.
 
 Lemma interactEqualsModelScore (x : list (Z * Z)) : interact state x = modelScore x.
