@@ -82,6 +82,82 @@ Definition basicEffectReturnValue (effect : BasicEffect): Type :=
   | SetByte _ _ => unit
   end.
 
+(* Definition of the function *)
+Definition basicEffectReturnValue (effect : BasicEffect): Type :=
+  match effect with
+  | Trap => False
+  | Flush => unit
+  | ReadChar => Z
+  | WriteChar _ => unit
+  | Donate _ _ => unit
+  | Invoke _ _ _ => list Z
+  | GetSender => list Z
+  | GetMoney => Z
+  | GetCommunicationSize => Z
+  | ReadByte _ => Z
+  | SetByte _ _ => unit
+  end.
+
+(* Unfold lemmas for each constructor *)
+Lemma unfold_Trap :
+  basicEffectReturnValue Trap = False.
+Proof. reflexivity. Qed.
+
+Lemma unfold_Flush :
+  basicEffectReturnValue Flush = unit.
+Proof. reflexivity. Qed.
+
+Lemma unfold_ReadChar :
+  basicEffectReturnValue ReadChar = Z.
+Proof. reflexivity. Qed.
+
+Lemma unfold_WriteChar {c} :
+  basicEffectReturnValue (WriteChar c) = unit.
+Proof. reflexivity. Qed.
+
+Lemma unfold_Donate {a b} :
+  basicEffectReturnValue (Donate a b) = unit.
+Proof. reflexivity. Qed.
+
+Lemma unfold_Invoke {a b c} :
+  basicEffectReturnValue (Invoke a b c) = list Z.
+Proof. reflexivity. Qed.
+
+Lemma unfold_GetSender :
+  basicEffectReturnValue GetSender = list Z.
+Proof. reflexivity. Qed.
+
+Lemma unfold_GetMoney :
+  basicEffectReturnValue GetMoney = Z.
+Proof. reflexivity. Qed.
+
+Lemma unfold_GetCommunicationSize :
+  basicEffectReturnValue GetCommunicationSize = Z.
+Proof. reflexivity. Qed.
+
+Lemma unfold_ReadByte {b} :
+  basicEffectReturnValue (ReadByte b) = Z.
+Proof. reflexivity. Qed.
+
+Lemma unfold_SetByte {a b} :
+  basicEffectReturnValue (SetByte a b) = unit.
+Proof. reflexivity. Qed.
+
+(* Autorewrite database *)
+Create HintDb basicEffectReturnValue_unfold.
+
+Hint Rewrite unfold_Trap : basicEffectReturnValue_unfold.
+Hint Rewrite unfold_Flush : basicEffectReturnValue_unfold.
+Hint Rewrite unfold_ReadChar : basicEffectReturnValue_unfold.
+Hint Rewrite unfold_WriteChar : basicEffectReturnValue_unfold.
+Hint Rewrite unfold_Donate : basicEffectReturnValue_unfold.
+Hint Rewrite unfold_Invoke : basicEffectReturnValue_unfold.
+Hint Rewrite unfold_GetSender : basicEffectReturnValue_unfold.
+Hint Rewrite unfold_GetMoney : basicEffectReturnValue_unfold.
+Hint Rewrite unfold_GetCommunicationSize : basicEffectReturnValue_unfold.
+Hint Rewrite unfold_ReadByte : basicEffectReturnValue_unfold.
+Hint Rewrite unfold_SetByte : basicEffectReturnValue_unfold.
+
 Inductive WithArrays (arrayIndex : Type) (arrayType : arrayIndex -> Type) :=
 | DoBasicEffect (effect : BasicEffect)
 | Retrieve (arrayName : arrayIndex) (index : Z)
