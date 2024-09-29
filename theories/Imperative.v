@@ -82,6 +82,57 @@ Definition basicEffectReturnValue (effect : BasicEffect): Type :=
   | SetByte _ _ => unit
   end.
 
+(* Unfold lemmas for each constructor *)
+Lemma unfold_DoWithArrays {arrayIndex arrayType variableIndex effect} :
+  @withLocalVariablesReturnValue arrayIndex arrayType variableIndex (DoWithArrays _ _ _ effect) =
+  withArraysReturnValue effect.
+Proof. reflexivity. Qed.
+
+Lemma unfold_BooleanLocalGet {arrayIndex arrayType variableIndex a b c d} :
+  @withLocalVariablesReturnValue arrayIndex arrayType variableIndex (BooleanLocalGet a b c d) =
+  bool.
+Proof. reflexivity. Qed.
+
+Lemma unfold_BooleanLocalSet {arrayIndex arrayType variableIndex a b c d e} :
+  @withLocalVariablesReturnValue arrayIndex arrayType variableIndex (BooleanLocalSet a b c d e) =
+  unit.
+Proof. reflexivity. Qed.
+
+Lemma unfold_NumberLocalGet {arrayIndex arrayType variableIndex a b c d} :
+  @withLocalVariablesReturnValue arrayIndex arrayType variableIndex (NumberLocalGet a b c d) =
+  Z.
+Proof. reflexivity. Qed.
+
+Lemma unfold_NumberLocalSet {arrayIndex arrayType variableIndex a b c d e} :
+  @withLocalVariablesReturnValue arrayIndex arrayType variableIndex (NumberLocalSet a b c d e) =
+  unit.
+Proof. reflexivity. Qed.
+
+Lemma unfold_AddressLocalGet {arrayIndex arrayType variableIndex a b c d} :
+  @withLocalVariablesReturnValue arrayIndex arrayType variableIndex (AddressLocalGet a b c d) =
+  list Z.
+Proof. reflexivity. Qed.
+
+Lemma unfold_AddressLocalSet {arrayIndex arrayType variableIndex a b c d e} :
+  @withLocalVariablesReturnValue arrayIndex arrayType variableIndex (AddressLocalSet a b c d e) =
+  unit.
+Proof. reflexivity. Qed.
+
+(* Autorewrite database *)
+Create HintDb withLocalVariablesReturnValue_unfold.
+
+Hint Rewrite unfold_DoWithArrays : withLocalVariablesReturnValue_unfold.
+Hint Rewrite unfold_BooleanLocalGet : withLocalVariablesReturnValue_unfold.
+Hint Rewrite unfold_BooleanLocalSet : withLocalVariablesReturnValue_unfold.
+Hint Rewrite unfold_NumberLocalGet : withLocalVariablesReturnValue_unfold.
+Hint Rewrite unfold_NumberLocalSet : withLocalVariablesReturnValue_unfold.
+Hint Rewrite unfold_AddressLocalGet : withLocalVariablesReturnValue_unfold.
+Hint Rewrite unfold_AddressLocalSet : withLocalVariablesReturnValue_unfold.
+
+(* To automatically rewrite using these lemmas, you can use: *)
+
+(* autorewrite with withLocalVariablesReturnValue_unfold. *)
+
 Inductive WithArrays (arrayIndex : Type) (arrayType : arrayIndex -> Type) :=
 | DoBasicEffect (effect : BasicEffect)
 | Retrieve (arrayName : arrayIndex) (index : Z)
