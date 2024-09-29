@@ -106,6 +106,30 @@ Definition withArraysReturnValue {arrayIndex} {arrayType : arrayIndex -> Type} (
   | Store _ _ _ _ _ => unit
   end.
 
+(* Unfold lemmas for each constructor *)
+Lemma unfold_DoBasicEffect {arrayIndex arrayType effect1 effect2} :
+  @withArraysReturnValue arrayIndex arrayType (DoBasicEffect _ _ effect1) =
+  basicEffectReturnValue effect1.
+Proof. reflexivity. Qed.
+
+Lemma unfold_Retrieve {arrayIndex arrayType arrayName b c d} :
+  @withArraysReturnValue arrayIndex arrayType (Retrieve _ _ arrayName b) =
+  arrayType arrayName.
+Proof. reflexivity. Qed.
+
+Lemma unfold_Store {arrayIndex arrayType a b c d e} :
+  @withArraysReturnValue arrayIndex arrayType (Store a b c d e) =
+  unit.
+Proof. reflexivity. Qed.
+
+(* Autorewrite database *)
+Create HintDb withArraysReturnValue_unfold.
+
+Hint Rewrite unfold_DoBasicEffect : withArraysReturnValue_unfold.
+Hint Rewrite unfold_Retrieve : withArraysReturnValue_unfold.
+Hint Rewrite unfold_Store :
+ withArraysReturnValue_unfold.
+
 Inductive WithLocalVariables (arrayIndex : Type) (arrayType : arrayIndex -> Type) (variableIndex : Type) :=
 | DoWithArrays (effect : WithArrays arrayIndex arrayType)
 | BooleanLocalGet (name : variableIndex)
