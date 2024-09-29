@@ -82,22 +82,6 @@ Definition basicEffectReturnValue (effect : BasicEffect): Type :=
   | SetByte _ _ => unit
   end.
 
-(* Definition of the function *)
-Definition basicEffectReturnValue (effect : BasicEffect): Type :=
-  match effect with
-  | Trap => False
-  | Flush => unit
-  | ReadChar => Z
-  | WriteChar _ => unit
-  | Donate _ _ => unit
-  | Invoke _ _ _ => list Z
-  | GetSender => list Z
-  | GetMoney => Z
-  | GetCommunicationSize => Z
-  | ReadByte _ => Z
-  | SetByte _ _ => unit
-  end.
-
 (* Unfold lemmas for each constructor *)
 Lemma unfold_Trap :
   basicEffectReturnValue Trap = False.
@@ -111,15 +95,15 @@ Lemma unfold_ReadChar :
   basicEffectReturnValue ReadChar = Z.
 Proof. reflexivity. Qed.
 
-Lemma unfold_WriteChar {c} :
+Lemma unfold_WriteChar c :
   basicEffectReturnValue (WriteChar c) = unit.
 Proof. reflexivity. Qed.
 
-Lemma unfold_Donate {a b} :
+Lemma unfold_Donate a b :
   basicEffectReturnValue (Donate a b) = unit.
 Proof. reflexivity. Qed.
 
-Lemma unfold_Invoke {a b c} :
+Lemma unfold_Invoke a b c :
   basicEffectReturnValue (Invoke a b c) = list Z.
 Proof. reflexivity. Qed.
 
@@ -135,11 +119,11 @@ Lemma unfold_GetCommunicationSize :
   basicEffectReturnValue GetCommunicationSize = Z.
 Proof. reflexivity. Qed.
 
-Lemma unfold_ReadByte {b} :
+Lemma unfold_ReadByte b :
   basicEffectReturnValue (ReadByte b) = Z.
 Proof. reflexivity. Qed.
 
-Lemma unfold_SetByte {a b} :
+Lemma unfold_SetByte a b :
   basicEffectReturnValue (SetByte a b) = unit.
 Proof. reflexivity. Qed.
 
@@ -183,18 +167,18 @@ Definition withArraysReturnValue {arrayIndex} {arrayType : arrayIndex -> Type} (
   end.
 
 (* Unfold lemmas for each constructor *)
-Lemma unfold_DoBasicEffect {arrayIndex arrayType effect1 effect2} :
+Lemma unfold_DoBasicEffect arrayIndex arrayType effect1 :
   @withArraysReturnValue arrayIndex arrayType (DoBasicEffect _ _ effect1) =
   basicEffectReturnValue effect1.
 Proof. reflexivity. Qed.
 
-Lemma unfold_Retrieve {arrayIndex arrayType arrayName b c d} :
+Lemma unfold_Retrieve arrayIndex arrayType arrayName b :
   @withArraysReturnValue arrayIndex arrayType (Retrieve _ _ arrayName b) =
   arrayType arrayName.
 Proof. reflexivity. Qed.
 
-Lemma unfold_Store {arrayIndex arrayType a b c d e} :
-  @withArraysReturnValue arrayIndex arrayType (Store a b c d e) =
+Lemma unfold_Store arrayIndex arrayType c d e :
+  @withArraysReturnValue arrayIndex arrayType (Store _ _ c d e) =
   unit.
 Proof. reflexivity. Qed.
 
@@ -229,38 +213,38 @@ Definition withLocalVariablesReturnValue {arrayIndex arrayType variableIndex} (e
   end.
 
 (* Unfold lemmas for each constructor *)
-Lemma unfold_DoWithArrays {arrayIndex arrayType variableIndex effect} :
+Lemma unfold_DoWithArrays arrayIndex arrayType variableIndex effect :
   @withLocalVariablesReturnValue arrayIndex arrayType variableIndex (DoWithArrays _ _ _ effect) =
   withArraysReturnValue effect.
 Proof. reflexivity. Qed.
 
-Lemma unfold_BooleanLocalGet {arrayIndex arrayType variableIndex a b c d} :
-  @withLocalVariablesReturnValue arrayIndex arrayType variableIndex (BooleanLocalGet a b c d) =
+Lemma unfold_BooleanLocalGet arrayIndex arrayType variableIndex d :
+  @withLocalVariablesReturnValue arrayIndex arrayType variableIndex (BooleanLocalGet _ _ _ d) =
   bool.
 Proof. reflexivity. Qed.
 
-Lemma unfold_BooleanLocalSet {arrayIndex arrayType variableIndex a b c d e} :
-  @withLocalVariablesReturnValue arrayIndex arrayType variableIndex (BooleanLocalSet a b c d e) =
+Lemma unfold_BooleanLocalSet arrayIndex arrayType variableIndex d e :
+  @withLocalVariablesReturnValue arrayIndex arrayType variableIndex (BooleanLocalSet _ _ _ d e) =
   unit.
 Proof. reflexivity. Qed.
 
-Lemma unfold_NumberLocalGet {arrayIndex arrayType variableIndex a b c d} :
-  @withLocalVariablesReturnValue arrayIndex arrayType variableIndex (NumberLocalGet a b c d) =
+Lemma unfold_NumberLocalGet arrayIndex arrayType variableIndex d :
+  @withLocalVariablesReturnValue arrayIndex arrayType variableIndex (NumberLocalGet _ _ _ d) =
   Z.
 Proof. reflexivity. Qed.
 
-Lemma unfold_NumberLocalSet {arrayIndex arrayType variableIndex a b c d e} :
-  @withLocalVariablesReturnValue arrayIndex arrayType variableIndex (NumberLocalSet a b c d e) =
+Lemma unfold_NumberLocalSet arrayIndex arrayType variableIndex d e :
+  @withLocalVariablesReturnValue arrayIndex arrayType variableIndex (NumberLocalSet _ _ _ d e) =
   unit.
 Proof. reflexivity. Qed.
 
-Lemma unfold_AddressLocalGet {arrayIndex arrayType variableIndex a b c d} :
-  @withLocalVariablesReturnValue arrayIndex arrayType variableIndex (AddressLocalGet a b c d) =
+Lemma unfold_AddressLocalGet arrayIndex arrayType variableIndex d :
+  @withLocalVariablesReturnValue arrayIndex arrayType variableIndex (AddressLocalGet _ _ _ d) =
   list Z.
 Proof. reflexivity. Qed.
 
-Lemma unfold_AddressLocalSet {arrayIndex arrayType variableIndex a b c d e} :
-  @withLocalVariablesReturnValue arrayIndex arrayType variableIndex (AddressLocalSet a b c d e) =
+Lemma unfold_AddressLocalSet arrayIndex arrayType variableIndex d e :
+  @withLocalVariablesReturnValue arrayIndex arrayType variableIndex (AddressLocalSet _ _ _ d e) =
   unit.
 Proof. reflexivity. Qed.
 
