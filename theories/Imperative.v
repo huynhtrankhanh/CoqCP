@@ -82,6 +82,52 @@ Definition basicEffectReturnValue (effect : BasicEffect): Type :=
   | SetByte _ _ => unit
   end.
 
+Inductive WithArrays (arrayIndex : Type) (arrayType : arrayIndex -> Type) :=
+| DoBasicEffect (effect : BasicEffect)
+| Retrieve (arrayName : arrayIndex) (index : Z)
+| Store (arrayName : arrayIndex) (index : Z) (value : arrayType arrayName).
+
+#[export] Instance withArraysEqualityDecidable {arrayIndex : Type} {arrayType : arrayIndex -> Type} (hIndexEq : EqDecision arrayIndex) (hArrayType : forall name, EqDecision (arrayType name)) : EqDecision (WithArrays arrayIndex arrayType).
+Proof.
+  intros a b.
+  destruct a as [e | a i | a i v]; destruct b as [e1 | a1 i1 | a1 i1 v1]; try ((left; easy) || (right; easy)).
+  - destruct (decide (e = e1)) as [h | h]; try subst e1.
+    { now left. } { right; intro x; now inversion x. }
+  - destruct (decide (a = a1)) as [h | h]; try subst a1; destruct (decide (i = i1)) as [h1 | h1]; try subst i1; try now left.
+    all: right; intro x; now inversion x.
+  - destruct (decide (a = a1)) as [h | h]; try subst a1; destruct (decide (i = i1)) as [h1 | h1]; try subst i1; try (right; intro x; now inversion x).
+    destruct (hArrayType a v v1) as [h | h]; try (subst v1; now left). right. intro x. inversion x as [x1]. apply inj_pair2_eq_dec in x1; try easy.
+Qed.
+
+Definition withArraysReturnValue {arrayIndex} {arrayType : arrayIndex -> Type} (effect : WithArrays arrayIndex arrayType) : Type :=
+  match effect with
+  | DoBasicEffect _ _ effect => basicEffectReturnValue effect
+  | Retrieve _ _ arrayName _ => arrayType arrayName
+  | Store _ _ _ _ _ => unit
+  end.
+
+Inductive WithLocalVariables (arrayIndex : Type) (arrayType : arrayIndex -> Type) (variableIndex : Type) :=
+| DoWithArrays (effect : WithArrays arrayIndex arrayType)
+| BooleanLocalGet (name : variableIndex)
+| BooleanLocalSet (name : variableIndex) (value : bool)
+| NumberLocalGet (name : variableIndex)
+| NumberLocalSet (name : variableIndex) (value : Z)
+| AddressLocalGet (name : variableIndex)
+| AddressLocalSet (name : variableIndex) (value : list Z).
+
+#[export] Instance withLocalVariablesEqualityDecidable {arrayIndex arrayType variableIndex} (hArrayIndex : EqDecision arrayIndex) (hArrayType : forall name, EqDecision (arrayType name)) (hVariableIndex : EqDecision variableIndex) : EqDecision (WithLocalVariables arrayIndex arrayType variableIndex) := ltac:(solve_decision).
+
+Definition withLocalVariablesReturnValue {arrayIndex arrayType variableIndex} (effect : WithLocalVariables arrayIndex arrayType variableIndex) : Type :=
+  match effect with
+  | DoWithArrays _ _ _ effect => withArraysReturnValue effect
+  | BooleanLocalGet _ _ _ _ => bool
+  | BooleanLocalSet _ _ _ _ _ => unit
+  | NumberLocalGet _ _ _ _ => Z
+  | NumberLocalSet _ _ _ _ _ => unit
+  | AddressLocalGet _ _ _ _ => list Z
+  | AddressLocalSet _ _ _ _ _ => unit
+  end.
+
 (* Unfold lemmas for each constructor *)
 Lemma unfold_DoWithArrays {arrayIndex arrayType variableIndex effect} :
   @withLocalVariablesReturnValue arrayIndex arrayType variableIndex (DoWithArrays _ _ _ effect) =
@@ -132,52 +178,6 @@ Hint Rewrite unfold_AddressLocalSet : withLocalVariablesReturnValue_unfold.
 (* To automatically rewrite using these lemmas, you can use: *)
 
 (* autorewrite with withLocalVariablesReturnValue_unfold. *)
-
-Inductive WithArrays (arrayIndex : Type) (arrayType : arrayIndex -> Type) :=
-| DoBasicEffect (effect : BasicEffect)
-| Retrieve (arrayName : arrayIndex) (index : Z)
-| Store (arrayName : arrayIndex) (index : Z) (value : arrayType arrayName).
-
-#[export] Instance withArraysEqualityDecidable {arrayIndex : Type} {arrayType : arrayIndex -> Type} (hIndexEq : EqDecision arrayIndex) (hArrayType : forall name, EqDecision (arrayType name)) : EqDecision (WithArrays arrayIndex arrayType).
-Proof.
-  intros a b.
-  destruct a as [e | a i | a i v]; destruct b as [e1 | a1 i1 | a1 i1 v1]; try ((left; easy) || (right; easy)).
-  - destruct (decide (e = e1)) as [h | h]; try subst e1.
-    { now left. } { right; intro x; now inversion x. }
-  - destruct (decide (a = a1)) as [h | h]; try subst a1; destruct (decide (i = i1)) as [h1 | h1]; try subst i1; try now left.
-    all: right; intro x; now inversion x.
-  - destruct (decide (a = a1)) as [h | h]; try subst a1; destruct (decide (i = i1)) as [h1 | h1]; try subst i1; try (right; intro x; now inversion x).
-    destruct (hArrayType a v v1) as [h | h]; try (subst v1; now left). right. intro x. inversion x as [x1]. apply inj_pair2_eq_dec in x1; try easy.
-Qed.
-
-Definition withArraysReturnValue {arrayIndex} {arrayType : arrayIndex -> Type} (effect : WithArrays arrayIndex arrayType) : Type :=
-  match effect with
-  | DoBasicEffect _ _ effect => basicEffectReturnValue effect
-  | Retrieve _ _ arrayName _ => arrayType arrayName
-  | Store _ _ _ _ _ => unit
-  end.
-
-Inductive WithLocalVariables (arrayIndex : Type) (arrayType : arrayIndex -> Type) (variableIndex : Type) :=
-| DoWithArrays (effect : WithArrays arrayIndex arrayType)
-| BooleanLocalGet (name : variableIndex)
-| BooleanLocalSet (name : variableIndex) (value : bool)
-| NumberLocalGet (name : variableIndex)
-| NumberLocalSet (name : variableIndex) (value : Z)
-| AddressLocalGet (name : variableIndex)
-| AddressLocalSet (name : variableIndex) (value : list Z).
-
-#[export] Instance withLocalVariablesEqualityDecidable {arrayIndex arrayType variableIndex} (hArrayIndex : EqDecision arrayIndex) (hArrayType : forall name, EqDecision (arrayType name)) (hVariableIndex : EqDecision variableIndex) : EqDecision (WithLocalVariables arrayIndex arrayType variableIndex) := ltac:(solve_decision).
-
-Definition withLocalVariablesReturnValue {arrayIndex arrayType variableIndex} (effect : WithLocalVariables arrayIndex arrayType variableIndex) : Type :=
-  match effect with
-  | DoWithArrays _ _ _ effect => withArraysReturnValue effect
-  | BooleanLocalGet _ _ _ _ => bool
-  | BooleanLocalSet _ _ _ _ _ => unit
-  | NumberLocalGet _ _ _ _ => Z
-  | NumberLocalSet _ _ _ _ _ => unit
-  | AddressLocalGet _ _ _ _ => list Z
-  | AddressLocalSet _ _ _ _ _ => unit
-  end.
 
 Inductive LoopOutcome :=
 | KeepGoing
