@@ -263,6 +263,36 @@ Hint Rewrite unfold_AddressLocalSet : withLocalVariablesReturnValue_unfold.
 
 (* autorewrite with withLocalVariablesReturnValue_unfold. *)
 
+(* Combined autorewrite database *)
+Create HintDb combined_unfold.
+
+Hint Rewrite unfold_DoWithArrays : combined_unfold.
+Hint Rewrite unfold_BooleanLocalGet : combined_unfold.
+Hint Rewrite unfold_BooleanLocalSet : combined_unfold.
+Hint Rewrite unfold_NumberLocalGet : combined_unfold.
+Hint Rewrite unfold_NumberLocalSet : combined_unfold.
+Hint Rewrite unfold_AddressLocalGet : combined_unfold.
+Hint Rewrite unfold_AddressLocalSet : combined_unfold.
+
+Hint Rewrite unfold_DoBasicEffect : combined_unfold.
+Hint Rewrite unfold_Retrieve : combined_unfold.
+Hint Rewrite unfold_Store : combined_unfold.
+
+Hint Rewrite unfold_Trap : combined_unfold.
+Hint Rewrite unfold_Flush : combined_unfold.
+Hint Rewrite unfold_ReadChar : combined_unfold.
+Hint Rewrite unfold_WriteChar : combined_unfold.
+Hint Rewrite unfold_Donate : combined_unfold.
+Hint Rewrite unfold_Invoke : combined_unfold.
+Hint Rewrite unfold_GetSender : combined_unfold.
+Hint Rewrite unfold_GetMoney : combined_unfold.
+Hint Rewrite unfold_GetCommunicationSize : combined_unfold.
+Hint Rewrite unfold_ReadByte : combined_unfold.
+Hint Rewrite unfold_SetByte : combined_unfold.
+
+(* To automatically rewrite using all the lemmas, use: *)
+(* autorewrite with combined_unfold. *)
+
 Inductive LoopOutcome :=
 | KeepGoing
 | Stop.
