@@ -789,3 +789,34 @@ Lemma unfoldInvoke_S_SetByte :
     invokeContractAux sender target money revertTo state (<[Z.to_nat index := value]> communication) (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode (continuation tt)
     else Some ([], revertTo).
 Proof. easy. Qed.
+
+Create HintDb advance_program.
+Hint Rewrite unfoldInvoke_0 : advance_program.
+Hint Rewrite unfoldInvoke_S_Done : advance_program.
+Hint Rewrite unfoldInvoke_S_Retrieve : advance_program.
+Hint Rewrite unfoldInvoke_S_Store : advance_program.
+Hint Rewrite unfoldInvoke_S_Trap : advance_program.
+Hint Rewrite unfoldInvoke_S_Flush : advance_program.
+Hint Rewrite unfoldInvoke_S_ReadChar : advance_program.
+Hint Rewrite unfoldInvoke_S_WriteChar : advance_program.
+Hint Rewrite unfoldInvoke_S_Donate : advance_program.
+Hint Rewrite unfoldInvoke_S_Invoke : advance_program.
+Hint Rewrite unfoldInvoke_S_GetSender : advance_program.
+Hint Rewrite unfoldInvoke_S_GetMoney : advance_program.
+Hint Rewrite unfoldInvoke_S_GetCommunicationSize : advance_program.
+Hint Rewrite unfoldInvoke_S_ReadByte : advance_program.
+Hint Rewrite unfoldInvoke_S_SetByte : advance_program.
+Hint Rewrite @pushDispatch : advance_program.
+Hint Rewrite @pushDispatch2 : advance_program.
+Hint Rewrite @pushBooleanGet : advance_program.
+Hint Rewrite @pushBooleanGet2 : advance_program.
+Hint Rewrite @pushNumberGet : advance_program.
+Hint Rewrite @pushNumberGet2 : advance_program.
+Hint Rewrite @pushAddressGet : advance_program.
+Hint Rewrite @pushAddressGet2 : advance_program.
+Hint Rewrite @pushBooleanSet : advance_program.
+Hint Rewrite @pushBooleanSet2 : advance_program.
+Hint Rewrite @pushNumberSet : advance_program.
+Hint Rewrite @pushNumberSet2 : advance_program.
+Hint Rewrite @pushAddressSet : advance_program.
+Hint Rewrite @pushAddressSet2 : advance_program.
