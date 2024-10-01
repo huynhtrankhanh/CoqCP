@@ -80,4 +80,5 @@ Definition funcdef_0__main (bools : varsfuncdef_0__main -> bool) (numbers : vars
   Done _ _ _ tt
 )) >>=
 fun _ => (((Done _ _ _ 0%Z) >>= fun x => readByte arrayIndex0 (arrayType _ environment0) varsfuncdef_0__main x) >>= fun preset0 => ((Done _ _ _ 1%Z) >>= fun x => readByte arrayIndex0 (arrayType _ environment0) varsfuncdef_0__main x) >>= fun preset1 => (((Done _ _ _ (fun x => 0%Z)) >>= fun x => Done _ _ _ (update x (vardef_0__unite_u) preset0)) >>= fun x => Done _ _ _ (update x (vardef_0__unite_v) preset1)) >>= fun x => (Done _ _ _ (fun x => false)) >>= fun y => (Done _ _ _ (fun x => repeat 0%Z 20)) >>= fun z => liftToWithLocalVariables (funcdef_0__unite y x z)) >>=
+fun _ => ((Done _ _ _ 0%Z) >>= fun x => (((Done _ _ _ 0%Z) >>= fun x => Done _ _ _ (coerceInt x 8)) >>= fun tuple_element_0 => Done _ _ _ (tuple_element_0)) >>= fun y => store arrayIndex0 (arrayType _ environment0) varsfuncdef_0__main (arraydef_0__result) x y) >>=
 fun _ => Done _ _ _ tt).
