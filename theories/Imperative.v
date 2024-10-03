@@ -321,6 +321,21 @@ Proof.
     + exact (Done _ _ _ Stop).
 Defined.
 
+Lemma dropWithinLoop_1 arrayIndex arrayType variableIndex : dropWithinLoop (Done (WithinLoop arrayIndex arrayType variableIndex) withinLoopReturnValue () tt) = Done _ _ _ KeepGoing.
+Proof. easy. Qed.
+
+Lemma dropWithinLoop_2 arrayIndex arrayType variableIndex effect continuation : dropWithinLoop (Dispatch (WithinLoop arrayIndex arrayType variableIndex) withinLoopReturnValue () (DoWithLocalVariables _ _ _ effect) continuation) = Dispatch _ _ _ effect (fun x => dropWithinLoop (continuation x)).
+Proof. easy. Qed.
+
+Lemma dropWithinLoop_2' arrayIndex arrayType variableIndex effect continuation : dropWithinLoop (Dispatch (WithinLoop arrayIndex arrayType variableIndex) withinLoopReturnValue _ (DoWithLocalVariables _ _ _ effect) (fun x => Done _ _ _ x) >>= continuation) = Dispatch _ _ _ effect (fun x => dropWithinLoop (continuation x)).
+Proof. easy. Qed.
+
+Lemma dropWithinLoop_3 arrayIndex arrayType variableIndex continuation : dropWithinLoop (Dispatch (WithinLoop arrayIndex arrayType variableIndex) withinLoopReturnValue () (DoContinue _ _ _) continuation) = Done _ _ _ KeepGoing.
+Proof. easy. Qed.
+
+Lemma dropWithinLoop_4 arrayIndex arrayType variableIndex continuation : dropWithinLoop (Dispatch (WithinLoop arrayIndex arrayType variableIndex) withinLoopReturnValue () (DoBreak _ _ _) continuation) = Done _ _ _ Stop.
+Proof. easy. Qed.
+
 Fixpoint loop (n : nat) {arrayIndex arrayType variableIndex} (body : nat -> Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue LoopOutcome) : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue unit :=
   match n with
   | O => Done _ _ unit tt
@@ -329,6 +344,9 @@ Fixpoint loop (n : nat) {arrayIndex arrayType variableIndex} (body : nat -> Acti
     | Stop => Done _ _ unit tt
     end)
   end.
+
+Lemma loop_S (n : nat) {arrayIndex arrayType variableIndex} (body : nat -> Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue LoopOutcome) : loop (S n) body = bind (body n) (fun outcome => match outcome with | KeepGoing => loop n body | Stop => Done _ _ unit tt end).
+Proof. easy. Qed.
 
 Fixpoint loopString (s : string) {arrayIndex arrayType variableIndex} (body : Z -> Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue LoopOutcome) : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue unit :=
   match s with
@@ -361,6 +379,9 @@ Lemma pushDispatch {arrayIndex arrayType variableIndex} `{EqDecision variableInd
 Proof. easy. Qed.
 
 Lemma pushDispatch2 {arrayIndex arrayType variableIndex} `{EqDecision variableIndex} (bools : variableIndex -> bool) (numbers : variableIndex -> Z) (addresses : variableIndex -> list Z) effect continuation : eliminateLocalVariables bools numbers addresses ((Dispatch _ _ _ (DoWithArrays arrayIndex arrayType _ effect) (fun x => Done _ _ _ x)) >>= continuation) = Dispatch _ _ _ effect (fun x => eliminateLocalVariables bools numbers addresses (continuation x)).
+Proof. easy. Qed.
+
+Lemma pushDispatch3 {arrayIndex arrayType variableIndex} `{EqDecision variableIndex} (bools : variableIndex -> bool) (numbers : variableIndex -> Z) (addresses : variableIndex -> list Z) effect continuation : eliminateLocalVariables bools numbers addresses ((Dispatch _ _ _ (DoWithArrays arrayIndex arrayType _ effect) (fun x => dropWithinLoop (Done _ _ _ tt))) >>= continuation) = Dispatch _ _ _ effect (fun x => eliminateLocalVariables bools numbers addresses (continuation KeepGoing)).
 Proof. easy. Qed.
 
 Lemma pushBooleanGet {arrayIndex arrayType variableIndex} `{EqDecision variableIndex} (bools : variableIndex -> bool) (numbers : variableIndex -> Z) (addresses : variableIndex -> list Z) name continuation : eliminateLocalVariables bools numbers addresses (Dispatch _ _ _ (BooleanLocalGet arrayIndex arrayType _ name) continuation) = eliminateLocalVariables bools numbers addresses (continuation (bools name)).

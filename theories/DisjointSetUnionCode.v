@@ -92,6 +92,264 @@ Definition getBalanceInvoke (state : BlockchainState) (communication : list Z) :
   | None => 0%Z
   end.
 
+Lemma initializeArray a b n nextCommands (h : n <= 100) (l : list Z) (hL : length l = 100) : invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0
+  state state [a; b] 1 arrayIndex0
+  arrayIndexEqualityDecidable0
+  (arrayType arrayIndex0 environment0) (λ _0 : arrayIndex0,
+  match
+  _0 as _1
+return
+  (list
+  (arrayType
+  arrayIndex0
+  environment0
+  _1))
+with
+| arraydef_0__dsu => l
+| arraydef_0__hasBeenInitialized =>
+    [1%Z]
+| arraydef_0__result =>
+    [0%Z]
+end)
+  (funcdef_0__main (λ _ : varsfuncdef_0__main, false)
+  (λ _ : varsfuncdef_0__main, 0%Z)
+  (λ _ : varsfuncdef_0__main, repeat 0%Z 20))
+  (eliminateLocalVariables
+  (λ _ : varsfuncdef_0__main, false)
+  (λ _ : varsfuncdef_0__main, 0%Z)
+  (λ _ : varsfuncdef_0__main, repeat 0%Z 20)
+  (loop n
+  (λ _0 : nat,
+  dropWithinLoop
+  (liftToWithinLoop
+  (Done
+  (WithLocalVariables arrayIndex0
+  (arrayType arrayIndex0
+  environment0)
+  varsfuncdef_0__main)
+  withLocalVariablesReturnValue Z
+  (100%Z - Z.of_nat _0 - 1)%Z >>=
+λ _1 : Z,
+  Done
+  (WithLocalVariables arrayIndex0
+  (arrayType arrayIndex0
+  environment0)
+  varsfuncdef_0__main)
+  withLocalVariablesReturnValue Z
+  (coerceInt (coerceInt (- (1)) 64)
+  8) >>=
+λ _2 : Z,
+  Dispatch
+  (WithLocalVariables arrayIndex0
+  (arrayType arrayIndex0
+  environment0)
+  varsfuncdef_0__main)
+  withLocalVariablesReturnValue
+  (withLocalVariablesReturnValue
+  (DoWithArrays arrayIndex0
+  (arrayType arrayIndex0
+  environment0)
+  varsfuncdef_0__main
+  (Store arrayIndex0
+  (arrayType arrayIndex0
+  environment0)
+  arraydef_0__dsu _1
+  _2)))
+  (DoWithArrays arrayIndex0
+  (arrayType arrayIndex0
+  environment0)
+  varsfuncdef_0__main
+  (Store arrayIndex0
+  (arrayType arrayIndex0
+  environment0)
+  arraydef_0__dsu _1
+  _2))
+  (λ _3 : withLocalVariablesReturnValue
+  (DoWithArrays
+  arrayIndex0
+  (arrayType
+  arrayIndex0
+  environment0)
+  varsfuncdef_0__main
+  (Store arrayIndex0
+  (arrayType
+  arrayIndex0
+  environment0)
+  arraydef_0__dsu
+  _1
+  _2)),
+  Done
+  (WithLocalVariables
+  arrayIndex0
+  (arrayType arrayIndex0
+  environment0)
+  varsfuncdef_0__main)
+  withLocalVariablesReturnValue
+  (withLocalVariablesReturnValue
+  (DoWithArrays
+  arrayIndex0
+  (arrayType
+  arrayIndex0
+  environment0)
+  varsfuncdef_0__main
+  (Store arrayIndex0
+  (arrayType
+  arrayIndex0
+  environment0)
+  arraydef_0__dsu _1
+  _2)))
+  _3)) >>=
+λ _ : (),
+  Done
+  (WithinLoop arrayIndex0
+  (arrayType arrayIndex0
+  environment0)
+  varsfuncdef_0__main)
+  withinLoopReturnValue ()
+  ())) >>= (fun _ => nextCommands))) = invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0
+  state state [a; b] 1 arrayIndex0
+  arrayIndexEqualityDecidable0
+  (arrayType arrayIndex0 environment0) (λ _0 : arrayIndex0,
+  match
+  _0 as _1
+return
+  (list
+  (arrayType
+  arrayIndex0
+  environment0
+  _1))
+with
+| arraydef_0__dsu =>
+    take (100 - n) l ++ repeat 255%Z n
+| arraydef_0__hasBeenInitialized =>
+    [1%Z]
+| arraydef_0__result =>
+    [0%Z]
+end)
+  (funcdef_0__main (λ _ : varsfuncdef_0__main, false)
+  (λ _ : varsfuncdef_0__main, 0%Z)
+  (λ _ : varsfuncdef_0__main, repeat 0%Z 20))
+  (eliminateLocalVariables
+  (λ _ : varsfuncdef_0__main, false)
+  (λ _ : varsfuncdef_0__main, 0%Z)
+  (λ _ : varsfuncdef_0__main, repeat 0%Z 20) nextCommands).
+Proof.
+  induction n as [| n IH] in l, hL, h |- *.
+  - unfold loop. rewrite leftIdentity. rewrite (ltac:(easy) : repeat _ 0 = []). rewrite app_nil_r. rewrite (ltac:(lia) : 100 - 0 = 100). rewrite <- hL, firstn_all. reflexivity.
+  - rewrite loop_S. rewrite !(ltac:(easy) : (coerceInt (coerceInt (- (1)) 64) 8) = 255%Z). rewrite !leftIdentity. unfold liftToWithinLoop at 1. rewrite <- !bindAssoc. pose proof dropWithinLoop_2' _ _ _ (DoWithArrays arrayIndex0 (arrayType arrayIndex0 environment0) varsfuncdef_0__main (Store arrayIndex0 (arrayType arrayIndex0 environment0) arraydef_0__dsu (100 - Z.of_nat n - 1) 255%Z)) as step. assert (h1 : (λ _1 : withinLoopReturnValue
+  (DoWithLocalVariables arrayIndex0
+  (arrayType arrayIndex0 environment0)
+  varsfuncdef_0__main
+  (DoWithArrays arrayIndex0
+  (arrayType arrayIndex0 environment0)
+  varsfuncdef_0__main
+  (Store arrayIndex0
+  (arrayType arrayIndex0 environment0)
+  arraydef_0__dsu
+  (100 - Z.of_nat n - 1)
+  255%Z))),
+  Done
+  (WithinLoop arrayIndex0
+  (arrayType arrayIndex0 environment0)
+  varsfuncdef_0__main)
+  withinLoopReturnValue
+  (withinLoopReturnValue
+  (DoWithLocalVariables arrayIndex0
+  (arrayType arrayIndex0 environment0)
+  varsfuncdef_0__main
+  (DoWithArrays arrayIndex0
+  (arrayType arrayIndex0 environment0)
+  varsfuncdef_0__main
+  (Store arrayIndex0
+  (arrayType arrayIndex0 environment0)
+  arraydef_0__dsu
+  (100 - Z.of_nat n - 1) 255%Z))))
+  _1) =  (λ _1 : unit,
+  Done
+  (WithinLoop arrayIndex0
+  (arrayType arrayIndex0 environment0)
+  varsfuncdef_0__main)
+  withinLoopReturnValue
+  (withinLoopReturnValue
+  (DoWithLocalVariables arrayIndex0
+  (arrayType arrayIndex0 environment0)
+  varsfuncdef_0__main
+  (DoWithArrays arrayIndex0
+  (arrayType arrayIndex0 environment0)
+  varsfuncdef_0__main
+  (Store arrayIndex0
+  (arrayType arrayIndex0 environment0)
+  arraydef_0__dsu
+  (100 - Z.of_nat n - 1) 255%Z))))
+  _1) ). { apply functional_extensionality_dep. intro x. reflexivity. } rewrite h1 in step. clear h1. rewrite step. clear step. pose proof pushDispatch3 (λ _ : varsfuncdef_0__main, false) (λ _ : varsfuncdef_0__main, 0%Z) (λ _ : varsfuncdef_0__main, repeat 0%Z 20) (Store arrayIndex0 (arrayType arrayIndex0
+  environment0)
+  arraydef_0__dsu (100 - Z.of_nat n - 1)
+  255%Z) as well. rewrite well. clear well. autorewrite with advance_program.
+  pose proof IH ltac:(lia) (<[Z.to_nat (100 - Z.of_nat n - 1):=255%Z]> l) ltac:(now rewrite insert_length) as previous. clear IH.
+
+  assert (hh : (λ _0 : arrayIndex0,
+  match
+  _0 as _1
+return
+  (list
+  (arrayType
+  arrayIndex0
+  environment0
+  _1))
+with
+| arraydef_0__dsu =>
+    <[Z.to_nat
+  (100 -
+Z.of_nat n -
+1):=255%Z]>
+  l
+| arraydef_0__hasBeenInitialized =>
+    [1%Z]
+| arraydef_0__result =>
+    [0%Z]
+end) = (λ _0 : arrayIndex0,
+  match
+  decide
+  (_0 = arraydef_0__dsu)
+with
+| left _1 =>
+  @eq_rect_r arrayIndex0 arraydef_0__dsu
+  (fun _2 : arrayIndex0 =>
+list (arrayType arrayIndex0 environment0 _2))
+  (@insert nat
+  (arrayType arrayIndex0 environment0
+  arraydef_0__dsu)
+  (list
+  (arrayType arrayIndex0 environment0
+  arraydef_0__dsu))
+  (@list_insert
+  (arrayType arrayIndex0 environment0
+  arraydef_0__dsu))
+  (Z.to_nat (Z.sub (Z.sub 100 (Z.of_nat n)) 1))
+  255%Z
+  l)
+  _0
+  _1
+| right _ =>
+    match
+  _0 as _2
+return
+  (list
+  (arrayType
+  arrayIndex0
+  environment0
+  _2))
+with
+| arraydef_0__dsu =>
+    l
+| arraydef_0__hasBeenInitialized =>
+    [1%Z]
+| arraydef_0__result =>
+    [0%Z]
+end
+end)). { apply functional_extensionality_dep. intro x. destruct x; simpl; easy. } rewrite <- hh. clear hh. rewrite !(ltac:(cbv; reflexivity) : (coerceInt (coerceInt (Z.opp 1) 64) 8) = 255%Z) in previous. rewrite previous.
+Admitted.
+
 Lemma firstInteraction (a b : Z) : invokeContract (repeat 1%Z 20) (repeat 0%Z 20) 0%Z state state [a; b] 1 = Some ([a; b], stateAfterInteractions (fun x => match x with | arraydef_0__result => [0%Z] | arraydef_0__hasBeenInitialized => [1%Z] | arraydef_0__dsu => convertToArray (unite (repeat (Ancestor Unit) 100) (Z.to_nat a) (Z.to_nat b)) end) (dsuScore (unite (repeat (Ancestor Unit) 100) (Z.to_nat a) (Z.to_nat b)))).
 Proof.
   unfold invokeContract. rewrite (ltac:(easy) : state (repeat 0%Z 20) = BlockchainContract _ _ _ _ _ _). unfold funcdef_0__main at 2. rewrite !leftIdentity. unfold retrieve at 1. rewrite <- !bindAssoc. pose proof pushDispatch2 (λ _ : varsfuncdef_0__main, false) (λ _ : varsfuncdef_0__main, 0%Z) (λ _ : varsfuncdef_0__main, repeat 0%Z 20) (Retrieve arrayIndex0 (arrayType arrayIndex0 environment0) arraydef_0__hasBeenInitialized 0) as step. autorewrite with combined_unfold in step. rewrite step. clear step. autorewrite with advance_program. case_decide as h; simpl in h; [| lia]. rewrite !leftIdentity. case_bool_decide as h1; cbv in h1; [| lia]. unfold store. pose proof pushDispatch2 (λ _ : varsfuncdef_0__main, false) (λ _ : varsfuncdef_0__main, 0%Z) (λ _ : varsfuncdef_0__main, repeat 0%Z 20) (Store arrayIndex0 (arrayType arrayIndex0 environment0) arraydef_0__hasBeenInitialized 0 (coerceInt 1 8)) as step. autorewrite with combined_unfold in *. rewrite <- !bindAssoc, step. clear step. autorewrite with advance_program. assert (hsimp : (λ _0 : arrayIndex0,
