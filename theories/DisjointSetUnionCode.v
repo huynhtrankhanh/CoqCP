@@ -45,6 +45,11 @@ Fixpoint ancestor (dsu : list Slot) (fuel : nat) (index : nat) :=
     end
   end.
 
+Definition withoutCycles (dsu : list Slot) := forall x, match nth x dsu (Ancestor Unit) with
+  | Ancestor _ => true
+  | _ => false
+  end.
+
 Fixpoint pathCompress (dsu : list Slot) (fuel : nat) (index ancestor : nat) :=
   match fuel with
   | O => dsu
