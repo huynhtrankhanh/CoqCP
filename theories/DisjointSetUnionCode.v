@@ -122,6 +122,20 @@ Definition dsuScore (dsu : list Slot) := Z.of_nat (list_sum (map (fun x => match
 
 Definition dsuLeafCount (dsu : list Slot) := Z.of_nat (list_sum (map (fun x => match x with | ReferTo _ => 0 | Ancestor x => leafCount x end) dsu)).
 
+Lemma pathCompressPreservesLeafCount (dsu : list Slot) (n a b : nat) : dsuLeafCount (pathCompress dsu n a b) = dsuLeafCount dsu.
+Proof.
+  induction n as [| n IH] in dsu, a |- *. { easy. }
+  simpl. remember (nth a dsu (Ancestor Unit)) as x eqn:hX. symmetry in hX. destruct x as [x | x]; [| reflexivity].
+  rewrite (IH (<[a := ReferTo b]> dsu) x). clear IH n. destruct (decide (length dsu <= a)) as [hL | hL]. { rewrite list_insert_ge; lia. } rewrite insert_take_drop; [| lia]. unfold dsuLeafCount. apply inj_eq. rewrite map_app, list_sum_app. simpl. rewrite (ltac:(lia) : forall a b, a + b = a + 0 + b). rewrite (ltac:(easy) : 0 = list_sum (map (fun x => match x with | ReferTo x => 0 | Ancestor x => leafCount x end) [ReferTo x])) at 1. rewrite <- hX, <- !list_sum_app, <- !map_app.
+  assert (H1 : forall (T : Type) (l : list T) i default (H : i < length l), take i l ++ [nth i l default] = take (S i) l).
+  { clear. intros T l i default H.
+    revert H. revert l. induction i as [| i IHi]; intros l H.
+    - rewrite take_0. destruct l; simpl in *; try lia. rewrite take_0. reflexivity.
+    - destruct l; simpl in H; try lia.
+      simpl. rewrite IHi; try lia. reflexivity. }
+  rewrite H1; [| lia]. rewrite take_drop. reflexivity.
+Qed.
+
 Definition modelScore (interactions : list (Z * Z)) := dsuScore (dsuFromInteractions (repeat (Ancestor Unit) 100) (map (fun (x : Z * Z) => let (a, b) := x in (Z.to_nat a, Z.to_nat b)) interactions)).
 
 Definition getBalanceInvoke (state : BlockchainState) (communication : list Z) :=
