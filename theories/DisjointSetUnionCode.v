@@ -45,10 +45,36 @@ Fixpoint ancestor (dsu : list Slot) (fuel : nat) (index : nat) :=
     end
   end.
 
-Definition withoutCycles (dsu : list Slot) := forall x, match nth x dsu (Ancestor Unit) with
+Definition withoutCyclesN (dsu : list Slot) (n : nat) :=
+  forall x, x < n -> match nth (ancestor dsu (length dsu) x) dsu (Ancestor Unit) with
   | Ancestor _ => true
   | _ => false
   end.
+
+Fixpoint withoutCyclesBool (dsu : list Slot) (n : nat) : bool :=
+  match n with
+  | O => true
+  | S n => match nth (ancestor dsu (length dsu) n) dsu (Ancestor Unit) with
+    | Ancestor _ => withoutCyclesBool dsu n
+    | _ => false
+    end
+  end.
+
+Lemma withoutCyclesNIffWithoutCyclesBool dsu n : withoutCyclesN dsu n <-> withoutCyclesBool dsu n.
+Proof.
+  induction n as [| n IH].
+  - simpl. unfold withoutCyclesN. split; intros; lia.
+  - split; intro h.
+  { rewrite (ltac:(easy) : withoutCyclesBool dsu (S n) = match nth (ancestor dsu (length dsu) n) dsu (Ancestor Unit) with
+    | Ancestor _ => withoutCyclesBool dsu n
+    | _ => false
+    end).
+  pose proof h n ltac:(lia) as step. destruct (nth (ancestor dsu (length dsu) n) dsu (Ancestor Unit)) as [h3 |]; [contradiction; exact h3 |]. rewrite <- IH. intros x y. pose proof h x ltac:(lia). assumption. }
+  { rewrite (ltac:(easy) : withoutCyclesBool dsu (S n) = match nth (ancestor dsu (length dsu) n) dsu (Ancestor Unit) with
+    | Ancestor _ => withoutCyclesBool dsu n
+    | _ => false
+    end) in h. intros x y. destruct (ltac:(lia) : x = n \/ x < n) as [h2 | h2]. { rewrite h2. destruct (nth (ancestor dsu (length dsu) n) dsu (Ancestor Unit)) as [h3 | h3]; [assumption |]. easy. } destruct (nth (ancestor dsu (length dsu) n) dsu (Ancestor Unit)) as [h1 |]; [contradiction; exact h1 |]. rewrite <- IH in h. pose proof h x ltac:(lia). assumption. }
+Qed.
 
 Fixpoint pathCompress (dsu : list Slot) (fuel : nat) (index ancestor : nat) :=
   match fuel with
