@@ -51,3 +51,4 @@ Makefile.conf
 
 node_modules
 dist
+.vscode
