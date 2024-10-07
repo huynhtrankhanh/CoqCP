@@ -29,6 +29,13 @@ Inductive Slot :=
 | ReferTo (x : nat)
 | Ancestor (x : Tree).
 
+Fixpoint noIllegalIndices (dsu : list Slot) : bool :=
+  match dsu with
+  | [] => true
+  | Ancestor _ :: tail => noIllegalIndices tail
+  | ReferTo x :: tail => if decide (x < length dsu) then noIllegalIndices tail else false
+  end.
+
 Fixpoint convertToArray (x : list Slot) : list Z :=
   match x with
   | [] => []
