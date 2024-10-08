@@ -29,12 +29,7 @@ Inductive Slot :=
 | ReferTo (x : nat)
 | Ancestor (x : Tree).
 
-Fixpoint noIllegalIndices (dsu : list Slot) : bool :=
-  match dsu with
-  | [] => true
-  | Ancestor _ :: tail => noIllegalIndices tail
-  | ReferTo x :: tail => if decide (x < length dsu) then noIllegalIndices tail else false
-  end.
+Definition noIllegalIndices (dsu : list Slot) := forall x y, nth x dsu (Ancestor Unit) = ReferTo y -> y < length dsu.
 
 Fixpoint convertToArray (x : list Slot) : list Z :=
   match x with
@@ -51,6 +46,14 @@ Fixpoint ancestor (dsu : list Slot) (fuel : nat) (index : nat) :=
     | Ancestor _ => index
     end
   end.
+
+Lemma ancestorLtLength dsu (h : noIllegalIndices dsu) n index (h1 : index < length dsu) : ancestor dsu n index < length dsu.
+Proof.
+  induction n as [| n IH] in h1, index |- *; [easy |].
+  simpl. remember (nth index dsu (Ancestor Unit)) as x eqn:hX. symmetry in hX. destruct x as [x | x].
+  - pose proof h _ _ hX. apply IH. lia.
+  - exact h1.
+Qed.
 
 Definition withoutCyclesN (dsu : list Slot) (n : nat) :=
   forall x, x < n -> match nth (ancestor dsu (length dsu) x) dsu (Ancestor Unit) with
@@ -82,6 +85,10 @@ Proof.
     | _ => false
     end) in h. intros x y. destruct (ltac:(lia) : x = n \/ x < n) as [h2 | h2]. { rewrite h2. destruct (nth (ancestor dsu (length dsu) n) dsu (Ancestor Unit)) as [h3 | h3]; [assumption |]. easy. } destruct (nth (ancestor dsu (length dsu) n) dsu (Ancestor Unit)) as [h1 |]; [contradiction; exact h1 |]. rewrite <- IH in h. pose proof h x ltac:(lia). assumption. }
 Qed.
+
+Lemma ancestorInsert (dsu : list Slot) (i x fuel : nat) (hI : i < length dsu) (hX : x < length dsu) (h : withoutCyclesN dsu (length dsu)) : ancestor dsu fuel i = ancestor (<[x := ReferTo (ancestor dsu (length dsu) x)]> dsu) fuel i \/ match nth (ancestor (<[x := ReferTo (ancestor dsu (length dsu) x)]> dsu) fuel i) dsu (Ancestor Unit) with | ReferTo _ => false | Ancestor _ => true end.
+Proof.
+Admitted.
 
 Fixpoint pathCompress (dsu : list Slot) (fuel : nat) (index ancestor : nat) :=
   match fuel with
@@ -122,6 +129,12 @@ Definition dsuScore (dsu : list Slot) := Z.of_nat (list_sum (map (fun x => match
 
 Definition dsuLeafCount (dsu : list Slot) := Z.of_nat (list_sum (map (fun x => match x with | ReferTo _ => 0 | Ancestor x => leafCount x end) dsu)).
 
+Lemma pathCompressPreservesLength (dsu : list Slot) (n a b : nat) : length (pathCompress dsu n a b) = length dsu.
+Proof.
+  induction n as [| n IH] in dsu, a |- *; [easy |].
+  simpl. destruct (nth a dsu (Ancestor Unit)) as [x | x]; [| easy]. rewrite IH. apply insert_length.
+Qed.
+
 Lemma pathCompressPreservesLeafCount (dsu : list Slot) (n a b : nat) : dsuLeafCount (pathCompress dsu n a b) = dsuLeafCount dsu.
 Proof.
   induction n as [| n IH] in dsu, a |- *. { easy. }
@@ -134,6 +147,14 @@ Proof.
     - destruct l; simpl in H; try lia.
       simpl. rewrite IHi; try lia. reflexivity. }
   rewrite H1; [| lia]. rewrite take_drop. reflexivity.
+Qed.
+
+Lemma pathCompressPreservesWithoutCycles (dsu : list Slot) (h : withoutCyclesN dsu (length dsu)) (h1 : noIllegalIndices dsu) (n u : nat) (hU : u < length dsu) : withoutCyclesN (pathCompress dsu n u (ancestor dsu (length dsu) u)) (length dsu).
+Proof.
+  induction n as [| n IH] in u, dsu, h, hU, h1 |- *. { simpl. assumption. }
+  simpl. remember (nth u dsu (Ancestor Unit)) as x eqn:hX. destruct x as [x | x]; [| easy]. epose proof (fun t => IH (<[u:=ReferTo (ancestor dsu (length dsu) u)]> dsu) t ltac:(intros v1 v2; destruct (decide (v1 = u)) as [h2 | h2]; [destruct (decide (length dsu <= u)); [rewrite list_insert_ge; [| lia]; intro h3; rewrite h2 in h3; rewrite <- hX in h3; injection h3; intro h4; subst x; subst u; exact (h1 v1 v2 ltac:(symmetry in hX; exact hX)) | pose proof list_lookup_insert dsu u (ReferTo (ancestor dsu (length dsu) u)) ltac:(lia) as step; pose proof nth_lookup_Some _ _ (Ancestor Unit) _ step as step2; subst u; rewrite step2; pose proof ancestorLtLength dsu h1 (length dsu) v1 ltac:(lia) as step3]; intro h3; injection h3; intro h4; rewrite insert_length | pose proof list_lookup_insert_ne dsu u v1 (ReferTo (ancestor dsu (length dsu) u)) ltac:(lia) as step; pose proof nth_lookup dsu v1 (Ancestor Unit) as step1; pose proof (nth_lookup (<[u:=ReferTo (ancestor dsu (length dsu) u)]> dsu) v1 (Ancestor Unit)) as step2; rewrite step in step2; rewrite <- step1 in step2; rewrite step2; intro step3; rewrite insert_length; exact (h1 v1 v2 step3)]; lia) x ltac:(rewrite insert_length; exact (h1 u x ltac:(symmetry; assumption)))) as step. rewrite !insert_length in step.
+  assert (step1 : u < length dsu -> x < length dsu -> ancestor (<[u:=ReferTo (ancestor dsu (length dsu) u)]> dsu) (length dsu) x = ancestor dsu (length dsu) x).
+  { clear. }
 Qed.
 
 Definition modelScore (interactions : list (Z * Z)) := dsuScore (dsuFromInteractions (repeat (Ancestor Unit) 100) (map (fun (x : Z * Z) => let (a, b) := x in (Z.to_nat a, Z.to_nat b)) interactions)).
