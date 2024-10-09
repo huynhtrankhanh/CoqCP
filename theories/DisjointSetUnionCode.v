@@ -86,6 +86,10 @@ Proof.
     end) in h. intros x y. destruct (ltac:(lia) : x = n \/ x < n) as [h2 | h2]. { rewrite h2. destruct (nth (ancestor dsu (length dsu) n) dsu (Ancestor Unit)) as [h3 | h3]; [assumption |]. easy. } destruct (nth (ancestor dsu (length dsu) n) dsu (Ancestor Unit)) as [h1 |]; [contradiction; exact h1 |]. rewrite <- IH in h. pose proof h x ltac:(lia). assumption. }
 Qed.
 
+Lemma ancestorInsert (dsu : list Slot) (fuel : nat) (u x : nat) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (h3 : u < length dsu) (h4 : x < length dsu) (h5 : match nth x dsu (Ancestor Unit) with | ReferTo _ => true | Ancestor _ => false end) : ancestor dsu (length dsu) (ancestor dsu fuel u) = ancestor (<[x:=ReferTo (ancestor dsu (length dsu) x)]> dsu) (length dsu) (ancestor (<[x:=ReferTo (ancestor dsu fuel x)]> dsu) fuel u).
+Proof.
+Qed.
+
 Fixpoint pathCompress (dsu : list Slot) (fuel : nat) (index ancestor : nat) :=
   match fuel with
   | O => dsu
