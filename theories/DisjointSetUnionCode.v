@@ -79,7 +79,7 @@ Proof.
     | Ancestor _ => withoutCyclesBool dsu n
     | _ => false
     end).
-  pose proof h n ltac:(lia) as step. destruct (nth (ancestor dsu (length dsu) n) dsu (Ancestor Unit)) as [h3 |]; [contradiction; exact h3 |]. rewrite <- IH. intros x y. pose proof h x ltac:(lia). assumption. }
+    pose proof h n ltac:(lia) as step. destruct (nth (ancestor dsu (length dsu) n) dsu (Ancestor Unit)) as [h3 |]; [contradiction; exact h3 |]. rewrite <- IH. intros x y. pose proof h x ltac:(lia). assumption. }
   { rewrite (ltac:(easy) : withoutCyclesBool dsu (S n) = match nth (ancestor dsu (length dsu) n) dsu (Ancestor Unit) with
     | Ancestor _ => withoutCyclesBool dsu n
     | _ => false
