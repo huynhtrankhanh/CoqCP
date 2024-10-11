@@ -47,6 +47,15 @@ Fixpoint ancestor (dsu : list Slot) (fuel : nat) (index : nat) :=
     end
   end.
 
+Fixpoint ancestorChain (dsu : list Slot) (fuel : nat) (index : nat) :=
+  match fuel with
+  | O => []
+  | S fuel => match nth index dsu (Ancestor Unit) with
+    | ReferTo x => index :: ancestorChain dsu fuel x
+    | Ancestor _ => index :: nil
+    end
+  end.
+
 Lemma ancestorLtLength dsu (h : noIllegalIndices dsu) n index (h1 : index < length dsu) : ancestor dsu n index < length dsu.
 Proof.
   induction n as [| n IH] in h1, index |- *; [easy |].
