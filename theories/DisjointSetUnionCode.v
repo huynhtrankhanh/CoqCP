@@ -49,12 +49,62 @@ Fixpoint ancestor (dsu : list Slot) (fuel : nat) (index : nat) :=
 
 Fixpoint ancestorChain (dsu : list Slot) (fuel : nat) (index : nat) :=
   match fuel with
-  | O => []
+  | O => [index]
   | S fuel => match nth index dsu (Ancestor Unit) with
     | ReferTo x => index :: ancestorChain dsu fuel x
     | Ancestor _ => index :: nil
     end
   end.
+
+Lemma ancesterEqLastAncestorChain dsu fuel index : last (ancestorChain dsu fuel index) = Some (ancestor dsu fuel index).
+Proof.
+  induction fuel as [| fuel IH] in index |- *. { easy. }
+  simpl. remember (nth index dsu (Ancestor Unit)) as x eqn:hX. destruct x as [x | x]; symmetry in hX.
+  - rewrite last_cons. pose proof IH x as h. now rewrite h.
+  - easy.
+Qed.
+
+Definition validChain (dsu : list Slot) (chain : list nat) := chain <> [] /\ nth 0 chain 0 < length dsu /\ forall index, S index < length chain -> nth (nth index chain 0) dsu (Ancestor Unit) = ReferTo (nth (S index) chain 0).
+
+Definition validChainToAncestor (dsu : list Slot) (chain : list nat) := validChain dsu chain /\ exists x, nth (default 0 (last chain)) dsu (Ancestor Unit) = Ancestor x.
+
+Fixpoint sumOccurrences (l : list nat) (x : nat) :=
+  match x with
+  | O => count_occ Nat.eq_dec l O
+  | S x => count_occ Nat.eq_dec l x + sumOccurrences l x
+  end.
+
+Lemma sumOccurrencesNil (x : nat) : sumOccurrences [] x = 0.
+Proof.
+  induction x as [| x IH]. { easy. }
+  simpl. assumption.
+Qed.
+
+Lemma sumOccurrencesCons (l : list nat) (head : nat) (x : nat) (hLt1 : head < x) (hLt2 : forall y, In y l -> y < x) : sumOccurrences (head :: l) x = S (sumOccurrences l x).
+Proof.
+  induction x as [| x IH]. { easy. }
+  rewrite !(ltac:(easy) : forall l x, sumOccurrences l (S x) = count_occ Nat.eq_dec l x + sumOccurrences l x).
+Admitted.
+
+Lemma lengthLtSumOccurrences (l : list nat) (x : nat) (h : forall y, In y l -> y < x) (h' : length l < sumOccurrences l x) : exists x, 2 <= count_occ Nat.eq_dec l x.
+Proof.
+  induction l as [| head tail IH].
+  - simpl in h'. rewrite sumOccurrencesNil in h'. lia.
+  - assert (h1 : forall y, In y tail -> y < x).
+    { intro y. pose proof h y as h2. simpl in h2. intro h3. exact (h2 ltac:(right; assumption)). }
+    simpl in h'. rewrite sumOccurrencesCons in h'; [| exact (h head ltac:(simpl; left; reflexivity)) | assumption]. pose proof IH h1 ltac:(lia) as [y hy]. exists y. destruct (decide (head = y)) as [hs | hs]; [rewrite count_occ_cons_eq | rewrite count_occ_cons_neq]; try exact hs; lia.
+Qed.
+
+
+
+Lemma validChainMaxLength (dsu : list Slot) chain (h1 : noIllegalIndices dsu) (h2 : validChainToAncestor dsu chain) : length chain <= length dsu.
+Proof.
+  assert (h : forall index, index < length chain -> nth index chain 0 < length dsu).
+  { intro index. induction index as [| index IH]; intro h3.
+    - pose proof h2 as [[_ [x _]] _]. exact x.
+    - apply (h1 (nth index chain 0) (nth (S index) chain 0)). pose proof h2 as [[_ [_ x]] _]. exact (x index h3). }
+  
+Qed.
 
 Lemma ancestorLtLength dsu (h : noIllegalIndices dsu) n index (h1 : index < length dsu) : ancestor dsu n index < length dsu.
 Proof.
