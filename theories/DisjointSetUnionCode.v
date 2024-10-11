@@ -95,15 +95,16 @@ Proof.
     simpl in h'. rewrite sumOccurrencesCons in h'; [| exact (h head ltac:(simpl; left; reflexivity)) | assumption]. pose proof IH h1 ltac:(lia) as [y hy]. exists y. destruct (decide (head = y)) as [hs | hs]; [rewrite count_occ_cons_eq | rewrite count_occ_cons_neq]; try exact hs; lia.
 Qed.
 
-
-
 Lemma validChainMaxLength (dsu : list Slot) chain (h1 : noIllegalIndices dsu) (h2 : validChainToAncestor dsu chain) : length chain <= length dsu.
 Proof.
   assert (h : forall index, index < length chain -> nth index chain 0 < length dsu).
   { intro index. induction index as [| index IH]; intro h3.
     - pose proof h2 as [[_ [x _]] _]. exact x.
     - apply (h1 (nth index chain 0) (nth (S index) chain 0)). pose proof h2 as [[_ [_ x]] _]. exact (x index h3). }
-  
+  assert (h3 : forall x, In x chain -> x < length dsu).
+  { revert h. clear. intro h. induction chain as [| head tail IH]. { simpl. intros. easy. } intros element [h1 | h1].
+    - pose proof h 0 ltac:(simpl; lia) as step. simpl in step. subst head. assumption.
+    - now apply (IH ltac:(intros x h2; pose proof h (S x) ltac:(simpl; lia) as step; simpl in step; assumption)). }
 Qed.
 
 Lemma ancestorLtLength dsu (h : noIllegalIndices dsu) n index (h1 : index < length dsu) : ancestor dsu n index < length dsu.
