@@ -1,4 +1,4 @@
-From CoqCP Require Import Options Imperative DisjointSetUnion ListsEqual.
+From CoqCP Require Import Options Imperative DisjointSetUnion ListsEqual ExistsInRange.
 From Generated Require Import DisjointSetUnion.
 From stdpp Require Import numbers list.
 Require Import Coq.Logic.FunctionalExtensionality.
@@ -69,54 +69,19 @@ Definition validChain (dsu : list Slot) (chain : list nat) := chain <> [] /\ nth
 
 Definition validChainToAncestor (dsu : list Slot) (chain : list nat) := validChain dsu chain /\ exists x, nth (default 0 (last chain)) dsu (Ancestor Unit) = Ancestor x.
 
-Fixpoint sumOccurrences (l : list nat) (x : nat) :=
-  match x with
-  | O => O
-  | S x => count_occ Nat.eq_dec l x + sumOccurrences l x
-  end.
-
-Lemma sumOccurrencesNil (x : nat) : sumOccurrences [] x = 0.
+Lemma pigeonhole (f : nat -> nat) (n : nat) (hImage : forall x, f x < n) : exists i j, i <> j /\ i < S n /\ j < S n /\ f i = f j.
 Proof.
-  induction x as [| x IH]. { easy. }
-  simpl. assumption.
-Qed.
-
-Lemma countOccFilter {A : Type} (l : list A) (f : A -> bool) (x : A) `{eq : EqDecision A} : count_occ eq l x = count_occ eq (filter f l) x + count_occ eq (filter (fun x => ~f x) l) x.
-Proof.
-  induction l as [| head tail IH]. { easy. }
-  rewrite !filter_cons. repeat case_decide; try tauto; pose proof (ltac:(simpl; destruct (eq head x); lia) : forall tail, count_occ eq (head :: tail) x = count_occ eq [head] x + count_occ eq tail x) as step; rewrite step at 1; [rewrite (step (filter (λ _2 : A, f _2) tail)) | rewrite (step (filter (λ _2 : A, ~f _2) tail))]; lia.
-Qed.
-
-Lemma sumOccurrencesCons2 (l : list nat) head x : sumOccurrences (head :: l) x = (if decide (head < x) then 1 else 0) + sumOccurrences l x.
-Proof.
-  induction x as [| x IH]. { easy. }
-  - simpl. rewrite IH, (ltac:(easy) : Nat.eq_dec head x = decide (head = x)). repeat case_decide; try lia.
-Qed.
-
-Lemma sumOccurrencesFilter (l : list nat) x : sumOccurrences l x = sumOccurrences (filter (fun y => y < x) l) x.
-Proof.
-  induction l as [| head tail IH]. { easy. }
-  rewrite sumOccurrencesCons2, filter_cons. case_decide; [rewrite sumOccurrencesCons2 | lia]. case_decide; lia.
-Qed.
-
-Lemma sumOccurrencesCons (l : list nat) (head : nat) (x : nat) (hLt1 : head < x) : sumOccurrences (head :: l) x = S (sumOccurrences l x).
-Proof.
-  rewrite sumOccurrencesCons2. case_decide; lia.
-Qed.
-
-Lemma sumOccurrencesLength (l : list nat) x (hLt : forall y, In y l -> y < x) : sumOccurrences l x = length l.
-Proof.
-  induction l as [| head tail IH]. { now rewrite sumOccurrencesNil. }
-  rewrite sumOccurrencesCons; [| apply hLt; left; reflexivity]. simpl. rewrite IH; [reflexivity |]. intros a h. apply hLt. right. assumption.
-Qed.
-
-Lemma lengthLtSumOccurrences (l : list nat) (x : nat) (h : forall y, In y l -> y < x) (h' : x < length l) : exists x, 2 <= count_occ Nat.eq_dec l x.
-Proof.
-  induction l as [| head tail IH].
-  - simpl in *. lia.
-  - assert (h1 : forall y, In y tail -> y < x).
-    { intro y. pose proof h y as h2. simpl in h2. intro h3. exact (h2 ltac:(right; assumption)). }
-    simpl in h'. rewrite sumOccurrencesCons in h'; [| exact (h head ltac:(simpl; left; reflexivity))]. pose proof IH h1 ltac:(lia) as [y hy]. exists y. destruct (decide (head = y)) as [hs | hs]; [rewrite count_occ_cons_eq | rewrite count_occ_cons_neq]; try exact hs; lia.
+  induction n as [| n IH] in f, hImage |- *.
+  { pose proof hImage 0. lia. }
+  remember (existsInRange (S n) (fun x => bool_decide (f x = f (S n)))) as s eqn:hs. symmetry in hs. destruct s.
+  - pose proof proj1 (existsInRangeMeaning _ _) (Is_true_true_2 _ hs) as [w [h1 h2]]. rewrite bool_decide_eq_true in h2. exists w. exists (S n). repeat split; try lia.
+  - pose proof proj1 (notExistsInRangeMeaning _ _) (Is_true_false_2 _ hs) as step. unfold notExistsInRangeLogic in step. assert (step2 : forall x, x < S n -> f x <> f (S n)). { intros x h. pose proof step x ltac:(lia) as h2. case_bool_decide as h1. { exfalso. apply h2. easy. } assumption. }
+    destruct (decide (n = 0)) as [h1 | h1].
+    { pose proof hImage 0 as h2. pose proof hImage 1 as h3. subst n. exists 0, 1. split; lia. }
+    pose proof IH (fun x => if decide (f x < f (S n)) then f x else f x - 1) ltac:(intro x; simpl; case_decide as h; [pose proof hImage (S n) as h'; lia | pose proof hImage x as h'; lia]) as [a [b [c [d [e g]]]]]. exists a, b. repeat split; try (assumption || lia). case_decide as h2; case_decide as h3; try assumption.
+    + pose proof step2 b e. lia.
+    + pose proof step2 a d. lia.
+    + pose proof step2 b e. pose proof step2 a d. lia.
 Qed.
 
 Lemma validChainMaxLength (dsu : list Slot) chain (h1 : noIllegalIndices dsu) (h2 : validChainToAncestor dsu chain) : length chain <= length dsu.
@@ -128,7 +93,7 @@ Proof.
   assert (h3 : forall x, In x chain -> x < length dsu).
   { revert h. clear. intro h. induction chain as [| head tail IH]. { simpl. intros. easy. } intros element [h1 | h1].
     - pose proof h 0 ltac:(simpl; lia) as step. simpl in step. subst head. assumption.
-    - now apply (IH ltac:(intros x h2; pose proof h (S x) ltac:(simpl; lia) as step; simpl in step; assumption)). } destruct (ltac:(lia) : length dsu < length chain \/ length chain <= length dsu) as [h4 | h4]; [| exact h4]. pose proof lengthLtSumOccurrences chain (length dsu) h3.
+    - now apply (IH ltac:(intros x h2; pose proof h (S x) ltac:(simpl; lia) as step; simpl in step; assumption)). } destruct (ltac:(lia) : length dsu < length chain \/ length chain <= length dsu) as [h4 | h4]; [| exact h4].
 Qed.
 
 Lemma ancestorLtLength dsu (h : noIllegalIndices dsu) n index (h1 : index < length dsu) : ancestor dsu n index < length dsu.
