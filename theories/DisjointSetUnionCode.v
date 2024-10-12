@@ -80,6 +80,16 @@ Proof.
   simpl. assumption.
 Qed.
 
+Lemma countOccFilter {A : Type} (l : list A) (f : A -> bool) (x : A) `{eq : EqDecision A} : count_occ eq l x = count_occ eq (filter f l) x + count_occ eq (filter (fun x => ~f x) l) x.
+Proof.
+  induction l as [| head tail IH]. { easy. }
+  rewrite !filter_cons. repeat case_decide; try tauto; pose proof (ltac:(simpl; destruct (eq head x); lia) : forall tail, count_occ eq (head :: tail) x = count_occ eq [head] x + count_occ eq tail x) as step; rewrite step at 1; [rewrite (step (filter (λ _2 : A, f _2) tail)) | rewrite (step (filter (λ _2 : A, ~f _2) tail))]; lia.
+Qed.
+
+Lemma sumOccurrencesLength (l : list nat) x (hLt : forall y, In y l -> y < x) : sumOccurrences l x = length l.
+Proof.
+Qed.
+
 Lemma sumOccurrencesCons (l : list nat) (head : nat) (x : nat) (hLt1 : head < x) (hLt2 : forall y, In y l -> y < x) : sumOccurrences (head :: l) x = S (sumOccurrences l x).
 Proof.
   induction x as [| x IH]. { easy. }
