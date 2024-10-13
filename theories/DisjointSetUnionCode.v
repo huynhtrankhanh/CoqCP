@@ -84,7 +84,15 @@ Proof.
     + pose proof step2 b e. pose proof step2 a d. lia.
 Qed.
 
-Lemma commonSubarrays (dsu : list Slot) chain (h1 : noIllegalIndices dsu) (h2 : validChain dsu chain) (i j delta : nat) (hI : i < length chain) (hJ : j < length chain) (hIDelta : i + delta < length chain) (hJDelta : j + delta < length chain) (hEq : nth i chain 0 = nth j chain 0) : nth (i + delta) chain 0 = nth (j + delta) chain 0.
+Lemma pigeonholeOrdered (f : nat -> nat) (n : nat) (hImage : forall x, f x < n) : exists i j, i < j /\ i < S n /\ j < S n /\ f i = f j.
+Proof.
+  pose proof pigeonhole f n hImage as [a [b [c [d [e g]]]]].
+  destruct (ltac:(lia) : a < b \/ b < a) as [h | h].
+  - exists a, b. repeat split; assumption.
+  - exists b, a. symmetry in g. repeat split; assumption.
+Qed.
+
+Lemma commonSubarrays (dsu : list Slot) chain (h2 : validChain dsu chain) (i j delta : nat) (hI : i < length chain) (hJ : j < length chain) (hIDelta : i + delta < length chain) (hJDelta : j + delta < length chain) (hEq : nth i chain 0 = nth j chain 0) : nth (i + delta) chain 0 = nth (j + delta) chain 0.
 Proof.
   induction delta as [| delta IH].
   { now rewrite !Nat.add_0_r. }
@@ -99,10 +107,15 @@ Proof.
   { intro index. induction index as [| index IH]; intro h3.
     - pose proof h2 as [[_ [x _]] _]. exact x.
     - apply (h1 (nth index chain 0) (nth (S index) chain 0)). pose proof h2 as [[_ [_ x]] _]. exact (x index h3). }
-  assert (h3 : forall x, In x chain -> x < length dsu).
-  { revert h. clear. intro h. induction chain as [| head tail IH]. { simpl. intros. easy. } intros element [h1 | h1].
-    - pose proof h 0 ltac:(simpl; lia) as step. simpl in step. subst head. assumption.
-    - now apply (IH ltac:(intros x h2; pose proof h (S x) ltac:(simpl; lia) as step; simpl in step; assumption)). } destruct (ltac:(lia) : length dsu < length chain \/ length chain <= length dsu) as [h4 | h4]; [| exact h4].
+  destruct (ltac:(lia) : length dsu = 0 \/ 0 < length dsu) as [hs | hs].
+  { destruct h2 as [[e [f g]] [b c]]. lia. }
+  assert (h3 : forall x : nat, nth x chain 0 < length dsu).
+  { intro x. destruct (ltac:(lia) : length chain <= x \/ x < length chain) as [hd | hd]. { rewrite nth_overflow; lia. } apply h. exact hd. }
+  pose proof pigeonholeOrdered (fun x => nth x chain 0) (length dsu) h3 as [a [b [c [d [e f]]]]].
+  pose proof commonSubarrays dsu chain ltac:(pose proof h2 as [h4 _]; exact h4) a b (length chain - 1 - b) as g.
+  pose proof (ltac:(lia) : length chain <= length dsu \/ length dsu < length chain) as [hd | hd]; [exact hd |].
+  pose proof g ltac:(lia) ltac:(lia) ltac:(lia) ltac:(lia) f as i. clear g. rewrite (ltac:(lia) : b + (length chain - 1 - b) = length chain - 1) in i.
+  pose proof h2 as [[_ [_ g]] _]. pose proof g (a + (length chain - 1 - b)) ltac:(lia) as g1. rewrite i in g1.
 Qed.
 
 Lemma ancestorLtLength dsu (h : noIllegalIndices dsu) n index (h1 : index < length dsu) : ancestor dsu n index < length dsu.
