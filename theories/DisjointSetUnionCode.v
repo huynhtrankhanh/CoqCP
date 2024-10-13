@@ -67,7 +67,7 @@ Qed.
 
 Definition validChain (dsu : list Slot) (chain : list nat) := chain <> [] /\ nth 0 chain 0 < length dsu /\ forall index, S index < length chain -> nth (nth index chain 0) dsu (Ancestor Unit) = ReferTo (nth (S index) chain 0).
 
-Definition validChainToAncestor (dsu : list Slot) (chain : list nat) := validChain dsu chain /\ exists x, nth (default 0 (last chain)) dsu (Ancestor Unit) = Ancestor x.
+Definition validChainToAncestor (dsu : list Slot) (chain : list nat) := validChain dsu chain /\ exists x, nth (nth (length chain - 1) chain 0) dsu (Ancestor Unit) = Ancestor x.
 
 Lemma pigeonhole (f : nat -> nat) (n : nat) (hImage : forall x, f x < n) : exists i j, i <> j /\ i < S n /\ j < S n /\ f i = f j.
 Proof.
@@ -115,7 +115,7 @@ Proof.
   pose proof commonSubarrays dsu chain ltac:(pose proof h2 as [h4 _]; exact h4) a b (length chain - 1 - b) as g.
   pose proof (ltac:(lia) : length chain <= length dsu \/ length dsu < length chain) as [hd | hd]; [exact hd |].
   pose proof g ltac:(lia) ltac:(lia) ltac:(lia) ltac:(lia) f as i. clear g. rewrite (ltac:(lia) : b + (length chain - 1 - b) = length chain - 1) in i.
-  pose proof h2 as [[_ [_ g]] _]. pose proof g (a + (length chain - 1 - b)) ltac:(lia) as g1. rewrite i in g1.
+  pose proof h2 as [[_ [_ g]] _]. pose proof g (a + (length chain - 1 - b)) ltac:(lia) as g1. rewrite i in g1. pose proof h2 as [_ [x g2]]. rewrite g1 in g2. easy.
 Qed.
 
 Lemma ancestorLtLength dsu (h : noIllegalIndices dsu) n index (h1 : index < length dsu) : ancestor dsu n index < length dsu.
