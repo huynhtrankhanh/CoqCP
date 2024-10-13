@@ -84,6 +84,15 @@ Proof.
     + pose proof step2 b e. pose proof step2 a d. lia.
 Qed.
 
+Lemma commonSubarrays (dsu : list Slot) chain (h1 : noIllegalIndices dsu) (h2 : validChain dsu chain) (i j delta : nat) (hI : i < length chain) (hJ : j < length chain) (hIDelta : i + delta < length chain) (hJDelta : j + delta < length chain) (hEq : nth i chain 0 = nth j chain 0) : nth (i + delta) chain 0 = nth (j + delta) chain 0.
+Proof.
+  induction delta as [| delta IH].
+  { now rewrite !Nat.add_0_r. }
+  pose proof IH ltac:(lia) ltac:(lia) as h.
+  pose proof h2 as [a [b c]].
+  pose proof c (i + delta) ltac:(lia) as c1. pose proof c (j + delta) ltac:(lia) as c2. rewrite h in c1. symmetry in c1. pose proof eq_trans c1 c2 as c3. injection c3. rewrite !Nat.add_succ_r. intro h3. exact h3.
+Qed.
+
 Lemma validChainMaxLength (dsu : list Slot) chain (h1 : noIllegalIndices dsu) (h2 : validChainToAncestor dsu chain) : length chain <= length dsu.
 Proof.
   assert (h : forall index, index < length chain -> nth index chain 0 < length dsu).
