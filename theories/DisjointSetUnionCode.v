@@ -118,6 +118,15 @@ Proof.
   pose proof h2 as [[_ [_ g]] _]. pose proof g (a + (length chain - 1 - b)) ltac:(lia) as g1. rewrite i in g1. pose proof h2 as [_ [x g2]]. rewrite g1 in g2. easy.
 Qed.
 
+Lemma validChainTake (dsu : list Slot) chain (h1 : noIllegalIndices dsu) (h2 : validChainToAncestor dsu chain) fuel vertex (h3 : nth 0 chain 0 = vertex) : take (S fuel) chain = ancestorChain dsu fuel vertex.
+Proof.
+  induction fuel as [| fuel IH] in vertex, h3 |- *.
+  { destruct chain as [| head tail].
+    - destruct h2 as [[e [f g]] [b c]]. exfalso. exact (e ltac:(reflexivity)).
+    - simpl in *. rewrite take_0, h3. reflexivity. }
+  Search (take (S _) _ = _ ++ [_]).
+Qed.
+
 Lemma ancestorLtLength dsu (h : noIllegalIndices dsu) n index (h1 : index < length dsu) : ancestor dsu n index < length dsu.
 Proof.
   induction n as [| n IH] in h1, index |- *; [easy |].
