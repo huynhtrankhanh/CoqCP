@@ -120,11 +120,18 @@ Qed.
 
 Lemma validChainTake (dsu : list Slot) chain (h1 : noIllegalIndices dsu) (h2 : validChainToAncestor dsu chain) fuel vertex (h3 : nth 0 chain 0 = vertex) : take (S fuel) chain = ancestorChain dsu fuel vertex.
 Proof.
-  induction fuel as [| fuel IH] in vertex, h3 |- *.
+  induction fuel as [| fuel IH].
   { destruct chain as [| head tail].
     - destruct h2 as [[e [f g]] [b c]]. exfalso. exact (e ltac:(reflexivity)).
     - simpl in *. rewrite take_0, h3. reflexivity. }
-  Search (take (S _) _ = _ ++ [_]).
+  pose proof take_S_r chain (S fuel) (nth (S fuel) chain 0) as h4.
+  pose proof nth_lookup_or_length chain (S fuel) 0 as [h5 | h5].
+  - rewrite (h4 h5), IH. pose proof lookup_lt_Some _ _ _ h5 as h6.
+    assert (h7 : forall delta, S fuel + delta < length chain -> ancestorChain dsu fuel (nth delta chain 0) ++ [nth (S fuel + delta) chain 0] = ancestorChain dsu (S fuel) (nth delta chain 0)).
+    { revert h2. clear. intro h2. induction fuel as [| fuel IH]; intros delta h7.
+      - simpl. pose proof h2 as [[e [f g]] [b c]]. rewrite g; [| lia]. reflexivity.
+      - rewrite (ltac:(simpl; reflexivity) : ancestorChain _ (S _) _ = _). pose proof h2 as [[e [f g]] [b c]]. rewrite g; [| lia]. rewrite (ltac:(intros; listsEqual) : forall a b c, (a :: b) ++ [c] = a :: (b ++ [c])), (ltac:(lia) : S (S fuel) + delta = S fuel + S delta), IH; [| lia]. rewrite (ltac:(intro x; simpl; reflexivity) : forall x, ancestorChain _ (S x) (nth delta chain 0) = _). rewrite g; [| lia]. reflexivity. }
+    pose proof h7 0 ltac:(lia). rewrite (ltac:(easy) : forall x, x + 0 = x) in *. subst vertex. assumption.
 Qed.
 
 Lemma ancestorLtLength dsu (h : noIllegalIndices dsu) n index (h1 : index < length dsu) : ancestor dsu n index < length dsu.
