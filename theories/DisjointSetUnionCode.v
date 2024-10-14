@@ -118,6 +118,20 @@ Proof.
   pose proof h2 as [[_ [_ g]] _]. pose proof g (a + (length chain - 1 - b)) ltac:(lia) as g1. rewrite i in g1. pose proof h2 as [_ [x g2]]. rewrite g1 in g2. easy.
 Qed.
 
+Lemma validChainLe (dsu : list Slot) chain (h1 : noIllegalIndices dsu) (h2 : validChainToAncestor dsu chain) fuel vertex (h3 : nth 0 chain 0 = vertex) (h4 : length chain <= fuel) : chain = ancestorChain dsu fuel vertex.
+Proof.
+  revert vertex h3 fuel h4.
+  induction chain as [| head tail IH]; intros vertex h3 fuel h4.
+  - pose proof h2 as [[e [f g]] [h i]]. exfalso. exact (e ltac:(reflexivity)).
+  - pose proof h2 as [[e [f g]] [h i]]. destruct fuel as [| fuel]. { simpl in h4. lia. } simpl.
+    destruct (decide (length tail = 0)) as [hs | hs].
+    + pose proof nil_length_inv _ hs. subst tail. simpl in *. subst head. rewrite i. reflexivity.
+    + pose proof g 0 ltac:(simpl in *; lia) as step. simpl in step. simpl in h3. subst head. rewrite step. pose proof (fun x => IH x (nth 0 tail 0) ltac:(reflexivity) fuel ltac:(simpl in *; lia)) as step2.
+      assert (step3 : validChainToAncestor dsu tail).
+      { repeat split. { intro step3. subst tail. exact (hs ltac:(reflexivity)). } { admit. } { intros a ha. pose proof g (S a) ltac:(simpl; lia) as step3. simpl in step3. exact step3. } { exists h. rewrite (ltac:(simpl; lia) : length (vertex :: tail) - 1 = S (length tail - 1)) in i. rewrite (ltac:(intros; simpl; reflexivity) : forall a b c d, nth (S a) (b :: c) d = nth a c d) in i. exact i. } }
+    now rewrite <- (step2 step3).
+Qed.
+
 Lemma validChainTake (dsu : list Slot) chain (h1 : noIllegalIndices dsu) (h2 : validChainToAncestor dsu chain) fuel vertex (h3 : nth 0 chain 0 = vertex) : take (S fuel) chain = ancestorChain dsu fuel vertex.
 Proof.
   induction fuel as [| fuel IH].
@@ -132,6 +146,8 @@ Proof.
       - simpl. pose proof h2 as [[e [f g]] [b c]]. rewrite g; [| lia]. reflexivity.
       - rewrite (ltac:(simpl; reflexivity) : ancestorChain _ (S _) _ = _). pose proof h2 as [[e [f g]] [b c]]. rewrite g; [| lia]. rewrite (ltac:(intros; listsEqual) : forall a b c, (a :: b) ++ [c] = a :: (b ++ [c])), (ltac:(lia) : S (S fuel) + delta = S fuel + S delta), IH; [| lia]. rewrite (ltac:(intro x; simpl; reflexivity) : forall x, ancestorChain _ (S x) (nth delta chain 0) = _). rewrite g; [| lia]. reflexivity. }
     pose proof h7 0 ltac:(lia). rewrite (ltac:(easy) : forall x, x + 0 = x) in *. subst vertex. assumption.
+  - rewrite firstn_all2; [| lia].
+    
 Qed.
 
 Lemma ancestorLtLength dsu (h : noIllegalIndices dsu) n index (h1 : index < length dsu) : ancestor dsu n index < length dsu.
