@@ -101,12 +101,17 @@ Proof.
   pose proof c (i + delta) ltac:(lia) as c1. pose proof c (j + delta) ltac:(lia) as c2. rewrite h in c1. symmetry in c1. pose proof eq_trans c1 c2 as c3. injection c3. rewrite !Nat.add_succ_r. intro h3. exact h3.
 Qed.
 
+Lemma chainElementsValidIndices (dsu : list Slot) chain (h1 : noIllegalIndices dsu) (h2 : validChainToAncestor dsu chain) index (h3 : index < length chain) : nth index chain 0 < length dsu.
+Proof.
+  induction index as [| index IH].
+  - pose proof h2 as [[_ [x _]] _]. exact x.
+  - apply (h1 (nth index chain 0) (nth (S index) chain 0)). pose proof h2 as [[_ [_ x]] _]. exact (x index h3).
+Qed.
+
 Lemma validChainMaxLength (dsu : list Slot) chain (h1 : noIllegalIndices dsu) (h2 : validChainToAncestor dsu chain) : length chain <= length dsu.
 Proof.
   assert (h : forall index, index < length chain -> nth index chain 0 < length dsu).
-  { intro index. induction index as [| index IH]; intro h3.
-    - pose proof h2 as [[_ [x _]] _]. exact x.
-    - apply (h1 (nth index chain 0) (nth (S index) chain 0)). pose proof h2 as [[_ [_ x]] _]. exact (x index h3). }
+  { apply chainElementsValidIndices; assumption. }
   destruct (ltac:(lia) : length dsu = 0 \/ 0 < length dsu) as [hs | hs].
   { destruct h2 as [[e [f g]] [b c]]. lia. }
   assert (h3 : forall x : nat, nth x chain 0 < length dsu).
@@ -128,7 +133,7 @@ Proof.
     + pose proof nil_length_inv _ hs. subst tail. simpl in *. subst head. rewrite i. reflexivity.
     + pose proof g 0 ltac:(simpl in *; lia) as step. simpl in step. simpl in h3. subst head. rewrite step. pose proof (fun x => IH x (nth 0 tail 0) ltac:(reflexivity) fuel ltac:(simpl in *; lia)) as step2.
       assert (step3 : validChainToAncestor dsu tail).
-      { repeat split. { intro step3. subst tail. exact (hs ltac:(reflexivity)). } { admit. } { intros a ha. pose proof g (S a) ltac:(simpl; lia) as step3. simpl in step3. exact step3. } { exists h. rewrite (ltac:(simpl; lia) : length (vertex :: tail) - 1 = S (length tail - 1)) in i. rewrite (ltac:(intros; simpl; reflexivity) : forall a b c d, nth (S a) (b :: c) d = nth a c d) in i. exact i. } }
+      { repeat split. { intro step3. subst tail. exact (hs ltac:(reflexivity)). } { pose proof chainElementsValidIndices dsu (vertex :: tail) h1 h2 1 ltac:(simpl; lia) as step3. simpl in step3. exact step3. } { intros a ha. pose proof g (S a) ltac:(simpl; lia) as step3. simpl in step3. exact step3. } { exists h. rewrite (ltac:(simpl; lia) : length (vertex :: tail) - 1 = S (length tail - 1)) in i. rewrite (ltac:(intros; simpl; reflexivity) : forall a b c d, nth (S a) (b :: c) d = nth a c d) in i. exact i. } }
     now rewrite <- (step2 step3).
 Qed.
 
