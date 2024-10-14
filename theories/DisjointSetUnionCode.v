@@ -137,6 +137,9 @@ Proof.
     now rewrite <- (step2 step3).
 Qed.
 
+Lemma validChainAncestorLength (dsu : list Slot) chain (h1 : noIllegalIndices dsu) (h2 : validChainToAncestor dsu chain) vertex (h3 : nth 0 chain 0 = vertex) : chain = ancestorChain dsu (length dsu) vertex.
+Proof. apply validChainLe; try assumption. apply validChainMaxLength; assumption. Qed.
+
 Lemma validChainTake (dsu : list Slot) chain (h1 : noIllegalIndices dsu) (h2 : validChainToAncestor dsu chain) fuel vertex (h3 : nth 0 chain 0 = vertex) : take (S fuel) chain = ancestorChain dsu fuel vertex.
 Proof.
   induction fuel as [| fuel IH].
