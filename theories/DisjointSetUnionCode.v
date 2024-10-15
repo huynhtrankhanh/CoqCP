@@ -137,6 +137,27 @@ Proof.
     now rewrite <- (step2 step3).
 Qed.
 
+Lemma nthZeroAncestorChain (dsu : list Slot) fuel vertex : nth 0 (ancestorChain dsu fuel vertex) 0 = vertex.
+Proof.
+  destruct fuel as [| fuel].
+  - simpl. reflexivity.
+  - rewrite (ltac:(intros; simpl; reflexivity) : forall fuel, ancestorChain dsu (S fuel) vertex = _). destruct (nth vertex dsu (Ancestor Unit)); easy.
+Qed.
+
+Lemma validChainAncestorChain (dsu : list Slot) fuel vertex (hVertex : vertex < length dsu) (hDsu : noIllegalIndices dsu) : validChain dsu (ancestorChain dsu fuel vertex).
+Proof.
+  induction fuel as [| fuel IH] in hVertex, vertex |- *.
+  { simpl. repeat split. { easy. } { simpl. lia. } { intros x h. simpl in h. lia. } }
+  repeat split.
+  - simpl. destruct (nth vertex dsu (Ancestor Unit)); easy.
+  - rewrite nthZeroAncestorChain. exact hVertex.
+  - intros x h. simpl. remember (nth vertex dsu (Ancestor Unit)) as e eqn:he. symmetry in he. destruct e as [e | e].
+    + simpl. destruct x as [| x]. { rewrite nthZeroAncestorChain. exact he. }
+      pose proof hDsu _ _ he as hf. pose proof IH _ hf as [g1 [g2 g3]].
+      simpl in h. rewrite he in h. simpl in h. exact (g3 x ltac:(lia)).
+    + simpl in h. rewrite he in h. simpl in h. lia.
+Qed.
+
 Lemma validChainAncestorLength (dsu : list Slot) chain (h1 : noIllegalIndices dsu) (h2 : validChainToAncestor dsu chain) vertex (h3 : nth 0 chain 0 = vertex) : chain = ancestorChain dsu (length dsu) vertex.
 Proof. apply validChainLe; try assumption. apply validChainMaxLength; assumption. Qed.
 
