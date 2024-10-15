@@ -57,7 +57,7 @@ Fixpoint ancestorChain (dsu : list Slot) (fuel : nat) (index : nat) :=
     end
   end.
 
-Lemma ancesterEqLastAncestorChain dsu fuel index : last (ancestorChain dsu fuel index) = Some (ancestor dsu fuel index).
+Lemma ancestorEqLastAncestorChain' dsu fuel index : last (ancestorChain dsu fuel index) = Some (ancestor dsu fuel index).
 Proof.
   induction fuel as [| fuel IH] in index |- *. { easy. }
   simpl. remember (nth index dsu (Ancestor Unit)) as x eqn:hX. destruct x as [x | x]; symmetry in hX.
@@ -74,6 +74,11 @@ Proof.
   assert (h : last (head' :: tail') <> None).
   { rewrite last_cons. destruct (last tail'); easy. }
   destruct (last (head' :: tail')) as [x |]. { reflexivity. } easy.
+Qed.
+
+Lemma ancestorEqLastAncestorChain dsu fuel index : nth (length (ancestorChain dsu fuel index) - 1) (ancestorChain dsu fuel index) 0 = ancestor dsu fuel index.
+Proof.
+  pose proof defaultLast (ancestorChain dsu fuel index) 0 as h. rewrite ancestorEqLastAncestorChain' in h. simpl in h. symmetry. exact h.
 Qed.
 
 Definition validChain (dsu : list Slot) (chain : list nat) := chain <> [] /\ nth 0 chain 0 < length dsu /\ forall index, S index < length chain -> nth (nth index chain 0) dsu (Ancestor Unit) = ReferTo (nth (S index) chain 0).
