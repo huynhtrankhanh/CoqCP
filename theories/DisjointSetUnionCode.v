@@ -65,6 +65,17 @@ Proof.
   - easy.
 Qed.
 
+Lemma defaultLast {A : Type} (l : list A) (d : A) : default d (last l) = nth (length l - 1) l d.
+Proof.
+  induction l as [| head tail IH]. { easy. }
+  simpl. rewrite last_cons. rewrite Nat.sub_0_r.
+  destruct tail as [| head' tail'].
+  { easy. } rewrite (ltac:(simpl; reflexivity) : length (_ :: _) = _) in *. rewrite (ltac:(lia) : S (length tail') - 1 = length tail') in IH. rewrite <- IH.
+  assert (h : last (head' :: tail') <> None).
+  { rewrite last_cons. destruct (last tail'); easy. }
+  destruct (last (head' :: tail')) as [x |]. { reflexivity. } easy.
+Qed.
+
 Definition validChain (dsu : list Slot) (chain : list nat) := chain <> [] /\ nth 0 chain 0 < length dsu /\ forall index, S index < length chain -> nth (nth index chain 0) dsu (Ancestor Unit) = ReferTo (nth (S index) chain 0).
 
 Definition validChainToAncestor (dsu : list Slot) (chain : list nat) := validChain dsu chain /\ exists x, nth (nth (length chain - 1) chain 0) dsu (Ancestor Unit) = Ancestor x.
