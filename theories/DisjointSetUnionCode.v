@@ -234,8 +234,52 @@ Proof.
     end) in h. intros x y. destruct (ltac:(lia) : x = n \/ x < n) as [h2 | h2]. { rewrite h2. destruct (nth (ancestor dsu (length dsu) n) dsu (Ancestor Unit)) as [h3 | h3]; [assumption |]. easy. } destruct (nth (ancestor dsu (length dsu) n) dsu (Ancestor Unit)) as [h1 |]; [contradiction; exact h1 |]. rewrite <- IH in h. pose proof h x ltac:(lia). assumption. }
 Qed.
 
-Lemma ancestorInsert (dsu : list Slot) (fuel : nat) (u x : nat) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (h3 : u < length dsu) (h4 : x < length dsu) (h5 : match nth x dsu (Ancestor Unit) with | ReferTo _ => true | Ancestor _ => false end) : ancestor dsu (length dsu) (ancestor dsu fuel u) = ancestor (<[x:=ReferTo (ancestor dsu (length dsu) x)]> dsu) (length dsu) (ancestor (<[x:=ReferTo (ancestor dsu fuel x)]> dsu) fuel u).
+Lemma ancestorChainInsertNotPresent (dsu : list Slot) (fuel : nat) (u x : nat) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (h3 : u < length dsu) (h4 : x < length dsu) (h5 : match nth x dsu (Ancestor Unit) with | ReferTo _ => true | Ancestor _ => false end) (hd : ∀ _0 : nat, _0 < length (ancestorChain dsu (length dsu) u) → nth _0 (ancestorChain dsu (length dsu) u) 0 ≠ x) : ancestorChain dsu fuel u = ancestorChain (<[x:=ReferTo (ancestor dsu (length dsu) x)]> dsu) fuel u.
 Proof.
+  revert h3 hd. revert u. induction fuel as [| fuel IH]; intros u h3 hd. { easy. }
+  simpl. pose proof hd 0 ltac:(destruct (length dsu); simpl; destruct (nth u dsu (Ancestor Unit)); simpl; try lia) as step1.
+  assert (step2 : nth 0 (ancestorChain dsu (length dsu) u) 0 = u).
+  { destruct (length dsu); [reflexivity |]. simpl. destruct (nth u dsu (Ancestor Unit)); easy. }
+  rewrite step2 in step1. clear step2. pose proof list_lookup_insert_ne dsu x u (ReferTo (ancestor dsu (length dsu) x)) ltac:(intro hh; subst x; exact (step1 ltac:(reflexivity))) as step2.
+  pose proof (ltac:(intros a b h; subst a; reflexivity): forall a b, a = b -> default (Ancestor Unit) a = default (Ancestor Unit) b) _ _ step2 as step3. rewrite <- !nth_lookup in step3. rewrite step3.
+  remember (nth u dsu (Ancestor Unit)) as s eqn:hs. symmetry in hs. destruct s as [s | s]; [| reflexivity]. rewrite <- IH. { reflexivity. }
+  - exact (h1 u s hs).
+  - intros y hy. pose proof hd (S y) as step4. remember (ancestorChain dsu (length dsu) u) as toChop eqn:hC. symmetry in hC. destruct toChop as [| head tail]. { destruct (length dsu); simpl in hC; [easy |]. destruct (nth u dsu (Ancestor Unit)); simpl in hC; easy. }
+    assert (hz : head = u). { destruct (length dsu); simpl in hC; [easy |]. destruct (nth u dsu (Ancestor Unit)); simpl in hC; try easy. inversion hC. reflexivity. } subst head. simpl in step4.
+    pose proof validChainAncestorChain dsu (length dsu) u h3 h1 as [a [b c]].
+    assert (hL : 1 < length dsu).
+    { destruct (decide (length dsu = 0)) as [g | g].
+      { pose proof nil_length_inv _ g. subst dsu. simpl in *. easy. }
+      destruct (decide (length dsu = 1)) as [g1 | g1].
+      { destruct dsu as [| head taill]. { simpl in g1. easy. }
+        simpl in g1. pose proof nil_length_inv taill ltac:(lia). subst taill.
+        pose proof (ltac:(simpl in *; lia) : u = 0). subst u. pose proof h1 0 s hs as g2. simpl in g2.
+        pose proof (ltac:(lia) : s = 0). subst s. pose proof h2 0 ltac:(simpl; lia) as g3. simpl in hs. subst head. simpl in g3. exfalso. exact g3. } lia. }
+    assert (hA : 1 < length (ancestorChain dsu (length dsu) u)).
+    { assert (hS : exists x, length dsu = S (S (x))). { exists (length dsu - 2). lia. }
+      destruct hS as [v vv]. rewrite vv. simpl. rewrite hs. destruct (nth s dsu (Ancestor Unit)); simpl; lia. }
+    pose proof c 0 hA as hQ. rewrite hC in hQ. simpl in hQ. rewrite hs in hQ. injection hQ. clear hQ. intro hQ.
+    pose proof (fun x => validChainAncestorLength dsu tail h1 x s ltac:(symmetry; exact hQ)) as step5.
+    assert (hh : 0 < length tail).
+    { rewrite hC in hA. simpl in hA. lia. }
+    assert (step6 : validChainToAncestor dsu tail).
+    { repeat split.
+      - rewrite hC in hA. simpl in hA. intro cc. rewrite cc in hA. simpl in hA. lia.
+      - rewrite <- hQ. exact (h1 u s hs).
+      - intros g1 g2. rewrite hC in c. pose proof c (S g1) as d. simpl in d. apply d. lia.
+      - pose proof h2 u h3 as g3. pose proof (ltac:(exists (nth (ancestor dsu (length dsu) u) dsu (Ancestor Unit)); reflexivity) : exists e, nth (ancestor dsu (length dsu) u) dsu (Ancestor Unit) = e) as [[e | e] he]. { rewrite he in g3. exfalso. exact g3. } exists e. rewrite <- ancestorEqLastAncestorChain in he. rewrite hC in he. rewrite (ltac:(simpl; lia) : length (u :: tail) - 1 = length tail) in he. rewrite (ltac:(lia) : length tail = S (length tail - 1)) in he. simpl in he. exact he. }
+      pose proof step5 step6 as step7. rewrite <- step7 in *. apply step4. lia.
+Qed.
+
+Lemma ancestorInsert (dsu : list Slot) (u x : nat) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (h3 : u < length dsu) (h4 : x < length dsu) (h5 : match nth x dsu (Ancestor Unit) with | ReferTo _ => true | Ancestor _ => false end) : ancestor dsu (length dsu) u = ancestor (<[x:=ReferTo (ancestor dsu (length dsu) x)]> dsu) (length dsu) u.
+Proof.
+  pose proof validChainAncestorChain dsu (length dsu) u h3 h1 as step.
+  pose proof h2 u h3 as step2.
+  remember (existsInRange (length (ancestorChain dsu (length dsu) u)) (fun i => bool_decide (nth i (ancestorChain dsu (length dsu) u) 0 = x))) as s eqn:hs. symmetry in hs. destruct s; [rewrite <- Is_true_true, existsInRangeMeaning in hs | rewrite <- Is_true_false, notExistsInRangeMeaning in hs]; unfold existsInRangeLogic in hs.
+  - destruct hs as [s [hb hc]]. rewrite bool_decide_eq_true in hc. admit.
+  - unfold notExistsInRangeLogic in hs. assert (hd : forall i, i < length (ancestorChain dsu (length dsu) u) -> nth i (ancestorChain dsu (length dsu) u) 0 <> x).
+    { intros a b. pose proof hs a b as c. case_bool_decide; [exfalso; exact (c ltac:(easy)) | assumption]. }
+    rewrite <- (ancestorEqLastAncestorChain dsu (length dsu) u) in step2.
 Qed.
 
 Fixpoint pathCompress (dsu : list Slot) (fuel : nat) (index ancestor : nat) :=
