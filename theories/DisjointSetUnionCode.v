@@ -279,7 +279,7 @@ Proof.
   - destruct hs as [s [hb hc]]. rewrite bool_decide_eq_true in hc. admit.
   - unfold notExistsInRangeLogic in hs. assert (hd : forall i, i < length (ancestorChain dsu (length dsu) u) -> nth i (ancestorChain dsu (length dsu) u) 0 <> x).
     { intros a b. pose proof hs a b as c. case_bool_decide; [exfalso; exact (c ltac:(easy)) | assumption]. }
-    rewrite <- (ancestorEqLastAncestorChain dsu (length dsu) u) in step2.
+    rewrite <- (ancestorEqLastAncestorChain dsu (length dsu) u) in step2. pose proof ancestorChainInsertNotPresent dsu (length dsu) u x h1 h2 h3 h4 h5 hd as step3. rewrite <- ancestorEqLastAncestorChain, <- ancestorEqLastAncestorChain, <- !step3. reflexivity.
 Qed.
 
 Fixpoint pathCompress (dsu : list Slot) (fuel : nat) (index ancestor : nat) :=
