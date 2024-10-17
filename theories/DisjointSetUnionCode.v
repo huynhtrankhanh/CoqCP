@@ -282,8 +282,9 @@ Proof.
   { repeat split.
     - destruct chain as [| head tail]. { cbv in h0. easy. } easy.
     - destruct chain as [| head tail]. { cbv in h0. easy. } simpl in he. rewrite app_nth1; [| rewrite take_length; lia]. simpl. simpl in hV. subst head. assumption.
-    - intros a b. destruct (ltac:(lia) : a < i \/ a = i \/ i < a) as [hs | [hs | hs]].
-      + rewrite !app_nth1; try (rewrite take_length; lia). rewrite <- !nthTake; try lia. }
+    - intros a b. pose proof h0 as [[e [f g]] [l k]]. destruct (ltac:(lia) : a < i \/ a = i \/ i < a) as [hs | [hs | hs]].
+      + rewrite !app_nth1; try (rewrite take_length; lia). rewrite <- !nthTake; try lia. apply g. lia.
+      + subst a. rewrite app_nth1; try (rewrite take_length; lia). rewrite app_nth2; try (rewrite take_length; lia). rewrite take_length. rewrite (ltac:(lia) : S i - S i `min` length chain = 0). rewrite <- !nthTake; try lia. }
 Qed.
 
 Lemma ancestorInsert (dsu : list Slot) (u x : nat) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (h3 : u < length dsu) (h4 : x < length dsu) (h5 : match nth x dsu (Ancestor Unit) with | ReferTo _ => true | Ancestor _ => false end) : ancestor dsu (length dsu) u = ancestor (<[x:=ReferTo (ancestor dsu (length dsu) x)]> dsu) (length dsu) u.
