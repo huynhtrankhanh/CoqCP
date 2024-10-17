@@ -57,5 +57,5 @@ Qed.
 (* Hypothesis 2: H_odd (placeholder proof) *)
 Lemma H_odd : forall n : nat, total_popcount (2 * n + 1) = total_popcount (2 * n) + popcount (to_binary (2 * n)).
 Proof.
-  (* Placeholder for proof *)
-Admitted.
+  intro n. rewrite (ltac:(lia) : 2 * n + 1 = S (2 * n)). easy.
+Qed.
