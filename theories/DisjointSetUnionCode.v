@@ -271,12 +271,26 @@ Proof.
       pose proof step5 step6 as step7. rewrite <- step7 in *. apply step4. lia.
 Qed.
 
+Lemma ancestorChainInsertPresent (dsu : list Slot) chain (u x : nat) (h0 : validChainToAncestor dsu chain) (hV : nth 0 chain 0 = u) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (h3 : u < length dsu) (h4 : x < length dsu) (h5 : match nth x dsu (Ancestor Unit) with | ReferTo _ => true | Ancestor _ => false end) i (hd : i < length chain) (he : nth i chain 0 = x) (t : nat) (hT : nth t chain 0 = ancestor dsu (length dsu) x) (hT1 : i < t) : take (S i) chain ++ drop t chain = ancestorChain (<[x:=ReferTo (ancestor dsu (length dsu) x)]> dsu) (length ((<[x:=ReferTo (ancestor dsu (length dsu) x)]> dsu))) u.
+Proof.
+  pose proof validChainAncestorLength dsu (take (S i) chain ++ drop t chain) h1 as step.
+  assert (step1 : nth 0 (take (S i) chain ++ drop t chain) 0 = u).
+  { rewrite app_nth1; [| rewrite take_length; lia]. destruct chain as [| head tail].
+    - cbv in h0. easy.
+    - simpl in *. subst head. reflexivity. }
+  assert (step2 : validChainToAncestor dsu (take (S i) chain ++ drop t chain)).
+  { repeat split.
+    - destruct chain as [| head tail]. { cbv in h0. easy. } easy.
+    - destruct chain as [| head tail]. { cbv in h0. easy. } simpl in he. rewrite app_nth1; [| rewrite take_length; lia]. simpl. simpl in hV. subst head. assumption.
+    - intros a b. }
+Qed.
+
 Lemma ancestorInsert (dsu : list Slot) (u x : nat) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (h3 : u < length dsu) (h4 : x < length dsu) (h5 : match nth x dsu (Ancestor Unit) with | ReferTo _ => true | Ancestor _ => false end) : ancestor dsu (length dsu) u = ancestor (<[x:=ReferTo (ancestor dsu (length dsu) x)]> dsu) (length dsu) u.
 Proof.
   pose proof validChainAncestorChain dsu (length dsu) u h3 h1 as step.
   pose proof h2 u h3 as step2.
   remember (existsInRange (length (ancestorChain dsu (length dsu) u)) (fun i => bool_decide (nth i (ancestorChain dsu (length dsu) u) 0 = x))) as s eqn:hs. symmetry in hs. destruct s; [rewrite <- Is_true_true, existsInRangeMeaning in hs | rewrite <- Is_true_false, notExistsInRangeMeaning in hs]; unfold existsInRangeLogic in hs.
-  - destruct hs as [s [hb hc]]. rewrite bool_decide_eq_true in hc. admit.
+  - destruct hs as [s [hb hc]]. rewrite bool_decide_eq_true in hc.
   - unfold notExistsInRangeLogic in hs. assert (hd : forall i, i < length (ancestorChain dsu (length dsu) u) -> nth i (ancestorChain dsu (length dsu) u) 0 <> x).
     { intros a b. pose proof hs a b as c. case_bool_decide; [exfalso; exact (c ltac:(easy)) | assumption]. }
     rewrite <- (ancestorEqLastAncestorChain dsu (length dsu) u) in step2. pose proof ancestorChainInsertNotPresent dsu (length dsu) u x h1 h2 h3 h4 h5 hd as step3. rewrite <- ancestorEqLastAncestorChain, <- ancestorEqLastAncestorChain, <- !step3. reflexivity.
