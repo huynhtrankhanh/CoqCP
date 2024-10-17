@@ -1,5 +1,6 @@
 Require Import List.
 Require Import NArith.
+Require Import Lia.
 Import ListNotations.
 
 Fixpoint to_binary_positive (n : positive) := match n with
@@ -35,8 +36,23 @@ Fixpoint total_popcount (n : nat) : nat :=
 (* Hypothesis 1: H_even (placeholder proof) *)
 Lemma H_even : forall n : nat, total_popcount (2 * n) = n + 2 * total_popcount n.
 Proof.
-  (* Placeholder for proof *)
-Admitted.
+  intro n. induction n as [| n IH]. { easy. }
+  rewrite (ltac:(lia) : 2 * S n = S (S (2 * n))), !(ltac:(simpl; reflexivity) : total_popcount (S _) = _).
+  unfold to_binary. rewrite Nat2N.inj_double, Nat2N.inj_succ_double. unfold N.double. unfold N.succ_double.
+  remember (N.of_nat n) as x eqn:hX. symmetry in hX. destruct x as [| x].
+  - rewrite IH.
+    assert (h : n = 0). { destruct n. { reflexivity. } cbv in hX. easy. }
+    subst n. easy.
+  - rewrite IH. unfold to_binary_N. rewrite (ltac:(simpl; reflexivity) : to_binary_positive x~0 = _). rewrite (ltac:(simpl; reflexivity) : to_binary_positive x~1 = _).
+    assert (h1 : forall v, popcount (v ++ [false]) = popcount v).
+    { clear. intro v. induction v as [| head tail IH]. { easy. }
+      simpl. rewrite IH. reflexivity. }
+    rewrite h1.
+    assert (h2 : forall v, popcount (v ++ [true]) = S (popcount v)).
+    { clear. intro v. induction v as [| head tail IH]. { easy. }
+      simpl. rewrite IH. destruct head; lia. }
+    rewrite h2. lia.
+Qed.
 
 (* Hypothesis 2: H_odd (placeholder proof) *)
 Lemma H_odd : forall n : nat, total_popcount (2 * n + 1) = total_popcount (2 * n) + popcount (to_binary (2 * n)).
