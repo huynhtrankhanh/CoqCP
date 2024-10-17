@@ -25,5 +25,6 @@ theories/BubbleSort.v
 theories/BubbleSortProperties.v
 theories/Imperative.v
 theories/DisjointSetUnion.v
+theories/CountingBits.v
 -R generated-coq/ Generated
 generated-coq/DisjointSetUnion.v
