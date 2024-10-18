@@ -124,6 +124,19 @@ Proof.
   - apply (h1 (nth index chain 0) (nth (S index) chain 0)). pose proof h2 as [[_ [_ x]] _]. exact (x index h3).
 Qed.
 
+Lemma validChainPairwiseDifferent (dsu : list Slot) chain (h1 : noIllegalIndices dsu) (h2 : validChainToAncestor dsu chain) (i j : nat) (h4 : i <> j) (h5 : i < length chain) (h3 : j < length chain) : nth i chain 0 <> nth j chain 0.
+Proof.
+  assert (wlog : forall i j, i < j -> i < length chain -> j < length chain -> nth i chain 0 <> nth j chain 0).
+  { revert h1 h2. clear. intros h1 h2 i j h3 h4 h5 h6.
+    destruct h2 as [[e [f g]] [b c]].
+    pose proof commonSubarrays dsu chain ltac:(repeat split; assumption) i j (length chain - 1 - j) h4 h5 ltac:(lia) ltac:(lia) h6 as step. pose proof (ltac:(destruct chain; simpl in *; lia) : 0 < length chain).
+    rewrite (ltac:(lia) : j + (length chain - 1 - j) = length chain - 1) in step. rewrite <- step in c.
+    rewrite (g (i + (length chain - 1 - j)) ltac:(lia)) in c. easy. }
+  destruct (ltac:(lia) : i < j \/ j < i) as [h | h].
+  - apply wlog; assumption.
+  - intro g. symmetry in g. revert g. apply wlog; assumption.
+Qed.
+
 Lemma validChainMaxLength (dsu : list Slot) chain (h1 : noIllegalIndices dsu) (h2 : validChainToAncestor dsu chain) : length chain <= length dsu.
 Proof.
   assert (h : forall index, index < length chain -> nth index chain 0 < length dsu).
@@ -278,13 +291,15 @@ Proof.
   { rewrite app_nth1; [| rewrite take_length; lia]. destruct chain as [| head tail].
     - cbv in h0. easy.
     - simpl in *. subst head. reflexivity. }
-  assert (step2 : validChainToAncestor dsu (take (S i) chain ++ drop t chain)).
+  assert (step2 : validChainToAncestor (<[x:=ReferTo (ancestor dsu (length dsu) x)]> dsu) (take (S i) chain ++ drop t chain)).
   { repeat split.
     - destruct chain as [| head tail]. { cbv in h0. easy. } easy.
-    - destruct chain as [| head tail]. { cbv in h0. easy. } simpl in he. rewrite app_nth1; [| rewrite take_length; lia]. simpl. simpl in hV. subst head. assumption.
+    - destruct chain as [| head tail]. { cbv in h0. easy. } simpl in he. rewrite app_nth1; [| rewrite take_length; lia]. simpl. simpl in hV. subst head. rewrite insert_length. assumption.
     - intros a b. pose proof h0 as [[e [f g]] [l k]]. destruct (ltac:(lia) : a < i \/ a = i \/ i < a) as [hs | [hs | hs]].
-      + rewrite !app_nth1; try (rewrite take_length; lia). rewrite <- !nthTake; try lia. apply g. lia.
-      + subst a. rewrite app_nth1; try (rewrite take_length; lia). rewrite app_nth2; try (rewrite take_length; lia). rewrite take_length. rewrite (ltac:(lia) : S i - S i `min` length chain = 0). rewrite <- !nthTake; try lia. }
+      + rewrite !app_nth1; [| rewrite take_length; lia | rewrite take_length; lia]. rewrite <- !nthTake; try lia. pose proof list_lookup_insert_ne dsu x (nth a chain 0) (ReferTo (ancestor dsu (length dsu) x)). apply g. lia.
+      + subst a. rewrite app_nth1; try (rewrite take_length; lia). rewrite app_nth2; try (rewrite take_length; lia). rewrite take_length. rewrite (ltac:(lia) : S i - S i `min` length chain = 0). rewrite <- !nthTake; try lia.
+        pose proof lookup_drop chain t 0 as step2. rewrite (ltac:(lia) : t + 0 = t) in step2. pose proof nth_lookup chain t 0 as step3. rewrite <- step2 in step3.
+        pose proof nth_lookup (drop t chain) 0 0 as step4. rewrite <- step3 in step4. rewrite step4. }
 Qed.
 
 Lemma ancestorInsert (dsu : list Slot) (u x : nat) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (h3 : u < length dsu) (h4 : x < length dsu) (h5 : match nth x dsu (Ancestor Unit) with | ReferTo _ => true | Ancestor _ => false end) : ancestor dsu (length dsu) u = ancestor (<[x:=ReferTo (ancestor dsu (length dsu) x)]> dsu) (length dsu) u.
