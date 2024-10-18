@@ -321,6 +321,10 @@ Proof.
   pose proof h2 u h3 as step2.
   remember (existsInRange (length (ancestorChain dsu (length dsu) u)) (fun i => bool_decide (nth i (ancestorChain dsu (length dsu) u) 0 = x))) as s eqn:hs. symmetry in hs. destruct s; [rewrite <- Is_true_true, existsInRangeMeaning in hs | rewrite <- Is_true_false, notExistsInRangeMeaning in hs]; unfold existsInRangeLogic in hs.
   - destruct hs as [s [hb hc]]. rewrite bool_decide_eq_true in hc.
+    assert (step3: validChainToAncestor dsu (ancestorChain dsu (length dsu) u)).
+    { split. { assumption. } pose proof h2 u h3 as step3.
+      remember (nth (ancestor dsu (length dsu) u) dsu (Ancestor Unit)) as g eqn:hg. symmetry in hg. destruct g as [g | g]. { exfalso. exact step3. } exists g. rewrite <- hg, ancestorEqLastAncestorChain. reflexivity. }
+    epose proof ancestorChainInsertPresent dsu (ancestorChain dsu (length dsu) u) u x step3 ltac:(destruct (length dsu); simpl; [reflexivity |]; destruct (nth u dsu (Ancestor Unit)); easy) h1 h2 h3 h4 h5 s hb hc.
   - unfold notExistsInRangeLogic in hs. assert (hd : forall i, i < length (ancestorChain dsu (length dsu) u) -> nth i (ancestorChain dsu (length dsu) u) 0 <> x).
     { intros a b. pose proof hs a b as c. case_bool_decide; [exfalso; exact (c ltac:(easy)) | assumption]. }
     rewrite <- (ancestorEqLastAncestorChain dsu (length dsu) u) in step2. pose proof ancestorChainInsertNotPresent dsu (length dsu) u x h1 h2 h3 h4 h5 hd as step3. rewrite <- ancestorEqLastAncestorChain, <- ancestorEqLastAncestorChain, <- !step3. reflexivity.
