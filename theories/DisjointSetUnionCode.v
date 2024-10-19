@@ -315,6 +315,19 @@ Proof.
       exact (step step2 u step1).
 Qed.
 
+Lemma ancestorOfVertexInAncestorChain (dsu : list Slot) chain (u x : nat) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (h3 : u < length dsu) (h4 : x < length dsu) (h5 : match nth x dsu (Ancestor Unit) with | ReferTo _ => true | Ancestor _ => false end) (h6 : validChainToAncestor dsu chain) (h7 : nth 0 chain 0 = u) (s : nat) (h8 : nth s chain 0 = x) (h9 : s < length chain) : ancestor dsu (length dsu) u = ancestor dsu (length dsu) x.
+Proof.
+  rewrite <- !ancestorEqLastAncestorChain, <- (validChainAncestorLength dsu chain h1 h6 _ h7), <- (validChainAncestorLength dsu (drop s chain) h1).
+  - rewrite !nth_lookup, lookup_drop, drop_length, <- !nth_lookup, (ltac:(lia) : s + (length chain - s - 1) = length chain - 1). reflexivity.
+  - repeat split.
+    + intro h. pose proof (ltac:(rewrite h; reflexivity) : length (drop s chain) = length []) as step1. rewrite drop_length in step1. simpl in step1. lia.
+    + rewrite nth_lookup, lookup_drop, Nat.add_0_r, <- nth_lookup, h8. exact h4.
+    + intros g i. rewrite drop_length in i. repeat rewrite (nth_lookup (drop _ _)), lookup_drop. rewrite <- !nth_lookup, (ltac:(lia) : s + S g = S (s + g)).
+      destruct h6 as [[e [f j]] [b c]]. apply j. lia.
+    + repeat rewrite (nth_lookup (drop _ _)), lookup_drop. rewrite <- !nth_lookup, drop_length, (ltac:(lia) : s + (length chain - s - 1) = length chain - 1). destruct h6 as [_ c]. exact c.
+  - rewrite nth_lookup, lookup_drop, Nat.add_0_r, <- nth_lookup. exact h8.
+Qed.
+
 Lemma ancestorInsert (dsu : list Slot) (u x : nat) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (h3 : u < length dsu) (h4 : x < length dsu) (h5 : match nth x dsu (Ancestor Unit) with | ReferTo _ => true | Ancestor _ => false end) : ancestor dsu (length dsu) u = ancestor (<[x:=ReferTo (ancestor dsu (length dsu) x)]> dsu) (length dsu) u.
 Proof.
   pose proof validChainAncestorChain dsu (length dsu) u h3 h1 as step.
@@ -324,7 +337,9 @@ Proof.
     assert (step3: validChainToAncestor dsu (ancestorChain dsu (length dsu) u)).
     { split. { assumption. } pose proof h2 u h3 as step3.
       remember (nth (ancestor dsu (length dsu) u) dsu (Ancestor Unit)) as g eqn:hg. symmetry in hg. destruct g as [g | g]. { exfalso. exact step3. } exists g. rewrite <- hg, ancestorEqLastAncestorChain. reflexivity. }
-    epose proof ancestorChainInsertPresent dsu (ancestorChain dsu (length dsu) u) u x step3 ltac:(destruct (length dsu); simpl; [reflexivity |]; destruct (nth u dsu (Ancestor Unit)); easy) h1 h2 h3 h4 h5 s hb hc.
+    pose proof ancestorChainInsertPresent dsu (ancestorChain dsu (length dsu) u) u x step3 ltac:(destruct (length dsu); simpl; [reflexivity |]; destruct (nth u dsu (Ancestor Unit)); easy) h1 h2 h3 h4 h5 s hb hc (length (ancestorChain dsu (length dsu) u) - 1) as step4. rewrite ancestorEqLastAncestorChain in step4.
+    destruct (ltac:(lia) : s = length (ancestorChain dsu (length dsu) u) - 1 \/ s < length (ancestorChain dsu (length dsu) u) - 1) as [step5 | step5].
+    { subst s. rewrite <- hc in h5. destruct step3 as [[e [f g]] [b c]]. rewrite c in h5. exfalso. exact h5. }
   - unfold notExistsInRangeLogic in hs. assert (hd : forall i, i < length (ancestorChain dsu (length dsu) u) -> nth i (ancestorChain dsu (length dsu) u) 0 <> x).
     { intros a b. pose proof hs a b as c. case_bool_decide; [exfalso; exact (c ltac:(easy)) | assumption]. }
     rewrite <- (ancestorEqLastAncestorChain dsu (length dsu) u) in step2. pose proof ancestorChainInsertNotPresent dsu (length dsu) u x h1 h2 h3 h4 h5 hd as step3. rewrite <- ancestorEqLastAncestorChain, <- ancestorEqLastAncestorChain, <- !step3. reflexivity.
