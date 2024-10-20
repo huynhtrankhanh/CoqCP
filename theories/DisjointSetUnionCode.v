@@ -412,7 +412,37 @@ Proof.
   induction n as [| n IH] in u, dsu, h, hU, h1 |- *. { simpl. assumption. }
   simpl. remember (nth u dsu (Ancestor Unit)) as x eqn:hX. destruct x as [x | x]; [| easy]. pose proof (fun t => IH (<[u:=ReferTo (ancestor dsu (length dsu) u)]> dsu) t ltac:(intros v1 v2; destruct (decide (v1 = u)) as [h2 | h2]; [destruct (decide (length dsu <= u)); [rewrite list_insert_ge; [| lia]; intro h3; rewrite h2 in h3; rewrite <- hX in h3; injection h3; intro h4; subst x; subst u; exact (h1 v1 v2 ltac:(symmetry in hX; exact hX)) | pose proof list_lookup_insert dsu u (ReferTo (ancestor dsu (length dsu) u)) ltac:(lia) as step; pose proof nth_lookup_Some _ _ (Ancestor Unit) _ step as step2; subst u; rewrite step2; pose proof ancestorLtLength dsu h1 (length dsu) v1 ltac:(lia) as step3]; intro h3; injection h3; intro h4; rewrite insert_length | pose proof list_lookup_insert_ne dsu u v1 (ReferTo (ancestor dsu (length dsu) u)) ltac:(lia) as step; pose proof nth_lookup dsu v1 (Ancestor Unit) as step1; pose proof (nth_lookup (<[u:=ReferTo (ancestor dsu (length dsu) u)]> dsu) v1 (Ancestor Unit)) as step2; rewrite step in step2; rewrite <- step1 in step2; rewrite step2; intro step3; rewrite insert_length; exact (h1 v1 v2 step3)]; lia) x ltac:(rewrite insert_length; exact (h1 u x ltac:(symmetry; assumption)))) as step. rewrite !insert_length in step.
   assert (step1 : u < length dsu -> x < length dsu -> ancestor (<[u:=ReferTo (ancestor dsu (length dsu) u)]> dsu) (length dsu) x = ancestor dsu (length dsu) x).
-  { clear. }
+  { revert h h1 hX. clear. intros h1 h2 h3 h4 h5. rewrite <- ancestorInsert; try (assumption || reflexivity). rewrite <- h3. easy. } rewrite step1 in step; try assumption; pose proof h1 u x ltac:(symmetry in hX; exact hX) as hX1; [| exact hX1].
+  remember (nth x dsu (Ancestor Unit)) as s eqn:hS.
+  symmetry in hS. destruct s as [s | s].
+  - pose proof ancestorOfVertexInAncestorChain dsu (ancestorChain dsu (length dsu) u) u x h1 h hU hX1 ltac:(now rewrite hS) ltac:(split; [apply validChainAncestorChain; assumption | rewrite ancestorEqLastAncestorChain; pose proof h u hU; destruct (nth (ancestor dsu (length dsu) u)) as [| tree]; [easy | now exists tree]]) ltac:(destruct (length dsu); simpl; destruct (nth u dsu (Ancestor Unit)); simpl; try lia) 1 as step2. rewrite <- step2 in step.
+    + apply step. intros i hi. rewrite insert_length, <- ancestorInsert; try assumption; [| now rewrite <- hX].
+      destruct (decide (ancestor dsu (length dsu) i = u)) as [hA | hA].
+      * pose proof h i hi as hj. rewrite hA, <- hX in hj. exfalso. exact hj.
+      * rewrite nth_lookup, list_lookup_insert_ne; [| lia]. rewrite <- nth_lookup. apply h. assumption.
+    + assert (ht : 2 <= length dsu).
+      { destruct dsu as [| head tail]. { simpl in hU. lia. }
+        destruct tail. { simpl in hU. pose proof (ltac:(lia) : u = 0). subst u. simpl in hX, hX1. pose proof (ltac:(lia) : x = 0). subst x. pose proof h 0 ltac:(simpl; lia) as step3. simpl in step3, hS. subst head. exfalso. exact step3. } simpl. lia. }
+      destruct (ltac:(exists (length dsu - 2); lia) : exists n, length dsu = S (S n)) as [nn hn]. rewrite hn. simpl. rewrite <- hX, hS. easy.
+    + assert (ht : 2 <= length dsu).
+      { destruct dsu as [| head tail]. { simpl in hU. lia. }
+        destruct tail. { simpl in hU. pose proof (ltac:(lia) : u = 0). subst u. simpl in hX, hX1. pose proof (ltac:(lia) : x = 0). subst x. pose proof h 0 ltac:(simpl; lia) as step3. simpl in step3, hS. subst head. exfalso. exact step3. } simpl. lia. }
+      destruct (ltac:(exists (length dsu - 2); lia) : exists n, length dsu = S (S n)) as [nn hn]. rewrite hn. simpl. rewrite <- hX, hS. simpl. lia.
+  - assert (ht : 2 <= length dsu).
+    { destruct dsu as [| head tail]. { simpl in hU. lia. }
+      destruct tail. { simpl in hU. pose proof (ltac:(lia) : u = 0). subst u. simpl in hX, hX1. pose proof (ltac:(lia) : x = 0). subst x. pose proof h 0 ltac:(simpl; lia) as step3. simpl in step3, hS. subst head. exfalso. exact step3. } simpl. lia. }
+    destruct (ltac:(exists (length dsu - 2); lia) : exists n, length dsu = S (S n)) as [nn hn].
+    assert (hg : ancestor dsu (length dsu) u = x).
+    { rewrite hn. simpl. rewrite <- hX, hS. reflexivity. }
+    rewrite hg.
+    assert (hh : pathCompress (<[u:=ReferTo x]> dsu) n x x = <[u:=ReferTo x]> dsu).
+    { destruct n. { easy. } simpl. destruct (decide (u = x)) as [hd | hd].
+      - subst u. rewrite hS in hX. easy.
+      - rewrite nth_lookup, list_lookup_insert_ne, <- nth_lookup, hS. { reflexivity. } assumption. }
+    rewrite hh. clear hh. intros i hh. rewrite <- hg, insert_length, <- ancestorInsert; try assumption; [| now rewrite <- hX].
+    destruct (decide (ancestor dsu (length dsu) i = u)) as [hs | hs].
+    + pose proof h i hh as step2. rewrite hs, <- hX in step2. exfalso. exact step2.
+    + rewrite nth_lookup, list_lookup_insert_ne, <- nth_lookup; [| lia]. pose proof h i hh as step2. exact step2.
 Qed.
 
 Definition modelScore (interactions : list (Z * Z)) := dsuScore (dsuFromInteractions (repeat (Ancestor Unit) 100) (map (fun (x : Z * Z) => let (a, b) := x in (Z.to_nat a, Z.to_nat b)) interactions)).
