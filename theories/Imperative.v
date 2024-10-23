@@ -523,7 +523,18 @@ Fixpoint liftToWithLocalVariables {arrayIndex arrayType variableIndex r} (x : Ac
 Lemma eliminateLift {arrayIndex arrayType variableIndex returnType} `{EqDecision variableIndex} (bools : variableIndex -> bool) (numbers : variableIndex -> Z) (addresses : variableIndex -> list Z) (action : Action (WithArrays arrayIndex arrayType) withArraysReturnValue returnType) continuation : eliminateLocalVariables bools numbers addresses (liftToWithLocalVariables action >>= continuation) = action >>= fun x => eliminateLocalVariables bools numbers addresses (continuation x).
 Proof.
   induction action as [a | a b IH]. { easy. }
-  simpl. rewrite (functional_extensionality_dep _ _ IH). reflexivity.
+  change (Dispatch (WithArrays arrayIndex arrayType) withArraysReturnValue
+  () a
+  (λ _1 : withArraysReturnValue a,
+  eliminateLocalVariables bools numbers addresses
+  (liftToWithLocalVariables (b _1) >>= continuation)) =
+Dispatch (WithArrays arrayIndex arrayType) withArraysReturnValue
+  () a
+  (λ _1 : withArraysReturnValue a,
+  b _1 >>=
+λ _2 : returnType,
+  eliminateLocalVariables bools numbers addresses
+  (continuation _2))). rewrite (functional_extensionality_dep _ _ IH). reflexivity.
 Qed.
 
 Fixpoint liftToWithinLoop {arrayIndex arrayType variableIndex r} (x : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue r) : Action (WithinLoop arrayIndex arrayType variableIndex) withinLoopReturnValue r :=
