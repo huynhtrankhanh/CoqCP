@@ -543,6 +543,22 @@ Fixpoint liftToWithinLoop {arrayIndex arrayType variableIndex r} (x : Action (Wi
   | Dispatch _ _ _ effect continuation => Dispatch _ _ _ (DoWithLocalVariables _ _ _ effect) (fun x => liftToWithinLoop (continuation x))
   end.
 
+Lemma liftToWithinLoopBind {arrayIndex arrayType variableIndex r1 r2} (x : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue r1) (continuation : r1 -> Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue r2) : liftToWithinLoop (x >>= continuation) = liftToWithinLoop x >>= fun t => liftToWithinLoop (continuation t).
+Proof.
+  induction x as [g | g g1 IH]. { easy. }
+  change (Dispatch (WithinLoop arrayIndex arrayType variableIndex)
+  withinLoopReturnValue r2
+  (DoWithLocalVariables arrayIndex arrayType variableIndex g)
+  (λ _0 : withLocalVariablesReturnValue g,
+  liftToWithinLoop (g1 _0 >>= continuation)) =
+Dispatch (WithinLoop arrayIndex arrayType variableIndex)
+  withinLoopReturnValue r2
+  (DoWithLocalVariables arrayIndex arrayType variableIndex g)
+  (λ _0 : withLocalVariablesReturnValue g,
+  liftToWithinLoop (g1 _0) >>=
+λ _1 : r1, liftToWithinLoop (continuation _1))). rewrite (functional_extensionality_dep _ _ IH). reflexivity.
+Qed.
+
 Lemma nth_lt {A} (l : list A) (n : nat) (isLess : Nat.lt n (length l)) : A.
 Proof.
   destruct l as [| head tail]; simpl in *; (lia || exact (nth n (head :: tail) head)).
