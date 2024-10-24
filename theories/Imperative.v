@@ -559,6 +559,19 @@ Dispatch (WithinLoop arrayIndex arrayType variableIndex)
 λ _1 : r1, liftToWithinLoop (continuation _1))). rewrite (functional_extensionality_dep _ _ IH). reflexivity.
 Qed.
 
+Lemma dropWithinLoopLiftToWithinLoop {arrayIndex arrayType variableIndex r} (x : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue r) (continuation : r -> Action (WithinLoop arrayIndex arrayType variableIndex) withinLoopReturnValue ()) : dropWithinLoop (liftToWithinLoop x >>= continuation) = x >>= fun v => dropWithinLoop (continuation v).
+Proof.
+  induction x as [x | x x1 IH]. { easy. }
+  change (Dispatch (WithLocalVariables arrayIndex arrayType variableIndex)
+  withLocalVariablesReturnValue LoopOutcome x
+  (λ _0 : withLocalVariablesReturnValue x,
+  dropWithinLoop (liftToWithinLoop (x1 _0) >>= continuation)) =
+Dispatch (WithLocalVariables arrayIndex arrayType variableIndex)
+  withLocalVariablesReturnValue LoopOutcome x
+  (λ _0 : withLocalVariablesReturnValue x,
+  x1 _0 >>= λ _1 : r, dropWithinLoop (continuation _1))). rewrite (functional_extensionality_dep _ _ IH). reflexivity.
+Qed.
+
 Lemma nth_lt {A} (l : list A) (n : nat) (isLess : Nat.lt n (length l)) : A.
 Proof.
   destruct l as [| head tail]; simpl in *; (lia || exact (nth n (head :: tail) head)).
