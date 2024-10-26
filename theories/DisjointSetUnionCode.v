@@ -39,6 +39,26 @@ Fixpoint convertToArray (x : list Slot) : list Z :=
   | (Ancestor x) :: tail => (Z.sub 256%Z (Z.of_nat (leafCount x))) :: convertToArray tail
   end.
 
+Lemma lengthConvert (dsu : list Slot) : length (convertToArray dsu) = length dsu.
+Proof.
+  induction dsu as [| [|] tail IH]; [easy | |]; simpl; now rewrite IH.
+Qed.
+
+Lemma nthUpperBoundConvertAux (dsu : list Slot) (h : length dsu < 256) (h1 : forall x y, nth x dsu (Ancestor Unit) = ReferTo y -> y < 256) (n : nat) : Z.lt (nth n (convertToArray dsu) (0%Z)) (256%Z).
+Proof.
+  revert n. induction dsu as [| [a | a] tail IH]; intro n; [destruct n; easy | |]; destruct n as [| n].
+  - simpl. pose proof h1 0 a ltac:(easy). lia.
+  - simpl. apply IH. { simpl in h; lia. } intros s t. pose proof h1 (S s) t as step. simpl in step. exact step.
+  - simpl. pose proof oneLeqLeafCount a. lia.
+  - simpl. apply IH. { simpl in h; lia. } intros s t. pose proof h1 (S s) t as step. simpl in step. exact step.
+Qed.
+
+Lemma nthUpperBoundConvert (dsu : list Slot) (h : length dsu < 256) (h1 : noIllegalIndices dsu) (n : nat) : Z.lt (nth n (convertToArray dsu) (0%Z)) (256%Z).
+Proof.
+  apply nthUpperBoundConvertAux; try assumption.
+  intros a b c. pose proof h1 a b c. lia.
+Qed.
+
 Fixpoint ancestor (dsu : list Slot) (fuel : nat) (index : nat) :=
   match fuel with
   | O => index
@@ -888,7 +908,18 @@ end) (λ _ : varsfuncdef_0__ancestor,
   0%Z 20) as step. rewrite step. clear step.
   assert (step : coerceInt a 64 = a).
   { revert hLe1 hLt1. clear. intros h1 h2. unfold coerceInt. rewrite Z.mod_small. { reflexivity. } lia. }
-  rewrite step, !leftIdentity, liftToWithinLoopBind, <- !bindAssoc, dropWithinLoopLiftToWithinLoop. unfold retrieve at 1. rewrite pushDispatch3.
+  rewrite step, !leftIdentity, liftToWithinLoopBind, <- !bindAssoc, dropWithinLoopLiftToWithinLoop. unfold retrieve at 1.
+  pose proof pushDispatch2 (λ _ : varsfuncdef_0__ancestor, false)
+  (λ _0 : varsfuncdef_0__ancestor,
+     match _0 with
+     | vardef_0__ancestor_vertex => whatever2
+     | vardef_0__ancestor_work => a
+     end) (λ _ : varsfuncdef_0__ancestor, repeat 0%Z 20) (Retrieve arrayIndex0 (arrayType arrayIndex0 environment0)
+     arraydef_0__dsu a) as step2. rewrite <- !bindAssoc, step2. clear step2.
+  autorewrite with advance_program.
+  case_decide.
+  + admit.
+  + 
 Admitted.
 
 Lemma runAncestor (dsu : list Slot) (hL : length dsu = 100) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (a b : Z) (hLe1 : Z.le 0 a) (hLt1 : Z.lt a 100) (hLe2 : Z.le 0 b) (hLt2 : Z.lt b 100) continuation whatever : invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0 state state
