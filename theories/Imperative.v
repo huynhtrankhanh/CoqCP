@@ -460,7 +460,13 @@ Definition store arrayIndex arrayType variableIndex name index (value : arrayTyp
 
 Definition continue arrayIndex arrayType variableIndex := Dispatch (WithinLoop arrayIndex arrayType variableIndex) withinLoopReturnValue () (DoContinue _ _ _) (fun x => Done _ _ _ tt).
 
+Lemma dropWithinLoop_continue arrayIndex arrayType variableIndex continuation : dropWithinLoop (continue arrayIndex arrayType variableIndex >>= continuation) = Done _ _ _ KeepGoing.
+Proof. easy. Qed.
+
 Definition break arrayIndex arrayType variableIndex := Dispatch (WithinLoop arrayIndex arrayType variableIndex) withinLoopReturnValue () (DoBreak _ _ _) (fun x => Done _ _ _ tt).
+
+Lemma dropWithinLoop_break arrayIndex arrayType variableIndex continuation : dropWithinLoop (break arrayIndex arrayType variableIndex >>= continuation) = Done _ _ _ Stop.
+Proof. easy. Qed.
 
 Definition divIntUnsigned {arrayIndex arrayType variableIndex} (a b : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue Z) : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue Z := bind a (fun a => bind b (fun b => if decide (b = 0) then trap arrayIndex arrayType variableIndex Z else Done _ _ _ (a / b))).
 Definition modIntUnsigned {arrayIndex arrayType variableIndex} (a b : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue Z) : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue Z := bind a (fun a => bind b (fun b => if decide (b = 0) then trap arrayIndex arrayType variableIndex Z else Done _ _ _ (a mod b))).
