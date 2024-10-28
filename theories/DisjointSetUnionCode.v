@@ -73,6 +73,20 @@ Proof.
   - exact (IH ltac:(simpl in h; lia) ltac:(unfold dsuLeafCount in h1; rewrite Nat2Z.id in h1; rewrite map_cons, (ltac:(simpl; reflexivity) : list_sum (_ :: _) = _ + list_sum _) in h1; unfold dsuLeafCount; rewrite Nat2Z.id; lia) n ltac:(simpl in h2; lia) h3 ltac:(simpl in h4; exact h4)).
 Qed.
 
+Lemma nthLowerBoundConvertAux (dsu : list Slot) (h : length dsu < 256) (h1 : Z.to_nat (dsuLeafCount dsu) < 128) (n : nat) : Z.le 0%Z (nth n (convertToArray dsu) (0%Z)).
+Proof.
+  revert n h1. induction dsu as [| head tail IH].
+  { cbv. intros a b. destruct a; easy. }
+  intros [| a] b.
+  - simpl. destruct head as [x | x]. { simpl. lia. }
+    simpl. unfold dsuLeafCount in b. rewrite Nat2Z.id, map_cons, (ltac:(simpl; reflexivity) : list_sum (_ :: _) = _ + list_sum _) in b. lia.
+  - rewrite (ltac:(simpl; destruct head; easy) : nth (S a) (convertToArray (head :: tail)) (0%Z) = nth a (convertToArray tail) (0%Z)).
+    exact (IH ltac:(simpl in h; lia) a ltac:(unfold dsuLeafCount in b; rewrite Nat2Z.id, map_cons, (ltac:(simpl; reflexivity) : list_sum (_ :: _) = _ + list_sum _) in b; unfold dsuLeafCount; rewrite Nat2Z.id; lia)).
+Qed.
+
+Lemma nthLowerBoundConvert (dsu : list Slot) (h : length dsu < 128) (h1 : Z.to_nat (dsuLeafCount dsu) = length dsu) (n : nat) : Z.le 0%Z (nth n (convertToArray dsu) (0%Z)).
+Proof. apply nthLowerBoundConvertAux; try (assumption || lia). Qed.
+
 Fixpoint ancestor (dsu : list Slot) (fuel : nat) (index : nat) :=
   match fuel with
   | O => index
