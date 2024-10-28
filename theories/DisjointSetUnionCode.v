@@ -59,6 +59,20 @@ Proof.
   intros a b c. pose proof h1 a b c. lia.
 Qed.
 
+Definition dsuScore (dsu : list Slot) := Z.of_nat (list_sum (map (fun x => match x with | ReferTo _ => 0 | Ancestor x => score x end) dsu)).
+
+Definition dsuLeafCount (dsu : list Slot) := Z.of_nat (list_sum (map (fun x => match x with | ReferTo _ => 0 | Ancestor x => leafCount x end) dsu)).
+
+Lemma nthLowerBoundConvertAuxStep (dsu : list Slot) (h : length dsu < 256) (h1 : Z.to_nat (dsuLeafCount dsu) < 128) (n : nat) (hn : n < length dsu) x (h2 : nth n dsu (Ancestor Unit) = Ancestor x) : leafCount x < 128.
+Proof.
+  revert n hn x h2. induction dsu as [| head tail IH].
+  { simpl. intro. lia. }
+  intros n h2 h3 h4.
+  destruct n as [| n].
+  - simpl in h4. unfold dsuLeafCount in h1. rewrite Nat2Z.id, map_cons, (ltac:(simpl; reflexivity) : list_sum (_ :: _) = _ + list_sum _) in h1. rewrite h4 in h1. lia.
+  - exact (IH ltac:(simpl in h; lia) ltac:(unfold dsuLeafCount in h1; rewrite Nat2Z.id in h1; rewrite map_cons, (ltac:(simpl; reflexivity) : list_sum (_ :: _) = _ + list_sum _) in h1; unfold dsuLeafCount; rewrite Nat2Z.id; lia) n ltac:(simpl in h2; lia) h3 ltac:(simpl in h4; exact h4)).
+Qed.
+
 Fixpoint ancestor (dsu : list Slot) (fuel : nat) (index : nat) :=
   match fuel with
   | O => index
@@ -402,10 +416,6 @@ Fixpoint dsuFromInteractions (dsu : list Slot) (interactions : list (nat * nat))
   | [] => dsu
   | (a, b)::tail => dsuFromInteractions (unite dsu a b) tail
   end.
-
-Definition dsuScore (dsu : list Slot) := Z.of_nat (list_sum (map (fun x => match x with | ReferTo _ => 0 | Ancestor x => score x end) dsu)).
-
-Definition dsuLeafCount (dsu : list Slot) := Z.of_nat (list_sum (map (fun x => match x with | ReferTo _ => 0 | Ancestor x => leafCount x end) dsu)).
 
 Lemma pathCompressPreservesLength (dsu : list Slot) (n a b : nat) : length (pathCompress dsu n a b) = length dsu.
 Proof.
