@@ -39,6 +39,15 @@ Fixpoint convertToArray (x : list Slot) : list Z :=
   | (Ancestor x) :: tail => (Z.sub 256%Z (Z.of_nat (leafCount x))) :: convertToArray tail
   end.
 
+Lemma nthConvert (x : list Slot) (n : nat) (hN : n < length x) : nth n (convertToArray x) (0%Z) = match nth n x (Ancestor Unit) with | ReferTo c => Z.of_nat c | Ancestor c => Z.sub 256%Z (Z.of_nat (leafCount c)) end.
+Proof.
+  revert n hN. induction x as [| head tail IH]; intros n hN.
+  { simpl in hN. lia. }
+  destruct n as [| n].
+  - simpl. destruct head; reflexivity.
+  - rewrite (ltac:(destruct head; reflexivity) : nth (S n) (convertToArray (head :: tail)) 0%Z = nth n (convertToArray tail) 0%Z), (ltac:(simpl; reflexivity) : nth (S _) (_ :: _) _ = _). apply IH. simpl in hN. lia.
+Qed.
+
 Lemma lengthConvert (dsu : list Slot) : length (convertToArray dsu) = length dsu.
 Proof.
   induction dsu as [| [|] tail IH]; [easy | |]; simpl; now rewrite IH.
@@ -755,7 +764,7 @@ end
 end)). { apply functional_extensionality_dep. intro x. destruct x; simpl; easy. } rewrite <- hh. clear hh. rewrite !(ltac:(cbv; reflexivity) : (coerceInt (coerceInt (Z.opp 1) 64) 8) = 255%Z) in previous. rewrite previous. rewrite insert_take_drop; [| lia]. rewrite (ltac:(lia) : Z.to_nat (100 - Z.of_nat n - 1) = 100 - S n). rewrite (ltac:(intros; listsEqual) : forall a b c, a ++ b :: c = (a ++ [b]) ++ c). pose proof take_app_length (take (100 - S n) l ++ [255%Z]) (drop (S (100 - S n)) l) as step. rewrite app_length in step. rewrite (ltac:(easy) : length [255%Z] = 1) in step. rewrite take_length in step. rewrite (ltac:(lia) : (100 - S n) `min` length l = 100 - S n) in step. rewrite (ltac:(lia) : 100 - S n + 1 = 100 - n) in step. rewrite step. clear step. rewrite (ltac:(intros; listsEqual) : forall a b c, (a ++ [b]) ++ c = a ++ (b :: c)). rewrite (ltac:(easy) : _ :: repeat _ _ = repeat 255%Z (S n)). case_decide as hIf; [reflexivity |]. pose proof (ltac:(lia) : @length (arrayType arrayIndex0 environment0 arraydef_0__dsu) l <= 100 - S n) as step. simpl in step. rewrite hL in step. lia.
 Qed.
 
-Lemma runAncestor1 (dsu : list Slot) (hL : length dsu = 100) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (whatever2 a : Z) (hLe1 : Z.le 0 a) (hLt1 : Z.lt a 100) (communication : list Z) continuation whatever n (hN : n < 100) : invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0 state state
+Lemma runAncestor1 (dsu : list Slot) (hL : length dsu = 100) (hM : Z.to_nat (dsuLeafCount dsu) = length dsu) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (whatever2 a : Z) (hLe1 : Z.le 0 a) (hLt1 : Z.lt a 100) (communication : list Z) continuation whatever n (hN : n < 100) : invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0 state state
   communication 1 arrayIndex0 arrayIndexEqualityDecidable0
   (arrayType arrayIndex0 environment0) (λ _0 : arrayIndex0,
   match
@@ -941,9 +950,10 @@ end) (λ _ : varsfuncdef_0__ancestor,
      end) (λ _ : varsfuncdef_0__ancestor, repeat 0%Z 20) (Retrieve arrayIndex0 (arrayType arrayIndex0 environment0)
      arraydef_0__dsu a) as step2. rewrite <- !bindAssoc, step2. clear step2.
   autorewrite with advance_program.
-  case_decide.
-  + admit.
-  + 
+  case_decide as hs.
+  + rewrite !leftIdentity, (ltac:(easy) : toSigned (coerceInt 0%Z 8) 8 = 0%Z).
+    rewrite (ltac:(easy) : @nth_lt (arrayType arrayIndex0 environment0 arraydef_0__dsu) (convertToArray dsu) (Z.to_nat a) hs = @nth_lt Z (convertToArray dsu) (Z.to_nat a) hs), (nth_lt_default (convertToArray dsu) (Z.to_nat a) hs 0%Z).
+  + rewrite lengthConvert in hs. lia.
 Admitted.
 
 Lemma runAncestor (dsu : list Slot) (hL : length dsu = 100) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (a b : Z) (hLe1 : Z.le 0 a) (hLt1 : Z.lt a 100) (hLe2 : Z.le 0 b) (hLt2 : Z.lt b 100) continuation whatever : invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0 state state
