@@ -950,11 +950,41 @@ end) (λ _ : varsfuncdef_0__ancestor,
      end) (λ _ : varsfuncdef_0__ancestor, repeat 0%Z 20) (Retrieve arrayIndex0 (arrayType arrayIndex0 environment0)
      arraydef_0__dsu a) as step2. rewrite <- !bindAssoc, step2. clear step2.
   autorewrite with advance_program.
-  case_decide as hs.
-  + rewrite !leftIdentity, (ltac:(easy) : toSigned (coerceInt 0%Z 8) 8 = 0%Z).
-    rewrite (ltac:(easy) : @nth_lt (arrayType arrayIndex0 environment0 arraydef_0__dsu) (convertToArray dsu) (Z.to_nat a) hs = @nth_lt Z (convertToArray dsu) (Z.to_nat a) hs), (nth_lt_default (convertToArray dsu) (Z.to_nat a) hs 0%Z).
-  + rewrite lengthConvert in hs. lia.
-Admitted.
+  case_decide as hs; [| rewrite lengthConvert in hs; lia].
+  rewrite !leftIdentity, (ltac:(easy) : toSigned (coerceInt 0%Z 8) 8 = 0%Z).
+  rewrite (ltac:(easy) : @nth_lt (arrayType arrayIndex0 environment0 arraydef_0__dsu) (convertToArray dsu) (Z.to_nat a) hs = @nth_lt Z (convertToArray dsu) (Z.to_nat a) hs), (nth_lt_default (convertToArray dsu) (Z.to_nat a) hs 0%Z), nthConvert; [| lia].
+  remember (nth (Z.to_nat a) dsu (Ancestor Unit)) as g eqn:hg. symmetry in hg.
+  destruct g as [g | g]; clear hs.
+  + case_bool_decide as hs. { unfold toSigned in hs. pose proof h1 (Z.to_nat a) g hg. case_decide; [| lia]. lia. } rewrite (ltac:(easy) : liftToWithinLoop
+  (Done
+     (WithLocalVariables arrayIndex0 (arrayType arrayIndex0 environment0)
+        varsfuncdef_0__ancestor) withLocalVariablesReturnValue bool false) = Done _ _ bool false), !leftIdentity.
+    rewrite liftToWithinLoopBind, <- !bindAssoc, dropWithinLoopLiftToWithinLoop. unfold numberLocalGet at 1. rewrite <- !bindAssoc, pushNumberGet2, !step, !leftIdentity, liftToWithinLoopBind, <- !bindAssoc, dropWithinLoopLiftToWithinLoop. unfold retrieve at 1. rewrite <- !bindAssoc, pushDispatch2. autorewrite with advance_program. clear hs. case_decide as hs; [| rewrite lengthConvert in hs; lia]. rewrite liftToWithinLoopBind, <- !bindAssoc, dropWithinLoopLiftToWithinLoop, <- !bindAssoc. unfold numberLocalSet at 1. pose proof (@pushNumberSet2 arrayIndex0 (arrayType arrayIndex0 environment0) varsfuncdef_0__ancestor _ (λ _ : varsfuncdef_0__ancestor, false)
+    (λ _0 : varsfuncdef_0__ancestor,
+       match _0 with
+       | vardef_0__ancestor_vertex => whatever2
+       | vardef_0__ancestor_work => a
+       end) (λ _ : varsfuncdef_0__ancestor, repeat 0%Z 20) vardef_0__ancestor_work) (nth_lt (convertToArray dsu) (Z.to_nat a) hs) as step3. rewrite step3. clear step3.
+    rewrite (ltac:(cbv; reflexivity) : dropWithinLoop
+    (Done
+       (WithinLoop arrayIndex0 (arrayType arrayIndex0 environment0)
+          varsfuncdef_0__ancestor) withinLoopReturnValue () ())  = _), !leftIdentity.
+    assert (step3 : nth_lt (convertToArray dsu) (Z.to_nat a) hs = Z.of_nat g).
+    { rewrite (nth_lt_default _ _ _ 0%Z), nthConvert; [| lia]. rewrite hg. reflexivity. } rewrite step3. clear step3.
+    assert (step3 : (update
+    (λ _0 : varsfuncdef_0__ancestor,
+       match _0 with
+       | vardef_0__ancestor_vertex => whatever2
+       | vardef_0__ancestor_work => a
+       end) vardef_0__ancestor_work (Z.of_nat g)) = fun x => match x with | vardef_0__ancestor_vertex => whatever2 | vardef_0__ancestor_work => Z.of_nat g end). { unfold update. apply functional_extensionality_dep. intro aa. destruct aa; easy. } rewrite step3. clear step3.
+    pose proof IH ltac:(lia) (Z.of_nat g) ltac:(pose proof h1 (Z.to_nat a) _ hg as ls; lia) ltac:(lia) as step3. rewrite !liftToWithinLoopBind, <- !bindAssoc in step3. rewrite step3, Nat2Z.id.
+    clear step3. assert (step3 : ancestor dsu (S n) (Z.to_nat a) = ancestor dsu n g). { simpl. rewrite hg. reflexivity. } rewrite step3. reflexivity.
+  + case_bool_decide as hs.
+    * rewrite liftToWithinLoopBind, <- !bindAssoc, dropWithinLoopLiftToWithinLoop. rewrite <- !bindAssoc, leftIdentity, <- !bindAssoc, dropWithinLoop_break, !leftIdentity.
+      assert (step3 : ancestor dsu (S n) (Z.to_nat a) = Z.to_nat a).
+      { simpl. rewrite hg. reflexivity. } rewrite step3, Z2Nat.id; [| lia]. reflexivity.
+    * unfold toSigned in hs. case_decide as hss. { simpl in hss. rewrite (ltac:(easy) : (2 ^ (8 - 1) = 128)%Z) in hss. pose proof nthLowerBoundConvertAuxStep dsu ltac:(lia) ltac:(lia) (Z.to_nat a) ltac:(lia) g hg. lia. } rewrite (ltac:(easy) : (2 ^ 8 = 256)%Z) in hs. pose proof oneLeqLeafCount g. lia.
+Qed.
 
 Lemma runAncestor (dsu : list Slot) (hL : length dsu = 100) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (a b : Z) (hLe1 : Z.le 0 a) (hLt1 : Z.lt a 100) (hLe2 : Z.le 0 b) (hLt2 : Z.lt b 100) continuation whatever : invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0 state state
   [a; b] 1 arrayIndex0 arrayIndexEqualityDecidable0
