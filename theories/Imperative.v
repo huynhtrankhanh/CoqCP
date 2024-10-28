@@ -577,6 +577,13 @@ Proof.
   destruct l as [| head tail]; simpl in *; (lia || exact (nth n (head :: tail) head)).
 Defined.
 
+Lemma nth_lt_default {A} (l : list A) (n : nat) (isLess : Nat.lt n (length l)) (default : A) : nth_lt l n isLess = nth n l default.
+Proof.
+  destruct l as [| head tail]; simpl in *. { lia. }
+  destruct n as [| n]. { reflexivity. }
+  rewrite (nth_indep _ _ default). { reflexivity. } lia.
+Qed.
+
 Lemma nthTrap {A arrayIndex arrayType variableIndex} (l : list A) (n : Z) : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue A.
 Proof.
   destruct (decide (Nat.lt (Z.to_nat n) (length l))) as [h |].
