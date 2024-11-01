@@ -941,7 +941,7 @@ end) (λ _ : varsfuncdef_0__ancestor,
   0%Z 20) as step. rewrite step. clear step.
   assert (step : coerceInt a 64 = a).
   { revert hLe1 hLt1. clear. intros h1 h2. unfold coerceInt. rewrite Z.mod_small. { reflexivity. } lia. }
-  rewrite <- !bindAssoc, step, !leftIdentity, liftToWithinLoopBind, <- !bindAssoc, dropWithinLoopLiftToWithinLoop. unfold retrieve at 1.
+  rewrite step, !leftIdentity, liftToWithinLoopBind, <- !bindAssoc, dropWithinLoopLiftToWithinLoop. unfold retrieve at 1.
   pose proof pushDispatch2 (λ _ : varsfuncdef_0__ancestor, false)
   (λ _0 : varsfuncdef_0__ancestor,
      match _0 with
@@ -949,7 +949,7 @@ end) (λ _ : varsfuncdef_0__ancestor,
      | vardef_0__ancestor_work => a
      end) (λ _ : varsfuncdef_0__ancestor, repeat 0%Z 20) (Retrieve arrayIndex0 (arrayType arrayIndex0 environment0)
      arraydef_0__dsu a) as step2. rewrite <- !bindAssoc, step2. clear step2.
-  autorewrite with advance_program.
+  rewrite (ltac:(simpl; reflexivity) : forall effect continuation f, bind (Dispatch _ _ _ effect continuation) f = _). autorewrite with advance_program.
   case_decide as hs; [| rewrite lengthConvert in hs; lia].
   rewrite !leftIdentity, (ltac:(easy) : toSigned (coerceInt 0%Z 8) 8 = 0%Z).
   rewrite (ltac:(easy) : @nth_lt (arrayType arrayIndex0 environment0 arraydef_0__dsu) (convertToArray dsu) (Z.to_nat a) hs = @nth_lt Z (convertToArray dsu) (Z.to_nat a) hs), (nth_lt_default (convertToArray dsu) (Z.to_nat a) hs 0%Z), nthConvert; [| lia].
@@ -959,7 +959,7 @@ end) (λ _ : varsfuncdef_0__ancestor,
   (Done
      (WithLocalVariables arrayIndex0 (arrayType arrayIndex0 environment0)
         varsfuncdef_0__ancestor) withLocalVariablesReturnValue bool false) = Done _ _ bool false), !leftIdentity.
-    rewrite liftToWithinLoopBind, <- !bindAssoc, dropWithinLoopLiftToWithinLoop. unfold numberLocalGet at 1. rewrite <- !bindAssoc, pushNumberGet2, !step, !leftIdentity, liftToWithinLoopBind, <- !bindAssoc, dropWithinLoopLiftToWithinLoop. unfold retrieve at 1. rewrite <- !bindAssoc, pushDispatch2. autorewrite with advance_program. clear hs. case_decide as hs; [| rewrite lengthConvert in hs; lia]. rewrite liftToWithinLoopBind, <- !bindAssoc, dropWithinLoopLiftToWithinLoop, <- !bindAssoc. unfold numberLocalSet at 1. pose proof (@pushNumberSet2 arrayIndex0 (arrayType arrayIndex0 environment0) varsfuncdef_0__ancestor _ (λ _ : varsfuncdef_0__ancestor, false)
+    rewrite liftToWithinLoopBind, <- !bindAssoc, dropWithinLoopLiftToWithinLoop. unfold numberLocalGet at 1. rewrite <- !bindAssoc, pushNumberGet2, !step, !leftIdentity, liftToWithinLoopBind, <- !bindAssoc, dropWithinLoopLiftToWithinLoop. unfold retrieve at 1. rewrite <- !bindAssoc, pushDispatch2. rewrite (ltac:(simpl; reflexivity) : forall effect continuation f, bind (Dispatch _ _ _ effect continuation) f = _). autorewrite with advance_program. clear hs. case_decide as hs; [| rewrite lengthConvert in hs; lia]. rewrite liftToWithinLoopBind, <- !bindAssoc, dropWithinLoopLiftToWithinLoop, <- !bindAssoc. unfold numberLocalSet at 1. pose proof (@pushNumberSet2 arrayIndex0 (arrayType arrayIndex0 environment0) varsfuncdef_0__ancestor _ (λ _ : varsfuncdef_0__ancestor, false)
     (λ _0 : varsfuncdef_0__ancestor,
        match _0 with
        | vardef_0__ancestor_vertex => whatever2
