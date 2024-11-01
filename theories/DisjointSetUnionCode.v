@@ -764,7 +764,7 @@ end
 end)). { apply functional_extensionality_dep. intro x. destruct x; simpl; easy. } rewrite <- hh. clear hh. rewrite !(ltac:(cbv; reflexivity) : (coerceInt (coerceInt (Z.opp 1) 64) 8) = 255%Z) in previous. rewrite previous. rewrite insert_take_drop; [| lia]. rewrite (ltac:(lia) : Z.to_nat (100 - Z.of_nat n - 1) = 100 - S n). rewrite (ltac:(intros; listsEqual) : forall a b c, a ++ b :: c = (a ++ [b]) ++ c). pose proof take_app_length (take (100 - S n) l ++ [255%Z]) (drop (S (100 - S n)) l) as step. rewrite app_length in step. rewrite (ltac:(easy) : length [255%Z] = 1) in step. rewrite take_length in step. rewrite (ltac:(lia) : (100 - S n) `min` length l = 100 - S n) in step. rewrite (ltac:(lia) : 100 - S n + 1 = 100 - n) in step. rewrite step. clear step. rewrite (ltac:(intros; listsEqual) : forall a b c, (a ++ [b]) ++ c = a ++ (b :: c)). rewrite (ltac:(easy) : _ :: repeat _ _ = repeat 255%Z (S n)). case_decide as hIf; [reflexivity |]. pose proof (ltac:(lia) : @length (arrayType arrayIndex0 environment0 arraydef_0__dsu) l <= 100 - S n) as step. simpl in step. rewrite hL in step. lia.
 Qed.
 
-Lemma runAncestor1 (dsu : list Slot) (hL : length dsu = 100) (hM : Z.to_nat (dsuLeafCount dsu) = length dsu) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (whatever2 a : Z) (hLe1 : Z.le 0 a) (hLt1 : Z.lt a 100) (communication : list Z) continuation whatever n (hN : n <= 100) : invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0 state state
+Lemma runAncestor1 (dsu : list Slot) (hL : length dsu = 100) (hM : Z.to_nat (dsuLeafCount dsu) = length dsu) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (whatever2 a : Z) (hLe1 : Z.le 0 a) (hLt1 : Z.lt a 100) (communication : list Z) continuation continuation2 whatever n (hN : n <= 100) : invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0 state state
   communication 1 arrayIndex0 arrayIndexEqualityDecidable0
   (arrayType arrayIndex0 environment0) (λ _0 : arrayIndex0,
   match
@@ -893,7 +893,7 @@ else
   (arrayType arrayIndex0 environment0)
   varsfuncdef_0__ancestor)
   withinLoopReturnValue ()
-  ())) >>= continuation)) = invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0 state state
+  ())) >>= continuation) >>= continuation2) = invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0 state state
   communication 1 arrayIndex0 arrayIndexEqualityDecidable0
   (arrayType arrayIndex0 environment0) (λ _0 : arrayIndex0,
   match
@@ -924,7 +924,7 @@ with
 | vardef_0__ancestor_work =>
     Z.of_nat (ancestor dsu n (Z.to_nat a))
 end)
-  (λ _ : varsfuncdef_0__ancestor, repeat 0%Z 20) (continuation tt)).
+  (λ _ : varsfuncdef_0__ancestor, repeat 0%Z 20) (continuation tt) >>= continuation2).
 Proof.
   revert a hLt1 hLe1. induction n as [| n IH]; intros a hLt1 hLe1.
   - rewrite (ltac:(simpl; reflexivity) : loop 0 _ = _), (ltac:(simpl; reflexivity) : ancestor dsu 0 _ = _), Z2Nat.id, leftIdentity; [reflexivity | lia].
@@ -941,7 +941,7 @@ end) (λ _ : varsfuncdef_0__ancestor,
   0%Z 20) as step. rewrite step. clear step.
   assert (step : coerceInt a 64 = a).
   { revert hLe1 hLt1. clear. intros h1 h2. unfold coerceInt. rewrite Z.mod_small. { reflexivity. } lia. }
-  rewrite step, !leftIdentity, liftToWithinLoopBind, <- !bindAssoc, dropWithinLoopLiftToWithinLoop. unfold retrieve at 1.
+  rewrite <- !bindAssoc, step, !leftIdentity, liftToWithinLoopBind, <- !bindAssoc, dropWithinLoopLiftToWithinLoop. unfold retrieve at 1.
   pose proof pushDispatch2 (λ _ : varsfuncdef_0__ancestor, false)
   (λ _0 : varsfuncdef_0__ancestor,
      match _0 with
