@@ -36,8 +36,9 @@ fun _ => ((Done _ _ _ 100%Z) >>= fun x => loop (Z.to_nat x) (fun binder_0_interm
   ) else (
     Done _ _ _ tt
   )) >>=
+  fun _ => (liftToWithinLoop ((((numberLocalGet arrayIndex0 (arrayType _ environment0) varsfuncdef_0__ancestor (vardef_0__ancestor_work)) >>= fun x => Done _ _ _ (coerceInt x 64)) >>= fun x => retrieve arrayIndex0 (arrayType _ environment0) varsfuncdef_0__ancestor (arraydef_0__dsu) x) >>= fun x => numberLocalSet arrayIndex0 (arrayType _ environment0) varsfuncdef_0__ancestor (vardef_0__ancestor_vertex) x)) >>=
   fun _ => (liftToWithinLoop (((numberLocalGet arrayIndex0 (arrayType _ environment0) varsfuncdef_0__ancestor (vardef_0__ancestor_work)) >>= fun x => Done _ _ _ (coerceInt x 64)) >>= fun x => (((Done _ _ _ 0%Z) >>= fun x => retrieve arrayIndex0 (arrayType _ environment0) varsfuncdef_0__ancestor (arraydef_0__result) x) >>= fun tuple_element_0 => Done _ _ _ (tuple_element_0)) >>= fun y => store arrayIndex0 (arrayType _ environment0) varsfuncdef_0__ancestor (arraydef_0__dsu) x y)) >>=
-  fun _ => (liftToWithinLoop ((((numberLocalGet arrayIndex0 (arrayType _ environment0) varsfuncdef_0__ancestor (vardef_0__ancestor_work)) >>= fun x => Done _ _ _ (coerceInt x 64)) >>= fun x => retrieve arrayIndex0 (arrayType _ environment0) varsfuncdef_0__ancestor (arraydef_0__dsu) x) >>= fun x => numberLocalSet arrayIndex0 (arrayType _ environment0) varsfuncdef_0__ancestor (vardef_0__ancestor_work) x)) >>=
+  fun _ => (liftToWithinLoop ((numberLocalGet arrayIndex0 (arrayType _ environment0) varsfuncdef_0__ancestor (vardef_0__ancestor_vertex)) >>= fun x => numberLocalSet arrayIndex0 (arrayType _ environment0) varsfuncdef_0__ancestor (vardef_0__ancestor_work) x)) >>=
   fun _ => Done _ _ _ tt
 )))) >>=
 fun _ => Done _ _ _ tt).

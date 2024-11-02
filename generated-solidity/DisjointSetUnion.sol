@@ -125,8 +125,9 @@ contract GeneratedCode {
                 break;
             } else {
             }
+            local0 = arrayGet(environment0, uint64(local1)).item0;
             arraySet(environment0, uint64(local1), Tuple0(arrayGet(environment2, uint64(0)).item0));
-            local1 = arrayGet(environment0, uint64(local1)).item0;
+            local1 = local0;
         }
     } }
 
