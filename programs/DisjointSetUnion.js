@@ -18,8 +18,9 @@ procedure('ancestor', { vertex: int8, work: int8 }, () => {
     if (sLess(retrieve('dsu', coerceInt64(get('work')))[0], coerceInt8(0))) {
       ;('break')
     }
+    set('vertex', retrieve('dsu', coerceInt64(get('work')))[0])
     store('dsu', coerceInt64(get('work')), [retrieve('result', 0)[0]])
-    set('work', retrieve('dsu', coerceInt64(get('work')))[0])
+    set('work', get('vertex'))
   })
 })
 
