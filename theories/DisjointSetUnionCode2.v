@@ -3,6 +3,10 @@ From Generated Require Import DisjointSetUnion.
 From stdpp Require Import numbers list.
 Require Import Coq.Logic.FunctionalExtensionality.
 Require Import Wellfounded.
+From Coq Require Import ssreflect ssrfun ssrbool.
+Set Implicit Arguments.
+Unset Strict Implicit.
+Unset Printing Implicit Defensive.
 
 Lemma runAncestor (dsu : list Slot) (hL : length dsu = 100) (hL1 : Z.to_nat (dsuLeafCount dsu) = length dsu) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (a b : Z) (hLe1 : Z.le 0 a) (hLt1 : Z.lt a 100) (hLe2 : Z.le 0 b) (hLt2 : Z.lt b 100) continuation whatever : invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0 state state
   [a; b] 1 arrayIndex0 arrayIndexEqualityDecidable0
@@ -53,29 +57,43 @@ end)
   (λ _ : varsfuncdef_0__main, repeat 0%Z 20))
   (continuation tt).
 Proof.
-  unfold funcdef_0__ancestor. rewrite !leftIdentity, <- !bindAssoc.
-  assert (hs : update (λ _ : varsfuncdef_0__ancestor, 0%Z) vardef_0__ancestor_vertex a = fun x => match x with | vardef_0__ancestor_vertex => a | _ => 0%Z end).
-  { unfold update. apply functional_extensionality_dep. intro x. destruct x; easy. }
-  rewrite hs. unfold numberLocalGet at 1. autorewrite with advance_program.
-  unfold numberLocalSet at 1. pose proof @pushNumberSet2 arrayIndex0 (arrayType arrayIndex0 environment0) varsfuncdef_0__ancestor _ (λ _ : varsfuncdef_0__ancestor, false) (λ _1 : varsfuncdef_0__ancestor,
-  match _1 with
-| vardef_0__ancestor_vertex =>
-    a
-| vardef_0__ancestor_work =>
-    0%Z
-end) (λ _ : varsfuncdef_0__ancestor,
-  @repeat Z
-  0%Z 20) vardef_0__ancestor_work a as step. rewrite step. clear step hs.
-  assert (hs : (update (λ _0 : varsfuncdef_0__ancestor,
-  match _0
-with
-| vardef_0__ancestor_vertex =>
-    a
-| vardef_0__ancestor_work =>
-    0%Z
-end) vardef_0__ancestor_work
-  a) = fun x => match x with | vardef_0__ancestor_vertex => a | vardef_0__ancestor_work => a end). { apply functional_extensionality_dep. intro x. destruct x; easy. }
-  rewrite hs. clear hs. pose proof (fun g => runAncestor1 dsu hL hL1 h1 h2 a a hLe1 hLt1 [a; b] g whatever (Z.to_nat 100%Z) ltac:(lia)) as step.
+  rewrite /funcdef_0__ancestor. unfold numberLocalGet at 1. rewrite -!bindAssoc pushNumberGet2 pushNumberSet2.
+  have : (update (update (fun=> 0%Z) vardef_0__ancestor_vertex a)
+        vardef_0__ancestor_work
+        (update (fun=> 0%Z) vardef_0__ancestor_vertex a
+           vardef_0__ancestor_vertex)) = fun x => match x with | vardef_0__ancestor_vertex => a | vardef_0__ancestor_work => a end.
+  { apply functional_extensionality_dep. intro x. destruct x; easy. }
+  move => h. rewrite h. clear h. rewrite leftIdentity.
+  have av := fun g gg => runAncestor1 dsu hL hL1 h1 h2 a a hLe1 hLt1 [a; b] g gg whatever (Z.to_nat 100%Z) ltac:(lia).
+  move : av. rewrite !leftIdentity !rightIdentity. move => av.
+  rewrite -bindAssoc av. unfold numberLocalGet at 1. rewrite pushNumberGet2. unfold store at 1. rewrite pushDispatch2. rewrite (ltac:(intros; simpl; reflexivity) : forall effect continuation f, Dispatch _ _ _ effect continuation >>= f = _) unfoldInvoke_S_Store. case_decide as xxx; [| simpl in xxx; lia]; clear xxx.
+  have jda : (λ _0 : arrayIndex0,
+     match decide (_0 = arraydef_0__result) with
+     | left _1 =>
+         eq_rect_r
+           (λ _2 : arrayIndex0, list (arrayType arrayIndex0 environment0 _2))
+           (<[Z.to_nat 0:=Z.of_nat (ancestor dsu (Z.to_nat 100) (Z.to_nat a))]>
+              [whatever]) _1
+     | right _ =>
+         match
+           _0 as _2 return (list (arrayType arrayIndex0 environment0 _2))
+         with
+         | arraydef_0__dsu => convertToArray dsu
+         | arraydef_0__hasBeenInitialized => [1%Z]
+         | arraydef_0__result => [whatever]
+         end
+     end) = fun x => match x with | arraydef_0__dsu => convertToArray dsu | arraydef_0__hasBeenInitialized => [1%Z] | arraydef_0__result => [Z.of_nat (ancestor dsu (Z.to_nat 100) (Z.to_nat a))] end.
+  { apply functional_extensionality_dep. intro g. destruct g; easy. }
+  rewrite jda. clear jda. unfold numberLocalGet at 1. rewrite pushNumberGet2. unfold numberLocalSet at 1. rewrite pushNumberSet2.
+  have jda : (update
+        (λ _0 : varsfuncdef_0__ancestor,
+           match _0 with
+           | vardef_0__ancestor_vertex => a
+           | vardef_0__ancestor_work =>
+               Z.of_nat (ancestor dsu (Z.to_nat 100) (Z.to_nat a))
+           end) vardef_0__ancestor_work a) = fun x => match x with | vardef_0__ancestor_vertex => a | vardef_0__ancestor_work => a end.
+  { apply functional_extensionality_dep. intro gg. destruct gg; easy. }
+  rewrite jda. clear jda.
 Admitted.
 
 Lemma runUnite (dsu : list Slot) (hL : length dsu = 100) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (a b : Z) (hLt1 : Z.lt a 100) (hLt2 : Z.lt b 100) : invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0 state
