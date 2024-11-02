@@ -48,6 +48,15 @@ Proof.
   - rewrite -> (ltac:(destruct head; reflexivity) : nth (S n) (convertToArray (head :: tail)) 0%Z = nth n (convertToArray tail) 0%Z), (ltac:(simpl; reflexivity) : nth (S _) (_ :: _) _ = _). apply IH. simpl in hN. lia.
 Qed.
 
+Lemma insertConvertReferTo (x : list Slot) (n : nat) (hN : n < length x) (v : Z) (hU : Z.le 0 v) : <[n := v]> (convertToArray x) = convertToArray (<[n := ReferTo (Z.to_nat v)]> x).
+Proof.
+  revert n hN. induction x as [| head tail IH]; intros n hN.
+  { simpl in hN. lia. }
+  destruct n as [| n].
+  - simpl. destruct head; simpl; rewrite Z2Nat.id; try lia; reflexivity.
+  - simpl. destruct head; simpl; rewrite IH; try reflexivity; simpl in hN; lia.
+Qed.
+
 Lemma lengthConvert (dsu : list Slot) : length (convertToArray dsu) = length dsu.
 Proof.
   induction dsu as [| [|] tail IH]; [easy | |]; simpl; now rewrite IH.
