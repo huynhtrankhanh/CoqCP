@@ -219,7 +219,31 @@ Proof.
                [Z.of_nat (ancestor dsu (Z.to_nat 100) (Z.to_nat a))] end.
   { apply functional_extensionality_dep. intro jak. destruct jak; easy. }
   rewrite gda. clear gda.
-  
+  rewrite insertConvertReferTo; [lia | lia |]. rewrite Nat2Z.id dropWithinLoopLiftToWithinLoop. unfold numberLocalGet at 1. rewrite -!bindAssoc pushNumberGet2 ra !leftIdentity. unfold retrieve at 1. rewrite pushDispatch2 (ltac:(intros; simpl; reflexivity) : forall effect continuation f, Dispatch _ _ _ effect continuation >>= f = _) unfoldInvoke_S_Retrieve. clear ppp xxx. case_decide as xxx; [| rewrite lengthConvert in xxx; lia]. case_decide as ppp; [| rewrite lengthConvert in ppp; rewrite insert_length in ppp; lia]. rewrite pushNumberSet2 /update.
+  assert (red : forall _0,
+           ( match
+             @decide (@eq varsfuncdef_0__ancestor _0 vardef_0__ancestor_work)
+               (@decide_rel varsfuncdef_0__ancestor varsfuncdef_0__ancestor
+                  (@eq varsfuncdef_0__ancestor)
+                  variableIndexEqualityDecidablevarsfuncdef_0__ancestor _0
+                  vardef_0__ancestor_work)
+            with |left _ =>
+             @nth_lt (arrayType arrayIndex0 environment0 arraydef_0__dsu)
+               (convertToArray
+                  (@insert nat Slot (list Slot) (@list_insert Slot)
+                     (Z.to_nat a)
+                     (ReferTo (ancestor dsu (Z.to_nat 100) (Z.to_nat a))) dsu))
+               (Z.to_nat a) ppp
+            | right _ => match _0 with
+                 | vardef_0__ancestor_vertex | _ => a
+                 end end) = match _0 with | vardef_0__ancestor_work => nth_lt
+           (convertToArray
+              (<[Z.to_nat a:=ReferTo
+                               (ancestor dsu (Z.to_nat 100) (Z.to_nat a))]>
+                 dsu)) (Z.to_nat a) ppp | _ => a end).
+  { intro g. destruct g; easy. }
+  have red2 := functional_extensionality_dep _ _ red.
+  rewrite red2. clear red red2. rewrite (nth_lt_default _ _ _ 0%Z) nthConvert. { rewrite insert_length. lia. } rewrite nth_lookup list_lookup_insert. { lia. } rewrite (ltac:(simpl; reflexivity) : default _ (Some _) = _).
 Admitted.
 
 Lemma runAncestor (dsu : list Slot) (hL : length dsu = 100) (hL1 : Z.to_nat (dsuLeafCount dsu) = length dsu) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (a : Z) (hLe1 : Z.le 0 a) (hLt1 : Z.lt a 100) communication continuation whatever : invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0 state state
