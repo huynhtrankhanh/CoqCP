@@ -22,3 +22,4 @@ Definition bubbleSort (l : list A) := bubbleSortAux (length l) l.
 End bubbleSort.
 
 Definition bubbleSortDemo (l : list nat) : list nat := bubbleSort (length l) Nat.ltb l.
+(*  *)
