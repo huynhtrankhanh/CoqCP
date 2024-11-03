@@ -389,8 +389,8 @@ Proof.
                Z.of_nat (ancestor dsu (Z.to_nat 100) (Z.to_nat a))
            end) vardef_0__ancestor_work a) = fun x => match x with | vardef_0__ancestor_vertex => a | vardef_0__ancestor_work => a end.
   { apply functional_extensionality_dep. intro gg. destruct gg; easy. }
-  rewrite jda. clear jda.
-Admitted.
+  rewrite jda. clear jda. rewrite runCompressLoop; try (assumption || lia). rewrite (ltac:(lia) : Z.to_nat 100 = length dsu). reflexivity.
+Qed.
 
 Lemma runUnite (dsu : list Slot) (hL : length dsu = 100) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (a b : Z) (hLt1 : Z.lt a 100) (hLt2 : Z.lt b 100) : invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0 state
   state [a; b] 1 arrayIndex0 arrayIndexEqualityDecidable0
