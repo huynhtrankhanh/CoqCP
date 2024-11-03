@@ -469,6 +469,19 @@ Proof.
   rewrite H1; [| lia]. rewrite take_drop. reflexivity.
 Qed.
 
+Lemma pathCompressPreservesNoIllegalIndices (dsu : list Slot) (h1 : noIllegalIndices dsu) (n u v : nat) (hU : u < length dsu) (hV : v < length dsu) : noIllegalIndices (pathCompress dsu n u v).
+Proof.
+  revert u hU. revert h1. revert hV. revert dsu. induction n as [| n IH]; intros dsu hV h1 u hU.
+  - simpl. intros. exact h1.
+  - simpl. intros i j hi. remember (nth u dsu (Ancestor Unit)) as e eqn:he. symmetry in he. destruct e as [e | e].
+    + assert (h : noIllegalIndices (<[u:=ReferTo v]> dsu)).
+      { intros a b c. destruct (decide (a = u)) as [ha | ha].
+        - rewrite ha, nth_lookup, list_lookup_insert, (ltac:(intros; easy) : forall a, default _ (Some a) = a) in c; [| exact hU]. injection c. intro d. subst v. rewrite insert_length. exact hV.
+        - rewrite insert_length. rewrite nth_lookup, list_lookup_insert_ne in c; [| lia]. rewrite <- (nth_lookup _ _ (Ancestor Unit)) in c. exact (h1 _ _ c). }
+      exact (IH (<[u:=ReferTo v]> dsu) ltac:(rewrite insert_length; exact hV) h e ltac:(rewrite insert_length; exact (h1 _ _ he)) i _ hi).
+    + pose proof h1 i j hi. assumption.
+Qed.
+
 Lemma pathCompressPreservesWithoutCycles (dsu : list Slot) (h : withoutCyclesN dsu (length dsu)) (h1 : noIllegalIndices dsu) (n u : nat) (hU : u < length dsu) : withoutCyclesN (pathCompress dsu n u (ancestor dsu (length dsu) u)) (length dsu).
 Proof.
   induction n as [| n IH] in u, dsu, h, hU, h1 |- *. { simpl. assumption. }
