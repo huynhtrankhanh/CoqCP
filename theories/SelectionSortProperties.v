@@ -145,7 +145,7 @@ Proof.
       assert (hLeq2 : j < length pastIteration). { rewrite HeqpastIteration, partialSelectionSortPreservesLength in *; lia. }
       rewrite swapDecomposition, IHiterationCount; try lia.
       assert (hPartial : Permutation pastIteration (take iterationCount pastIteration ++ [nth iterationCount pastIteration default] ++ drop (S iterationCount) (take j pastIteration) ++ [nth j pastIteration default] ++ drop (j + 1) pastIteration)).
-      { epose proof (listDecomposition pastIteration iterationCount j ltac:(lia) ltac:(rewrite HeqpastIteration in *; assumption) default) as H.
+      { pose proof (listDecomposition pastIteration iterationCount j ltac:(lia) ltac:(rewrite HeqpastIteration in *; assumption) default) as H.
         rewrite <- H. reflexivity. }
       transitivity (take iterationCount pastIteration ++ [nth iterationCount pastIteration default] ++ drop (S iterationCount) (take j pastIteration) ++ [nth j pastIteration default] ++ drop (j + 1) pastIteration); try assumption.
       remember (take iterationCount pastIteration) as A1.
