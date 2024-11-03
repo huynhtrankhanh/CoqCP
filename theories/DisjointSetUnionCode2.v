@@ -392,7 +392,7 @@ Proof.
   rewrite jda. clear jda. rewrite runCompressLoop; try (assumption || lia). rewrite (ltac:(lia) : Z.to_nat 100 = length dsu). reflexivity.
 Qed.
 
-Lemma runUnite (dsu : list Slot) (hL : length dsu = 100) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (a b : Z) (hLt1 : Z.lt a 100) (hLt2 : Z.lt b 100) : invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0 state
+Lemma runUnite (dsu : list Slot) (hL : length dsu = 100) (hL1 : Z.to_nat (dsuLeafCount dsu) = length dsu) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (a b : Z) (hLe1 : Z.le 0 a) (hLt1 : Z.lt a 100) (hLe2 : Z.le 0 b) (hLt2 : Z.lt b 100) : invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0 state
   state [a; b] 1 arrayIndex0 arrayIndexEqualityDecidable0
   (arrayType arrayIndex0 environment0) (λ _0 : arrayIndex0,
   match
@@ -503,7 +503,46 @@ end)
   (unite dsu (Z.to_nat a)
   (Z.to_nat b)))).
 Proof.
-  unfold funcdef_0__unite. unfold numberLocalGet at 1. rewrite <- !bindAssoc, pushNumberGet2, !leftIdentity, eliminateLift, eliminateLift.
+  unfold funcdef_0__unite. unfold numberLocalGet at 1. rewrite -!bindAssoc pushNumberGet2 !leftIdentity eliminateLift eliminateLift -!bindAssoc runAncestor; try (assumption || lia). unfold retrieve at 1. rewrite !pushDispatch2 (ltac:(intros; simpl; reflexivity) : forall effect continuation f, Dispatch _ _ _ effect continuation >>= f = _) unfoldInvoke_S_Retrieve. case_decide as ppp; [| simpl in ppp; lia]. rewrite (ltac:(intros; easy) : forall a c, nth_lt [a] (Z.to_nat 0%Z) c = a). clear ppp. unfold numberLocalSet at 1. rewrite pushNumberSet2.
+  assert (le : update
+        (λ _0 : varsfuncdef_0__unite,
+           match _0 with
+           | vardef_0__unite_u => a
+           | vardef_0__unite_v => b
+           | vardef_0__unite_z => 0%Z
+           end) vardef_0__unite_u
+        (Z.of_nat (ancestor dsu (length dsu) (Z.to_nat a))) = fun x => match x with | vardef_0__unite_u => Z.of_nat (ancestor dsu (length dsu) (Z.to_nat a)) | vardef_0__unite_v => b | vardef_0__unite_z => 0%Z end). { apply functional_extensionality_dep. intro hh. destruct hh; easy. } rewrite le. clear le.
+  unfold numberLocalGet at 1. rewrite pushNumberGet2 !leftIdentity eliminateLift.
+  rewrite -!bindAssoc runAncestor; try (assumption || lia). { rewrite pathCompressPreservesLength; (assumption || lia). } { rewrite pathCompressPreservesLength; try (assumption || lia). rewrite pathCompressPreservesLeafCount; try (assumption || lia). } { admit. } { rewrite pathCompressPreservesLength; try (assumption || lia). apply pathCompressPreservesWithoutCycles; try (assumption || lia). } unfold retrieve at 1. rewrite !pushDispatch2 (ltac:(intros; simpl; reflexivity) : forall effect continuation f, Dispatch _ _ _ effect continuation >>= f = _) unfoldInvoke_S_Retrieve. case_decide as ppp; [| simpl in ppp; lia]. rewrite (ltac:(intros; easy) : forall a c, nth_lt [a] (Z.to_nat 0%Z) c = a). clear ppp. unfold numberLocalSet at 1. rewrite pushNumberSet2.
+  assert (uwl : update
+        (λ _0 : varsfuncdef_0__unite,
+           match _0 with
+           | vardef_0__unite_u =>
+               Z.of_nat (ancestor dsu (length dsu) (Z.to_nat a))
+           | vardef_0__unite_v => b
+           | vardef_0__unite_z => 0%Z
+           end) vardef_0__unite_v
+        (Z.of_nat
+           (ancestor
+              (pathCompress dsu (length dsu) (Z.to_nat a)
+                 (ancestor dsu (length dsu) (Z.to_nat a)))
+              (length
+                 (pathCompress dsu (length dsu) (Z.to_nat a)
+                    (ancestor dsu (length dsu) (Z.to_nat a)))) 
+              (Z.to_nat b))) = fun _0 => match _0 with
+           | vardef_0__unite_u =>
+               Z.of_nat (ancestor dsu (length dsu) (Z.to_nat a))
+           | vardef_0__unite_v => Z.of_nat
+           (ancestor
+              (pathCompress dsu (length dsu) (Z.to_nat a)
+                 (ancestor dsu (length dsu) (Z.to_nat a)))
+              (length
+                 (pathCompress dsu (length dsu) (Z.to_nat a)
+                    (ancestor dsu (length dsu) (Z.to_nat a)))) 
+              (Z.to_nat b))
+           | vardef_0__unite_z => 0%Z
+           end). { apply functional_extensionality_dep. intro iw. destruct iw; easy. } rewrite uwl. clear uwl.
+  unfold numberLocalGet at 1. rewrite pushNumberGet2. unfold numberLocalGet at 1. rewrite pushNumberGet2.
 Admitted.
 
 Lemma firstInteraction (a b : Z) (hLt1 : Z.lt a 100) (hLt2 : Z.lt b 100) : invokeContract (repeat 1%Z 20) (repeat 0%Z 20) 0%Z state state [a; b] 1 = Some ([a; b], stateAfterInteractions (fun x => match x with | arraydef_0__result => [0%Z] | arraydef_0__hasBeenInitialized => [1%Z] | arraydef_0__dsu => convertToArray (unite (repeat (Ancestor Unit) 100) (Z.to_nat a) (Z.to_nat b)) end) (dsuScore (unite (repeat (Ancestor Unit) 100) (Z.to_nat a) (Z.to_nat b)))).
