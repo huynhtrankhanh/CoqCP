@@ -292,8 +292,17 @@ length
     pose proof h1 (Z.to_nat a) _ hhh as lh.
     pose proof validChainAncestorChain dsu (length dsu - 1) hh ltac:(lia) h1 as mh.
     epose proof validChainAncestorLength dsu (ancestorChain dsu (length dsu - 1) hh) h1 ltac:(split; try assumption; rewrite ancestorEqLastAncestorChain; destruct (nth (ancestor dsu (length dsu - 1) hh) dsu (Ancestor Unit)) as [xx | xx]; try (exfalso; exact subtask2); exists xx; reflexivity) hh ltac:(clear; destruct (length dsu - 1); simpl; try reflexivity; destruct (nth hh dsu (Ancestor Unit)); easy) as nh. rewrite -subtask3 -ancestorEqLastAncestorChain -nh ancestorEqLastAncestorChain. reflexivity. }
-  rewrite closer in ffi. rewrite ffi.
-Admitted.
+  rewrite closer in ffi. rewrite ffi insert_length Nat2Z.id (ltac:(lia) : Z.to_nat 100%Z = length dsu) -ancestorInsert; try (assumption || lia). { pose proof h1 (Z.to_nat a) _ hhh. assumption. } { rewrite hhh. easy. }
+  assert (anc : ancestor dsu (length dsu) hh = ancestor dsu (length dsu) (Z.to_nat a)).
+  { assert (subtask : ancestor dsu (length dsu) (Z.to_nat a) = ancestor dsu (S (length dsu - 1)) (Z.to_nat a)). { rewrite (ltac:(lia) : S (length dsu - 1) = length dsu). reflexivity. } rewrite subtask. simpl. rewrite hhh.
+    pose proof h2 (Z.to_nat a) ltac:(lia) as subtask2. rewrite subtask in subtask2. simpl in subtask2. rewrite hhh in subtask2.
+    assert (subtask3 : ancestor dsu (length dsu) hh = ancestor dsu (S (length dsu - 1)) hh). { rewrite (ltac:(lia) : S (length dsu - 1) = length dsu). reflexivity. } rewrite subtask3.
+    pose proof h1 (Z.to_nat a) _ hhh as lh.
+    pose proof validChainAncestorChain dsu (length dsu - 1) hh ltac:(lia) h1 as mh.
+    epose proof validChainAncestorLength dsu (ancestorChain dsu (length dsu - 1) hh) h1 ltac:(split; try assumption; rewrite ancestorEqLastAncestorChain; destruct (nth (ancestor dsu (length dsu - 1) hh) dsu (Ancestor Unit)) as [xx | xx]; try (exfalso; exact subtask2); exists xx; reflexivity) hh ltac:(clear; destruct (length dsu - 1); simpl; try reflexivity; destruct (nth hh dsu (Ancestor Unit)); easy) as nh. rewrite -subtask3 -ancestorEqLastAncestorChain -nh ancestorEqLastAncestorChain. reflexivity. }
+  assert (finale : pathCompress dsu (S n) (Z.to_nat a) (ancestor dsu (length dsu) (Z.to_nat a)) = pathCompress (<[Z.to_nat a:=ReferTo (ancestor dsu (length dsu) (Z.to_nat a))]> dsu) n hh (ancestor dsu (length dsu) hh)).
+  { simpl. rewrite hhh anc. reflexivity. } rewrite -finale anc. reflexivity.
+Qed.
 
 Lemma runAncestor (dsu : list Slot) (hL : length dsu = 100) (hL1 : Z.to_nat (dsuLeafCount dsu) = length dsu) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (a : Z) (hLe1 : Z.le 0 a) (hLt1 : Z.lt a 100) communication continuation whatever : invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0 state state
   communication 1 arrayIndex0 arrayIndexEqualityDecidable0
