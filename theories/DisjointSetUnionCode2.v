@@ -542,7 +542,90 @@ Proof.
               (Z.to_nat b))
            | vardef_0__unite_z => 0%Z
            end). { apply functional_extensionality_dep. intro iw. destruct iw; easy. } rewrite uwl. clear uwl.
-  unfold numberLocalGet at 1. rewrite pushNumberGet2. unfold numberLocalGet at 1. rewrite pushNumberGet2.
+  unfold numberLocalGet at 1. rewrite pushNumberGet2. unfold numberLocalGet at 1. rewrite pushNumberGet2. case_bool_decide as hs.
+  - admit.
+  - rewrite !leftIdentity unfoldInvoke_S_Store. case_decide as ppp; [| simpl in ppp; lia]. clear ppp.
+    assert (battle : (λ _0 : arrayIndex0,
+     match
+       @decide (_0 = arraydef_0__result)
+         (@decide_rel arrayIndex0 arrayIndex0 (@eq arrayIndex0)
+            arrayIndexEqualityDecidable0 _0 arraydef_0__result)
+     with
+     | @left _ _ _1 =>
+         @eq_rect_r arrayIndex0 arraydef_0__result
+           (λ _2 : arrayIndex0, list (arrayType arrayIndex0 environment0 _2))
+           (<[Z.to_nat 0:=coerceInt 0 8]>
+              [Z.of_nat
+                 (ancestor
+                    (pathCompress dsu (@length Slot dsu) 
+                       (Z.to_nat a)
+                       (ancestor dsu (@length Slot dsu) (Z.to_nat a)))
+                    (@length Slot
+                       (pathCompress dsu (@length Slot dsu) 
+                          (Z.to_nat a)
+                          (ancestor dsu (@length Slot dsu) (Z.to_nat a))))
+                    (Z.to_nat b))]) _0 _1
+     | @right _ _ _ =>
+         match
+           _0 as _2 return (list (arrayType arrayIndex0 environment0 _2))
+         with
+         | arraydef_0__dsu =>
+             convertToArray
+               (pathCompress
+                  (pathCompress dsu (@length Slot dsu) 
+                     (Z.to_nat a)
+                     (ancestor dsu (@length Slot dsu) (Z.to_nat a)))
+                  (@length Slot
+                     (pathCompress dsu (@length Slot dsu) 
+                        (Z.to_nat a)
+                        (ancestor dsu (@length Slot dsu) (Z.to_nat a))))
+                  (Z.to_nat b)
+                  (ancestor
+                     (pathCompress dsu (@length Slot dsu) 
+                        (Z.to_nat a)
+                        (ancestor dsu (@length Slot dsu) (Z.to_nat a)))
+                     (@length Slot
+                        (pathCompress dsu (@length Slot dsu) 
+                           (Z.to_nat a)
+                           (ancestor dsu (@length Slot dsu) (Z.to_nat a))))
+                     (Z.to_nat b)))
+         | arraydef_0__hasBeenInitialized => [1%Z]
+         | arraydef_0__result =>
+             [Z.of_nat
+                (ancestor
+                   (pathCompress dsu (@length Slot dsu) 
+                      (Z.to_nat a)
+                      (ancestor dsu (@length Slot dsu) (Z.to_nat a)))
+                   (@length Slot
+                      (pathCompress dsu (@length Slot dsu) 
+                         (Z.to_nat a)
+                         (ancestor dsu (@length Slot dsu) (Z.to_nat a))))
+                   (Z.to_nat b))]
+         end
+     end) = fun _0 => match
+           _0 as _2 return (list (arrayType arrayIndex0 environment0 _2))
+         with
+         | arraydef_0__dsu =>
+             convertToArray
+               (pathCompress
+                  (pathCompress dsu (length dsu) (Z.to_nat a)
+                     (ancestor dsu (length dsu) (Z.to_nat a)))
+                  (length
+                     (pathCompress dsu (length dsu) 
+                        (Z.to_nat a) (ancestor dsu (length dsu) (Z.to_nat a))))
+                  (Z.to_nat b)
+                  (ancestor
+                     (pathCompress dsu (length dsu) 
+                        (Z.to_nat a) (ancestor dsu (length dsu) (Z.to_nat a)))
+                     (length
+                        (pathCompress dsu (length dsu) 
+                           (Z.to_nat a)
+                           (ancestor dsu (length dsu) (Z.to_nat a))))
+                     (Z.to_nat b)))
+         | arraydef_0__hasBeenInitialized => [1%Z]
+         | arraydef_0__result =>
+             [0%Z]
+         end). { apply functional_extensionality_dep. intro dd. destruct dd; easy. } rewrite battle.
 Admitted.
 
 Lemma firstInteraction (a b : Z) (hLt1 : Z.lt a 100) (hLt2 : Z.lt b 100) : invokeContract (repeat 1%Z 20) (repeat 0%Z 20) 0%Z state state [a; b] 1 = Some ([a; b], stateAfterInteractions (fun x => match x with | arraydef_0__result => [0%Z] | arraydef_0__hasBeenInitialized => [1%Z] | arraydef_0__dsu => convertToArray (unite (repeat (Ancestor Unit) 100) (Z.to_nat a) (Z.to_nat b)) end) (dsuScore (unite (repeat (Ancestor Unit) 100) (Z.to_nat a) (Z.to_nat b)))).
