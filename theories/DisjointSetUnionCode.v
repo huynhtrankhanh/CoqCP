@@ -455,6 +455,31 @@ Proof.
   simpl. destruct (nth a dsu (Ancestor Unit)) as [x | x]; [| easy]. rewrite IH. apply insert_length.
 Qed.
 
+Lemma pathCompressPreservesScore (dsu : list Slot) (n a b : nat) : dsuScore (pathCompress dsu n a b) = dsuScore dsu.
+Proof.
+  induction n as [| n IH] in dsu, a |- *; [easy |].
+  simpl.
+  remember (nth a dsu (Ancestor Unit)) as x eqn:hx. symmetry in hx. destruct x as [x | x]; [| reflexivity].
+  rewrite IH.
+  destruct (decide (a < length dsu)) as [ha | ha]; [| rewrite list_insert_ge; lia].
+  rewrite insert_take_drop; [| exact ha]. unfold dsuScore. rewrite (ltac:(intros; listsEqual) : forall a b, a :: b = [a] ++ b), !map_app, !list_sum_app.
+  assert (s : list_sum
+      (map
+         (λ _0 : Slot,
+            match _0 with
+            | ReferTo _ => 0
+            | Ancestor _1 => score _1
+            end) [ReferTo b]) = list_sum
+      (map
+         (λ _0 : Slot,
+            match _0 with
+            | ReferTo _ => 0
+            | Ancestor _1 => score _1
+            end) [nth a dsu (Ancestor Unit)])).
+  { rewrite hx. easy. }
+  rewrite s, <- !list_sum_app, <- !map_app, <- ListDecomposition.listDecompositionSingle. { reflexivity. } exact ha.
+Qed.
+
 Lemma pathCompressPreservesLeafCount (dsu : list Slot) (n a b : nat) : dsuLeafCount (pathCompress dsu n a b) = dsuLeafCount dsu.
 Proof.
   induction n as [| n IH] in dsu, a |- *. { easy. }
