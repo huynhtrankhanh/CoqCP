@@ -8,7 +8,7 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-Lemma runCompressLoop (dsu : list Slot) (hL : length dsu = 100) (hL1 : Z.to_nat (dsuLeafCount dsu) = length dsu) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (a : Z) (hLe1 : Z.le 0 a) (hLt1 : Z.lt a 100) communication whatever (n : nat) (hN : n <= 100) continuation : invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0 state state communication
+Lemma runCompressLoop (dsu : list Slot) state1 state2 (hL : length dsu = 100) (hL1 : Z.to_nat (dsuLeafCount dsu) = length dsu) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (a : Z) (hLe1 : Z.le 0 a) (hLt1 : Z.lt a 100) communication whatever (n : nat) (hN : n <= 100) continuation : invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0 state1 state2 communication
   1 arrayIndex0 arrayIndexEqualityDecidable0
   (arrayType arrayIndex0 environment0)
   (λ _0 : arrayIndex0,
@@ -153,7 +153,7 @@ Lemma runCompressLoop (dsu : list Slot) (hL : length dsu = 100) (hL1 : Z.to_nat 
                   (arrayType arrayIndex0 environment0)
                   varsfuncdef_0__ancestor) withLocalVariablesReturnValue ()
                ())) >>= continuation) =
-invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0 state state communication 1 arrayIndex0 arrayIndexEqualityDecidable0
+invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0 state1 state2 communication 1 arrayIndex0 arrayIndexEqualityDecidable0
   (arrayType arrayIndex0 environment0)
   (λ _0 : arrayIndex0,
      match
@@ -304,7 +304,7 @@ length
   { simpl. rewrite hhh anc. reflexivity. } rewrite -finale anc. reflexivity.
 Qed.
 
-Lemma runAncestor (dsu : list Slot) (hL : length dsu = 100) (hL1 : Z.to_nat (dsuLeafCount dsu) = length dsu) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (a : Z) (hLe1 : Z.le 0 a) (hLt1 : Z.lt a 100) communication continuation whatever : invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0 state state
+Lemma runAncestor (dsu : list Slot) state1 state2 (hL : length dsu = 100) (hL1 : Z.to_nat (dsuLeafCount dsu) = length dsu) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (a : Z) (hLe1 : Z.le 0 a) (hLt1 : Z.lt a 100) communication continuation whatever : invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0 state1 state2
   communication 1 arrayIndex0 arrayIndexEqualityDecidable0
   (arrayType arrayIndex0 environment0) (λ _0 : arrayIndex0,
   match
@@ -329,7 +329,7 @@ end)
   (funcdef_0__ancestor (λ _ : varsfuncdef_0__ancestor, false)
   (update (λ _ : varsfuncdef_0__ancestor, 0%Z)
   vardef_0__ancestor_vertex a)
-  (λ _ : varsfuncdef_0__ancestor, repeat 0%Z 20) >>= continuation) = invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0 state state
+  (λ _ : varsfuncdef_0__ancestor, repeat 0%Z 20) >>= continuation) = invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0 state1 state2
   communication 1 arrayIndex0 arrayIndexEqualityDecidable0
   (arrayType arrayIndex0 environment0) (λ _0 : arrayIndex0,
   match
@@ -360,7 +360,7 @@ Proof.
            vardef_0__ancestor_vertex)) = fun x => match x with | vardef_0__ancestor_vertex => a | vardef_0__ancestor_work => a end.
   { apply functional_extensionality_dep. intro x. destruct x; easy. }
   move => h. rewrite h. clear h. rewrite leftIdentity.
-  have av := fun g gg => runAncestor1 dsu hL hL1 h1 h2 a a hLe1 hLt1 communication g gg whatever (Z.to_nat 100%Z) ltac:(lia).
+  have av := fun g gg => runAncestor1 dsu state1 state2 hL hL1 h1 h2 a a hLe1 hLt1 communication g gg whatever (Z.to_nat 100%Z) ltac:(lia).
   move : av. rewrite !leftIdentity !rightIdentity. move => av.
   rewrite -bindAssoc av. unfold numberLocalGet at 1. rewrite pushNumberGet2. unfold store at 1. rewrite pushDispatch2. rewrite (ltac:(intros; simpl; reflexivity) : forall effect continuation f, Dispatch _ _ _ effect continuation >>= f = _) unfoldInvoke_S_Store. case_decide as xxx; [| simpl in xxx; lia]; clear xxx.
   have jda : (λ _0 : arrayIndex0,
@@ -393,7 +393,22 @@ Proof.
 Qed.
 
 Lemma runUnite (dsu : list Slot) (hL : length dsu = 100) (hL1 : Z.to_nat (dsuLeafCount dsu) = length dsu) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (a b : Z) (hLe1 : Z.le 0 a) (hLt1 : Z.lt a 100) (hLe2 : Z.le 0 b) (hLt2 : Z.lt b 100) : invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0 state
-  state [a; b] 1 arrayIndex0 arrayIndexEqualityDecidable0
+  (stateAfterInteractions (λ _0 : arrayIndex0,
+  match
+  _0 as _1
+return
+  (list
+  (arrayType arrayIndex0
+  environment0 _1))
+with
+| arraydef_0__dsu =>
+    convertToArray dsu
+| arraydef_0__hasBeenInitialized =>
+    [1%Z]
+| arraydef_0__result => [0%Z]
+end)
+  (dsuScore
+  dsu)) [a; b] 1 arrayIndex0 arrayIndexEqualityDecidable0
   (arrayType arrayIndex0 environment0) (λ _0 : arrayIndex0,
   match
   _0 as _1
