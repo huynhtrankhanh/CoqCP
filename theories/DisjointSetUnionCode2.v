@@ -641,6 +641,12 @@ Proof.
          | arraydef_0__result =>
              [0%Z]
          end). { apply functional_extensionality_dep. intro dd. destruct dd; easy. } rewrite battle.
+  unfold unite. repeat case_decide; try lia. rewrite !pathCompressPreservesScore (ltac:(simpl; reflexivity) : eliminateLocalVariables xpred0 (fun=> 0%Z) (fun=> repeat 0%Z 20)
+     (Done
+        (WithLocalVariables arrayIndex0 (arrayType arrayIndex0 environment0)
+           varsfuncdef_0__main) withLocalVariablesReturnValue () ()) = _) unfoldInvoke_S_Done.
+  apply (ltac:(intros T U mm ma mb mc; subst ma; reflexivity) : forall (T U : Type) (g : T) (a b : U), a = b -> Some (g, a) = Some (g, b)).
+  apply functional_extensionality_dep. intro x. unfold update. unfold stateAfterInteractions. repeat case_decide; easy.
 Admitted.
 
 Lemma firstInteraction (a b : Z) (hLt1 : Z.lt a 100) (hLt2 : Z.lt b 100) : invokeContract (repeat 1%Z 20) (repeat 0%Z 20) 0%Z state state [a; b] 1 = Some ([a; b], stateAfterInteractions (fun x => match x with | arraydef_0__result => [0%Z] | arraydef_0__hasBeenInitialized => [1%Z] | arraydef_0__dsu => convertToArray (unite (repeat (Ancestor Unit) 100) (Z.to_nat a) (Z.to_nat b)) end) (dsuScore (unite (repeat (Ancestor Unit) 100) (Z.to_nat a) (Z.to_nat b)))).
