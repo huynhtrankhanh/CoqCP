@@ -123,6 +123,19 @@ Fixpoint ancestorChain (dsu : list Slot) (fuel : nat) (index : nat) :=
     end
   end.
 
+Lemma firstAncestorChain dsu fuel index : nth 0 (ancestorChain dsu fuel index) 0 = index.
+Proof.
+  destruct fuel as [| fuel]. { easy. }
+  simpl. destruct (nth index _ _); easy.
+Qed.
+
+Lemma zeroLtLengthAncestorChain dsu fuel index : 0 < length (ancestorChain dsu fuel index).
+Proof.
+  destruct fuel as [| fuel]. { simpl. lia. }
+  simpl. destruct (nth index _ _); cbv; lia.
+Qed.
+
+
 Lemma ancestorEqLastAncestorChain' dsu fuel index : last (ancestorChain dsu fuel index) = Some (ancestor dsu fuel index).
 Proof.
   induction fuel as [| fuel IH] in index |- *. { easy. }
@@ -287,6 +300,27 @@ Definition withoutCyclesN (dsu : list Slot) (n : nat) :=
   | Ancestor _ => true
   | _ => false
   end.
+
+Lemma ancestorReferTo (dsu : list Slot) (u v : nat) (hU : u < length dsu) (h : noIllegalIndices dsu) (h' : withoutCyclesN dsu (length dsu)) (hR : nth u dsu (Ancestor Unit) = ReferTo v) : ancestor dsu (length dsu) u = ancestor dsu (length dsu) v.
+Proof.
+  rewrite <- !ancestorEqLastAncestorChain.
+  pose proof h u v hR as hV.
+  assert (hL : 0 < length dsu).
+  { destruct dsu as [| head tail]. { simpl in hR. easy. }
+    simpl. lia.  }
+  rewrite (ltac:(lia) : length dsu = S (length dsu - 1)) at 1. simpl. rewrite hR. rewrite (ltac:(lia) : length dsu = S (length dsu - 1)) at 2. simpl. rewrite hR, Nat.sub_0_r.
+  pose proof h' u hU as hB. rewrite <- ancestorEqLastAncestorChain in hB. rewrite (ltac:(lia) : length dsu = S (length dsu - 1)) in hB. simpl in hB. rewrite hR in hB. simpl in hB. rewrite Nat.sub_0_r in hB.
+  pose proof zeroLtLengthAncestorChain dsu (length dsu - 1) v as hA.
+  rewrite ((ltac:(lia) : forall a, 0 < a -> a = S (a - 1)) _ hA) in *. simpl. remember (nth
+    (nth (length (ancestorChain dsu (length dsu - 1) v) - 1)
+       (ancestorChain dsu (length dsu - 1) v) 0) dsu 
+    (Ancestor Unit)) as e eqn:he. destruct e as [e | e]. { easy. }
+  symmetry in he.
+  rewrite (fun i => validChainAncestorLength dsu (ancestorChain dsu (length dsu - 1) v) h i v ltac:(apply firstAncestorChain)). { reflexivity. }
+  split.
+  - apply validChainAncestorChain; assumption.
+  - exists e. exact he.
+Qed.
 
 Fixpoint withoutCyclesBool (dsu : list Slot) (n : nat) : bool :=
   match n with
@@ -543,6 +577,22 @@ Proof.
     destruct (decide (ancestor dsu (length dsu) i = u)) as [hs | hs].
     + pose proof h i hh as step2. rewrite hs, <- hX in step2. exfalso. exact step2.
     + rewrite nth_lookup, list_lookup_insert_ne, <- nth_lookup; [| lia]. pose proof h i hh as step2. exact step2.
+Qed.
+
+Lemma pathCompressPreservesAncestorLength (dsu : list Slot) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (n a b c : nat) (hA : a < length dsu) (hB : b < length dsu) (hC : c < length dsu) (hSameRoot : ancestor dsu (length dsu) c = ancestor dsu (length dsu) a) : ancestor (pathCompress dsu n c (ancestor dsu (length dsu) a)) (length dsu) b = ancestor dsu (length dsu) b.
+Proof.
+  revert dsu h1 h2 hA hB c hC hSameRoot.
+  induction n as [| n IH]. { easy. }
+  intros dsu h1 h2 hA hB c hC hSameRoot.
+  rewrite (ltac:(simpl; reflexivity) : pathCompress dsu (S n) _ = _).
+  remember (nth c dsu (Ancestor Unit)) as x eqn:hx. destruct x as [x | x]; symmetry in hx; [| reflexivity].
+  assert (stepC : match nth c dsu (Ancestor Unit) with | ReferTo _ => true | Ancestor _ => false end). { rewrite hx. easy. }
+  pose proof h1 c _ hx as stepX.
+  pose proof (fun g1 g2 g3 g4 g5 => IH (<[c:=ReferTo (ancestor dsu (length dsu) a)]> dsu) g1 g2 g3 g4 x g5) as step. rewrite insert_length, <- hSameRoot, <- !ancestorInsert, !hSameRoot in step; try (assumption || lia).
+  pose proof pathCompressPreservesNoIllegalIndices _ h1 1 c (ancestor dsu (length dsu) a) hC ltac:(apply ancestorLtLength; assumption) as stepN. simpl in stepN. rewrite hx in stepN.
+  pose proof pathCompressPreservesWithoutCycles _ h2 h1 1 c hC as stepW. simpl in stepW. rewrite hx, hSameRoot in stepW.
+  pose proof ancestorReferTo dsu c x hC h1 h2 hx as stepD. rewrite hSameRoot in stepD. symmetry in stepD.
+  apply step; assumption.
 Qed.
 
 Definition modelScore (interactions : list (Z * Z)) := dsuScore (dsuFromInteractions (repeat (Ancestor Unit) 100) (map (fun (x : Z * Z) => let (a, b) := x in (Z.to_nat a, Z.to_nat b)) interactions)).
