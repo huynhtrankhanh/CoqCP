@@ -558,7 +558,40 @@ Proof.
            | vardef_0__unite_z => 0%Z
            end). { apply functional_extensionality_dep. intro iw. destruct iw; easy. } rewrite uwl. clear uwl.
   unfold numberLocalGet at 1. rewrite pushNumberGet2. unfold numberLocalGet at 1. rewrite pushNumberGet2. case_bool_decide as hs.
-  - admit.
+  - unfold numberLocalGet at 1. rewrite -!bindAssoc pushNumberGet2.
+    assert (ra2 : coerceInt (Z.of_nat (ancestor dsu (length dsu) (Z.to_nat a))) 64 = Z.of_nat (ancestor dsu (length dsu) (Z.to_nat a))). { unfold coerceInt. rewrite Z.mod_small; [| reflexivity]. pose proof ancestorLtLength dsu h1 (length dsu) (Z.to_nat a) ltac:(lia). lia. } rewrite ra2.
+    assert (rb2 : coerceInt (Z.of_nat (ancestor dsu (length dsu) (Z.to_nat b))) 64 = Z.of_nat (ancestor dsu (length dsu) (Z.to_nat b))). { unfold coerceInt. rewrite Z.mod_small; [| reflexivity]. pose proof ancestorLtLength dsu h1 (length dsu) (Z.to_nat b) ltac:(lia). lia. }
+    pose proof pathCompressPreservesAncestorLength dsu h1 h2 (length dsu) (Z.to_nat a) (Z.to_nat b) (Z.to_nat a) ltac:(lia) ltac:(lia) ltac:(lia) ltac:(reflexivity) as step. rewrite pathCompressPreservesLength; try (assumption || lia). rewrite step !leftIdentity. unfold retrieve at 1. rewrite -!bindAssoc pushDispatch2 (ltac:(intros; simpl; reflexivity) : forall effect continuation f, Dispatch _ _ _ effect continuation >>= f = _) unfoldInvoke_S_Retrieve. case_decide as ppp; [|rewrite Nat2Z.id lengthConvert !pathCompressPreservesLength in ppp; exfalso; exact (ppp ltac:(apply ancestorLtLength; (assumption || lia)))]. unfold numberLocalGet at 1. rewrite -!bindAssoc pushNumberGet2 !leftIdentity. unfold retrieve at 1. rewrite pushDispatch2 rb2 (ltac:(intros; simpl; reflexivity) : forall effect continuation f, Dispatch _ _ _ effect continuation >>= f = _) unfoldInvoke_S_Retrieve. rewrite Nat2Z.id.
+    case_decide as lll; [| rewrite lengthConvert !pathCompressPreservesLength in lll; exfalso; exact (lll ltac:(apply ancestorLtLength; (assumption || lia)))]. rewrite !leftIdentity.
+    rewrite !(ltac:(intros; simpl; reflexivity) : forall a b c, @nth_lt (arrayType arrayIndex0 environment0 arraydef_0__dsu) a b c = @nth_lt Z a b c) !(nth_lt_default _ _ _ 0%Z) Nat2Z.id !nthConvert; try (rewrite !pathCompressPreservesLength; apply ancestorLtLength; (assumption || lia)).
+    remember (nth (ancestor dsu (length dsu) (Z.to_nat a))
+                 (pathCompress
+                    (pathCompress dsu (length dsu) 
+                       (Z.to_nat a) (ancestor dsu (length dsu) (Z.to_nat a)))
+                    (length dsu) (Z.to_nat b)
+                    (ancestor dsu (length dsu) (Z.to_nat b))) 
+                 (Ancestor Unit)) as lnode eqn:hlnode.
+    remember (nth (ancestor dsu (length dsu) (Z.to_nat b))
+                 (pathCompress
+                    (pathCompress dsu (length dsu) 
+                       (Z.to_nat a) (ancestor dsu (length dsu) (Z.to_nat a)))
+                    (length dsu) (Z.to_nat b)
+                    (ancestor dsu (length dsu) (Z.to_nat b))) 
+                 (Ancestor Unit)) as rnode eqn:hrnode.
+    pose proof pathCompressPreservesWithoutCycles dsu h2 h1 (length dsu) (Z.to_nat a) ltac:(lia) as steproll1.
+    pose proof pathCompressPreservesNoIllegalIndices dsu h1 (length dsu) (Z.to_nat a) (ancestor dsu (length dsu) (Z.to_nat a)) ltac:(lia) ltac:(apply ancestorLtLength; (assumption || lia)) as stepidx1.
+    pose proof pathCompressPreservesWithoutCycles (pathCompress dsu (length dsu) (Z.to_nat a)
+     (ancestor dsu (length dsu) (Z.to_nat a))) ltac:(rewrite pathCompressPreservesLength; exact steproll1) stepidx1 (length dsu) (Z.to_nat b) ltac:(rewrite pathCompressPreservesLength; lia) as mold.
+     pose proof mold (Z.to_nat a) ltac:(rewrite pathCompressPreservesLength; lia) as anca. rewrite !pathCompressPreservesLength !step in anca.
+     pose proof mold (Z.to_nat b) ltac:(rewrite pathCompressPreservesLength; lia) as ancb. rewrite !pathCompressPreservesLength !step in ancb.
+     pose proof pathCompressPreservesAncestorLength (pathCompress dsu (length dsu) (Z.to_nat a)
+             (ancestor dsu (length dsu) (Z.to_nat a))) ltac:(apply pathCompressPreservesNoIllegalIndices; try (assumption || lia); apply ancestorLtLength; (assumption || lia)) ltac:(rewrite pathCompressPreservesLength; apply pathCompressPreservesWithoutCycles; (assumption || lia)) (length dsu) as mold2. rewrite !pathCompressPreservesLength in mold2.
+     pose proof (fun a (g1 : a < length dsu) b (g2 : b < length dsu) => mold2 a b a g1 g2 g1 ltac:(reflexivity)) (Z.to_nat b) ltac:(lia) as mold3. clear mold2.
+     pose proof (fun xx (hh : xx < length dsu) => pathCompressPreservesAncestorLength dsu h1 h2 (length dsu) (Z.to_nat a) xx (Z.to_nat a) ltac:(lia) hh ltac:(lia) ltac:(reflexivity)) as mold2.
+     pose proof mold3 (Z.to_nat a) ltac:(lia) as simpa1.
+     pose proof mold2 (Z.to_nat a) ltac:(lia) as simpa2. rewrite simpa2 in simpa1.
+     pose proof mold3 (Z.to_nat b) ltac:(lia) as simpb1.
+     pose proof mold2 (Z.to_nat b) ltac:(lia) as simpb2. rewrite simpb2 in simpb1, simpa1. rewrite simpa1 -hlnode in anca. rewrite simpb1 -hrnode in ancb. destruct lnode as [lnode | lnode]; destruct rnode as [rnode | rnode]; try (exfalso; (exact anca || exact ancb)).
   - rewrite !leftIdentity unfoldInvoke_S_Store. case_decide as ppp; [| simpl in ppp; lia]. clear ppp.
     assert (battle : (λ _0 : arrayIndex0,
      match
