@@ -592,6 +592,68 @@ Proof.
      pose proof mold2 (Z.to_nat a) ltac:(lia) as simpa2. rewrite simpa2 in simpa1.
      pose proof mold3 (Z.to_nat b) ltac:(lia) as simpb1.
      pose proof mold2 (Z.to_nat b) ltac:(lia) as simpb2. rewrite simpb2 in simpb1, simpa1. rewrite simpa1 -hlnode in anca. rewrite simpb1 -hrnode in ancb. destruct lnode as [lnode | lnode]; destruct rnode as [rnode | rnode]; try (exfalso; (exact anca || exact ancb)).
+     pose proof nthLowerBoundConvertAuxStep (pathCompress
+     (pathCompress dsu (length dsu) (Z.to_nat a)
+        (ancestor dsu (length dsu) (Z.to_nat a))) 
+     (length dsu) (Z.to_nat b) (ancestor dsu (length dsu) (Z.to_nat b))) ltac:(rewrite !pathCompressPreservesLength; lia) ltac:(rewrite ! pathCompressPreservesLeafCount; try (assumption || (rewrite -> ? pathCompressPreservesLength; lia))) as mold4. rewrite !pathCompressPreservesLength in mold4. symmetry in hlnode. symmetry in hrnode.
+     pose proof mold4 (ancestor dsu (length dsu) (Z.to_nat a)) ltac:(apply ancestorLtLength; (assumption || lia)) _ hlnode as lcl.
+     pose proof mold4 (ancestor dsu (length dsu) (Z.to_nat b)) ltac:(apply ancestorLtLength; (assumption || lia)) _ hrnode as lcr. clear ppp lll.
+     assert (stepl : toSigned (256 - Z.of_nat (leafCount lnode)) 8 = -Z.of_nat (leafCount lnode)).
+     { unfold toSigned. case_decide as ppp; lia. } rewrite stepl. clear stepl.
+     assert (stepr : toSigned (256 - Z.of_nat (leafCount rnode)) 8 = -Z.of_nat (leafCount rnode)).
+     { unfold toSigned. case_decide as ppp; lia. } rewrite stepr. clear stepr.
+     case_bool_decide as hswap.
+     + unfold numberLocalGet at 1. rewrite -!bindAssoc pushNumberGet2. unfold numberLocalSet at 1. rewrite -!bindAssoc pushNumberSet2.
+     assert (hsimp : (update
+        (λ _0 : varsfuncdef_0__unite,
+           match _0 with
+           | vardef_0__unite_u =>
+               Z.of_nat (ancestor dsu (length dsu) (Z.to_nat a))
+           | vardef_0__unite_v =>
+               Z.of_nat (ancestor dsu (length dsu) (Z.to_nat b))
+           | vardef_0__unite_z => 0%Z
+           end) vardef_0__unite_z
+        (Z.of_nat (ancestor dsu (length dsu) (Z.to_nat a)))) = (λ _0 : varsfuncdef_0__unite,
+           match _0 with
+           | vardef_0__unite_u =>
+               Z.of_nat (ancestor dsu (length dsu) (Z.to_nat a))
+           | vardef_0__unite_v =>
+               Z.of_nat (ancestor dsu (length dsu) (Z.to_nat b))
+           | vardef_0__unite_z => (Z.of_nat (ancestor dsu (length dsu) (Z.to_nat a)))
+           end)). { apply functional_extensionality_dep. intro f. destruct f; easy. } rewrite hsimp. clear hsimp.
+     unfold numberLocalGet at 1. rewrite pushNumberGet2. unfold numberLocalSet at 1. rewrite -!bindAssoc pushNumberSet2.
+     assert (hsimp : (update
+        (λ _0 : varsfuncdef_0__unite,
+           match _0 with
+           | vardef_0__unite_v =>
+               Z.of_nat (ancestor dsu (length dsu) (Z.to_nat b))
+           | _ => Z.of_nat (ancestor dsu (length dsu) (Z.to_nat a))
+           end) vardef_0__unite_u
+        (Z.of_nat (ancestor dsu (length dsu) (Z.to_nat b)))) = (λ _0 : varsfuncdef_0__unite,
+           match _0 with
+           | vardef_0__unite_u =>
+               Z.of_nat (ancestor dsu (length dsu) (Z.to_nat b))
+           | vardef_0__unite_v =>
+               Z.of_nat (ancestor dsu (length dsu) (Z.to_nat b))
+           | vardef_0__unite_z => (Z.of_nat (ancestor dsu (length dsu) (Z.to_nat a)))
+           end)). { apply functional_extensionality_dep. intro f. destruct f; easy. } rewrite hsimp. clear hsimp.
+     unfold numberLocalGet at 1. rewrite pushNumberGet2. unfold numberLocalSet at 1. rewrite pushNumberSet2.
+     assert (hsimp : (update
+        (λ _0 : varsfuncdef_0__unite,
+           match _0 with
+           | vardef_0__unite_z =>
+               Z.of_nat (ancestor dsu (length dsu) (Z.to_nat a))
+           | _ => Z.of_nat (ancestor dsu (length dsu) (Z.to_nat b))
+           end) vardef_0__unite_v
+        (Z.of_nat (ancestor dsu (length dsu) (Z.to_nat a)))) = (λ _0 : varsfuncdef_0__unite,
+           match _0 with
+           | vardef_0__unite_u =>
+               Z.of_nat (ancestor dsu (length dsu) (Z.to_nat b))
+           | vardef_0__unite_v =>
+               Z.of_nat (ancestor dsu (length dsu) (Z.to_nat a))
+           | vardef_0__unite_z => (Z.of_nat (ancestor dsu (length dsu) (Z.to_nat a)))
+           end)). { apply functional_extensionality_dep. intro f. destruct f; easy. } rewrite hsimp. clear hsimp. admit.
+   + rewrite -!bindAssoc !leftIdentity. admit.
   - rewrite !leftIdentity unfoldInvoke_S_Store. case_decide as ppp; [| simpl in ppp; lia]. clear ppp.
     assert (battle : (λ _0 : arrayIndex0,
      match
