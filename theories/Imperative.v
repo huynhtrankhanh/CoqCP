@@ -23,6 +23,9 @@ Fixpoint bind {effectType effectResponse A B} (a : Action effectType effectRespo
 
 Notation "x >>= f" := (bind x f) (at level 50, left associativity).
 
+Lemma bindDispatch {effectType effectResponse A B} effect (continuation : effectResponse effect -> Action effectType effectResponse A) (f : A -> Action effectType effectResponse B) : Dispatch _ _ _ effect continuation >>= f = Dispatch _ _ _ effect (fun response => continuation response >>= f).
+Proof. easy. Qed.
+
 Lemma leftIdentity {effectType effectResponse A B} (x : A) (f : A -> Action effectType effectResponse B) : bind (Done _ _ _ x) f = f x.
 Proof. easy. Qed.
 
