@@ -392,6 +392,237 @@ Proof.
   rewrite jda. clear jda. rewrite runCompressLoop; try (assumption || lia). rewrite (ltac:(lia) : Z.to_nat 100 = length dsu). reflexivity.
 Qed.
 
+Lemma mergingLogic (dsu : list Slot) (hL : length dsu = 100) (hL1 : Z.to_nat (dsuLeafCount dsu) = length dsu) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (a b : Z) (hLe1 : Z.le 0 a) (hLt1 : Z.lt a 100) (hLe2 : Z.le 0 b) (hLt2 : Z.lt b 100) tree1 tree2 (htree1 : nth (ancestor dsu (length dsu) (Z.to_nat a)) (pathCompress (pathCompress dsu (length dsu) (Z.to_nat a) (ancestor dsu (length dsu) (Z.to_nat a))) (length dsu) (Z.to_nat b)
+              (ancestor dsu (length dsu) (Z.to_nat b))) (Ancestor Unit) = Ancestor tree1) (htree2 : nth (ancestor dsu (length dsu) (Z.to_nat b)) (pathCompress
+              (pathCompress dsu (length dsu) (Z.to_nat a)
+                 (ancestor dsu (length dsu) (Z.to_nat a))) 
+              (length dsu) (Z.to_nat b)
+              (ancestor dsu (length dsu) (Z.to_nat b))) (Ancestor Unit) = Ancestor tree2) whatever : invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0 state
+  (stateAfterInteractions
+     (λ _0 : arrayIndex0,
+        match
+          _0 as _1 return (list (arrayType arrayIndex0 environment0 _1))
+        with
+        | arraydef_0__dsu => convertToArray dsu
+        | arraydef_0__hasBeenInitialized => [1%Z]
+        | arraydef_0__result => [0%Z]
+        end) (dsuScore dsu)) [a; b] 1 arrayIndex0
+  arrayIndexEqualityDecidable0 (arrayType arrayIndex0 environment0)
+  (λ _0 : arrayIndex0,
+     match
+       _0 as _1 return (list (arrayType arrayIndex0 environment0 _1))
+     with
+     | arraydef_0__dsu =>
+         convertToArray
+           (pathCompress
+              (pathCompress dsu (length dsu) (Z.to_nat a)
+                 (ancestor dsu (length dsu) (Z.to_nat a))) 
+              (length dsu) (Z.to_nat b)
+              (ancestor dsu (length dsu) (Z.to_nat b)))
+     | arraydef_0__hasBeenInitialized => [1%Z]
+     | arraydef_0__result =>
+         [Z.of_nat (ancestor dsu (length dsu) (Z.to_nat b))]
+     end) (funcdef_0__main xpred0 (fun=> 0%Z) (fun=> repeat 0%Z 20))
+  (eliminateLocalVariables xpred0
+     (λ _0 : varsfuncdef_0__unite,
+        match _0 with
+        | vardef_0__unite_u =>
+            Z.of_nat (ancestor dsu (length dsu) (Z.to_nat a))
+        | vardef_0__unite_z => whatever
+        | _ => Z.of_nat (ancestor dsu (length dsu) (Z.to_nat b))
+        end) (fun=> repeat 0%Z 20)
+     (numberLocalGet arrayIndex0 (arrayType arrayIndex0 environment0)
+        varsfuncdef_0__unite vardef_0__unite_v >>=
+      λ _0 : withLocalVariablesReturnValue
+               (NumberLocalGet arrayIndex0
+                  (arrayType arrayIndex0 environment0) varsfuncdef_0__unite
+                  vardef_0__unite_v),
+        Done
+          (WithLocalVariables arrayIndex0
+             (arrayType arrayIndex0 environment0) varsfuncdef_0__unite)
+          withLocalVariablesReturnValue Z (coerceInt _0 64) >>=
+        (λ _1 : Z,
+           numberLocalGet arrayIndex0 (arrayType arrayIndex0 environment0)
+             varsfuncdef_0__unite vardef_0__unite_u >>=
+           (λ _2 : withLocalVariablesReturnValue
+                     (NumberLocalGet arrayIndex0
+                        (arrayType arrayIndex0 environment0)
+                        varsfuncdef_0__unite vardef_0__unite_u),
+              Done
+                (WithLocalVariables arrayIndex0
+                   (arrayType arrayIndex0 environment0) varsfuncdef_0__unite)
+                withLocalVariablesReturnValue Z (coerceInt _2 64) >>=
+              [eta retrieve arrayIndex0 (arrayType arrayIndex0 environment0)
+                     varsfuncdef_0__unite arraydef_0__dsu] >>=
+              λ _3 : Z,
+                numberLocalGet arrayIndex0
+                  (arrayType arrayIndex0 environment0) varsfuncdef_0__unite
+                  vardef_0__unite_v >>=
+                (λ _4 : withLocalVariablesReturnValue
+                          (NumberLocalGet arrayIndex0
+                             (arrayType arrayIndex0 environment0)
+                             varsfuncdef_0__unite vardef_0__unite_v),
+                   Done
+                     (WithLocalVariables arrayIndex0
+                        (arrayType arrayIndex0 environment0)
+                        varsfuncdef_0__unite) withLocalVariablesReturnValue Z
+                     (coerceInt _4 64) >>=
+                   [eta retrieve arrayIndex0
+                          (arrayType arrayIndex0 environment0)
+                          varsfuncdef_0__unite arraydef_0__dsu]) >>=
+                (λ _4 : Z,
+                   Done
+                     (WithLocalVariables arrayIndex0
+                        (arrayType arrayIndex0 environment0)
+                        varsfuncdef_0__unite) withLocalVariablesReturnValue Z
+                     (coerceInt (_3 + _4) 8)) >>=
+                [eta Done
+                       (WithLocalVariables arrayIndex0
+                          (arrayType arrayIndex0 environment0)
+                          varsfuncdef_0__unite) withLocalVariablesReturnValue
+                       Z]) >>=
+           [eta store arrayIndex0 (arrayType arrayIndex0 environment0)
+                  varsfuncdef_0__unite arraydef_0__dsu _1] >>=
+           (fun=> numberLocalGet arrayIndex0
+                    (arrayType arrayIndex0 environment0) varsfuncdef_0__unite
+                    vardef_0__unite_u >>=
+                  λ _2 : withLocalVariablesReturnValue
+                           (NumberLocalGet arrayIndex0
+                              (arrayType arrayIndex0 environment0)
+                              varsfuncdef_0__unite vardef_0__unite_u),
+                    Done
+                      (WithLocalVariables arrayIndex0
+                         (arrayType arrayIndex0 environment0)
+                         varsfuncdef_0__unite) withLocalVariablesReturnValue
+                      Z (coerceInt _2 64) >>=
+                    λ _3 : Z,
+                      numberLocalGet arrayIndex0
+                        (arrayType arrayIndex0 environment0)
+                        varsfuncdef_0__unite vardef_0__unite_v >>=
+                      [eta Done
+                             (WithLocalVariables arrayIndex0
+                                (arrayType arrayIndex0 environment0)
+                                varsfuncdef_0__unite)
+                             withLocalVariablesReturnValue
+                             (withLocalVariablesReturnValue
+                                (NumberLocalGet arrayIndex0
+                                   (arrayType arrayIndex0 environment0)
+                                   varsfuncdef_0__unite vardef_0__unite_v))] >>=
+                      [eta store arrayIndex0
+                             (arrayType arrayIndex0 environment0)
+                             varsfuncdef_0__unite arraydef_0__dsu _3] >>=
+                      (fun=> getSender arrayIndex0
+                               (arrayType arrayIndex0 environment0)
+                               varsfuncdef_0__unite >>=
+                             λ _4 : withLocalVariablesReturnValue
+                                      (DoWithArrays arrayIndex0
+                                         (arrayType arrayIndex0 environment0)
+                                         varsfuncdef_0__unite
+                                         (DoBasicEffect arrayIndex0
+                                            (arrayType arrayIndex0
+                                               environment0) GetSender)),
+                               numberLocalGet arrayIndex0
+                                 (arrayType arrayIndex0 environment0)
+                                 varsfuncdef_0__unite vardef_0__unite_v >>=
+                               (λ _5 : withLocalVariablesReturnValue
+                                         (NumberLocalGet arrayIndex0
+                                            (arrayType arrayIndex0
+                                               environment0)
+                                            varsfuncdef_0__unite
+                                            vardef_0__unite_v),
+                                  Done
+                                    (WithLocalVariables arrayIndex0
+                                       (arrayType arrayIndex0 environment0)
+                                       varsfuncdef_0__unite)
+                                    withLocalVariablesReturnValue Z
+                                    (coerceInt _5 64) >>=
+                                  [eta retrieve arrayIndex0
+                                         (arrayType arrayIndex0 environment0)
+                                         varsfuncdef_0__unite arraydef_0__dsu] >>=
+                                  λ _6 : arrayType arrayIndex0 environment0
+                                           arraydef_0__dsu,
+                                    Done
+                                      (WithLocalVariables arrayIndex0
+                                         (arrayType arrayIndex0 environment0)
+                                         varsfuncdef_0__unite)
+                                      withLocalVariablesReturnValue Z
+                                      (coerceInt (- _6) 8) >>=
+                                    λ _7 : Z,
+                                      Done
+                                        (WithLocalVariables arrayIndex0
+                                           (arrayType arrayIndex0
+                                              environment0)
+                                           varsfuncdef_0__unite)
+                                        withLocalVariablesReturnValue Z
+                                        (coerceInt _7 256)) >>=
+                               (donate arrayIndex0
+                                  (arrayType arrayIndex0 environment0)
+                                  varsfuncdef_0__unite)^~ _4 >>=
+                               (fun=> Done
+                                        (WithLocalVariables arrayIndex0
+                                           (arrayType arrayIndex0
+                                              environment0)
+                                           varsfuncdef_0__unite)
+                                        withLocalVariablesReturnValue () ())))) >>=
+        (fun=> Done
+                 (WithLocalVariables arrayIndex0
+                    (arrayType arrayIndex0 environment0) varsfuncdef_0__unite)
+                 withLocalVariablesReturnValue () ())) >>=
+   (fun=> Dispatch
+            (WithArrays arrayIndex0 (arrayType arrayIndex0 environment0))
+            withArraysReturnValue ()
+            (Store arrayIndex0 (arrayType arrayIndex0 environment0)
+               arraydef_0__result 0 (coerceInt 0 8))
+            (fun=> eliminateLocalVariables xpred0 
+                     (fun=> 0%Z) (fun=> repeat 0%Z 20)
+                     (Done
+                        (WithLocalVariables arrayIndex0
+                           (arrayType arrayIndex0 environment0)
+                           varsfuncdef_0__main) withLocalVariablesReturnValue
+                        () ())))) = Some
+  ([a; b],
+stateAfterInteractions (λ _0 : arrayIndex0,
+  match
+  _0 as _1
+return
+  (list
+  (arrayType arrayIndex0
+  environment0 _1))
+with
+| arraydef_0__dsu =>
+    convertToArray
+  (performMerge
+  (pathCompress
+              (pathCompress dsu (length dsu) (Z.to_nat a)
+                 (ancestor dsu (length dsu) (Z.to_nat a))) 
+              (length dsu) (Z.to_nat b)
+              (ancestor dsu (length dsu) (Z.to_nat b)))
+  tree1 tree2
+  (Z.to_nat a)
+  (Z.to_nat b))
+| arraydef_0__hasBeenInitialized =>
+    [1%Z]
+| arraydef_0__result => [0%Z]
+end)
+  (dsuScore (performMerge
+  (pathCompress
+              (pathCompress dsu (length dsu) (Z.to_nat a)
+                 (ancestor dsu (length dsu) (Z.to_nat a))) 
+              (length dsu) (Z.to_nat b)
+              (ancestor dsu (length dsu) (Z.to_nat b)))
+  tree1 tree2
+  (Z.to_nat a)
+  (Z.to_nat b)))).
+Proof.
+  pose proof ancestorLtLength dsu h1 (length dsu) (Z.to_nat b) ltac:(lia) as ib1.
+  pose proof ancestorLtLength dsu h1 (length dsu) (Z.to_nat a) ltac:(lia) as ib2.
+  assert (lib1 : (coerceInt (Z.of_nat (ancestor dsu (length dsu) (Z.to_nat b))) 64) = Z.of_nat (ancestor dsu (length dsu) (Z.to_nat b))).
+  { unfold coerceInt. rewrite Z.mod_small; [| reflexivity]. lia. }
+  assert (lib2 : (coerceInt (Z.of_nat (ancestor dsu (length dsu) (Z.to_nat a))) 64) = Z.of_nat (ancestor dsu (length dsu) (Z.to_nat a))).
+  { unfold coerceInt. rewrite Z.mod_small; [| reflexivity]. lia. }
+  unfold numberLocalGet at 1. rewrite pushNumberGet2 lib1 !leftIdentity. unfold numberLocalGet at 1. rewrite -!bindAssoc pushNumberGet2 lib2 !leftIdentity. unfold retrieve at 1. rewrite -!bindAssoc pushDispatch2 bindDispatch unfoldInvoke_S_Retrieve. case_decide as ppp; [| rewrite lengthConvert !pathCompressPreservesLength Nat2Z.id in ppp; lia]. unfold numberLocalGet at 1. rewrite pushNumberGet2 pushDispatch2 bindDispatch unfoldInvoke_S_Retrieve.
+Admitted.
+
 Lemma runUnite (dsu : list Slot) (hL : length dsu = 100) (hL1 : Z.to_nat (dsuLeafCount dsu) = length dsu) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (a b : Z) (hLe1 : Z.le 0 a) (hLt1 : Z.lt a 100) (hLe2 : Z.le 0 b) (hLt2 : Z.lt b 100) : invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0 state
   (stateAfterInteractions (λ _0 : arrayIndex0,
   match
