@@ -620,7 +620,13 @@ Proof.
   { unfold coerceInt. rewrite Z.mod_small; [| reflexivity]. lia. }
   assert (lib2 : (coerceInt (Z.of_nat (ancestor dsu (length dsu) (Z.to_nat a))) 64) = Z.of_nat (ancestor dsu (length dsu) (Z.to_nat a))).
   { unfold coerceInt. rewrite Z.mod_small; [| reflexivity]. lia. }
-  unfold numberLocalGet at 1. rewrite pushNumberGet2 lib1 !leftIdentity. unfold numberLocalGet at 1. rewrite -!bindAssoc pushNumberGet2 lib2 !leftIdentity. unfold retrieve at 1. rewrite -!bindAssoc pushDispatch2 bindDispatch unfoldInvoke_S_Retrieve. case_decide as ppp; [| rewrite lengthConvert !pathCompressPreservesLength Nat2Z.id in ppp; lia]. unfold numberLocalGet at 1. rewrite pushNumberGet2 pushDispatch2 bindDispatch unfoldInvoke_S_Retrieve.
+  unfold numberLocalGet at 1. rewrite pushNumberGet2 lib1 !leftIdentity. unfold numberLocalGet at 1. rewrite -!bindAssoc pushNumberGet2 lib2 !leftIdentity. unfold retrieve at 1. rewrite -!bindAssoc pushDispatch2 bindDispatch unfoldInvoke_S_Retrieve. case_decide as ppp; [| rewrite lengthConvert !pathCompressPreservesLength Nat2Z.id in ppp; lia]. unfold numberLocalGet at 1. rewrite pushNumberGet2 pushDispatch2 bindDispatch unfoldInvoke_S_Retrieve !(nth_lt_default _ _ _ 0%Z) !Nat2Z.id. case_decide as lll; [| rewrite lengthConvert!pathCompressPreservesLength in lll; lia].
+  rewrite (nth_lt_default _ _ _ 0%Z) lib1 !nthConvert; try (rewrite !pathCompressPreservesLength; lia). rewrite htree1 Nat2Z.id htree2. clear ppp lll.
+  assert (exx : ((coerceInt
+           (256%Z - Z.of_nat (leafCount tree1) +
+            (256%Z - Z.of_nat (leafCount tree2))) 8%Z) = 256%Z - Z.of_nat (leafCount tree1) - Z.of_nat (leafCount tree2))%Z).
+  { unfold coerceInt. rewrite (ltac:(clear; lia) : ((256 - Z.of_nat (leafCount tree1) + (256 - Z.of_nat (leafCount tree2))) = 512 + -(Z.of_nat (leafCount tree1) + Z.of_nat (leafCount tree2)))%Z). rewrite Z.add_mod; [lia |]. rewrite (ltac:(clear; easy) : (512 `mod` 2^8 = 0)%Z) Z.add_0_l Z.mod_mod; [lia |]. rewrite (ltac:(easy) : (2^8 = 256)%Z) Z_mod_nz_opp_full. Search ((-_) `mod` _)%Z. }
+         
 Admitted.
 
 Lemma runUnite (dsu : list Slot) (hL : length dsu = 100) (hL1 : Z.to_nat (dsuLeafCount dsu) = length dsu) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (a b : Z) (hLe1 : Z.le 0 a) (hLt1 : Z.lt a 100) (hLe2 : Z.le 0 b) (hLt2 : Z.lt b 100) : invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0 state
