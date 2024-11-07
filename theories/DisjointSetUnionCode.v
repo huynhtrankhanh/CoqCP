@@ -57,6 +57,14 @@ Proof.
   - simpl. destruct head; simpl; rewrite IH; try reflexivity; simpl in hN; lia.
 Qed.
 
+Lemma insertConvertAncestor (x : list Slot) (n : nat) (hN : n < length x) (v : Tree) : <[n := (256 - Z.of_nat (leafCount v))%Z]> (convertToArray x) = convertToArray (<[n := Ancestor v]> x).
+Proof.
+  revert n hN. induction x as [| head tail IH]; intros n hN. { simpl in hN. lia. }
+  destruct n as [| n].
+  - simpl. destruct head; simpl; reflexivity.
+  - simpl. destruct head; simpl; rewrite IH; try reflexivity; simpl in hN; lia.
+Qed.
+
 Lemma lengthConvert (dsu : list Slot) : length (convertToArray dsu) = length dsu.
 Proof.
   induction dsu as [| [|] tail IH]; [easy | |]; simpl; now rewrite IH.
