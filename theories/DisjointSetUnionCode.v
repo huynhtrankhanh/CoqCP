@@ -81,6 +81,18 @@ Definition dsuScore (dsu : list Slot) := Z.of_nat (list_sum (map (fun x => match
 
 Definition dsuLeafCount (dsu : list Slot) := Z.of_nat (list_sum (map (fun x => match x with | ReferTo _ => 0 | Ancestor x => leafCount x end) dsu)).
 
+Lemma sumTwoAncestors' (dsu : list Slot) (a b : nat) (hAB : a < b) (hB : b < length dsu) u (hA1 : nth a dsu (Ancestor Unit) = Ancestor u) v (hB1 : nth b dsu (Ancestor Unit) = Ancestor v) : leafCount u + leafCount v <= Z.to_nat (dsuLeafCount dsu).
+Proof.
+  pose proof ListDecomposition.listDecomposition dsu a b hAB hB (Ancestor Unit) as step. rewrite step. unfold dsuLeafCount. rewrite Nat2Z.id, !map_app, hA1, hB1, !list_sum_app. simpl. lia.
+Qed.
+
+Lemma sumTwoAncestors (dsu : list Slot) (a b : nat) (hAB : a <> b) (hA : a < length dsu) (hB : b < length dsu) u (hA1 : nth a dsu (Ancestor Unit) = Ancestor u) v (hB1 : nth b dsu (Ancestor Unit) = Ancestor v) : leafCount u + leafCount v <= Z.to_nat (dsuLeafCount dsu).
+Proof.
+  destruct (ltac:(lia) : a < b \/ b < a) as [hs | hs]; [| rewrite Nat.add_comm].
+  - apply (sumTwoAncestors' _ a b); assumption.
+  - apply (sumTwoAncestors' _ b a); assumption.
+Qed.
+
 Lemma nthLowerBoundConvertAuxStep (dsu : list Slot) (h : length dsu < 256) (h1 : Z.to_nat (dsuLeafCount dsu) < 128) (n : nat) (hn : n < length dsu) x (h2 : nth n dsu (Ancestor Unit) = Ancestor x) : leafCount x < 128.
 Proof.
   revert n hn x h2. induction dsu as [| head tail IH].
