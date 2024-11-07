@@ -392,7 +392,7 @@ Proof.
   rewrite jda. clear jda. rewrite runCompressLoop; try (assumption || lia). rewrite (ltac:(lia) : Z.to_nat 100 = length dsu). reflexivity.
 Qed.
 
-Lemma mergingLogic (dsu : list Slot) (hL : length dsu = 100) (hL1 : Z.to_nat (dsuLeafCount dsu) = length dsu) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (a b : Z) (hLe1 : Z.le 0 a) (hLt1 : Z.lt a 100) (hLe2 : Z.le 0 b) (hLt2 : Z.lt b 100) tree1 tree2 (htree1 : nth (ancestor dsu (length dsu) (Z.to_nat a)) (pathCompress (pathCompress dsu (length dsu) (Z.to_nat a) (ancestor dsu (length dsu) (Z.to_nat a))) (length dsu) (Z.to_nat b)
+Lemma mergingLogic (dsu : list Slot) (hL : length dsu = 100) (hL1 : Z.to_nat (dsuLeafCount dsu) = length dsu) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (a b : Z) (hdiff : ancestor dsu (length dsu) (Z.to_nat a) <> ancestor dsu (length dsu) (Z.to_nat b)) (hLe1 : Z.le 0 a) (hLt1 : Z.lt a 100) (hLe2 : Z.le 0 b) (hLt2 : Z.lt b 100) tree1 tree2 (htree1 : nth (ancestor dsu (length dsu) (Z.to_nat a)) (pathCompress (pathCompress dsu (length dsu) (Z.to_nat a) (ancestor dsu (length dsu) (Z.to_nat a))) (length dsu) (Z.to_nat b)
               (ancestor dsu (length dsu) (Z.to_nat b))) (Ancestor Unit) = Ancestor tree1) (htree2 : nth (ancestor dsu (length dsu) (Z.to_nat b)) (pathCompress
               (pathCompress dsu (length dsu) (Z.to_nat a)
                  (ancestor dsu (length dsu) (Z.to_nat a))) 
@@ -622,11 +622,74 @@ Proof.
   { unfold coerceInt. rewrite Z.mod_small; [| reflexivity]. lia. }
   unfold numberLocalGet at 1. rewrite pushNumberGet2 lib1 !leftIdentity. unfold numberLocalGet at 1. rewrite -!bindAssoc pushNumberGet2 lib2 !leftIdentity. unfold retrieve at 1. rewrite -!bindAssoc pushDispatch2 bindDispatch unfoldInvoke_S_Retrieve. case_decide as ppp; [| rewrite lengthConvert !pathCompressPreservesLength Nat2Z.id in ppp; lia]. unfold numberLocalGet at 1. rewrite pushNumberGet2 pushDispatch2 bindDispatch unfoldInvoke_S_Retrieve !(nth_lt_default _ _ _ 0%Z) !Nat2Z.id. case_decide as lll; [| rewrite lengthConvert!pathCompressPreservesLength in lll; lia].
   rewrite (nth_lt_default _ _ _ 0%Z) lib1 !nthConvert; try (rewrite !pathCompressPreservesLength; lia). rewrite htree1 Nat2Z.id htree2. clear ppp lll.
+  pose proof h2 (Z.to_nat a) ltac:(lia) as g1.
+  pose proof h2 (Z.to_nat b) ltac:(lia) as g2.
+  remember (nth (ancestor dsu (length dsu) (Z.to_nat a)) dsu (Ancestor Unit)) as a1 eqn:j1. symmetry in j1.
+  remember (nth (ancestor dsu (length dsu) (Z.to_nat b)) dsu (Ancestor Unit)) as a2 eqn:j2. symmetry in j2.
+  destruct a1 as [a1 | a1]; destruct a2 as [a2 | a2]; try (exfalso; (exact g1) || (exact g2)).
   assert (exx : ((coerceInt
            (256%Z - Z.of_nat (leafCount tree1) +
             (256%Z - Z.of_nat (leafCount tree2))) 8%Z) = 256%Z - Z.of_nat (leafCount tree1) - Z.of_nat (leafCount tree2))%Z).
-  { unfold coerceInt. rewrite (ltac:(clear; lia) : ((256 - Z.of_nat (leafCount tree1) + (256 - Z.of_nat (leafCount tree2))) = 512 + -(Z.of_nat (leafCount tree1) + Z.of_nat (leafCount tree2)))%Z). rewrite Z.add_mod; [lia |]. rewrite (ltac:(clear; easy) : (512 `mod` 2^8 = 0)%Z) Z.add_0_l Z.mod_mod; [lia |]. rewrite (ltac:(easy) : (2^8 = 256)%Z) Z_mod_nz_opp_full. Search ((-_) `mod` _)%Z. }
-         
+  { unfold coerceInt. rewrite (ltac:(clear; lia) : ((256 - Z.of_nat (leafCount tree1) + (256 - Z.of_nat (leafCount tree2))) = 512 + -(Z.of_nat (leafCount tree1) + Z.of_nat (leafCount tree2)))%Z). rewrite Z.add_mod; [lia |]. rewrite (ltac:(clear; easy) : (512 `mod` 2^8 = 0)%Z) Z.add_0_l Z.mod_mod; [lia |].
+   rewrite !(pathCompressPreservesNth _ _ _ _ _ a1) in htree1; try exact j1.
+   rewrite !(pathCompressPreservesNth _ _ _ _ _ a2) in htree2; try exact j2.
+   pose proof sumTwoAncestors dsu _ _ hdiff ltac:(apply ancestorLtLength; (assumption || lia)) ltac:(apply ancestorLtLength; (assumption || lia)) _ j1 _ j2 as step.
+   pose proof oneLeqLeafCount tree1. pose proof oneLeqLeafCount tree2.
+   assert (p1 : tree1 = a1). { rewrite htree1 in j1. injection j1. easy. }
+   assert (p2 : tree2 = a2). { rewrite htree2 in j2. injection j2. easy. } subst tree1 tree2.
+   rewrite (ltac:(easy) : (2^8 = 256)%Z) Z_mod_nz_opp_full; rewrite Z.mod_small; lia. }
+   rewrite exx. unfold store at 1. rewrite pushDispatch2 bindDispatch unfoldInvoke_S_Store.
+   assert (p1 : tree1 = a1). { rewrite !(pathCompressPreservesNth _ _ _ _ _ a1) in htree1; try exact j1. rewrite htree1 in j1. injection j1. easy. }
+   assert (p2 : tree2 = a2). { rewrite !(pathCompressPreservesNth _ _ _ _ _ a2) in htree2; try exact j2. rewrite htree2 in j2. injection j2. easy. } subst tree1 tree2. rewrite Nat2Z.id lengthConvert !pathCompressPreservesLength. case_decide as lll; [| exfalso; exact (lll ltac:(apply ancestorLtLength; (assumption || lia)))].
+   assert (lc : leafCount a1 + leafCount a2 <= length dsu).
+   { pose proof sumTwoAncestors dsu _ _ hdiff ltac:(apply ancestorLtLength; (assumption || lia)) ltac:(apply ancestorLtLength; (assumption || lia)) _ j1 _ j2 as step. lia. }
+   assert (hsimp : (λ _0 : arrayIndex0,
+     match decide (_0 = arraydef_0__dsu) with
+     | left _1 =>
+         eq_rect_r
+           (λ _2 : arrayIndex0, list (arrayType arrayIndex0 environment0 _2))
+           (@insert nat (arrayType arrayIndex0 environment0 arraydef_0__dsu)
+               (list (arrayType arrayIndex0 environment0 arraydef_0__dsu))
+               (@list_insert
+                  (arrayType arrayIndex0 environment0 arraydef_0__dsu))
+               (ancestor dsu (@length Slot dsu) (Z.to_nat b))
+               (Z.sub (Z.sub 256 (Z.of_nat (leafCount a1)))
+                  (Z.of_nat (leafCount a2)))
+               (convertToArray
+                  (pathCompress
+                     (pathCompress dsu (@length Slot dsu) 
+                        (Z.to_nat a)
+                        (ancestor dsu (@length Slot dsu) (Z.to_nat a)))
+                     (@length Slot dsu) (Z.to_nat b)
+                     (ancestor dsu (@length Slot dsu) (Z.to_nat b))))) _1
+     | right _ =>
+         match
+           _0 as _2 return (list (arrayType arrayIndex0 environment0 _2))
+         with
+         | arraydef_0__dsu =>
+             convertToArray
+               (pathCompress
+                  (pathCompress dsu (length dsu) (Z.to_nat a)
+                     (ancestor dsu (length dsu) (Z.to_nat a))) 
+                  (length dsu) (Z.to_nat b)
+                  (ancestor dsu (length dsu) (Z.to_nat b)))
+         | arraydef_0__hasBeenInitialized => [1%Z]
+         | arraydef_0__result =>
+             [Z.of_nat (ancestor dsu (length dsu) (Z.to_nat b))]
+         end
+     end) = (fun x => match x with | arraydef_0__dsu =>
+             (<[ancestor dsu (length dsu) (Z.to_nat b):=
+              (256 - Z.of_nat (leafCount a1) - Z.of_nat (leafCount a2))%Z]>
+              (convertToArray
+                 (pathCompress
+                    (pathCompress dsu (length dsu) 
+                       (Z.to_nat a) (ancestor dsu (length dsu) (Z.to_nat a)))
+                    (length dsu) (Z.to_nat b)
+                    (ancestor dsu (length dsu) (Z.to_nat b)))))
+         | arraydef_0__hasBeenInitialized => [1%Z]
+         | arraydef_0__result =>
+             [Z.of_nat (ancestor dsu (length dsu) (Z.to_nat b))]
+         end)). { apply functional_extensionality_dep. intro x. destruct x; easy. } rewrite hsimp. clear hsimp.
 Admitted.
 
 Lemma runUnite (dsu : list Slot) (hL : length dsu = 100) (hL1 : Z.to_nat (dsuLeafCount dsu) = length dsu) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (a b : Z) (hLe1 : Z.le 0 a) (hLt1 : Z.lt a 100) (hLe2 : Z.le 0 b) (hLt2 : Z.lt b 100) : invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0 state
