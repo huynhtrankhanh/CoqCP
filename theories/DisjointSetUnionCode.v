@@ -469,6 +469,14 @@ Fixpoint pathCompress (dsu : list Slot) (fuel : nat) (index ancestor : nat) :=
     end
   end.
 
+Lemma pathCompressPreservesNth (dsu : list Slot) a b c d e (hd : nth d dsu (Ancestor Unit) = Ancestor e) : nth d (pathCompress dsu a b c) (Ancestor Unit) = nth d dsu (Ancestor Unit).
+Proof.
+  revert dsu b c d e hd. induction a as [| a IH]. { easy. }
+  intros dsu b c d e hd. simpl. remember (nth b dsu (Ancestor Unit)) as x eqn:hx. destruct x as [x | x]; symmetry in hx; [| reflexivity]. pose proof IH (<[b:=ReferTo c]> dsu) x c d e as step. destruct (decide (b = d)) as [hs | hs]. { subst b. rewrite hx in hd. easy. }
+  assert (step2: nth d (<[b:=ReferTo c]> dsu) (Ancestor Unit) = nth d dsu (Ancestor Unit)).
+  { rewrite nth_lookup, list_lookup_insert_ne; [| exact hs]. rewrite <- nth_lookup. reflexivity. } rewrite step2 in step. rewrite (step hd). reflexivity.
+Qed.
+
 Definition performMerge (dsu : list Slot) (tree1 tree2 : Tree) (u v : nat) :=
   <[u := ReferTo v]> (<[v := Ancestor (Unite tree2 tree1)]> dsu).
 
