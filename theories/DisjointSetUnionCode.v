@@ -488,6 +488,29 @@ Qed.
 Definition performMerge (dsu : list Slot) (tree1 tree2 : Tree) (u v : nat) :=
   <[u := ReferTo v]> (<[v := Ancestor (Unite tree2 tree1)]> dsu).
 
+Lemma performMergeScore' (dsu : list Slot) (tree1 tree2 : Tree) (u v : nat) (hUV : u < v) (hL : v < length dsu) (hU : nth u dsu (Ancestor Unit) = Ancestor tree1) (hV : nth v dsu (Ancestor Unit) = Ancestor tree2) : (dsuScore (performMerge dsu tree1 tree2 u v) = dsuScore dsu + Z.of_nat (leafCount tree1) + Z.of_nat (leafCount tree2))%Z.
+Proof.
+  unfold performMerge. rewrite (insert_take_drop dsu); [| exact hL]. rewrite insert_app_l; [| rewrite take_length; lia]. rewrite insert_take_drop, take_take; [| rewrite take_length; lia]. rewrite (ltac:(lia) : u `min` v = u).
+  pose proof ListDecomposition.listDecomposition dsu u v hUV hL (Ancestor Unit) as a. rewrite a at 4. rewrite hU, hV, ((ltac:(intros; easy) : forall a b, a :: b = [a] ++ b) (ReferTo _)), ((ltac:(intros; easy) : forall a b, a :: b = [a] ++ b) (Ancestor _)), <- !app_assoc.
+  unfold dsuScore. rewrite !map_app, !list_sum_app. simpl. rewrite (ltac:(easy) : _ + 1 = S _), !Nat.add_0_r. lia.
+Qed.
+
+Lemma performMergeScore'' (dsu : list Slot) (tree1 tree2 : Tree) (u v : nat) (hUV : v < u) (hL : u < length dsu) (hU : nth u dsu (Ancestor Unit) = Ancestor tree1) (hV : nth v dsu (Ancestor Unit) = Ancestor tree2) : (dsuScore (performMerge dsu tree1 tree2 u v) = dsuScore dsu + Z.of_nat (leafCount tree1) + Z.of_nat (leafCount tree2))%Z.
+Proof.
+  unfold performMerge. rewrite (insert_take_drop dsu); [| ltac:(lia)].
+  assert (h : forall a (b : list Slot), <[u:=a]> b =  <[length (take v dsu) + (u - v):=a]> b).
+  { intros a b. rewrite take_length, (ltac:(lia) : v `min` length dsu + (u - v) = u). reflexivity. } rewrite h.
+  rewrite insert_app_r, ((ltac:(intros; easy) : forall a b, a :: b = [a] ++ b) (Ancestor _)), (ltac:(simpl; lia) : u - v = length [Ancestor (Unite tree2 tree1)] + (u - v - 1)), insert_app_r. rewrite insert_take_drop, drop_drop; [| rewrite drop_length; lia]. rewrite (ltac:(lia) : S v + S (u - v - 1) = u + 1), (ltac:(easy) : ReferTo v :: drop (u + 1) dsu = [ReferTo v] ++ drop (u + 1) dsu). unfold dsuScore.
+  pose proof ListDecomposition.listDecomposition dsu v u hUV hL (Ancestor Unit) as a. rewrite a at 4. rewrite take_drop_commute, (ltac:(lia) : S v + (u - v - 1) = u), !map_app, !list_sum_app, hU, hV. simpl. lia.
+Qed.
+
+Lemma performMergeScore (dsu : list Slot) (tree1 tree2 : Tree) (u v : nat) (hUV : u <> v) (hLt1 : u < length dsu) (hLt2 : v < length dsu) (hL : v < length dsu) (hU : nth u dsu (Ancestor Unit) = Ancestor tree1) (hV : nth v dsu (Ancestor Unit) = Ancestor tree2) : (dsuScore (performMerge dsu tree1 tree2 u v) = dsuScore dsu + Z.of_nat (leafCount tree1) + Z.of_nat (leafCount tree2))%Z.
+Proof.
+  destruct (ltac:(lia) : u < v \/ v < u) as [hs | hs].
+  - apply performMergeScore'; assumption.
+  - apply performMergeScore''; assumption.
+Qed.
+
 Definition unite (dsu : list Slot) (a b : nat) :=
   if decide (length dsu <= a) then dsu else
   if decide (length dsu <= b) then dsu else
