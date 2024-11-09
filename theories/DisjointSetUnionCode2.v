@@ -770,6 +770,25 @@ Proof.
      assert (solv : (coerceInt (- (256 - Z.of_nat (leafCount (Unite a2 a1)))) 8 = Z.of_nat (leafCount a1) + Z.of_nat (leafCount a2))%Z).
      { simpl. unfold coerceInt. rewrite (ltac:(easy) : (2^8 = 256)%Z). rewrite -(Z.mod_add (- (256 - Z.of_nat (leafCount a2 + leafCount a1))) 1 256 ltac:(lia)). rewrite (ltac:(lia) : ((- (256 - Z.of_nat (leafCount a2 + leafCount a1)) + 1 * 256 = Z.of_nat (leafCount a1 + leafCount a2)))%Z).
      rewrite Z.mod_small; [| lia]. pose proof sumTwoAncestors dsu (ancestor dsu (length dsu) (Z.to_nat a)) (ancestor dsu (length dsu) (Z.to_nat b)) ltac:(assumption) ltac:(apply ancestorLtLength; (assumption || lia)) ltac:(apply ancestorLtLength; (assumption || lia)) a1 ltac:(assumption) a2 ltac:(assumption). lia. } rewrite solv. unfold donate. rewrite pushDispatch2 bindDispatch unfoldInvoke_S_Donate leftIdentity.
+     assert (st2 : (getBalance
+          (stateAfterInteractions
+             (λ _0 : arrayIndex0,
+                match
+                  _0 as _1
+                  return (list (arrayType arrayIndex0 environment0 _1))
+                with
+                | arraydef_0__dsu => convertToArray dsu
+                | arraydef_0__hasBeenInitialized => [1]
+                | arraydef_0__result => [0]
+                end) (dsuScore dsu) (repeat 0 20)) = 100000 - dsuScore dsu)%Z).
+     { easy. } rewrite st2.
+     pose proof performMergeScore (pathCompress
+                       (pathCompress dsu (length dsu) 
+                          (Z.to_nat a)
+                          (ancestor dsu (length dsu) (Z.to_nat a)))
+                       (length dsu) (Z.to_nat b)
+                       (ancestor dsu (length dsu) (Z.to_nat b))) a1 a2 (ancestor dsu (length dsu) (Z.to_nat a)) (ancestor dsu (length dsu) (Z.to_nat b)) ltac:(lia) ltac:(rewrite !pathCompressPreservesLength; apply ancestorLtLength; (assumption || lia)) ltac:(rewrite !pathCompressPreservesLength; apply ancestorLtLength; (assumption || lia)) ltac:(rewrite !pathCompressPreservesLength; apply ancestorLtLength; (assumption || lia)) ltac:(rewrite (pathCompressPreservesNth _ _ _ _ _ a1); try (assumption || lia); rewrite (pathCompressPreservesNth _ _ _ _ _ a1); try (assumption || lia)) ltac:(rewrite (pathCompressPreservesNth _ _ _ _ _ a2); try (assumption || lia); rewrite (pathCompressPreservesNth _ _ _ _ _ a2); try (assumption || lia)) as stp. unfold performMerge in stp.
+     rewrite !pathCompressPreservesScore in stp. rewrite stp.
 Admitted.
 
 Lemma runUnite (dsu : list Slot) (hL : length dsu = 100) (hL1 : Z.to_nat (dsuLeafCount dsu) = length dsu) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (a b : Z) (hLe1 : Z.le 0 a) (hLt1 : Z.lt a 100) (hLe2 : Z.le 0 b) (hLt2 : Z.lt b 100) : invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0 state
