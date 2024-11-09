@@ -760,7 +760,16 @@ Proof.
          | arraydef_0__result =>
              [Z.of_nat (ancestor dsu (length dsu) (Z.to_nat b))]
          end)). { apply functional_extensionality_dep. intro x. destruct x; easy. }
-     rewrite hasd. clear hasd.
+     rewrite hasd. clear hasd. unfold getSender. rewrite pushDispatch2 bindDispatch unfoldInvoke_S_GetSender.
+     unfold numberLocalGet at 1. rewrite -!bindAssoc pushNumberGet2 !leftIdentity. unfold retrieve at 1. rewrite pushDispatch2 bindDispatch unfoldInvoke_S_Retrieve.
+     case_decide as ppp; [rewrite (nth_lt_default _ _ _ 0%Z) | rewrite lengthConvert !insert_length !pathCompressPreservesLength lib1 in ppp; lia]. clear ppp.
+     assert (clu : forall v, coerceInt (coerceInt v 8) 256 = coerceInt v 8).
+     { intro v. unfold coerceInt. rewrite Z.mod_small; [| reflexivity]. pose proof (ltac:(intros; lia) : forall (a : Z), (0 <= a < 2^8 -> 0 <= a < 2^256)%Z) as g. apply g. apply Z.mod_pos_bound; lia. }
+     rewrite clu nthConvert. { rewrite !insert_length !pathCompressPreservesLength lib1 Nat2Z.id. lia. }
+     rewrite nth_lookup !lib1 !Nat2Z.id list_lookup_insert_ne. { lia. } rewrite list_lookup_insert. { rewrite !pathCompressPreservesLength. lia. } rewrite (ltac:(simpl; reflexivity) : default (Ancestor Unit) (Some (Ancestor (Unite a2 a1))) = _).
+     assert (solv : (coerceInt (- (256 - Z.of_nat (leafCount (Unite a2 a1)))) 8 = Z.of_nat (leafCount a1) + Z.of_nat (leafCount a2))%Z).
+     { simpl. unfold coerceInt. rewrite (ltac:(easy) : (2^8 = 256)%Z). rewrite -(Z.mod_add (- (256 - Z.of_nat (leafCount a2 + leafCount a1))) 1 256 ltac:(lia)). rewrite (ltac:(lia) : ((- (256 - Z.of_nat (leafCount a2 + leafCount a1)) + 1 * 256 = Z.of_nat (leafCount a1 + leafCount a2)))%Z).
+     rewrite Z.mod_small; [| lia]. pose proof sumTwoAncestors dsu (ancestor dsu (length dsu) (Z.to_nat a)) (ancestor dsu (length dsu) (Z.to_nat b)) ltac:(assumption) ltac:(apply ancestorLtLength; (assumption || lia)) ltac:(apply ancestorLtLength; (assumption || lia)) a1 ltac:(assumption) a2 ltac:(assumption). lia. } rewrite solv. unfold donate. rewrite pushDispatch2 bindDispatch unfoldInvoke_S_Donate leftIdentity.
 Admitted.
 
 Lemma runUnite (dsu : list Slot) (hL : length dsu = 100) (hL1 : Z.to_nat (dsuLeafCount dsu) = length dsu) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (a b : Z) (hLe1 : Z.le 0 a) (hLt1 : Z.lt a 100) (hLe2 : Z.le 0 b) (hLt2 : Z.lt b 100) : invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0 state
