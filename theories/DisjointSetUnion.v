@@ -549,6 +549,18 @@ Proof.
   - simpl. lia.
 Qed.
 
+Lemma constructTreeScore (n : nat) : score (constructTree n) = (n + 1) * (n + 2) / 2 - 1.
+Proof.
+  induction n as [| n IH]. { easy. }
+  rewrite (ltac:(simpl; reflexivity) : score (constructTree (S n)) = _), constructTreeSize, IH.
+  destruct (Nat.Even_or_Odd n) as [s | s].
+  - destruct s as [a b]. subst n. rewrite (ltac:(lia) : (2 * a + 1) * (2 * a + 2) = ((2 * a + 1) * (a + 1)) * 2), (ltac:(lia) : (S (2 * a) + 1) * (S (2 * a) + 2) = ((a + 1) * (S (2 * a) + 2)) * 2).
+    rewrite !Nat.div_mul; try easy. rewrite (ltac:(lia) : forall a, S a = a + 1), !Nat.mul_add_distr_r, !Nat.mul_add_distr_l. lia.
+  - destruct s as [a b]. subst n.
+    rewrite (ltac:(lia) : (2 * a + 1 + 1) * (2 * a + 1 + 2) = ((a + 1) * (2 * a + 1 + 2)) * 2), (ltac:(lia) : (S (2 * a + 1) + 1) * (S (2 * a + 1) + 2) = ((S (2 * a + 1) + 1) * (a + 2)) * 2).
+    rewrite !Nat.div_mul; try easy. rewrite (ltac:(lia) : forall a, S a = a + 1), !Nat.mul_add_distr_r, !Nat.mul_add_distr_l. lia.
+Qed.
+
 Fixpoint generateProduct {A B : Type} (a : list A) (b : list B) : list (A * B) :=
   match a with
   | [] => []
