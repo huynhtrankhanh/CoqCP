@@ -1166,3 +1166,29 @@ Proof.
     { simpl in *. unfold dsuLeafCount in IH. rewrite Nat2Z.id in IH. lia. }
     { simpl in *. unfold dsuLeafCount in IH. rewrite Nat2Z.id in IH. lia. }
 Qed.
+
+Lemma rollNoneScore (dsu : list Slot) (h : roll dsu = None) : dsuScore dsu = 0%Z.
+Proof.
+  induction dsu as [| head tail IH]. { easy. }
+  destruct head as [g |].
+  - simpl in h. unfold dsuScore. rewrite (ltac:(easy) : ReferTo g :: tail = [ReferTo g] ++ tail). rewrite map_app, list_sum_app. simpl. exact (IH h).
+  - simpl in h. destruct (roll tail); easy.
+Qed.
+
+Lemma rollNoneLeafCount (dsu : list Slot) (h : roll dsu = None) : dsuLeafCount dsu = 0%Z.
+Proof.
+  induction dsu as [| head tail IH]. { easy. }
+  destruct head as [g |].
+  - simpl in h. unfold dsuLeafCount. rewrite (ltac:(easy) : ReferTo g :: tail = [ReferTo g] ++ tail). rewrite map_app, list_sum_app. simpl. exact (IH h).
+  - simpl in h. destruct (roll tail); easy.
+Qed.
+
+Lemma maxScore2 (dsu : list Slot) : Z.to_nat (dsuScore dsu) <= score (constructTree (Z.to_nat (dsuLeafCount dsu) - 1)).
+Proof.
+  remember (roll dsu) as g eqn:hg. destruct g as [g |]; symmetry in hg; [| rewrite rollNoneScore, rollNoneLeafCount; (assumption || lia)].
+  pose proof maxScore dsu as a1.
+  pose proof constructTreeIsOptimal (Z.to_nat (dsuLeafCount dsu) - 1) (default Unit (roll dsu)) as a2.
+  rewrite rollPreservesLeafCount in *. rewrite hg in *. simpl in *.
+  pose proof oneLeqLeafCount g.
+  pose proof a2 ltac:(rewrite constructTreeSize; lia). lia.
+Qed.
