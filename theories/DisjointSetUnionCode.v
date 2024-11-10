@@ -1155,3 +1155,14 @@ Proof.
     { simpl in *. unfold dsuScore in IH. rewrite Nat2Z.id in IH. lia. }
     { simpl in *. unfold dsuScore in IH. rewrite Nat2Z.id in IH. lia. }
 Qed.
+
+Lemma rollPreservesLeafCount (dsu : list Slot) : Z.to_nat (dsuLeafCount dsu) = match roll dsu with | None => 0 | Some x => leafCount x end.
+Proof.
+  induction dsu as [| head tail IH]. { easy. }
+  unfold dsuLeafCount. rewrite Nat2Z.id. rewrite -> (ltac:(listsEqual) : head :: tail = [head] ++ tail) at 1. rewrite map_app, list_sum_app.
+  destruct head as [x | x]; simpl in *.
+  - unfold dsuLeafCount in IH. rewrite Nat2Z.id in IH. exact IH.
+  - remember (roll tail) as g eqn:hg. destruct g as [g |].
+    { simpl in *. unfold dsuLeafCount in IH. rewrite Nat2Z.id in IH. lia. }
+    { simpl in *. unfold dsuLeafCount in IH. rewrite Nat2Z.id in IH. lia. }
+Qed.
