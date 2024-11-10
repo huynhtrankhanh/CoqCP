@@ -795,7 +795,101 @@ Proof.
      assert (hStep : (dsuScore dsu <= 5049)%Z).
      { unfold dsuScore in gg. rewrite Nat2Z.id in gg. unfold dsuScore. lia. }
      case_decide as hs; [| exfalso; exact (hs ltac:(split; lia))].
-Admitted.
+     rewrite unfoldInvoke_S_Store. clear hs. case_decide as hs; [| exfalso; exact (hs ltac:(simpl; lia))].
+     
+     assert (hsimp : (fun _1 : arrayIndex0 =>
+      match
+        @decide (@eq arrayIndex0 _1 arraydef_0__result)
+          (@decide_rel arrayIndex0 arrayIndex0 (@eq arrayIndex0)
+             arrayIndexEqualityDecidable0 _1 arraydef_0__result)
+      with
+      | @left _ _ _2 =>
+          @eq_rect_r arrayIndex0 arraydef_0__result
+            (fun _3 : arrayIndex0 =>
+             list (arrayType arrayIndex0 environment0 _3))
+            (@insert nat
+               (arrayType arrayIndex0 environment0 arraydef_0__result)
+               (list (arrayType arrayIndex0 environment0 arraydef_0__result))
+               (@list_insert
+                  (arrayType arrayIndex0 environment0 arraydef_0__result))
+               (Z.to_nat 0) (coerceInt 0 8)
+               (@cons Z
+                  (Z.of_nat (ancestor dsu (@length Slot dsu) (Z.to_nat b)))
+                  (@nil Z))) _1 _2
+      | @right _ _ _ =>
+          match
+            _1 as _3 return (list (arrayType arrayIndex0 environment0 _3))
+          with
+          | arraydef_0__dsu =>
+              convertToArray
+                (@insert nat Slot (list Slot) (@list_insert Slot)
+                   (ancestor dsu (@length Slot dsu) (Z.to_nat a))
+                   (ReferTo (ancestor dsu (@length Slot dsu) (Z.to_nat b)))
+                   (@insert nat Slot (list Slot) (@list_insert Slot)
+                      (ancestor dsu (@length Slot dsu) (Z.to_nat b))
+                      (Ancestor (Unite a2 a1))
+                      (pathCompress
+                         (pathCompress dsu (@length Slot dsu) 
+                            (Z.to_nat a)
+                            (ancestor dsu (@length Slot dsu) (Z.to_nat a)))
+                         (@length Slot dsu) (Z.to_nat b)
+                         (ancestor dsu (@length Slot dsu) (Z.to_nat b)))))
+          | arraydef_0__hasBeenInitialized => @cons Z 1%Z (@nil Z)
+          | arraydef_0__result =>
+              @cons Z
+                (Z.of_nat (ancestor dsu (@length Slot dsu) (Z.to_nat b)))
+                (@nil Z)
+          end
+      end) = fun _1 => match
+           _1 as _3 return (list (arrayType arrayIndex0 environment0 _3))
+         with
+         | arraydef_0__dsu =>
+             convertToArray
+               (<[ancestor dsu (length dsu) (Z.to_nat a):=
+                  ReferTo (ancestor dsu (length dsu) (Z.to_nat b))]>
+                  (<[ancestor dsu (length dsu) (Z.to_nat b):=
+                     Ancestor (Unite a2 a1)]>
+                     (pathCompress
+                        (pathCompress dsu (length dsu) 
+                           (Z.to_nat a)
+                           (ancestor dsu (length dsu) (Z.to_nat a)))
+                        (length dsu) (Z.to_nat b)
+                        (ancestor dsu (length dsu) (Z.to_nat b)))))
+         | arraydef_0__hasBeenInitialized => [1%Z]
+         | arraydef_0__result =>
+             [0%Z]
+         end). { apply functional_extensionality_dep. intro x. destruct x; easy. }
+     rewrite hsimp. clear hsimp.
+     assert (hsimp : transferMoney
+     (stateAfterInteractions
+        (λ _1 : arrayIndex0,
+           match
+             _1 as _2 return (list (arrayType arrayIndex0 environment0 _2))
+           with
+           | arraydef_0__dsu => convertToArray dsu
+           | arraydef_0__hasBeenInitialized => [1%Z]
+           | arraydef_0__result => [0%Z]
+           end) (dsuScore dsu)) (repeat 0%Z 20) (repeat 1%Z 20)
+     (Z.of_nat (leafCount a1) + Z.of_nat (leafCount a2)) = stateAfterInteractions
+        (λ _1 : arrayIndex0,
+           match
+             _1 as _2 return (list (arrayType arrayIndex0 environment0 _2))
+           with
+           | arraydef_0__dsu => convertToArray dsu
+           | arraydef_0__hasBeenInitialized => [1%Z]
+           | arraydef_0__result => [0%Z]
+           end) (dsuScore dsu + Z.of_nat (leafCount a1) + Z.of_nat (leafCount a2))).
+     { apply functional_extensionality_dep. intro x. unfold stateAfterInteractions. unfold transferMoney. unfold update.
+       repeat case_decide; try (exfalso; easy); try reflexivity.
+       { subst x. exfalso. easy. }
+       { simpl. rewrite Z.add_assoc. reflexivity. }
+       { simpl. rewrite (ltac:(lia) : ((100000 - dsuScore dsu -
+   (Z.of_nat (leafCount a1) + Z.of_nat (leafCount a2))) = (100000 -
+   (dsuScore dsu + Z.of_nat (leafCount a1) + Z.of_nat (leafCount a2))))%Z). reflexivity. } }
+     rewrite hsimp. clear hsimp. simpl.
+  apply (ltac:(intros T U mm ma mb mc; subst ma; reflexivity) : forall (T U : Type) (g : T) (a b : U), a = b -> Some (g, a) = Some (g, b)).
+  apply functional_extensionality_dep. intro x. unfold update. unfold stateAfterInteractions. repeat case_decide; easy.
+Qed.
 
 Lemma runUnite (dsu : list Slot) (hL : length dsu = 100) (hL1 : Z.to_nat (dsuLeafCount dsu) = length dsu) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (a b : Z) (hLe1 : Z.le 0 a) (hLt1 : Z.lt a 100) (hLe2 : Z.le 0 b) (hLt2 : Z.lt b 100) : invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0 state
   (stateAfterInteractions (λ _0 : arrayIndex0,
