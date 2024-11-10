@@ -524,7 +524,7 @@ Definition unite (dsu : list Slot) (a b : nat) :=
   | Ancestor tree1 => match nth v dsu2 (Ancestor Unit) with
     | ReferTo _ => dsu2
     | Ancestor tree2 =>
-      if decide (leafCount tree2 < leafCount tree1) then performMerge dsu tree2 tree1 v u else performMerge dsu tree1 tree2 u v
+      if decide (leafCount tree2 < leafCount tree1) then performMerge dsu2 tree2 tree1 v u else performMerge dsu2 tree1 tree2 u v
     end
   end.
 
