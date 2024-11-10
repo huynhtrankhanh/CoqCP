@@ -1133,3 +1133,25 @@ end) (λ _ : varsfuncdef_0__ancestor,
       { simpl. rewrite hg. reflexivity. } rewrite step3, Z2Nat.id; [| lia]. reflexivity.
     * unfold toSigned in hs. case_decide as hss. { simpl in hss. rewrite (ltac:(easy) : (2 ^ (8 - 1) = 128)%Z) in hss. pose proof nthLowerBoundConvertAuxStep dsu ltac:(lia) ltac:(lia) (Z.to_nat a) ltac:(lia) g hg. lia. } rewrite (ltac:(easy) : (2 ^ 8 = 256)%Z) in hs. pose proof oneLeqLeafCount g. lia.
 Qed.
+
+Fixpoint roll (dsu : list Slot) : option Tree :=
+  match dsu with
+  | [] => None
+  | Ancestor x :: rest =>
+    match roll rest with
+    | None => Some x
+    | Some y => Some (Unite x y)
+    end
+  | ReferTo x :: rest => roll rest
+  end.
+
+Lemma maxScore (dsu : list Slot) : Z.to_nat (dsuScore dsu) <= score (default Unit (roll dsu)).
+Proof.
+  induction dsu as [| head tail IH]. { easy. }
+  unfold dsuScore. rewrite Nat2Z.id. rewrite -> (ltac:(listsEqual) : head :: tail = [head] ++ tail) at 1. rewrite map_app, list_sum_app.
+  destruct head as [x | x].
+  - simpl. unfold dsuScore in IH. rewrite Nat2Z.id in IH. exact IH.
+  - simpl. remember (roll tail) as g eqn:hg. destruct g as [g |].
+    { simpl in *. unfold dsuScore in IH. rewrite Nat2Z.id in IH. lia. }
+    { simpl in *. unfold dsuScore in IH. rewrite Nat2Z.id in IH. lia. }
+Qed.
