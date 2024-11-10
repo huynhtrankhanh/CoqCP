@@ -789,6 +789,12 @@ Proof.
                        (length dsu) (Z.to_nat b)
                        (ancestor dsu (length dsu) (Z.to_nat b))) a1 a2 (ancestor dsu (length dsu) (Z.to_nat a)) (ancestor dsu (length dsu) (Z.to_nat b)) ltac:(lia) ltac:(rewrite !pathCompressPreservesLength; apply ancestorLtLength; (assumption || lia)) ltac:(rewrite !pathCompressPreservesLength; apply ancestorLtLength; (assumption || lia)) ltac:(rewrite !pathCompressPreservesLength; apply ancestorLtLength; (assumption || lia)) ltac:(rewrite (pathCompressPreservesNth _ _ _ _ _ a1); try (assumption || lia); rewrite (pathCompressPreservesNth _ _ _ _ _ a1); try (assumption || lia)) ltac:(rewrite (pathCompressPreservesNth _ _ _ _ _ a2); try (assumption || lia); rewrite (pathCompressPreservesNth _ _ _ _ _ a2); try (assumption || lia)) as stp. unfold performMerge in stp.
      rewrite !pathCompressPreservesScore in stp. rewrite stp.
+     pose proof maxScore3 dsu as gg. rewrite !hL1 !hL (ltac:(easy): (100 * (100 + 1)) `div` 2 - 1 = Z.to_nat (5049%Z)) in gg.
+     assert ((0 <= dsuScore dsu)%Z).
+     { unfold dsuScore. lia. }
+     assert (hStep : (dsuScore dsu <= 5049)%Z).
+     { unfold dsuScore in gg. rewrite Nat2Z.id in gg. unfold dsuScore. lia. }
+     case_decide as hs; [| exfalso; exact (hs ltac:(split; lia))].
 Admitted.
 
 Lemma runUnite (dsu : list Slot) (hL : length dsu = 100) (hL1 : Z.to_nat (dsuLeafCount dsu) = length dsu) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (a b : Z) (hLe1 : Z.le 0 a) (hLt1 : Z.lt a 100) (hLe2 : Z.le 0 b) (hLt2 : Z.lt b 100) : invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0 state
