@@ -485,6 +485,33 @@ Proof.
   { rewrite nth_lookup, list_lookup_insert_ne; [| exact hs]. rewrite <- nth_lookup. reflexivity. } rewrite step2 in step. rewrite (step hd). reflexivity.
 Qed.
 
+Lemma withoutCyclesExtractAncestor (dsu : list Slot) (h2 : withoutCyclesN dsu (length dsu)) (a : nat) (hA : a < length dsu) : exists k, nth (ancestor dsu (length dsu) a) dsu (Ancestor Unit) = Ancestor k.
+Proof.
+  pose proof h2 a hA as step.
+  destruct (nth (ancestor dsu (length dsu) a) dsu (Ancestor Unit)) as [g | g]. { exfalso. exact step. } exists g. reflexivity.
+Qed.
+
+Lemma pathCompressCommute (dsu : list Slot) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (fuel : nat) (a b : nat) (hA : a < length dsu) (hB : b < length dsu) : pathCompress (pathCompress dsu fuel a (ancestor dsu (length dsu) a)) fuel b (ancestor dsu (length dsu) b) = pathCompress (pathCompress dsu fuel b (ancestor dsu (length dsu) b)) fuel a (ancestor dsu (length dsu) a).
+Proof.
+  revert a b dsu h1 h2 hA hB. induction fuel as [| fuel IH]. { easy. }
+  intros a b dsu h1 h2 hA hB. simpl.
+  remember (nth a dsu (Ancestor Unit)) as u eqn:hu.
+  remember (nth b dsu (Ancestor Unit)) as v eqn:hv.
+  pose proof withoutCyclesExtractAncestor dsu h2 a hA as [ka hka].
+  pose proof withoutCyclesExtractAncestor dsu h2 b hB as [kb hkb].
+  destruct u as [u | u]; destruct v as [v | v]; symmetry in hu; symmetry in hv.
+  - admit.
+  - rewrite hu.
+    assert (si : nth b (<[a:=ReferTo (ancestor dsu (length dsu) a)]> dsu) (Ancestor Unit) = Ancestor v).
+    { destruct (decide (a = b)) as [hs | hs]; rewrite nth_lookup. { subst a. rewrite hu in hv. easy. } rewrite list_lookup_insert_ne; [| lia]. rewrite <- nth_lookup. assumption. }
+    rewrite (pathCompressPreservesNth _ _ _ _ _ v); rewrite si; reflexivity.
+  - rewrite hv.
+    assert (si : nth a (<[b:=ReferTo (ancestor dsu (length dsu) b)]> dsu) (Ancestor Unit) = Ancestor u).
+    { destruct (decide (a = b)) as [hs | hs]; rewrite nth_lookup. { subst a. rewrite hu in hv. easy. } rewrite list_lookup_insert_ne; [| lia]. rewrite <- nth_lookup. assumption. }
+    rewrite (pathCompressPreservesNth _ _ _ _ _ u); rewrite si; reflexivity.
+  - rewrite hu. rewrite hv. reflexivity.
+Qed.
+
 Definition performMerge (dsu : list Slot) (tree1 tree2 : Tree) (u v : nat) :=
   <[u := ReferTo v]> (<[v := Ancestor (Unite tree2 tree1)]> dsu).
 
