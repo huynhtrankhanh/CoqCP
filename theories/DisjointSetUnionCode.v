@@ -1192,3 +1192,23 @@ Proof.
   pose proof oneLeqLeafCount g.
   pose proof a2 ltac:(rewrite constructTreeSize; lia). lia.
 Qed.
+
+Lemma scoreZeroIfLeafCountZero (dsu : list Slot) (h : dsuLeafCount dsu = 0%Z) : dsuScore dsu = 0%Z.
+Proof.
+  induction dsu as [| head tail IH]. { easy. }
+  unfold dsuScore. unfold dsuLeafCount in h. rewrite (ltac:(easy) : head :: tail = [head] ++ tail), map_app, list_sum_app in *.
+  destruct head as [x | x].
+  - simpl in *. exact (IH h).
+  - simpl in *. pose proof oneLeqLeafCount x. lia.
+Qed.
+
+Lemma maxScore3 (dsu : list Slot) : Z.to_nat (dsuScore dsu) <= (Z.to_nat (dsuLeafCount dsu)) * (Z.to_nat (dsuLeafCount dsu) + 1) / 2 - 1.
+Proof.
+  pose proof maxScore2 dsu as h1.
+  pose proof constructTreeScore (Z.to_nat (dsuLeafCount dsu) - 1) as h2.
+  assert (hS : (dsuLeafCount dsu = 0%Z \/ 0%Z < dsuLeafCount dsu)%Z).
+  { unfold dsuLeafCount. lia. }
+  destruct hS as [hS | hS].
+  - pose proof scoreZeroIfLeafCountZero _ hS as hI. lia.
+  - rewrite (ltac:(lia) : Z.to_nat (dsuLeafCount dsu) - 1 + 1 = Z.to_nat (dsuLeafCount dsu)), (ltac:(lia) : Z.to_nat (dsuLeafCount dsu) - 1 + 2 = Z.to_nat (dsuLeafCount dsu) + 1) in h2. lia.
+Qed.
