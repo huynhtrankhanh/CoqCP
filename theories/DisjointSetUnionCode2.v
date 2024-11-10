@@ -1151,8 +1151,21 @@ Proof.
            | vardef_0__unite_v =>
                Z.of_nat (ancestor dsu (length dsu) (Z.to_nat a))
            | vardef_0__unite_z => (Z.of_nat (ancestor dsu (length dsu) (Z.to_nat a)))
-           end)). { apply functional_extensionality_dep. intro f. destruct f; easy. } rewrite hsimp. clear hsimp. admit.
-   + rewrite -!bindAssoc !leftIdentity. admit.
+           end)). { apply functional_extensionality_dep. intro f. destruct f; easy. } rewrite hsimp. clear hsimp.
+     rewrite pathCompressPreservesLength !pathCompressPreservesAncestorLength in hs; try (assumption || lia). admit.
+   + rewrite -!bindAssoc !leftIdentity.
+     rewrite pathCompressPreservesLength !pathCompressPreservesAncestorLength in hs; try (assumption || lia).
+     pose proof mergingLogic hL hL1 h1 h2 (ltac:(lia) : ancestor dsu (length dsu) (Z.to_nat a) ≠ ancestor dsu (length dsu) (Z.to_nat b)) ltac:(lia) ltac:(lia) ltac:(lia) ltac:(lia) hlnode hrnode as st.
+     rewrite st. apply (ltac:(intros T U mm ma mb mc; subst ma; reflexivity) : forall (T U : Type) (g : T) (a b : U), a = b -> Some (g, a) = Some (g, b)).
+     apply functional_extensionality_dep. intro x. unfold update. unfold stateAfterInteractions. repeat case_decide; try easy.
+     { rewrite performMergeScore; try (assumption || lia || (rewrite !pathCompressPreservesLength; apply ancestorLtLength; (assumption || lia))).
+       rewrite !pathCompressPreservesScore.
+       unfold unite. repeat case_decide; try lia; [rewrite -> pathCompressPreservesLength, -> pathCompressPreservesAncestorLength in *; try (assumption || lia || (rewrite !pathCompressPreservesLength; apply ancestorLtLength; (assumption || lia))); lia|]. rewrite !pathCompressPreservesLength !pathCompressPreservesAncestorLength; try (assumption || lia || (rewrite !pathCompressPreservesLength; apply ancestorLtLength; (assumption || lia))). rewrite hlnode hrnode.
+       case_decide; try lia. rewrite performMergeScore; try (assumption || lia || (rewrite ?pathCompressPreservesLength; apply ancestorLtLength; (assumption || lia))). rewrite !pathCompressPreservesScore. reflexivity. }
+     { rewrite performMergeScore; try (assumption || lia || (rewrite !pathCompressPreservesLength; apply ancestorLtLength; (assumption || lia))).
+       rewrite !pathCompressPreservesScore.
+       unfold unite. repeat case_decide; try lia; [rewrite -> pathCompressPreservesLength, -> pathCompressPreservesAncestorLength in *; try (assumption || lia || (rewrite !pathCompressPreservesLength; apply ancestorLtLength; (assumption || lia))); lia|]. rewrite !pathCompressPreservesLength !pathCompressPreservesAncestorLength; try (assumption || lia || (rewrite !pathCompressPreservesLength; apply ancestorLtLength; (assumption || lia))). rewrite hlnode hrnode.
+       case_decide; try lia. rewrite performMergeScore; try (assumption || lia || (rewrite ?pathCompressPreservesLength; apply ancestorLtLength; (assumption || lia))). rewrite !pathCompressPreservesScore. reflexivity. }
   - rewrite !leftIdentity unfoldInvoke_S_Store. case_decide as ppp; [| simpl in ppp; lia]. clear ppp.
     assert (battle : (λ _0 : arrayIndex0,
      match
@@ -1293,7 +1306,7 @@ with
   _0
 end) = fun (x : arrayIndex0) => match x with | arraydef_0__hasBeenInitialized => [1%Z] | arraydef_0__dsu => repeat 0%Z 100 | arraydef_0__result => [0%Z] end). { apply functional_extensionality_dep. intro x. destruct x; cbv; reflexivity. }
   case_decide as hw; simpl in hw; [| lia]. rewrite hsimp. clear hsimp. pose proof (fun x => initializeArray a b 100 x ltac:(lia) (repeat 0%Z 100) ltac:(easy)) as step. rewrite step. clear step. rewrite (ltac:(lia) : 100 - 100 = 0). rewrite (ltac:(easy) : take 0 _ = []). rewrite app_nil_l. rewrite !leftIdentity. unfold readByte. pose proof pushDispatch2 (λ _ : varsfuncdef_0__main, false) (λ _ : varsfuncdef_0__main, 0%Z) (λ _ : varsfuncdef_0__main, repeat 0%Z 20) (DoBasicEffect arrayIndex0 (arrayType arrayIndex0 environment0)
-  (ReadByte 0)) as step. autorewrite with combined_unfold in step. rewrite step. clear step. autorewrite with advance_program.  case_decide as h2; [| simpl in h2; lia]. pose proof pushDispatch2 (λ _ : varsfuncdef_0__main, false) (λ _ : varsfuncdef_0__main, 0%Z) (λ _ : varsfuncdef_0__main, repeat 0%Z 20) (DoBasicEffect arrayIndex0 (arrayType arrayIndex0 environment0) (ReadByte 1)) as step. autorewrite with combined_unfold in step. rewrite <- !bindAssoc, step. clear step. autorewrite with advance_program. rewrite !leftIdentity. rewrite (ltac:(easy) : (nth (Z.to_nat 0) [a; b] 0%Z) = a), (ltac:(easy) : (nth (Z.to_nat 1) [a; b] 0%Z) = b). rewrite (ltac:(apply functional_extensionality_dep; intro x; destruct x; easy) : (update (update (λ _ : varsfuncdef_0__unite, 0%Z) vardef_0__unite_u a) vardef_0__unite_v b) = fun x => match x with | vardef_0__unite_u => a | vardef_0__unite_v => b | _ => 0%Z end).
+  (ReadByte 0)) as step. autorewrite with combined_unfold in step. rewrite step. clear step. autorewrite with advance_program.  case_decide as h2; [| simpl in h2; lia]. pose proof pushDispatch2 (λ _ : varsfuncdef_0__main, false) (λ _ : varsfuncdef_0__main, 0%Z) (λ _ : varsfuncdef_0__main, repeat 0%Z 20) (DoBasicEffect arrayIndex0 (arrayType arrayIndex0 environment0) (ReadByte 1)) as step. autorewrite with combined_unfold in step. rewrite <- !bindAssoc, step. clear step. autorewrite with advance_program. rewrite !leftIdentity. rewrite (ltac:(easy) : (nth (Z.to_nat 0) [a; b] 0%Z) = a)  (ltac:(easy) : (nth (Z.to_nat 1) [a; b] 0%Z) = b). rewrite (ltac:(apply functional_extensionality_dep; intro x; destruct x; easy) : (update (update (λ _ : varsfuncdef_0__unite, 0%Z) vardef_0__unite_u a) vardef_0__unite_v b) = fun x => match x with | vardef_0__unite_u => a | vardef_0__unite_v => b | _ => 0%Z end).
   case_decide as h3; [| simpl in h3; lia].
 Admitted.
 
