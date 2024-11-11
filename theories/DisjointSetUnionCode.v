@@ -512,25 +512,22 @@ Proof.
     exact (h1 i _ hi).
 Qed.
 
+Lemma doubleBangEqIfNthEq {A} (l l1 : list A) (hL : length l = length l1) d (hnth : forall x, x < length l -> nth x l d = nth x l1 d) n : l !! n = l1 !! n.
+Proof.
+Search (_ !! _).
+  remember (l !! n) as target1 eqn:h1.
+  remember (l1 !! n) as target2 eqn:h2.
+  symmetry in h1. symmetry in h2.
+  destruct target1 as [target1 |]; destruct target2 as [target2 |]; try fast_reflexivity; try pose proof lookup_ge_None_1 _ _ h1 as d1; try pose proof lookup_ge_None_1 _ _ h2 as d2; try pose proof lookup_ge_None_2 _ _ (ltac:(lia) : length l <= n); try pose proof lookup_ge_None_2 _ _ (ltac:(lia) : length l1 <= n); try congruence.
+  pose proof lookup_lt_Some _ _ _ h1 as s.
+  pose proof hnth n s as t.
+  rewrite !nth_lookup, h1, h2 in t. simpl in t. congruence.
+Qed.
+
 Lemma pathCompressCommute (dsu : list Slot) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (fuel : nat) (a b : nat) (hA : a < length dsu) (hB : b < length dsu) : pathCompress (pathCompress dsu fuel a (ancestor dsu (length dsu) a)) fuel b (ancestor dsu (length dsu) b) = pathCompress (pathCompress dsu fuel b (ancestor dsu (length dsu) b)) fuel a (ancestor dsu (length dsu) a).
 Proof.
-  revert a b dsu h1 h2 hA hB. induction fuel as [| fuel IH]. { easy. }
-  intros a b dsu h1 h2 hA hB. simpl.
-  remember (nth a dsu (Ancestor Unit)) as u eqn:hu.
-  remember (nth b dsu (Ancestor Unit)) as v eqn:hv.
-  pose proof withoutCyclesExtractAncestor dsu h2 a hA as [ka hka].
-  pose proof withoutCyclesExtractAncestor dsu h2 b hB as [kb hkb].
-  destruct u as [u | u]; destruct v as [v | v]; symmetry in hu; symmetry in hv.
-  - admit.
-  - rewrite hu.
-    assert (si : nth b (<[a:=ReferTo (ancestor dsu (length dsu) a)]> dsu) (Ancestor Unit) = Ancestor v).
-    { destruct (decide (a = b)) as [hs | hs]; rewrite nth_lookup. { subst a. rewrite hu in hv. easy. } rewrite list_lookup_insert_ne; [| lia]. rewrite <- nth_lookup. assumption. }
-    rewrite (pathCompressPreservesNth _ _ _ _ _ v); rewrite si; reflexivity.
-  - rewrite hv.
-    assert (si : nth a (<[b:=ReferTo (ancestor dsu (length dsu) b)]> dsu) (Ancestor Unit) = Ancestor u).
-    { destruct (decide (a = b)) as [hs | hs]; rewrite nth_lookup. { subst a. rewrite hu in hv. easy. } rewrite list_lookup_insert_ne; [| lia]. rewrite <- nth_lookup. assumption. }
-    rewrite (pathCompressPreservesNth _ _ _ _ _ u); rewrite si; reflexivity.
-  - rewrite hu. rewrite hv. reflexivity.
+  apply list_eq. intro i.
+  
 Admitted.
 
 Definition performMerge (dsu : list Slot) (tree1 tree2 : Tree) (u v : nat) :=
