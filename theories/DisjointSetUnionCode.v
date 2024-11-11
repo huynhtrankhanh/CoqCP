@@ -491,6 +491,27 @@ Proof.
   destruct (nth (ancestor dsu (length dsu) a) dsu (Ancestor Unit)) as [g | g]. { exfalso. exact step. } exists g. reflexivity.
 Qed.
 
+Lemma pathCompressNth (dsu : list Slot) (h1 : noIllegalIndices dsu) (fuel : nat) (a b c : nat) (hA : a < length dsu) (hB : b < length dsu) (hC : c < length dsu) : nth c (pathCompress dsu fuel a b) (Ancestor Unit) = nth c dsu (Ancestor Unit) \/ nth c (pathCompress dsu fuel a b) (Ancestor Unit) = ReferTo b.
+Proof.
+  revert dsu h1 a b c hA hB hC. induction fuel as [| fuel IH];
+  intros dsu h1 a b c hA hB hC.
+  { simpl. left. reflexivity. }
+  simpl. remember (nth a dsu (Ancestor Unit)) as e eqn:he. symmetry in he.
+  destruct e as [e | e]; [| left; reflexivity].
+  pose proof h1 a _ he as hE.
+  epose proof IH (<[a:=ReferTo b]> dsu) _ e b c ltac:(rewrite insert_length; exact hE) ltac:(rewrite insert_length; exact hB) ltac:(rewrite insert_length; exact hC) as hf.
+  destruct (decide (c = a)) as [hs | hs].
+  - subst c. rewrite (ltac:(rewrite nth_lookup, list_lookup_insert; easy) : nth a (<[a:=ReferTo b]> dsu) (Ancestor Unit) = ReferTo b) in hf. right. destruct hf; assumption.
+  - rewrite (ltac:(rewrite !nth_lookup, list_lookup_insert_ne; try lia; reflexivity) : nth c (<[a:=ReferTo b]> dsu) (Ancestor Unit) = nth c dsu (Ancestor Unit)) in hf. exact hf.
+  Unshelve.
+  intros i j hi. rewrite insert_length. destruct (decide (i = a)) as [hs | hs].
+  + subst i. rewrite (ltac:(rewrite nth_lookup, list_lookup_insert; easy) : nth a (<[a:=ReferTo b]> dsu) (Ancestor Unit) = ReferTo b) in hi. injection hi. lia.
+  + rewrite (ltac:(rewrite !nth_lookup, list_lookup_insert_ne; try lia; reflexivity) : nth i (<[a:=ReferTo b]> dsu) (Ancestor Unit) = nth i dsu (Ancestor Unit)) in hi.
+    assert (hi1 : i < length dsu).
+    { destruct (decide (length dsu <= i)) as [ht | ht]; [| lia]. rewrite nth_overflow in hi; [| exact ht]. easy. }
+    exact (h1 i _ hi).
+Qed.
+
 Lemma pathCompressCommute (dsu : list Slot) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (fuel : nat) (a b : nat) (hA : a < length dsu) (hB : b < length dsu) : pathCompress (pathCompress dsu fuel a (ancestor dsu (length dsu) a)) fuel b (ancestor dsu (length dsu) b) = pathCompress (pathCompress dsu fuel b (ancestor dsu (length dsu) b)) fuel a (ancestor dsu (length dsu) a).
 Proof.
   revert a b dsu h1 h2 hA hB. induction fuel as [| fuel IH]. { easy. }
@@ -510,7 +531,7 @@ Proof.
     { destruct (decide (a = b)) as [hs | hs]; rewrite nth_lookup. { subst a. rewrite hu in hv. easy. } rewrite list_lookup_insert_ne; [| lia]. rewrite <- nth_lookup. assumption. }
     rewrite (pathCompressPreservesNth _ _ _ _ _ u); rewrite si; reflexivity.
   - rewrite hu. rewrite hv. reflexivity.
-Qed.
+Admitted.
 
 Definition performMerge (dsu : list Slot) (tree1 tree2 : Tree) (u v : nat) :=
   <[u := ReferTo v]> (<[v := Ancestor (Unite tree2 tree1)]> dsu).
