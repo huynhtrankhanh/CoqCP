@@ -392,12 +392,12 @@ Proof.
   rewrite jda. clear jda. rewrite runCompressLoop; try (assumption || lia). rewrite (ltac:(lia) : Z.to_nat 100 = length dsu). reflexivity.
 Qed.
 
-Lemma mergingLogic (dsu : list Slot) (hL : length dsu = 100) (hL1 : Z.to_nat (dsuLeafCount dsu) = length dsu) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (a b : Z) (hdiff : ancestor dsu (length dsu) (Z.to_nat a) <> ancestor dsu (length dsu) (Z.to_nat b)) (hLe1 : Z.le 0 a) (hLt1 : Z.lt a 100) (hLe2 : Z.le 0 b) (hLt2 : Z.lt b 100) tree1 tree2 (htree1 : nth (ancestor dsu (length dsu) (Z.to_nat a)) (pathCompress (pathCompress dsu (length dsu) (Z.to_nat a) (ancestor dsu (length dsu) (Z.to_nat a))) (length dsu) (Z.to_nat b)
-              (ancestor dsu (length dsu) (Z.to_nat b))) (Ancestor Unit) = Ancestor tree1) (htree2 : nth (ancestor dsu (length dsu) (Z.to_nat b)) (pathCompress
-              (pathCompress dsu (length dsu) (Z.to_nat a)
-                 (ancestor dsu (length dsu) (Z.to_nat a))) 
-              (length dsu) (Z.to_nat b)
-              (ancestor dsu (length dsu) (Z.to_nat b))) (Ancestor Unit) = Ancestor tree2) whatever : invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0 state
+Lemma mergingLogic (dsu : list Slot) (hL : length dsu = 100) (hL1 : Z.to_nat (dsuLeafCount dsu) = length dsu) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (a b : Z) (x y : Z) (hLeX : Z.le 0 x) (hLtX : Z.lt x 100) (hLeY : Z.le 0 y) (hLtY : Z.lt y 100) (hdiff : ancestor dsu (length dsu) (Z.to_nat a) <> ancestor dsu (length dsu) (Z.to_nat b)) (hLe1 : Z.le 0 a) (hLt1 : Z.lt a 100) (hLe2 : Z.le 0 b) (hLt2 : Z.lt b 100) tree1 tree2 (htree1 : nth (ancestor dsu (length dsu) (Z.to_nat a)) (pathCompress (pathCompress dsu (length dsu) (Z.to_nat x) (ancestor dsu (length dsu) (Z.to_nat x))) (length dsu) (Z.to_nat y)
+              (ancestor dsu (length dsu) (Z.to_nat y))) (Ancestor Unit) = Ancestor tree1) (htree2 : nth (ancestor dsu (length dsu) (Z.to_nat b)) (pathCompress
+              (pathCompress dsu (length dsu) (Z.to_nat x)
+                 (ancestor dsu (length dsu) (Z.to_nat x))) 
+              (length dsu) (Z.to_nat y)
+              (ancestor dsu (length dsu) (Z.to_nat y))) (Ancestor Unit) = Ancestor tree2) whatever : invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0 state
   (stateAfterInteractions
      (λ _0 : arrayIndex0,
         match
@@ -415,10 +415,10 @@ Lemma mergingLogic (dsu : list Slot) (hL : length dsu = 100) (hL1 : Z.to_nat (ds
      | arraydef_0__dsu =>
          convertToArray
            (pathCompress
-              (pathCompress dsu (length dsu) (Z.to_nat a)
-                 (ancestor dsu (length dsu) (Z.to_nat a))) 
-              (length dsu) (Z.to_nat b)
-              (ancestor dsu (length dsu) (Z.to_nat b)))
+              (pathCompress dsu (length dsu) (Z.to_nat x)
+                 (ancestor dsu (length dsu) (Z.to_nat x))) 
+              (length dsu) (Z.to_nat y)
+              (ancestor dsu (length dsu) (Z.to_nat y)))
      | arraydef_0__hasBeenInitialized => [1%Z]
      | arraydef_0__result =>
          [Z.of_nat (ancestor dsu (length dsu) (Z.to_nat b))]
@@ -593,10 +593,10 @@ with
     convertToArray
   (performMerge
   (pathCompress
-              (pathCompress dsu (length dsu) (Z.to_nat a)
-                 (ancestor dsu (length dsu) (Z.to_nat a))) 
-              (length dsu) (Z.to_nat b)
-              (ancestor dsu (length dsu) (Z.to_nat b)))
+              (pathCompress dsu (length dsu) (Z.to_nat x)
+                 (ancestor dsu (length dsu) (Z.to_nat x))) 
+              (length dsu) (Z.to_nat y)
+              (ancestor dsu (length dsu) (Z.to_nat y)))
   tree1 tree2
   (ancestor dsu (length dsu) (Z.to_nat a))
   (ancestor dsu (length dsu) (Z.to_nat b)))
@@ -606,16 +606,18 @@ with
 end)
   (dsuScore (performMerge
   (pathCompress
-              (pathCompress dsu (length dsu) (Z.to_nat a)
-                 (ancestor dsu (length dsu) (Z.to_nat a))) 
-              (length dsu) (Z.to_nat b)
-              (ancestor dsu (length dsu) (Z.to_nat b)))
+              (pathCompress dsu (length dsu) (Z.to_nat x)
+                 (ancestor dsu (length dsu) (Z.to_nat x))) 
+              (length dsu) (Z.to_nat y)
+              (ancestor dsu (length dsu) (Z.to_nat y)))
   tree1 tree2
   (ancestor dsu (length dsu) (Z.to_nat a))
   (ancestor dsu (length dsu) (Z.to_nat b))))).
 Proof.
   pose proof ancestorLtLength dsu h1 (length dsu) (Z.to_nat b) ltac:(lia) as ib1.
   pose proof ancestorLtLength dsu h1 (length dsu) (Z.to_nat a) ltac:(lia) as ib2.
+  pose proof ancestorLtLength dsu h1 (length dsu) (Z.to_nat x) ltac:(lia) as arb1.
+  pose proof ancestorLtLength dsu h1 (length dsu) (Z.to_nat y) ltac:(lia) as arb2.
   assert (lib1 : (coerceInt (Z.of_nat (ancestor dsu (length dsu) (Z.to_nat b))) 64) = Z.of_nat (ancestor dsu (length dsu) (Z.to_nat b))).
   { unfold coerceInt. rewrite Z.mod_small; [| reflexivity]. lia. }
   assert (lib2 : (coerceInt (Z.of_nat (ancestor dsu (length dsu) (Z.to_nat a))) 64) = Z.of_nat (ancestor dsu (length dsu) (Z.to_nat a))).
@@ -643,59 +645,67 @@ Proof.
    assert (p2 : tree2 = a2). { rewrite !(pathCompressPreservesNth _ _ _ _ _ a2) in htree2; try exact j2. rewrite htree2 in j2. injection j2. easy. } subst tree1 tree2. rewrite Nat2Z.id lengthConvert !pathCompressPreservesLength. case_decide as lll; [| exfalso; exact (lll ltac:(apply ancestorLtLength; (assumption || lia)))].
    assert (lc : leafCount a1 + leafCount a2 <= length dsu).
    { pose proof sumTwoAncestors dsu _ _ hdiff ltac:(apply ancestorLtLength; (assumption || lia)) ltac:(apply ancestorLtLength; (assumption || lia)) _ j1 _ j2 as step. lia. }
-   assert (hsimp : (λ _0 : arrayIndex0,
-     match decide (_0 = arraydef_0__dsu) with
-     | left _1 =>
-         eq_rect_r
-           (λ _2 : arrayIndex0, list (arrayType arrayIndex0 environment0 _2))
-           (@insert nat (arrayType arrayIndex0 environment0 arraydef_0__dsu)
-               (list (arrayType arrayIndex0 environment0 arraydef_0__dsu))
-               (@list_insert
-                  (arrayType arrayIndex0 environment0 arraydef_0__dsu))
-               (ancestor dsu (@length Slot dsu) (Z.to_nat b))
-               (Z.sub (Z.sub 256 (Z.of_nat (leafCount a1)))
-                  (Z.of_nat (leafCount a2)))
-               (convertToArray
-                  (pathCompress
-                     (pathCompress dsu (@length Slot dsu) 
-                        (Z.to_nat a)
-                        (ancestor dsu (@length Slot dsu) (Z.to_nat a)))
-                     (@length Slot dsu) (Z.to_nat b)
-                     (ancestor dsu (@length Slot dsu) (Z.to_nat b))))) _1
-     | right _ =>
-         match
-           _0 as _2 return (list (arrayType arrayIndex0 environment0 _2))
-         with
-         | arraydef_0__dsu =>
-             convertToArray
+   assert (hsimp : (fun _0 : arrayIndex0 =>
+   match
+     @decide (@eq arrayIndex0 _0 arraydef_0__dsu)
+       (@decide_rel arrayIndex0 arrayIndex0 (@eq arrayIndex0)
+          arrayIndexEqualityDecidable0 _0 arraydef_0__dsu)
+   with
+   | @left _ _ _1 =>
+       @eq_rect_r arrayIndex0 arraydef_0__dsu
+         (fun _2 : arrayIndex0 =>
+          list (arrayType arrayIndex0 environment0 _2))
+         (@insert nat (arrayType arrayIndex0 environment0 arraydef_0__dsu)
+            (list (arrayType arrayIndex0 environment0 arraydef_0__dsu))
+            (@list_insert
+               (arrayType arrayIndex0 environment0 arraydef_0__dsu))
+            (ancestor dsu (@length Slot dsu) (Z.to_nat b))
+            (Z.sub (Z.sub 256 (Z.of_nat (leafCount a1)))
+               (Z.of_nat (leafCount a2)))
+            (convertToArray
                (pathCompress
-                  (pathCompress dsu (length dsu) (Z.to_nat a)
-                     (ancestor dsu (length dsu) (Z.to_nat a))) 
-                  (length dsu) (Z.to_nat b)
-                  (ancestor dsu (length dsu) (Z.to_nat b)))
-         | arraydef_0__hasBeenInitialized => [1%Z]
-         | arraydef_0__result =>
-             [Z.of_nat (ancestor dsu (length dsu) (Z.to_nat b))]
-         end
-     end) = (fun x => match x with | arraydef_0__dsu =>
+                  (pathCompress dsu (@length Slot dsu) 
+                     (Z.to_nat x)
+                     (ancestor dsu (@length Slot dsu) (Z.to_nat x)))
+                  (@length Slot dsu) (Z.to_nat y)
+                  (ancestor dsu (@length Slot dsu) (Z.to_nat y))))) _0 _1
+   | @right _ _ _ =>
+       match
+         _0 as _2 return (list (arrayType arrayIndex0 environment0 _2))
+       with
+       | arraydef_0__dsu =>
+           convertToArray
+             (pathCompress
+                (pathCompress dsu (@length Slot dsu) 
+                   (Z.to_nat x)
+                   (ancestor dsu (@length Slot dsu) (Z.to_nat x)))
+                (@length Slot dsu) (Z.to_nat y)
+                (ancestor dsu (@length Slot dsu) (Z.to_nat y)))
+       | arraydef_0__hasBeenInitialized => @cons Z 1%Z (@nil Z)
+       | arraydef_0__result =>
+           @cons Z
+             (Z.of_nat (ancestor dsu (@length Slot dsu) (Z.to_nat b)))
+             (@nil Z)
+       end
+   end) = (fun _0 => match _0 with | arraydef_0__dsu =>
              (<[ancestor dsu (length dsu) (Z.to_nat b):=
               (256 - Z.of_nat (leafCount a1) - Z.of_nat (leafCount a2))%Z]>
               (convertToArray
                  (pathCompress
                     (pathCompress dsu (length dsu) 
-                       (Z.to_nat a) (ancestor dsu (length dsu) (Z.to_nat a)))
-                    (length dsu) (Z.to_nat b)
-                    (ancestor dsu (length dsu) (Z.to_nat b)))))
+                       (Z.to_nat x) (ancestor dsu (length dsu) (Z.to_nat x)))
+                    (length dsu) (Z.to_nat y)
+                    (ancestor dsu (length dsu) (Z.to_nat y)))))
          | arraydef_0__hasBeenInitialized => [1%Z]
          | arraydef_0__result =>
              [Z.of_nat (ancestor dsu (length dsu) (Z.to_nat b))]
-         end)). { apply functional_extensionality_dep. intro x. destruct x; easy. } rewrite hsimp. clear hsimp.
+         end)). { apply functional_extensionality_dep. intro _0. destruct _0; easy. } rewrite hsimp. clear hsimp.
      pose proof insertConvertAncestor
               (pathCompress
-                 (pathCompress dsu (length dsu) (Z.to_nat a)
-                    (ancestor dsu (length dsu) (Z.to_nat a))) 
-                 (length dsu) (Z.to_nat b)
-                 (ancestor dsu (length dsu) (Z.to_nat b))) (ancestor dsu (length dsu) (Z.to_nat b)) ltac:(rewrite !pathCompressPreservesLength; apply ancestorLtLength; (assumption || lia)) (Unite a2 a1) as step2. unfold performMerge.
+                 (pathCompress dsu (length dsu) (Z.to_nat x)
+                    (ancestor dsu (length dsu) (Z.to_nat x))) 
+                 (length dsu) (Z.to_nat y)
+                 (ancestor dsu (length dsu) (Z.to_nat y))) (ancestor dsu (length dsu) (Z.to_nat b)) ltac:(rewrite !pathCompressPreservesLength; apply ancestorLtLength; (assumption || lia)) (Unite a2 a1) as step2. unfold performMerge.
      assert (step : (256 - Z.of_nat (leafCount (Unite a2 a1)) = 256 - Z.of_nat (leafCount a1) - Z.of_nat (leafCount a2))%Z).
      { simpl. lia. }
      rewrite step in step2. rewrite step2.
@@ -720,10 +730,10 @@ Proof.
                      (Ancestor (Unite a2 a1))
                      (pathCompress
                         (pathCompress dsu (@length Slot dsu) 
-                           (Z.to_nat a)
-                           (ancestor dsu (@length Slot dsu) (Z.to_nat a)))
-                        (@length Slot dsu) (Z.to_nat b)
-                        (ancestor dsu (@length Slot dsu) (Z.to_nat b)))))) _0
+                           (Z.to_nat x)
+                           (ancestor dsu (@length Slot dsu) (Z.to_nat x)))
+                        (@length Slot dsu) (Z.to_nat y)
+                        (ancestor dsu (@length Slot dsu) (Z.to_nat y)))))) _0
             _1
       | @right _ _ _ =>
           match
@@ -736,30 +746,30 @@ Proof.
                    (Ancestor (Unite a2 a1))
                    (pathCompress
                       (pathCompress dsu (@length Slot dsu) 
-                         (Z.to_nat a)
-                         (ancestor dsu (@length Slot dsu) (Z.to_nat a)))
-                      (@length Slot dsu) (Z.to_nat b)
-                      (ancestor dsu (@length Slot dsu) (Z.to_nat b))))
+                         (Z.to_nat x)
+                         (ancestor dsu (@length Slot dsu) (Z.to_nat x)))
+                      (@length Slot dsu) (Z.to_nat y)
+                      (ancestor dsu (@length Slot dsu) (Z.to_nat y))))
           | arraydef_0__hasBeenInitialized => @cons Z 1%Z (@nil Z)
           | arraydef_0__result =>
               @cons Z
                 (Z.of_nat (ancestor dsu (@length Slot dsu) (Z.to_nat b)))
                 (@nil Z)
           end
-      end) = (fun x => match x with | arraydef_0__dsu => convertToArray
+      end) = (fun _0 => match _0 with | arraydef_0__dsu => convertToArray
               (<[ancestor dsu (length dsu) (Z.to_nat a):=
                  ReferTo (ancestor dsu (length dsu) (Z.to_nat b))]>
                  (<[ancestor dsu (length dsu) (Z.to_nat b):=
                     Ancestor (Unite a2 a1)]>
                     (pathCompress
                        (pathCompress dsu (length dsu) 
-                          (Z.to_nat a)
-                          (ancestor dsu (length dsu) (Z.to_nat a)))
-                       (length dsu) (Z.to_nat b)
-                       (ancestor dsu (length dsu) (Z.to_nat b))))) | arraydef_0__hasBeenInitialized => [1%Z]
+                          (Z.to_nat x)
+                          (ancestor dsu (length dsu) (Z.to_nat x)))
+                       (length dsu) (Z.to_nat y)
+                       (ancestor dsu (length dsu) (Z.to_nat y))))) | arraydef_0__hasBeenInitialized => [1%Z]
          | arraydef_0__result =>
              [Z.of_nat (ancestor dsu (length dsu) (Z.to_nat b))]
-         end)). { apply functional_extensionality_dep. intro x. destruct x; easy. }
+         end)). { apply functional_extensionality_dep. intro _0. destruct _0; easy. }
      rewrite hasd. clear hasd. unfold getSender. rewrite pushDispatch2 bindDispatch unfoldInvoke_S_GetSender.
      unfold numberLocalGet at 1. rewrite -!bindAssoc pushNumberGet2 !leftIdentity. unfold retrieve at 1. rewrite pushDispatch2 bindDispatch unfoldInvoke_S_Retrieve.
      case_decide as ppp; [rewrite (nth_lt_default _ _ _ 0%Z) | rewrite lengthConvert !insert_length !pathCompressPreservesLength lib1 in ppp; lia]. clear ppp.
@@ -784,10 +794,10 @@ Proof.
      { easy. } rewrite st2.
      pose proof performMergeScore (pathCompress
                        (pathCompress dsu (length dsu) 
-                          (Z.to_nat a)
-                          (ancestor dsu (length dsu) (Z.to_nat a)))
-                       (length dsu) (Z.to_nat b)
-                       (ancestor dsu (length dsu) (Z.to_nat b))) a1 a2 (ancestor dsu (length dsu) (Z.to_nat a)) (ancestor dsu (length dsu) (Z.to_nat b)) ltac:(lia) ltac:(rewrite !pathCompressPreservesLength; apply ancestorLtLength; (assumption || lia)) ltac:(rewrite !pathCompressPreservesLength; apply ancestorLtLength; (assumption || lia)) ltac:(rewrite !pathCompressPreservesLength; apply ancestorLtLength; (assumption || lia)) ltac:(rewrite (pathCompressPreservesNth _ _ _ _ _ a1); try (assumption || lia); rewrite (pathCompressPreservesNth _ _ _ _ _ a1); try (assumption || lia)) ltac:(rewrite (pathCompressPreservesNth _ _ _ _ _ a2); try (assumption || lia); rewrite (pathCompressPreservesNth _ _ _ _ _ a2); try (assumption || lia)) as stp. unfold performMerge in stp.
+                          (Z.to_nat x)
+                          (ancestor dsu (length dsu) (Z.to_nat x)))
+                       (length dsu) (Z.to_nat y)
+                       (ancestor dsu (length dsu) (Z.to_nat y))) a1 a2 (ancestor dsu (length dsu) (Z.to_nat a)) (ancestor dsu (length dsu) (Z.to_nat b)) ltac:(lia) ltac:(rewrite !pathCompressPreservesLength; apply ancestorLtLength; (assumption || lia)) ltac:(rewrite !pathCompressPreservesLength; apply ancestorLtLength; (assumption || lia)) ltac:(rewrite !pathCompressPreservesLength; apply ancestorLtLength; (assumption || lia)) ltac:(rewrite (pathCompressPreservesNth _ _ _ _ _ a1); try (assumption || lia); rewrite (pathCompressPreservesNth _ _ _ _ _ a1); try (assumption || lia)) ltac:(rewrite (pathCompressPreservesNth _ _ _ _ _ a2); try (assumption || lia); rewrite (pathCompressPreservesNth _ _ _ _ _ a2); try (assumption || lia)) as stp. unfold performMerge in stp.
      rewrite !pathCompressPreservesScore in stp. rewrite stp.
      pose proof maxScore3 dsu as gg. rewrite !hL1 !hL (ltac:(easy): (100 * (100 + 1)) `div` 2 - 1 = Z.to_nat (5049%Z)) in gg.
      assert ((0 <= dsuScore dsu)%Z).
@@ -830,10 +840,10 @@ Proof.
                       (Ancestor (Unite a2 a1))
                       (pathCompress
                          (pathCompress dsu (@length Slot dsu) 
-                            (Z.to_nat a)
-                            (ancestor dsu (@length Slot dsu) (Z.to_nat a)))
-                         (@length Slot dsu) (Z.to_nat b)
-                         (ancestor dsu (@length Slot dsu) (Z.to_nat b)))))
+                            (Z.to_nat x)
+                            (ancestor dsu (@length Slot dsu) (Z.to_nat x)))
+                         (@length Slot dsu) (Z.to_nat y)
+                         (ancestor dsu (@length Slot dsu) (Z.to_nat y)))))
           | arraydef_0__hasBeenInitialized => @cons Z 1%Z (@nil Z)
           | arraydef_0__result =>
               @cons Z
@@ -851,14 +861,14 @@ Proof.
                      Ancestor (Unite a2 a1)]>
                      (pathCompress
                         (pathCompress dsu (length dsu) 
-                           (Z.to_nat a)
-                           (ancestor dsu (length dsu) (Z.to_nat a)))
-                        (length dsu) (Z.to_nat b)
-                        (ancestor dsu (length dsu) (Z.to_nat b)))))
+                           (Z.to_nat x)
+                           (ancestor dsu (length dsu) (Z.to_nat x)))
+                        (length dsu) (Z.to_nat y)
+                        (ancestor dsu (length dsu) (Z.to_nat y)))))
          | arraydef_0__hasBeenInitialized => [1%Z]
          | arraydef_0__result =>
              [0%Z]
-         end). { apply functional_extensionality_dep. intro x. destruct x; easy. }
+         end). { apply functional_extensionality_dep. intro _1. destruct _1; easy. }
      rewrite hsimp. clear hsimp.
      assert (hsimp : transferMoney
      (stateAfterInteractions
@@ -879,16 +889,16 @@ Proof.
            | arraydef_0__hasBeenInitialized => [1%Z]
            | arraydef_0__result => [0%Z]
            end) (dsuScore dsu + Z.of_nat (leafCount a1) + Z.of_nat (leafCount a2))).
-     { apply functional_extensionality_dep. intro x. unfold stateAfterInteractions. unfold transferMoney. unfold update.
+     { apply functional_extensionality_dep. intro _1. unfold stateAfterInteractions. unfold transferMoney. unfold update.
        repeat case_decide; try (exfalso; easy); try reflexivity.
-       { subst x. exfalso. easy. }
+       { subst _1. exfalso. easy. }
        { simpl. rewrite Z.add_assoc. reflexivity. }
        { simpl. rewrite (ltac:(lia) : ((100000 - dsuScore dsu -
    (Z.of_nat (leafCount a1) + Z.of_nat (leafCount a2))) = (100000 -
    (dsuScore dsu + Z.of_nat (leafCount a1) + Z.of_nat (leafCount a2))))%Z). reflexivity. } }
      rewrite hsimp. clear hsimp. simpl.
   apply (ltac:(intros T U mm ma mb mc; subst ma; reflexivity) : forall (T U : Type) (g : T) (a b : U), a = b -> Some (g, a) = Some (g, b)).
-  apply functional_extensionality_dep. intro x. unfold update. unfold stateAfterInteractions. repeat case_decide; easy.
+  apply functional_extensionality_dep. intro ___1. unfold update. unfold stateAfterInteractions. repeat case_decide; easy.
 Qed.
 
 Lemma runUnite (dsu : list Slot) (hL : length dsu = 100) (hL1 : Z.to_nat (dsuLeafCount dsu) = length dsu) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (a b : Z) (hLe1 : Z.le 0 a) (hLt1 : Z.lt a 100) (hLe2 : Z.le 0 b) (hLt2 : Z.lt b 100) : invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0 state
