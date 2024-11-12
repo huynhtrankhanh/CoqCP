@@ -1331,6 +1331,9 @@ end) = fun (x : arrayIndex0) => match x with | arraydef_0__hasBeenInitialized =>
   case_decide as h3; [| simpl in h3; lia].
 Admitted.
 
+Lemma maxScoreIsAttainable : interact state (map (fun x => (0%Z, Z.of_nat x)) (seq 1 99)) = 5049%Z.
+Proof. reflexivity. Qed.
+
 Lemma interactEqualsModelScore (x : list (Z * Z)) : interact state x = modelScore x.
 Proof.
 Admitted.
