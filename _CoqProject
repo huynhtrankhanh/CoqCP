@@ -28,5 +28,6 @@ theories/DisjointSetUnion.v
 theories/CountingBits.v
 theories/DisjointSetUnionCode.v
 theories/DisjointSetUnionCode2.v
+theories/DisjointSetUnionCode3.v
 -R generated-coq/ Generated
 generated-coq/DisjointSetUnion.v
