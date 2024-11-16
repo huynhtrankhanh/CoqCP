@@ -569,7 +569,7 @@ Definition unite (dsu : list Slot) (a b : nat) :=
 Fixpoint dsuFromInteractions (dsu : list Slot) (interactions : list (nat * nat)) :=
   match interactions with
   | [] => dsu
-  | (a, b)::tail => dsuFromInteractions (unite dsu a b) tail
+  | (a, b)::tail => if decide (a < length dsu /\ b < length dsu) then dsuFromInteractions (unite dsu a b) tail else dsuFromInteractions dsu tail
   end.
 
 Lemma pathCompressPreservesLength (dsu : list Slot) (n a b : nat) : length (pathCompress dsu n a b) = length dsu.
