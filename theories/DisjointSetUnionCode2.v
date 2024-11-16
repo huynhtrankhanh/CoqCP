@@ -397,16 +397,9 @@ Lemma mergingLogic (dsu : list Slot) (hL : length dsu = 100) (hL1 : Z.to_nat (ds
               (pathCompress dsu (length dsu) (Z.to_nat x)
                  (ancestor dsu (length dsu) (Z.to_nat x))) 
               (length dsu) (Z.to_nat y)
-              (ancestor dsu (length dsu) (Z.to_nat y))) (Ancestor Unit) = Ancestor tree2) whatever whatever2 : invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0 state
+              (ancestor dsu (length dsu) (Z.to_nat y))) (Ancestor Unit) = Ancestor tree2) whatever whatever2 ignored : invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0 state
   (stateAfterInteractions
-     (λ _0 : arrayIndex0,
-        match
-          _0 as _1 return (list (arrayType arrayIndex0 environment0 _1))
-        with
-        | arraydef_0__dsu => convertToArray dsu
-        | arraydef_0__hasBeenInitialized => [1%Z]
-        | arraydef_0__result => [0%Z]
-        end) (dsuScore dsu)) [x; y] 1 arrayIndex0
+     ignored (dsuScore dsu)) [x; y] 1 arrayIndex0
   arrayIndexEqualityDecidable0 (arrayType arrayIndex0 environment0)
   (λ _0 : arrayIndex0,
      match
@@ -782,15 +775,7 @@ Proof.
      rewrite Z.mod_small; [| lia]. pose proof sumTwoAncestors dsu (ancestor dsu (length dsu) (Z.to_nat a)) (ancestor dsu (length dsu) (Z.to_nat b)) ltac:(assumption) ltac:(apply ancestorLtLength; (assumption || lia)) ltac:(apply ancestorLtLength; (assumption || lia)) a1 ltac:(assumption) a2 ltac:(assumption). lia. } rewrite solv. unfold donate. rewrite pushDispatch2 bindDispatch unfoldInvoke_S_Donate leftIdentity.
      assert (st2 : (getBalance
           (stateAfterInteractions
-             (λ _0 : arrayIndex0,
-                match
-                  _0 as _1
-                  return (list (arrayType arrayIndex0 environment0 _1))
-                with
-                | arraydef_0__dsu => convertToArray dsu
-                | arraydef_0__hasBeenInitialized => [1]
-                | arraydef_0__result => [0]
-                end) (dsuScore dsu) (repeat 0 20)) = 100000 - dsuScore dsu)%Z).
+             ignored (dsuScore dsu) (repeat 0 20)) = 100000 - dsuScore dsu)%Z).
      { easy. } rewrite st2.
      pose proof performMergeScore (pathCompress
                        (pathCompress dsu (length dsu) 
@@ -872,23 +857,9 @@ Proof.
      rewrite hsimp. clear hsimp.
      assert (hsimp : transferMoney
      (stateAfterInteractions
-        (λ _1 : arrayIndex0,
-           match
-             _1 as _2 return (list (arrayType arrayIndex0 environment0 _2))
-           with
-           | arraydef_0__dsu => convertToArray dsu
-           | arraydef_0__hasBeenInitialized => [1%Z]
-           | arraydef_0__result => [0%Z]
-           end) (dsuScore dsu)) (repeat 0%Z 20) (repeat 1%Z 20)
+        ignored (dsuScore dsu)) (repeat 0%Z 20) (repeat 1%Z 20)
      (Z.of_nat (leafCount a1) + Z.of_nat (leafCount a2)) = stateAfterInteractions
-        (λ _1 : arrayIndex0,
-           match
-             _1 as _2 return (list (arrayType arrayIndex0 environment0 _2))
-           with
-           | arraydef_0__dsu => convertToArray dsu
-           | arraydef_0__hasBeenInitialized => [1%Z]
-           | arraydef_0__result => [0%Z]
-           end) (dsuScore dsu + Z.of_nat (leafCount a1) + Z.of_nat (leafCount a2))).
+        ignored (dsuScore dsu + Z.of_nat (leafCount a1) + Z.of_nat (leafCount a2))).
      { apply functional_extensionality_dep. intro _1. unfold stateAfterInteractions. unfold transferMoney. unfold update.
        repeat case_decide; try (exfalso; easy); try reflexivity.
        { subst _1. exfalso. easy. }
@@ -901,21 +872,8 @@ Proof.
   apply functional_extensionality_dep. intro ___1. unfold update. unfold stateAfterInteractions. repeat case_decide; easy.
 Qed.
 
-Lemma runUnite (dsu : list Slot) (hL : length dsu = 100) (hL1 : Z.to_nat (dsuLeafCount dsu) = length dsu) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (a b : Z) (hLe1 : Z.le 0 a) (hLt1 : Z.lt a 100) (hLe2 : Z.le 0 b) (hLt2 : Z.lt b 100) : invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0 state
-  (stateAfterInteractions (λ _0 : arrayIndex0,
-  match
-  _0 as _1
-return
-  (list
-  (arrayType arrayIndex0
-  environment0 _1))
-with
-| arraydef_0__dsu =>
-    convertToArray dsu
-| arraydef_0__hasBeenInitialized =>
-    [1%Z]
-| arraydef_0__result => [0%Z]
-end)
+Lemma runUnite (dsu : list Slot) (hL : length dsu = 100) (hL1 : Z.to_nat (dsuLeafCount dsu) = length dsu) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (a b : Z) (hLe1 : Z.le 0 a) (hLt1 : Z.lt a 100) (hLe2 : Z.le 0 b) (hLt2 : Z.lt b 100) ignored : invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0 state
+  (stateAfterInteractions ignored
   (dsuScore
   dsu)) [a; b] 1 arrayIndex0 arrayIndexEqualityDecidable0
   (arrayType arrayIndex0 environment0) (λ _0 : arrayIndex0,
@@ -1277,7 +1235,7 @@ Proof.
   apply functional_extensionality_dep. intro x. unfold update. unfold stateAfterInteractions. repeat case_decide; easy.
 Qed.
 
-Lemma firstInteraction (a b : Z) (hLt1 : Z.lt a 100) (hLt2 : Z.lt b 100) : invokeContract (repeat 1%Z 20) (repeat 0%Z 20) 0%Z state state [a; b] 1 = Some ([a; b], stateAfterInteractions (fun x => match x with | arraydef_0__result => [0%Z] | arraydef_0__hasBeenInitialized => [1%Z] | arraydef_0__dsu => convertToArray (unite (repeat (Ancestor Unit) 100) (Z.to_nat a) (Z.to_nat b)) end) (dsuScore (unite (repeat (Ancestor Unit) 100) (Z.to_nat a) (Z.to_nat b)))).
+Lemma firstInteraction (a b : Z) (hLe1 : Z.le 0 a) (hLt1 : Z.lt a 100) (hLe2 : Z.le 0 b) (hLt2 : Z.lt b 100) : invokeContract (repeat 1%Z 20) (repeat 0%Z 20) 0%Z state state [a; b] 1 = Some ([a; b], stateAfterInteractions (fun x => match x with | arraydef_0__result => [0%Z] | arraydef_0__hasBeenInitialized => [1%Z] | arraydef_0__dsu => convertToArray (unite (repeat (Ancestor Unit) 100) (Z.to_nat a) (Z.to_nat b)) end) (dsuScore (unite (repeat (Ancestor Unit) 100) (Z.to_nat a) (Z.to_nat b)))).
 Proof.
   unfold invokeContract. rewrite (ltac:(easy) : state (repeat 0%Z 20) = BlockchainContract _ _ _ _ _ _). unfold funcdef_0__main at 2. rewrite !leftIdentity. unfold retrieve at 1. rewrite <- !bindAssoc. pose proof pushDispatch2 (λ _ : varsfuncdef_0__main, false) (λ _ : varsfuncdef_0__main, 0%Z) (λ _ : varsfuncdef_0__main, repeat 0%Z 20) (Retrieve arrayIndex0 (arrayType arrayIndex0 environment0) arraydef_0__hasBeenInitialized 0) as step. autorewrite with combined_unfold in step. rewrite step. clear step. autorewrite with advance_program. case_decide as h; simpl in h; [| lia]. rewrite !leftIdentity. case_bool_decide as h1; cbv in h1; [| lia]. unfold store. pose proof pushDispatch2 (λ _ : varsfuncdef_0__main, false) (λ _ : varsfuncdef_0__main, 0%Z) (λ _ : varsfuncdef_0__main, repeat 0%Z 20) (Store arrayIndex0 (arrayType arrayIndex0 environment0) arraydef_0__hasBeenInitialized 0 (coerceInt 1 8)) as step. autorewrite with combined_unfold in *. rewrite <- !bindAssoc, step. clear step. autorewrite with advance_program. assert (hsimp : (λ _0 : arrayIndex0,
   match
@@ -1329,10 +1287,14 @@ end) = fun (x : arrayIndex0) => match x with | arraydef_0__hasBeenInitialized =>
   case_decide as hw; simpl in hw; [| lia]. rewrite hsimp. clear hsimp. pose proof (fun x => initializeArray a b 100 x ltac:(lia) (repeat 0%Z 100) ltac:(easy)) as step. rewrite step. clear step. rewrite (ltac:(lia) : 100 - 100 = 0). rewrite (ltac:(easy) : take 0 _ = []). rewrite app_nil_l. rewrite !leftIdentity. unfold readByte. pose proof pushDispatch2 (λ _ : varsfuncdef_0__main, false) (λ _ : varsfuncdef_0__main, 0%Z) (λ _ : varsfuncdef_0__main, repeat 0%Z 20) (DoBasicEffect arrayIndex0 (arrayType arrayIndex0 environment0)
   (ReadByte 0)) as step. autorewrite with combined_unfold in step. rewrite step. clear step. autorewrite with advance_program.  case_decide as h2; [| simpl in h2; lia]. pose proof pushDispatch2 (λ _ : varsfuncdef_0__main, false) (λ _ : varsfuncdef_0__main, 0%Z) (λ _ : varsfuncdef_0__main, repeat 0%Z 20) (DoBasicEffect arrayIndex0 (arrayType arrayIndex0 environment0) (ReadByte 1)) as step. autorewrite with combined_unfold in step. rewrite <- !bindAssoc, step. clear step. autorewrite with advance_program. rewrite !leftIdentity. rewrite (ltac:(easy) : (nth (Z.to_nat 0) [a; b] 0%Z) = a)  (ltac:(easy) : (nth (Z.to_nat 1) [a; b] 0%Z) = b). rewrite (ltac:(apply functional_extensionality_dep; intro x; destruct x; easy) : (update (update (λ _ : varsfuncdef_0__unite, 0%Z) vardef_0__unite_u a) vardef_0__unite_v b) = fun x => match x with | vardef_0__unite_u => a | vardef_0__unite_v => b | _ => 0%Z end).
   case_decide as h3; [| simpl in h3; lia].
-Admitted.
-
-Lemma maxScoreIsAttainable : interact state (map (fun x => (0%Z, Z.of_nat x)) (seq 1 99)) = 5049%Z.
-Proof. reflexivity. Qed.
+  assert (hR : convertToArray (repeat (Ancestor Unit) 100) = repeat (255%Z) 100).
+  { reflexivity. } rewrite -hR.
+  pose proof runUnite (ltac:(reflexivity) : length (repeat (Ancestor Unit) 100) = 100) ltac:(reflexivity) ltac:(intros x y z; rewrite nth_repeat in z; easy) ltac:(rewrite withoutCyclesNIffWithoutCyclesBool; easy) hLe1 hLt1 hLe2 hLt2 (arrays _ environment0) as step.
+  assert (hS : (stateAfterInteractions (arrays arrayIndex0 environment0)
+     (dsuScore (repeat (Ancestor Unit) 100))) = state).
+  { apply functional_extensionality_dep. intro x. unfold stateAfterInteractions. unfold state. case_decide. { reflexivity. } case_decide. { reflexivity. } reflexivity. }
+  rewrite hS in step. rewrite step. reflexivity.
+Qed.
 
 Lemma interactEqualsModelScore (x : list (Z * Z)) : interact state x = modelScore x.
 Proof.
