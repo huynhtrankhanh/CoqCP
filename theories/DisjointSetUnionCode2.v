@@ -1345,7 +1345,7 @@ Proof.
   rewrite dropWithinLoopLiftToWithinLoop. unfold retrieve at 1. rewrite -!bindAssoc pushDispatch2 unfoldInvoke_S_Retrieve. case_decide as hu; [| reflexivity]. exfalso. rewrite lengthConvert pathCompressPreservesLength in hu. lia.
 Qed.
 
-Lemma outOfBoundsInteraction1B (a b : Z) (hLA : Z.le 0 a) (hUA : Z.lt a 256) (hOOB : Z.le 100 b) (hUB : Z.lt b 256) (dsu : list Slot) (hL : length dsu = 100) (hL1 : Z.to_nat (dsuLeafCount dsu) = length dsu) (y1 : noIllegalIndices dsu) (y2 : withoutCyclesN dsu (length dsu)) : invokeContract (repeat 1%Z 20) (repeat 0%Z 20) 0%Z state state [a; b] 1 = Some ([], state).
+Lemma outOfBoundsInteraction1B (a b : Z) (hLA : Z.le 0 a) (hUA : Z.lt a 256) (hOOB : Z.le 100 b) (hUB : Z.lt b 256) : invokeContract (repeat 1%Z 20) (repeat 0%Z 20) 0%Z state state [a; b] 1 = Some ([], state).
 Proof.
   destruct (decide (Z.le 100 a)) as [hy | hy].
   { apply outOfBoundsInteraction1A; lia. }
@@ -1494,4 +1494,17 @@ Qed.
 
 Lemma interactEqualsModelScore (x : list (Z * Z)) (hN : forall a b, In (a, b) x -> Z.le 0 a /\ Z.lt a 256 /\ Z.le 0 b /\ Z.lt b 256) : interact state x = modelScore x.
 Proof.
+  induction x as [| head tail IH]. { easy. }
+  destruct head as [a b].
+  pose proof hN a b ltac:(left; reflexivity) as [h1 [h2 [h3 h4]]].
+  rewrite (ltac:(intros; simpl; reflexivity) : forall state, interact state ((a, b) :: tail) = _).
+  fold (repeat 1%Z 20). fold (repeat 0%Z 20).
+  unfold modelScore. rewrite ((ltac:(easy) : forall a b, a :: b = [a] ++ b) (a, b)) map_app (ltac:(easy) : map (λ _0 : Z * Z, let (_1, _2) := _0 in (Z.to_nat _1, Z.to_nat _2))
+  [(a, b)] = [(Z.to_nat a, Z.to_nat b)]) -(ltac:(easy) : forall a b, a :: b = [a] ++ b). rewrite (ltac:(simpl; reflexivity) : dsuFromInteractions _ (_ :: _) = _).
+  case_decide as hv; rewrite repeat_length in hv.
+  - rewrite firstInteraction; try lia. admit.
+  - destruct (ltac:(lia) : Z.le 100 a \/ Z.le 100 b) as [h5 | h5].
+    + rewrite outOfBoundsInteraction1A; try assumption. apply IH. intros m1 m2 m3. apply hN. right. exact m3.
+    + rewrite outOfBoundsInteraction1B; try assumption. apply IH. intros m1 m2 m3. apply hN. right. exact m3.
+  (* can't directly do induction here, must use an auxiliary lemma *)
 Admitted.
