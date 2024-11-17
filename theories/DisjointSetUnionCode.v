@@ -1250,3 +1250,83 @@ Proof.
   - pose proof scoreZeroIfLeafCountZero _ hS as hI. lia.
   - rewrite (ltac:(lia) : Z.to_nat (dsuLeafCount dsu) - 1 + 1 = Z.to_nat (dsuLeafCount dsu)), (ltac:(lia) : Z.to_nat (dsuLeafCount dsu) - 1 + 2 = Z.to_nat (dsuLeafCount dsu) + 1) in h2. lia.
 Qed.
+
+Lemma unitePreservesLength (dsu : list Slot) (a b : nat) : length (unite dsu a b) = length dsu.
+Proof.
+  unfold unite. case_decide as h1. { reflexivity. } case_decide as h2. { reflexivity. } case_decide as h3. { rewrite !pathCompressPreservesLength. reflexivity. }
+  destruct (nth _ _ _) as [m | m]. { rewrite !pathCompressPreservesLength. reflexivity. } destruct (nth _ _ _) as [n | n]. { rewrite !pathCompressPreservesLength. reflexivity. } case_decide as h4.
+  - unfold performMerge. rewrite !insert_length, !pathCompressPreservesLength. reflexivity.
+  - unfold performMerge. rewrite !insert_length, !pathCompressPreservesLength. reflexivity.
+Qed.
+
+Lemma unitePreservesNoIllegalIndices (dsu : list Slot) (a b : nat) (h : noIllegalIndices dsu) : noIllegalIndices (unite dsu a b).
+Proof.
+  unfold unite. case_decide as h1. { exact h. } case_decide as h2. { exact h. }
+  assert (gameover : noIllegalIndices
+  (pathCompress
+     (pathCompress dsu (length dsu) a (ancestor dsu (length dsu) a))
+     (length (pathCompress dsu (length dsu) a (ancestor dsu (length dsu) a)))
+     b
+     (ancestor
+        (pathCompress dsu (length dsu) a (ancestor dsu (length dsu) a))
+        (length
+           (pathCompress dsu (length dsu) a (ancestor dsu (length dsu) a))) b))).
+  { rewrite pathCompressPreservesLength at 1.
+    assert (step : noIllegalIndices (pathCompress dsu (length dsu) a (ancestor dsu (length dsu) a))).
+    { apply pathCompressPreservesNoIllegalIndices. { exact h. } { lia. } { apply ancestorLtLength; (assumption || lia). } }
+    apply pathCompressPreservesNoIllegalIndices. { exact step. } { rewrite pathCompressPreservesLength. lia. } { apply ancestorLtLength; [| rewrite pathCompressPreservesLength; lia]. exact step. } }
+  case_decide as heq. { exact gameover. }
+  remember (nth (ancestor dsu (length dsu) a)
+      (pathCompress
+         (pathCompress dsu (length dsu) a (ancestor dsu (length dsu) a))
+         (length
+            (pathCompress dsu (length dsu) a (ancestor dsu (length dsu) a)))
+         b
+         (ancestor
+            (pathCompress dsu (length dsu) a (ancestor dsu (length dsu) a))
+            (length
+               (pathCompress dsu (length dsu) a (ancestor dsu (length dsu) a)))
+            b)) (Ancestor Unit)) as A eqn:hA.
+  symmetry in hA. destruct A as [A | A]. { exact gameover. }
+  remember (nth
+      (ancestor
+         (pathCompress dsu (length dsu) a (ancestor dsu (length dsu) a))
+         (length
+            (pathCompress dsu (length dsu) a (ancestor dsu (length dsu) a)))
+         b)
+      (pathCompress
+         (pathCompress dsu (length dsu) a (ancestor dsu (length dsu) a))
+         (length
+            (pathCompress dsu (length dsu) a (ancestor dsu (length dsu) a)))
+         b
+         (ancestor
+            (pathCompress dsu (length dsu) a (ancestor dsu (length dsu) a))
+            (length
+               (pathCompress dsu (length dsu) a (ancestor dsu (length dsu) a)))
+            b)) (Ancestor Unit)) as B eqn:hB.
+  symmetry in hB. destruct B as [B | B]. { exact gameover. }
+  case_decide as h3; unfold performMerge.
+  - intros g j i. destruct (decide (g = ancestor (pathCompress dsu (length dsu) a (ancestor dsu (length dsu) a))
+       (length
+          (pathCompress dsu (length dsu) a (ancestor dsu (length dsu) a))) b)) as [hs | hs].
+    { rewrite <- hs, nth_lookup, list_lookup_insert in i.
+      - simpl in i. rewrite !insert_length, !pathCompressPreservesLength. injection i. intro ht. rewrite <- ht. apply ancestorLtLength; (assumption || lia).
+      - rewrite insert_length, hs, pathCompressPreservesLength, pathCompressPreservesLength. apply ancestorLtLength. { apply pathCompressPreservesNoIllegalIndices; try (assumption || lia). apply ancestorLtLength; try (assumption || lia). }
+        rewrite pathCompressPreservesLength. lia. }
+    rewrite nth_lookup, list_lookup_insert_ne in i; [| lia].
+    destruct (decide (g = ancestor dsu (length dsu) a)) as [ht | ht].
+    { rewrite ht, list_lookup_insert in i. { easy. } rewrite !pathCompressPreservesLength. apply ancestorLtLength; (assumption || lia). }
+    rewrite list_lookup_insert_ne, <- nth_lookup in i; [| lia].
+    rewrite !insert_length. exact (gameover _ _ i).
+  - intros g j i. destruct (decide (g = ancestor dsu (length dsu) a)) as [hs | hs].
+    { rewrite <- hs, nth_lookup, list_lookup_insert in i.
+      - simpl in i. rewrite !insert_length, pathCompressPreservesLength. injection i. intro ht. rewrite <- ht, <- hs. apply ancestorLtLength; try rewrite pathCompressPreservesLength; try (assumption || lia). apply pathCompressPreservesNoIllegalIndices; try (assumption || lia). rewrite hs. apply ancestorLtLength; (assumption || lia).
+      - rewrite !insert_length, !pathCompressPreservesLength, hs. apply ancestorLtLength; (assumption || lia). }
+    rewrite nth_lookup, list_lookup_insert_ne in i; [| lia].
+    destruct (decide (g = ancestor (pathCompress dsu (length dsu) a (ancestor dsu (length dsu) a))
+       (length
+          (pathCompress dsu (length dsu) a (ancestor dsu (length dsu) a))) b)) as [ht | ht].
+    { rewrite ht, list_lookup_insert in i. { easy. } rewrite !pathCompressPreservesLength. pose proof ancestorLtLength (pathCompress dsu (length dsu) a (ancestor dsu (length dsu) a)) as t. rewrite !pathCompressPreservesLength in t. apply t; [| lia]. apply pathCompressPreservesNoIllegalIndices; try (assumption || lia). apply ancestorLtLength; (assumption || lia). }
+    rewrite list_lookup_insert_ne, <- nth_lookup in i; [| lia].
+    rewrite !insert_length. exact (gameover _ _ i).
+Qed.
