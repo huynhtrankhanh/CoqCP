@@ -1330,3 +1330,31 @@ Proof.
     rewrite list_lookup_insert_ne, <- nth_lookup in i; [| lia].
     rewrite !insert_length. exact (gameover _ _ i).
 Qed.
+
+Lemma performMergePreservesWithoutCycles (dsu : list Slot) (a b : nat) (ha : a < length dsu) (hb : b < length dsu) (hD : a <> b) t1 t2 (h : noIllegalIndices dsu) (h1 : withoutCyclesN dsu (length dsu)) : withoutCyclesN (performMerge dsu t1 t2 a b) (length dsu).
+Proof.
+  unfold performMerge.
+  intros i j.
+Qed.
+
+Lemma unitePreservesWithoutCycles (dsu : list Slot) (a b : nat) (h : noIllegalIndices dsu) (h1 : withoutCyclesN dsu (length dsu)) : withoutCyclesN (unite dsu a b) (length dsu).
+Proof.
+  unfold unite. case_decide as a1. { exact h1. }
+  case_decide as a2. { exact h1. }
+  assert (hR : withoutCyclesN
+  (pathCompress
+     (pathCompress dsu (length dsu) a (ancestor dsu (length dsu) a))
+     (length (pathCompress dsu (length dsu) a (ancestor dsu (length dsu) a)))
+     b
+     (ancestor
+        (pathCompress dsu (length dsu) a (ancestor dsu (length dsu) a))
+        (length
+           (pathCompress dsu (length dsu) a (ancestor dsu (length dsu) a))) b))
+  (length dsu)).
+  { pose proof pathCompressPreservesWithoutCycles _ h1 h (length dsu) a ltac:(lia) as step1. rewrite !pathCompressPreservesLength.
+    pose proof pathCompressPreservesWithoutCycles (pathCompress dsu (length dsu) a (ancestor dsu (length dsu) a)) ltac:(rewrite pathCompressPreservesLength; exact step1) ltac:(apply pathCompressPreservesNoIllegalIndices; try rewrite pathCompressPreservesLength; try (assumption || lia); apply ancestorLtLength; (assumption || lia)) (length dsu) b ltac:(rewrite pathCompressPreservesLength; lia) as step2. rewrite !pathCompressPreservesLength in step2. exact step2. }
+  case_decide as a3. { exact hR. }
+  remember (nth _ _ _) as g eqn:hg. symmetry in hg. destruct g as [g | g]. { exact hR. }
+  remember (nth (ancestor _ _ b) _ _) as g1 eqn:hg1. symmetry in hg1. destruct g1 as [g1 | g1]. { exact hR. }
+  case_decide as hs.
+Qed.
