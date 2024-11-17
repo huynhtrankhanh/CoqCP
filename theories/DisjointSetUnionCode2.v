@@ -1345,6 +1345,92 @@ Proof.
   rewrite dropWithinLoopLiftToWithinLoop. unfold retrieve at 1. rewrite -!bindAssoc pushDispatch2 unfoldInvoke_S_Retrieve. case_decide as hu; [| reflexivity]. exfalso. rewrite lengthConvert pathCompressPreservesLength in hu. lia.
 Qed.
 
+Lemma outOfBoundsInteraction1B (a b : Z) (hLA : Z.le 0 a) (hUA : Z.lt a 256) (hOOB : Z.le 100 b) (hUB : Z.lt b 256) (dsu : list Slot) (hL : length dsu = 100) (hL1 : Z.to_nat (dsuLeafCount dsu) = length dsu) (y1 : noIllegalIndices dsu) (y2 : withoutCyclesN dsu (length dsu)) : invokeContract (repeat 1%Z 20) (repeat 0%Z 20) 0%Z state state [a; b] 1 = Some ([], state).
+Proof.
+  destruct (decide (Z.le 100 a)) as [hy | hy].
+  { apply outOfBoundsInteraction1A; lia. }
+ unfold invokeContract. rewrite (ltac:(easy) : state (repeat 0%Z 20) = BlockchainContract _ _ _ _ _ _). unfold funcdef_0__main at 2. rewrite !leftIdentity. unfold retrieve at 1. rewrite <- !bindAssoc. pose proof pushDispatch2 (λ _ : varsfuncdef_0__main, false) (λ _ : varsfuncdef_0__main, 0%Z) (λ _ : varsfuncdef_0__main, repeat 0%Z 20) (Retrieve arrayIndex0 (arrayType arrayIndex0 environment0) arraydef_0__hasBeenInitialized 0) as step. autorewrite with combined_unfold in step. rewrite step. clear step. autorewrite with advance_program. case_decide as h; simpl in h; [| lia]. rewrite !leftIdentity. case_bool_decide as h1; cbv in h1; [| lia]. unfold store. pose proof pushDispatch2 (λ _ : varsfuncdef_0__main, false) (λ _ : varsfuncdef_0__main, 0%Z) (λ _ : varsfuncdef_0__main, repeat 0%Z 20) (Store arrayIndex0 (arrayType arrayIndex0 environment0) arraydef_0__hasBeenInitialized 0 (coerceInt 1 8)) as step. autorewrite with combined_unfold in *. rewrite <- !bindAssoc, step. clear step. autorewrite with advance_program. assert (hsimp : (λ _0 : arrayIndex0,
+  match
+  decide
+  (_0 =
+arraydef_0__hasBeenInitialized)
+with
+| left _1 =>
+    eq_rect_r
+  (λ _2 : arrayIndex0,
+  list
+  (arrayType
+  arrayIndex0
+  environment0
+  _2))
+  (@insert nat
+  (arrayType
+  arrayIndex0
+  environment0
+  arraydef_0__hasBeenInitialized)
+  (list
+  (arrayType
+  arrayIndex0
+  environment0
+  arraydef_0__hasBeenInitialized))
+  (@list_insert
+  (arrayType
+  arrayIndex0
+  environment0
+  arraydef_0__hasBeenInitialized))
+  (Z.to_nat Z0)
+  (coerceInt
+  (Zpos xH)
+  (Zpos
+  (xO
+  (xO
+  (xO
+  xH))))) (arrays
+  arrayIndex0
+  environment0
+  arraydef_0__hasBeenInitialized))
+  _1
+| right _ =>
+    arrays
+  arrayIndex0
+  environment0
+  _0
+end) = fun (x : arrayIndex0) => match x with | arraydef_0__hasBeenInitialized => [1%Z] | arraydef_0__dsu => repeat 0%Z 100 | arraydef_0__result => [0%Z] end). { apply functional_extensionality_dep. intro x. destruct x; cbv; reflexivity. }
+    case_decide as hw; simpl in hw; [| lia]. rewrite hsimp. clear hsimp. pose proof (fun x => initializeArray a b 100 x ltac:(lia) (repeat 0%Z 100) ltac:(easy)) as step. rewrite step. clear step. rewrite (ltac:(lia) : 100 - 100 = 0). rewrite (ltac:(easy) : take 0 _ = []). rewrite app_nil_l. rewrite !leftIdentity. unfold readByte. pose proof pushDispatch2 (λ _ : varsfuncdef_0__main, false) (λ _ : varsfuncdef_0__main, 0%Z) (λ _ : varsfuncdef_0__main, repeat 0%Z 20) (DoBasicEffect arrayIndex0 (arrayType arrayIndex0 environment0)
+  (ReadByte 0)) as step. autorewrite with combined_unfold in step. rewrite step. clear step. autorewrite with advance_program.  case_decide as h2; [| simpl in h2; lia]. pose proof pushDispatch2 (λ _ : varsfuncdef_0__main, false) (λ _ : varsfuncdef_0__main, 0%Z) (λ _ : varsfuncdef_0__main, repeat 0%Z 20) (DoBasicEffect arrayIndex0 (arrayType arrayIndex0 environment0) (ReadByte 1)) as step. autorewrite with combined_unfold in step. rewrite <- !bindAssoc, step. clear step. autorewrite with advance_program. rewrite !leftIdentity. rewrite (ltac:(easy) : (nth (Z.to_nat 0) [a; b] 0%Z) = a)  (ltac:(easy) : (nth (Z.to_nat 1) [a; b] 0%Z) = b). rewrite (ltac:(apply functional_extensionality_dep; intro x; destruct x; easy) : (update (update (λ _ : varsfuncdef_0__unite, 0%Z) vardef_0__unite_u a) vardef_0__unite_v b) = fun x => match x with | vardef_0__unite_u => a | vardef_0__unite_v => b | _ => 0%Z end).
+  case_decide as h3; [| simpl in h3; lia].
+  rewrite eliminateLift. unfold funcdef_0__unite.
+  unfold numberLocalGet at 1. rewrite -!bindAssoc pushNumberGet2 !leftIdentity eliminateLift -!bindAssoc.
+  assert (hR : repeat 255%Z 100 = convertToArray (repeat (Ancestor Unit) 100)). { reflexivity. } rewrite hR runAncestor; try (reflexivity || lia). { intros x y z. rewrite nth_repeat in z. easy. } { rewrite withoutCyclesNIffWithoutCyclesBool. reflexivity. }
+  unfold retrieve at 1. rewrite pushDispatch2 bindDispatch unfoldInvoke_S_Retrieve. case_decide as hv; [| reflexivity].
+  rewrite (ltac:(easy) : (nth_lt
+           [Z.of_nat
+              (ancestor (repeat (Ancestor Unit) 100)
+                 (length (repeat (Ancestor Unit) 100)) 
+                 (Z.to_nat a))] (Z.to_nat 0) hv) = Z.of_nat
+              (ancestor (repeat (Ancestor Unit) 100)
+                 (length (repeat (Ancestor Unit) 100)) 
+                 (Z.to_nat a))).
+  unfold numberLocalSet at 1. rewrite pushNumberSet2. unfold numberLocalGet at 1. rewrite pushNumberGet2 !leftIdentity (ltac:(easy) : (update
+                 (λ _0 : varsfuncdef_0__unite,
+                    match _0 with
+                    | vardef_0__unite_u => a
+                    | vardef_0__unite_v => b
+                    | vardef_0__unite_z => 0%Z
+                    end) vardef_0__unite_u
+                 (Z.of_nat
+                    (ancestor (repeat (Ancestor Unit) 100)
+                       (length (repeat (Ancestor Unit) 100)) 
+                       (Z.to_nat a))) vardef_0__unite_v) = b) eliminateLift -!bindAssoc.
+  unfold funcdef_0__ancestor. unfold numberLocalGet at 1. rewrite pushNumberGet2 pushNumberSet2 !leftIdentity loop_S !liftToWithinLoopBind -!bindAssoc dropWithinLoopLiftToWithinLoop. unfold numberLocalGet at 1. rewrite -!bindAssoc pushNumberGet2 (ltac:(easy) : (update (update (fun=> 0%Z) vardef_0__ancestor_vertex b)
+                    vardef_0__ancestor_work
+                    (update (fun=> 0%Z) vardef_0__ancestor_vertex b
+                       vardef_0__ancestor_vertex) vardef_0__ancestor_work) = b) !leftIdentity.
+  rewrite dropWithinLoopLiftToWithinLoop. unfold retrieve at 1. rewrite -!bindAssoc pushDispatch2. unfold coerceInt at 1.
+  rewrite Z.mod_small. { lia. }
+  rewrite bindDispatch unfoldInvoke_S_Retrieve. case_decide as hm; [| reflexivity]. exfalso. rewrite lengthConvert !pathCompressPreservesLength repeat_length in hm. lia.
+Qed.
+
 Lemma firstInteraction (a b : Z) (hLe1 : Z.le 0 a) (hLt1 : Z.lt a 100) (hLe2 : Z.le 0 b) (hLt2 : Z.lt b 100) : invokeContract (repeat 1%Z 20) (repeat 0%Z 20) 0%Z state state [a; b] 1 = Some ([a; b], stateAfterInteractions (fun x => match x with | arraydef_0__result => [0%Z] | arraydef_0__hasBeenInitialized => [1%Z] | arraydef_0__dsu => convertToArray (unite (repeat (Ancestor Unit) 100) (Z.to_nat a) (Z.to_nat b)) end) (dsuScore (unite (repeat (Ancestor Unit) 100) (Z.to_nat a) (Z.to_nat b)))).
 Proof.
   unfold invokeContract. rewrite (ltac:(easy) : state (repeat 0%Z 20) = BlockchainContract _ _ _ _ _ _). unfold funcdef_0__main at 2. rewrite !leftIdentity. unfold retrieve at 1. rewrite <- !bindAssoc. pose proof pushDispatch2 (λ _ : varsfuncdef_0__main, false) (λ _ : varsfuncdef_0__main, 0%Z) (λ _ : varsfuncdef_0__main, repeat 0%Z 20) (Retrieve arrayIndex0 (arrayType arrayIndex0 environment0) arraydef_0__hasBeenInitialized 0) as step. autorewrite with combined_unfold in step. rewrite step. clear step. autorewrite with advance_program. case_decide as h; simpl in h; [| lia]. rewrite !leftIdentity. case_bool_decide as h1; cbv in h1; [| lia]. unfold store. pose proof pushDispatch2 (λ _ : varsfuncdef_0__main, false) (λ _ : varsfuncdef_0__main, 0%Z) (λ _ : varsfuncdef_0__main, repeat 0%Z 20) (Store arrayIndex0 (arrayType arrayIndex0 environment0) arraydef_0__hasBeenInitialized 0 (coerceInt 1 8)) as step. autorewrite with combined_unfold in *. rewrite <- !bindAssoc, step. clear step. autorewrite with advance_program. assert (hsimp : (λ _0 : arrayIndex0,
