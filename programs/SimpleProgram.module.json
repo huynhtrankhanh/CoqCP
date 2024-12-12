@@ -1,0 +1,6 @@
+{
+  "type": "competitive",
+  "inputs": ["SimpleProgram.js", "IO/PrintInt64.js"],
+  "cppOutput": "../generated-cpp/SimpleProgram.sol",
+  "coqOutput": "../generated-coq/SimpleProgram.v"
+}
