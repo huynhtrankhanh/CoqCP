@@ -1,0 +1,6 @@
+{
+  "type": "blockchain",
+  "inputs": ["BuyLowSellHigh.js"],
+  "solidityOutput": "../generated-solidity/BuyLowSellHigh.sol",
+  "coqOutput": "../generated-coq/BuyLowSellHigh.v"
+}
