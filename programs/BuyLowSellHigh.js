@@ -55,9 +55,7 @@ procedure(
   },
   () => {
     set('currentIndex', get('index'))
-    if (retrieve('heapSize', 0)[0] == 0) {
-      ;('return')
-    }
+    if (retrieve('heapSize', 0)[0] != 0) {
     range(30, (i) => {
       // Calculate child indices
       set('leftChild', get('currentIndex') * 2 + 1)
@@ -98,6 +96,7 @@ procedure(
       store('heap', get('smallestIndex'), [get('temp')])
       set('currentIndex', get('smallestIndex'))
     })
+    }
   }
 )
 
@@ -128,9 +127,7 @@ procedure(
     temp: int64, // local temporary variable for swapping
   },
   () => {
-    if (retrieve('heapSize', 0)[0] == 0) {
-      ;('return')
-    }
+    if (retrieve('heapSize', 0)[0] != 0) {
     // Set index to the last element.
     set('index', retrieve('heapSize', 0)[0] - 1)
     // Swap the root with the last element.
@@ -141,6 +138,7 @@ procedure(
     store('heapSize', 0, [retrieve('heapSize', 0)[0] - 1])
     // Restore the heap property from the root.
     call('siftDown', { index: 0 })
+    }
   }
 )
 
