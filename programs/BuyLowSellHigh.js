@@ -154,8 +154,8 @@ procedure('main', { current: int32, sum: int64 }, () => {
         coerceInt32(retrieve(i * 4 + 2)) * coerceInt32(256) +
         coerceInt32(retrieve(i * 4 + 3))
     )
-    if (retrieve('heapSize', 0)[0] > 0) {
-      if (get('current') >= retrieve('heap', 0)[0]) {
+    if (retrieve('heapSize', 0)[0] != 0) {
+      if (!less(get('current'), retrieve('heap', 0)[0])) {
         set(
           'sum',
           get('sum') + coerceInt64(set('current') - retrieve('heap', 0)[0])
