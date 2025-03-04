@@ -33,7 +33,7 @@ procedure(
         )
       ) {
         set('temp', retrieve('heap', coerceInt64(get('currentIndex')))[0])
-        store('heap', get('currentIndex'), [
+        store('heap', coerceInt64(get('currentIndex')), [
           retrieve('heap', coerceInt64(get('parentIndex')))[0],
         ])
         store('heap', coerceInt64(get('parentIndex')), [get('temp')])
@@ -112,7 +112,7 @@ procedure(
   },
   () => {
     // Place new value at the end of the heap.
-    store('heap', retrieve('heapSize', 0)[0], [get('value')])
+    store('heap', coerceInt64(retrieve('heapSize', 0)[0]), [get('value')])
     // Increase the heap size.
     store('heapSize', 0, [retrieve('heapSize', 0)[0] + coerceInt32(1)])
     // Compute the index of the newly inserted element.
@@ -126,8 +126,8 @@ procedure(
 procedure(
   'pop',
   {
-    index: int64, // local variable for index computations
-    temp: int64, // local temporary variable for swapping
+    index: int32, // local variable for index computations
+    temp: int32, // local temporary variable for swapping
   },
   () => {
     if (retrieve('heapSize', 0)[0] != coerceInt32(0)) {
@@ -154,7 +154,7 @@ procedure('main', { current: int32, sum: int64 }, () => {
         coerceInt32(retrieve(i * 4 + 2)) * coerceInt32(256) +
         coerceInt32(retrieve(i * 4 + 3))
     )
-    if (retrieve('heapSize', 0)[0] != 0) {
+    if (retrieve('heapSize', 0)[0] != coerceInt32(0)) {
       if (!less(get('current'), retrieve('heap', 0)[0])) {
         set(
           'sum',
