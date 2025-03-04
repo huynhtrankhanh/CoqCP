@@ -146,7 +146,7 @@ procedure(
 )
 
 procedure('main', { current: int32, sum: int64 }, () => {
-  range(communicationSize() / 4, (i) => {
+  range(divide(communicationSize(), 4), (i) => {
     set(
       'current',
       coerceInt32(retrieve(i * 4)) * coerceInt32(16777216) +
