@@ -158,7 +158,7 @@ procedure('main', { current: int32, sum: int64 }, () => {
       if (!less(get('current'), retrieve('heap', 0)[0])) {
         set(
           'sum',
-          get('sum') + coerceInt64(set('current') - retrieve('heap', 0)[0])
+          get('sum') + coerceInt64(get('current') - retrieve('heap', 0)[0])
         )
         call('pop', {})
         call('insert', { value: get('current') })
