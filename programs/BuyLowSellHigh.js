@@ -1,27 +1,27 @@
 environment({
   // Global heap array (adjust capacity as needed)
-  heap: array([int64], 100000),
+  heap: array([int32], 100000),
   // Global heap size tracker (number of elements currently in the heap)
-  heapSize: array([int64], 1),
+  heapSize: array([int32], 1),
 })
 
 // siftUp moves the element at the given index upward to restore the heap property.
 procedure(
   'siftUp',
   {
-    index: int64, // parameter: starting index
-    currentIndex: int64, // local variable for current index
-    parentIndex: int64, // local variable for parent's index
-    temp: int64, // local temporary variable for swapping
+    index: int32, // parameter: starting index
+    currentIndex: int32, // local variable for current index
+    parentIndex: int32, // local variable for parent's index
+    temp: int32, // local temporary variable for swapping
   },
   () => {
     set('currentIndex', get('index'))
     range(30, (i) => {
-      if (get('currentIndex') == 0) {
+      if (get('currentIndex') == coerceInt32(0)) {
         ;('break')
       }
       // Compute parent index as (currentIndex - 1) / 2 (using unsigned division)
-      set('parentIndex', divide(get('currentIndex') - 1, 2))
+      set('parentIndex', divide(get('currentIndex') - coerceInt32(1), coerceInt32(2)))
       // If the current element is less than its parent, swap them.
       if (
         less(
@@ -46,20 +46,20 @@ procedure(
 procedure(
   'siftDown',
   {
-    index: int64, // parameter: starting index
-    currentIndex: int64, // local variable for current index
-    leftChild: int64, // local variable for left child index
-    rightChild: int64, // local variable for right child index
-    smallestIndex: int64, // local variable to track the smallest among current and children
-    temp: int64, // local temporary variable for swapping
+    index: int32, // parameter: starting index
+    currentIndex: int32, // local variable for current index
+    leftChild: int32, // local variable for left child index
+    rightChild: int32, // local variable for right child index
+    smallestIndex: int32, // local variable to track the smallest among current and children
+    temp: int32, // local temporary variable for swapping
   },
   () => {
     set('currentIndex', get('index'))
-    if (retrieve('heapSize', 0)[0] != 0) {
+    if (retrieve('heapSize', 0)[0] != coerceInt32(0)) {
       range(30, (i) => {
         // Calculate child indices
-        set('leftChild', get('currentIndex') * 2 + 1)
-        set('rightChild', get('currentIndex') * 2 + 2)
+        set('leftChild', get('currentIndex') * coerceInt32(2) + coerceInt32(1))
+        set('rightChild', get('currentIndex') * coerceInt32(2) + coerceInt32(2))
         // Assume current index is the smallest.
         set('smallestIndex', get('currentIndex'))
         // Check left child.
@@ -104,16 +104,16 @@ procedure(
 procedure(
   'insert',
   {
-    value: int64, // parameter: the value to insert
-    index: int64, // local variable for index where value is inserted
+    value: int32, // parameter: the value to insert
+    index: int32, // local variable for index where value is inserted
   },
   () => {
     // Place new value at the end of the heap.
     store('heap', retrieve('heapSize', 0)[0], [get('value')])
     // Increase the heap size.
-    store('heapSize', 0, [retrieve('heapSize', 0)[0] + 1])
+    store('heapSize', 0, [retrieve('heapSize', 0)[0] + coerceInt32(1)])
     // Compute the index of the newly inserted element.
-    set('index', retrieve('heapSize', 0)[0] - 1)
+    set('index', retrieve('heapSize', 0)[0] - coerceInt32(1))
     // Restore the heap property.
     call('siftUp', { index: get('index') })
   }
@@ -127,19 +127,35 @@ procedure(
     temp: int64, // local temporary variable for swapping
   },
   () => {
-    if (retrieve('heapSize', 0)[0] != 0) {
+    if (retrieve('heapSize', 0)[0] != coerceInt32(0)) {
       // Set index to the last element.
-      set('index', retrieve('heapSize', 0)[0] - 1)
+      set('index', retrieve('heapSize', 0)[0] - coerceInt32(1))
       // Swap the root with the last element.
       set('temp', retrieve('heap', 0)[0])
       store('heap', 0, [retrieve('heap', get('index'))[0]])
       store('heap', get('index'), [get('temp')])
       // Decrement the heap size.
-      store('heapSize', 0, [retrieve('heapSize', 0)[0] - 1])
+      store('heapSize', 0, [retrieve('heapSize', 0)[0] - coerceInt32(1)])
       // Restore the heap property from the root.
-      call('siftDown', { index: 0 })
+      call('siftDown', { index: coerceInt32(0) })
     }
   }
 )
 
-procedure('main', {}, () => {})
+procedure('main', { current: int32, sum: int64 }, () => {
+  range(communicationSize() / 4, i => {
+    set('current', coerceInt32(retrieve(i * 4)) * coerceInt32(16777216) + coerceInt32(retrieve(i * 4 + 1)) * coerceInt32(65536) + coerceInt32(retrieve(i * 4 + 2)) * coerceInt32(256) + coerceInt32(retrieve(i * 4 + 3)))
+    if (retrieve('heapSize', 0)[0] > 0) {
+      if (get('current') >= retrieve('heap', 0)[0]) {
+        set('sum', get('sum') + coerceInt64(set('current') - retrieve('heap', 0)[0]));
+        call('pop', {});
+        call('insert', { value: get('current') });
+      }
+      call('insert', { value: get('current') });
+    }
+  })
+  store(0, coerceInt8(divide(get('current'), coerceInt32(16777216))));
+  store(1, coerceInt8(divide(get('current'), coerceInt32(65536)) % coerceInt32(256)));
+  store(2, coerceInt8(divide(get('current'), coerceInt32(256)) % coerceInt32(256)));
+  store(3, coerceInt8(get('current') % coerceInt32(256)));
+})
