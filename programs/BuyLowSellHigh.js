@@ -169,11 +169,15 @@ procedure('main', { current: int32, sum: int64 }, () => {
   store(0, coerceInt8(divide(get('sum'), coerceInt64(72057594037927936)))) // Byte 7 (most significant byte)
   store(
     1,
-    coerceInt8(divide(get('sum'), coerceInt64(281474976710656)) % coerceInt64(256))
+    coerceInt8(
+      divide(get('sum'), coerceInt64(281474976710656)) % coerceInt64(256)
+    )
   ) // Byte 6
   store(
     2,
-    coerceInt8(divide(get('sum'), coerceInt64(1099511627776)) % coerceInt64(256))
+    coerceInt8(
+      divide(get('sum'), coerceInt64(1099511627776)) % coerceInt64(256)
+    )
   ) // Byte 5
   store(
     3,
@@ -187,9 +191,6 @@ procedure('main', { current: int32, sum: int64 }, () => {
     5,
     coerceInt8(divide(get('sum'), coerceInt64(65536)) % coerceInt64(256))
   ) // Byte 2
-  store(
-    6,
-    coerceInt8(divide(get('sum'), coerceInt64(256)) % coerceInt64(256))
-  ) // Byte 1
+  store(6, coerceInt8(divide(get('sum'), coerceInt64(256)) % coerceInt64(256))) // Byte 1
   store(7, coerceInt8(get('sum') % coerceInt64(256))) // Byte 0 (least significant byte)
 })
