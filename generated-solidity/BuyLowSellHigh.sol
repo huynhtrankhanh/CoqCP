@@ -193,10 +193,14 @@ contract GeneratedCode {
             } else {
             }
         }
-        communicationSet(communication, uint64(0), uint8(divint32((local0), (uint32(uint64(16777216))))));
-        communicationSet(communication, uint64(1), uint8((divint32((local0), (uint32(uint64(65536)))) % uint32(uint64(256)))));
-        communicationSet(communication, uint64(2), uint8((divint32((local0), (uint32(uint64(256)))) % uint32(uint64(256)))));
-        communicationSet(communication, uint64(3), uint8((local0 % uint32(uint64(256)))));
+        communicationSet(communication, uint64(0), uint8(divint64((local1), (uint64(uint64(72057594037927936))))));
+        communicationSet(communication, uint64(1), uint8((divint64((local1), (uint64(uint64(281474976710656)))) % uint64(uint64(256)))));
+        communicationSet(communication, uint64(2), uint8((divint64((local1), (uint64(uint64(1099511627776)))) % uint64(uint64(256)))));
+        communicationSet(communication, uint64(3), uint8((divint64((local1), (uint64(uint64(4294967296)))) % uint64(uint64(256)))));
+        communicationSet(communication, uint64(4), uint8((divint64((local1), (uint64(uint64(16777216)))) % uint64(uint64(256)))));
+        communicationSet(communication, uint64(5), uint8((divint64((local1), (uint64(uint64(65536)))) % uint64(uint64(256)))));
+        communicationSet(communication, uint64(6), uint8((divint64((local1), (uint64(uint64(256)))) % uint64(uint64(256)))));
+        communicationSet(communication, uint64(7), uint8((local1 % uint64(uint64(256)))));
     } }
 
     fallback() external payable {
