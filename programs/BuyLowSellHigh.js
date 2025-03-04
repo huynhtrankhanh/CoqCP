@@ -28,15 +28,15 @@ procedure(
       // If the current element is less than its parent, swap them.
       if (
         less(
-          retrieve('heap', get('currentIndex'))[0],
-          retrieve('heap', get('parentIndex'))[0]
+          retrieve('heap', coerceInt64(get('currentIndex')))[0],
+          retrieve('heap', coerceInt64(get('parentIndex')))[0]
         )
       ) {
-        set('temp', retrieve('heap', get('currentIndex'))[0])
+        set('temp', retrieve('heap', coerceInt64(get('currentIndex')))[0])
         store('heap', get('currentIndex'), [
-          retrieve('heap', get('parentIndex'))[0],
+          retrieve('heap', coerceInt64(get('parentIndex')))[0],
         ])
-        store('heap', get('parentIndex'), [get('temp')])
+        store('heap', coerceInt64(get('parentIndex')), [get('temp')])
         set('currentIndex', get('parentIndex'))
       } else {
         ;('break')
@@ -69,8 +69,8 @@ procedure(
         if (less(get('leftChild'), retrieve('heapSize', 0)[0])) {
           if (
             less(
-              retrieve('heap', get('leftChild'))[0],
-              retrieve('heap', get('smallestIndex'))[0]
+              retrieve('heap', coerceInt64(get('leftChild')))[0],
+              retrieve('heap', coerceInt64(get('smallestIndex')))[0]
             )
           ) {
             set('smallestIndex', get('leftChild'))
@@ -80,8 +80,8 @@ procedure(
         if (less(get('rightChild'), retrieve('heapSize', 0)[0])) {
           if (
             less(
-              retrieve('heap', get('rightChild'))[0],
-              retrieve('heap', get('smallestIndex'))[0]
+              retrieve('heap', coerceInt64(get('rightChild')))[0],
+              retrieve('heap', coerceInt64(get('smallestIndex')))[0]
             )
           ) {
             set('smallestIndex', get('rightChild'))
@@ -92,11 +92,11 @@ procedure(
           ;('break')
         }
         // Otherwise, swap the current element with the smallest child.
-        set('temp', retrieve('heap', get('currentIndex'))[0])
-        store('heap', get('currentIndex'), [
-          retrieve('heap', get('smallestIndex'))[0],
+        set('temp', retrieve('heap', coerceInt64(get('currentIndex')))[0])
+        store('heap', coerceInt64(get('currentIndex')), [
+          retrieve('heap', coerceInt64(get('smallestIndex')))[0],
         ])
-        store('heap', get('smallestIndex'), [get('temp')])
+        store('heap', coerceInt64(get('smallestIndex')), [get('temp')])
         set('currentIndex', get('smallestIndex'))
       })
     }
@@ -135,8 +135,8 @@ procedure(
       set('index', retrieve('heapSize', 0)[0] - coerceInt32(1))
       // Swap the root with the last element.
       set('temp', retrieve('heap', 0)[0])
-      store('heap', 0, [retrieve('heap', get('index'))[0]])
-      store('heap', get('index'), [get('temp')])
+      store('heap', 0, [retrieve('heap', coerceInt64(get('index')))[0]])
+      store('heap', coerceInt64(get('index')), [get('temp')])
       // Decrement the heap size.
       store('heapSize', 0, [retrieve('heapSize', 0)[0] - coerceInt32(1)])
       // Restore the heap property from the root.
