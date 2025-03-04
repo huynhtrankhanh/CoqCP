@@ -87,7 +87,7 @@ contract GeneratedCode {
     }
 
     struct Tuple0 {
-        uint64 item0;
+        uint32 item0;
     }
 
     function arrayGet(Tuple0[] storage array, uint64 index) private returns (Tuple0 memory) {
@@ -107,18 +107,18 @@ contract GeneratedCode {
         for (uint i = 0; i < 100000; i++) environment0.push(Tuple0(0));
         for (uint i = 0; i < 1; i++) environment1.push(Tuple0(0));
     }
-    function procedure0(Tuple0[] storage environment0, Tuple0[] storage environment1, uint64 local0, uint64 local1, uint64 local2, uint64 local3, bytes memory communication) private { unchecked {
+    function procedure0(Tuple0[] storage environment0, Tuple0[] storage environment1, uint32 local0, uint32 local1, uint32 local2, uint32 local3, bytes memory communication) private { unchecked {
         local1 = local0;
         for (uint64 binder0 = 0; binder0 < uint64(30); binder0++) {
-            if ((local1 == uint64(0))) {
+            if ((local1 == uint32(uint64(0)))) {
                 break;
             } else {
             }
-            local2 = divint64(((local1 - uint64(1))), (uint64(2)));
-            if ((arrayGet(environment0, local1).item0 < arrayGet(environment0, local2).item0)) {
-                local3 = arrayGet(environment0, local1).item0;
-                arraySet(environment0, local1, Tuple0(arrayGet(environment0, local2).item0));
-                arraySet(environment0, local2, Tuple0(local3));
+            local2 = divint32(((local1 - uint32(uint64(1)))), (uint32(uint64(2))));
+            if ((arrayGet(environment0, uint64(local1)).item0 < arrayGet(environment0, uint64(local2)).item0)) {
+                local3 = arrayGet(environment0, uint64(local1)).item0;
+                arraySet(environment0, uint64(local1), Tuple0(arrayGet(environment0, uint64(local2)).item0));
+                arraySet(environment0, uint64(local2), Tuple0(local3));
                 local1 = local2;
             } else {
                 break;
@@ -126,22 +126,22 @@ contract GeneratedCode {
         }
     } }
 
-    function procedure1(Tuple0[] storage environment0, Tuple0[] storage environment1, uint64 local0, uint64 local1, uint64 local2, uint64 local3, uint64 local4, uint64 local5, bytes memory communication) private { unchecked {
+    function procedure1(Tuple0[] storage environment0, Tuple0[] storage environment1, uint32 local0, uint32 local1, uint32 local2, uint32 local3, uint32 local4, uint32 local5, bytes memory communication) private { unchecked {
         local1 = local0;
-        if ((arrayGet(environment1, uint64(0)).item0 != uint64(0))) {
+        if ((arrayGet(environment1, uint64(0)).item0 != uint32(uint64(0)))) {
             for (uint64 binder0 = 0; binder0 < uint64(30); binder0++) {
-                local2 = ((local1 * uint64(2)) + uint64(1));
-                local3 = ((local1 * uint64(2)) + uint64(2));
+                local2 = ((local1 * uint32(uint64(2))) + uint32(uint64(1)));
+                local3 = ((local1 * uint32(uint64(2))) + uint32(uint64(2)));
                 local4 = local1;
                 if ((local2 < arrayGet(environment1, uint64(0)).item0)) {
-                    if ((arrayGet(environment0, local2).item0 < arrayGet(environment0, local4).item0)) {
+                    if ((arrayGet(environment0, uint64(local2)).item0 < arrayGet(environment0, uint64(local4)).item0)) {
                         local4 = local2;
                     } else {
                     }
                 } else {
                 }
                 if ((local3 < arrayGet(environment1, uint64(0)).item0)) {
-                    if ((arrayGet(environment0, local3).item0 < arrayGet(environment0, local4).item0)) {
+                    if ((arrayGet(environment0, uint64(local3)).item0 < arrayGet(environment0, uint64(local4)).item0)) {
                         local4 = local3;
                     } else {
                     }
@@ -151,40 +151,57 @@ contract GeneratedCode {
                     break;
                 } else {
                 }
-                local5 = arrayGet(environment0, local1).item0;
-                arraySet(environment0, local1, Tuple0(arrayGet(environment0, local4).item0));
-                arraySet(environment0, local4, Tuple0(local5));
+                local5 = arrayGet(environment0, uint64(local1)).item0;
+                arraySet(environment0, uint64(local1), Tuple0(arrayGet(environment0, uint64(local4)).item0));
+                arraySet(environment0, uint64(local4), Tuple0(local5));
                 local1 = local4;
             }
         } else {
         }
     } }
 
-    function procedure2(Tuple0[] storage environment0, Tuple0[] storage environment1, uint64 local0, uint64 local1, bytes memory communication) private { unchecked {
-        arraySet(environment0, arrayGet(environment1, uint64(0)).item0, Tuple0(local0));
-        arraySet(environment1, uint64(0), Tuple0((arrayGet(environment1, uint64(0)).item0 + uint64(1))));
-        local1 = (arrayGet(environment1, uint64(0)).item0 - uint64(1));
+    function procedure2(Tuple0[] storage environment0, Tuple0[] storage environment1, uint32 local0, uint32 local1, bytes memory communication) private { unchecked {
+        arraySet(environment0, uint64(arrayGet(environment1, uint64(0)).item0), Tuple0(local0));
+        arraySet(environment1, uint64(0), Tuple0((arrayGet(environment1, uint64(0)).item0 + uint32(uint64(1)))));
+        local1 = (arrayGet(environment1, uint64(0)).item0 - uint32(uint64(1)));
         procedure0(environment0, environment1, local1, 0, 0, 0, communication);
     } }
 
-    function procedure3(Tuple0[] storage environment0, Tuple0[] storage environment1, uint64 local0, uint64 local1, bytes memory communication) private { unchecked {
-        if ((arrayGet(environment1, uint64(0)).item0 != uint64(0))) {
-            local0 = (arrayGet(environment1, uint64(0)).item0 - uint64(1));
+    function procedure3(Tuple0[] storage environment0, Tuple0[] storage environment1, uint32 local0, uint32 local1, bytes memory communication) private { unchecked {
+        if ((arrayGet(environment1, uint64(0)).item0 != uint32(uint64(0)))) {
+            local0 = (arrayGet(environment1, uint64(0)).item0 - uint32(uint64(1)));
             local1 = arrayGet(environment0, uint64(0)).item0;
-            arraySet(environment0, uint64(0), Tuple0(arrayGet(environment0, local0).item0));
-            arraySet(environment0, local0, Tuple0(local1));
-            arraySet(environment1, uint64(0), Tuple0((arrayGet(environment1, uint64(0)).item0 - uint64(1))));
-            procedure1(environment0, environment1, uint64(0), 0, 0, 0, 0, 0, communication);
+            arraySet(environment0, uint64(0), Tuple0(arrayGet(environment0, uint64(local0)).item0));
+            arraySet(environment0, uint64(local0), Tuple0(local1));
+            arraySet(environment1, uint64(0), Tuple0((arrayGet(environment1, uint64(0)).item0 - uint32(uint64(1)))));
+            procedure1(environment0, environment1, uint32(uint64(0)), 0, 0, 0, 0, 0, communication);
         } else {
         }
     } }
 
-    function procedure4(Tuple0[] storage environment0, Tuple0[] storage environment1, bytes memory communication) private { unchecked {
+    function procedure4(Tuple0[] storage environment0, Tuple0[] storage environment1, uint32 local0, uint64 local1, bytes memory communication) private { unchecked {
+        for (uint64 binder0 = 0; binder0 < divint256((msg.data.length), (uint64(4))); binder0++) {
+            local0 = ((((uint32(communicationGet(communication, (binder0 * uint64(4)))) * uint32(uint64(16777216))) + (uint32(communicationGet(communication, ((binder0 * uint64(4)) + uint64(1)))) * uint32(uint64(65536)))) + (uint32(communicationGet(communication, ((binder0 * uint64(4)) + uint64(2)))) * uint32(uint64(256)))) + uint32(communicationGet(communication, ((binder0 * uint64(4)) + uint64(3)))));
+            if ((arrayGet(environment1, uint64(0)).item0 != uint32(uint64(0)))) {
+                if ((!(local0 < arrayGet(environment0, uint64(0)).item0))) {
+                    local1 = (local1 + uint64((local0 - arrayGet(environment0, uint64(0)).item0)));
+                    procedure3(environment0, environment1, 0, 0, communication);
+                    procedure2(environment0, environment1, local0, 0, communication);
+                } else {
+                }
+                procedure2(environment0, environment1, local0, 0, communication);
+            } else {
+            }
+        }
+        communicationSet(communication, uint64(0), uint8(divint32((local0), (uint32(uint64(16777216))))));
+        communicationSet(communication, uint64(1), uint8((divint32((local0), (uint32(uint64(65536)))) % uint32(uint64(256)))));
+        communicationSet(communication, uint64(2), uint8((divint32((local0), (uint32(uint64(256)))) % uint32(uint64(256)))));
+        communicationSet(communication, uint64(3), uint8((local0 % uint32(uint64(256)))));
     } }
 
     fallback() external payable {
         bytes memory data = msg.data;
-        procedure4(environment0, environment1, data);
+        procedure4(environment0, environment1, 0, 0, data);
         assembly {
             return(add(data, 0x20), mload(data))
         }
