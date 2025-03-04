@@ -56,46 +56,46 @@ procedure(
   () => {
     set('currentIndex', get('index'))
     if (retrieve('heapSize', 0)[0] != 0) {
-    range(30, (i) => {
-      // Calculate child indices
-      set('leftChild', get('currentIndex') * 2 + 1)
-      set('rightChild', get('currentIndex') * 2 + 2)
-      // Assume current index is the smallest.
-      set('smallestIndex', get('currentIndex'))
-      // Check left child.
-      if (less(get('leftChild'), retrieve('heapSize', 0)[0])) {
-        if (
-          less(
-            retrieve('heap', get('leftChild'))[0],
-            retrieve('heap', get('smallestIndex'))[0]
-          )
-        ) {
-          set('smallestIndex', get('leftChild'))
+      range(30, (i) => {
+        // Calculate child indices
+        set('leftChild', get('currentIndex') * 2 + 1)
+        set('rightChild', get('currentIndex') * 2 + 2)
+        // Assume current index is the smallest.
+        set('smallestIndex', get('currentIndex'))
+        // Check left child.
+        if (less(get('leftChild'), retrieve('heapSize', 0)[0])) {
+          if (
+            less(
+              retrieve('heap', get('leftChild'))[0],
+              retrieve('heap', get('smallestIndex'))[0]
+            )
+          ) {
+            set('smallestIndex', get('leftChild'))
+          }
         }
-      }
-      // Check right child.
-      if (less(get('rightChild'), retrieve('heapSize', 0)[0])) {
-        if (
-          less(
-            retrieve('heap', get('rightChild'))[0],
-            retrieve('heap', get('smallestIndex'))[0]
-          )
-        ) {
-          set('smallestIndex', get('rightChild'))
+        // Check right child.
+        if (less(get('rightChild'), retrieve('heapSize', 0)[0])) {
+          if (
+            less(
+              retrieve('heap', get('rightChild'))[0],
+              retrieve('heap', get('smallestIndex'))[0]
+            )
+          ) {
+            set('smallestIndex', get('rightChild'))
+          }
         }
-      }
-      // If the smallest is the current element, then the heap property holds.
-      if (get('smallestIndex') == get('currentIndex')) {
-        ;('break')
-      }
-      // Otherwise, swap the current element with the smallest child.
-      set('temp', retrieve('heap', get('currentIndex'))[0])
-      store('heap', get('currentIndex'), [
-        retrieve('heap', get('smallestIndex'))[0],
-      ])
-      store('heap', get('smallestIndex'), [get('temp')])
-      set('currentIndex', get('smallestIndex'))
-    })
+        // If the smallest is the current element, then the heap property holds.
+        if (get('smallestIndex') == get('currentIndex')) {
+          ;('break')
+        }
+        // Otherwise, swap the current element with the smallest child.
+        set('temp', retrieve('heap', get('currentIndex'))[0])
+        store('heap', get('currentIndex'), [
+          retrieve('heap', get('smallestIndex'))[0],
+        ])
+        store('heap', get('smallestIndex'), [get('temp')])
+        set('currentIndex', get('smallestIndex'))
+      })
     }
   }
 )
@@ -128,16 +128,16 @@ procedure(
   },
   () => {
     if (retrieve('heapSize', 0)[0] != 0) {
-    // Set index to the last element.
-    set('index', retrieve('heapSize', 0)[0] - 1)
-    // Swap the root with the last element.
-    set('temp', retrieve('heap', 0)[0])
-    store('heap', 0, [retrieve('heap', get('index'))[0]])
-    store('heap', get('index'), [get('temp')])
-    // Decrement the heap size.
-    store('heapSize', 0, [retrieve('heapSize', 0)[0] - 1])
-    // Restore the heap property from the root.
-    call('siftDown', { index: 0 })
+      // Set index to the last element.
+      set('index', retrieve('heapSize', 0)[0] - 1)
+      // Swap the root with the last element.
+      set('temp', retrieve('heap', 0)[0])
+      store('heap', 0, [retrieve('heap', get('index'))[0]])
+      store('heap', get('index'), [get('temp')])
+      // Decrement the heap size.
+      store('heapSize', 0, [retrieve('heapSize', 0)[0] - 1])
+      // Restore the heap property from the root.
+      call('siftDown', { index: 0 })
     }
   }
 )
