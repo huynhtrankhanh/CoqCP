@@ -21,7 +21,10 @@ procedure(
         ;('break')
       }
       // Compute parent index as (currentIndex - 1) / 2 (using unsigned division)
-      set('parentIndex', divide(get('currentIndex') - coerceInt32(1), coerceInt32(2)))
+      set(
+        'parentIndex',
+        divide(get('currentIndex') - coerceInt32(1), coerceInt32(2))
+      )
       // If the current element is less than its parent, swap them.
       if (
         less(
@@ -143,19 +146,34 @@ procedure(
 )
 
 procedure('main', { current: int32, sum: int64 }, () => {
-  range(communicationSize() / 4, i => {
-    set('current', coerceInt32(retrieve(i * 4)) * coerceInt32(16777216) + coerceInt32(retrieve(i * 4 + 1)) * coerceInt32(65536) + coerceInt32(retrieve(i * 4 + 2)) * coerceInt32(256) + coerceInt32(retrieve(i * 4 + 3)))
+  range(communicationSize() / 4, (i) => {
+    set(
+      'current',
+      coerceInt32(retrieve(i * 4)) * coerceInt32(16777216) +
+        coerceInt32(retrieve(i * 4 + 1)) * coerceInt32(65536) +
+        coerceInt32(retrieve(i * 4 + 2)) * coerceInt32(256) +
+        coerceInt32(retrieve(i * 4 + 3))
+    )
     if (retrieve('heapSize', 0)[0] > 0) {
       if (get('current') >= retrieve('heap', 0)[0]) {
-        set('sum', get('sum') + coerceInt64(set('current') - retrieve('heap', 0)[0]));
-        call('pop', {});
-        call('insert', { value: get('current') });
+        set(
+          'sum',
+          get('sum') + coerceInt64(set('current') - retrieve('heap', 0)[0])
+        )
+        call('pop', {})
+        call('insert', { value: get('current') })
       }
-      call('insert', { value: get('current') });
+      call('insert', { value: get('current') })
     }
   })
-  store(0, coerceInt8(divide(get('current'), coerceInt32(16777216))));
-  store(1, coerceInt8(divide(get('current'), coerceInt32(65536)) % coerceInt32(256)));
-  store(2, coerceInt8(divide(get('current'), coerceInt32(256)) % coerceInt32(256)));
-  store(3, coerceInt8(get('current') % coerceInt32(256)));
+  store(0, coerceInt8(divide(get('current'), coerceInt32(16777216))))
+  store(
+    1,
+    coerceInt8(divide(get('current'), coerceInt32(65536)) % coerceInt32(256))
+  )
+  store(
+    2,
+    coerceInt8(divide(get('current'), coerceInt32(256)) % coerceInt32(256))
+  )
+  store(3, coerceInt8(get('current') % coerceInt32(256)))
 })
