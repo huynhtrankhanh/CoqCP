@@ -1,6 +1,6 @@
 {
   "type": "blockchain",
   "inputs": ["BubbleSort.js"],
-  "solidityOutput": "/dev/null",
-  "coqOutput": "/dev/null"
+  "solidityOutput": "BubbleSort.sol",
+  "coqOutput": "BubbleSort.v"
 }
