@@ -1,0 +1,6 @@
+{
+  "type": "blockchain",
+  "inputs": ["MaxElement.js"],
+  "solidityOutput": "MaxElement.sol",
+  "coqOutput": "MaxElement.v"
+}
