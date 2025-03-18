@@ -1331,10 +1331,74 @@ Proof.
     rewrite !insert_length. exact (gameover _ _ i).
 Qed.
 
-Lemma performMergePreservesWithoutCycles (dsu : list Slot) (a b : nat) (ha : a < length dsu) (hb : b < length dsu) (hD : a <> b) t1 t2 (h : noIllegalIndices dsu) (h1 : withoutCyclesN dsu (length dsu)) : withoutCyclesN (performMerge dsu t1 t2 a b) (length dsu).
+Lemma performMergePreservesWithoutCycles (dsu : list Slot) (a b : nat) (ha : a < length dsu) (hb : b < length dsu) (hD : a <> b) t1 t2 (h : noIllegalIndices dsu) (h1 : withoutCyclesN dsu (length dsu)) t3 (h3 : nth a dsu (Ancestor Unit) = Ancestor t3) t4 (h4 : nth b dsu (Ancestor Unit) = Ancestor t4) : withoutCyclesN (performMerge dsu t1 t2 a b) (length dsu).
 Proof.
   unfold performMerge.
   intros i j.
+  assert (als : noIllegalIndices (<[a:=ReferTo b]> (<[b:=Ancestor (Unite t2 t1)]> dsu))).
+  { intros yy rr hh.
+    rewrite !insert_length.
+    destruct (Nat.eq_dec yy a) as [ww | ww].
+    - rewrite ww in hh.
+      rewrite nth_lookup, list_lookup_insert in hh.
+      + simpl in hh.
+        injection hh.
+        intro als.
+        subst b.
+        pose proof ancestorLtLength dsu ltac:(assumption) (length dsu) i ltac:(lia). lia.
+      + rewrite insert_length. lia.
+    - rewrite nth_lookup in hh.
+      destruct (Nat.eq_dec yy b) as [ii | ii].
+      + subst yy.
+        rewrite (list_lookup_insert_ne _ _ _ _ (ltac:(lia) : a ≠ b)), list_lookup_insert in hh.
+        * simpl in hh. easy.
+        * rewrite list_lookup_insert in hh.
+          { simpl in hh. easy. }
+          { lia. }
+      + rewrite (list_lookup_insert_ne _ _ _ _ (Nat.neq_sym _ _ ww)), (list_lookup_insert_ne _ _ _ _ (Nat.neq_sym _ _ ii)), <- nth_lookup in hh.
+        exact (h _ _ hh). }
+  assert (hL : 2 <= length dsu).
+  { destruct dsu as [| head [| head' tail]]; simpl in *; lia. }
+  destruct (Nat.eq_dec (ancestor dsu (length dsu) i) a) as [hs | hs].
+  { assert (ya : validChainToAncestor (<[a:=ReferTo b]> (<[b:=Ancestor (Unite t2 t1)]> dsu)) (ancestorChain dsu (length dsu) i ++ [b])).
+    { pose proof validChainAncestorChain dsu (length dsu) i ltac:(assumption) ltac:(assumption) as [g1 [g2 g3]].
+      repeat split.
+      - intro ga.
+        assert (ayw : length (ancestorChain dsu (length dsu) i ++ [b]) = length ([] : list nat)).
+        { rewrite ga. reflexivity. }
+        rewrite app_length in ayw. simpl in ayw. lia.
+      - rewrite !insert_length, nth_lookup, lookup_app_l.
+        + rewrite <- nth_lookup. exact g2.
+        + pose proof (ltac:(lia) : 0 < length (ancestorChain dsu (length dsu) i) \/ length (ancestorChain dsu (length dsu) i) = 0) as [ds | ds]. { exact ds. }
+          pose proof nil_length_inv _ ds. tauto.
+      - intros ja k. rewrite app_length in k. simpl in k.
+        pose proof (ltac:(lia) : S ja < length (ancestorChain dsu (length dsu) i) \/ S ja = length (ancestorChain dsu (length dsu) i)) as [u | u].
+        + rewrite !nth_lookup, lookup_app_l, <- !nth_lookup; [| lia].
+           }
+    pose proof validChainAncestorLength (<[a:=ReferTo b]> (<[b:=Ancestor (Unite t2 t1)]> dsu)) (ancestorChain dsu (length dsu) i ++ [b]) als. admit. }
+  destruct (Nat.eq_dec (ancestor dsu (length dsu) i) b) as [ht | ht].
+  { pose proof validChainAncestorLength (<[a:=ReferTo b]> (<[b:=Ancestor (Unite t2 t1)]> dsu)) (ancestorChain dsu (length dsu) i) as nn.
+  rewrite !insert_length.
+    (* assert (www : forall p, validChain (<[a:=ReferTo b]> (<[b:=Ancestor (Unite t2 t1)]> dsu)) (ancestorChain dsu p i)).
+    { intro p. induction p as [| p IH].
+      { simpl. repeat split; try easy.
+        - simpl. rewrite !insert_length. exact j.
+        - intros aa aaa. simpl in aaa. lia. }
+      simpl.
+      remember (nth i dsu (Ancestor Unit)) as rt eqn:hrt.
+      destruct rt as [rt | rt].
+      - repeat split; try easy.
+        + simpl. rewrite !insert_length. exact j.
+        + intros aa aaa.
+          destruct aa as [| aa].
+          * simpl. simpl in aaa.
+            destruct IH as [a1 [a2 a3]].
+            
+      - repeat split; try easy.
+        + simpl. rewrite !insert_length. exact j.
+        + intros aa aaa. simpl in aaa. lia. } } *)}
+  
+
 Qed.
 
 Lemma unitePreservesWithoutCycles (dsu : list Slot) (a b : nat) (h : noIllegalIndices dsu) (h1 : withoutCyclesN dsu (length dsu)) : withoutCyclesN (unite dsu a b) (length dsu).
