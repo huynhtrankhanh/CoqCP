@@ -1468,4 +1468,19 @@ Proof.
      (ancestor dsu (length dsu) a) ltac:(rewrite !pathCompressPreservesLength,!pathCompressPreservesAncestorLength; try (assumption || lia); apply ancestorLtLength; (assumption || lia)) ltac:(rewrite !pathCompressPreservesLength; apply ancestorLtLength; (assumption || lia)) ltac:(rewrite !pathCompressPreservesLength,!pathCompressPreservesAncestorLength in *; try (assumption || lia)) g1 g ltac:(apply pathCompressPreservesNoIllegalIndices; (try apply pathCompressPreservesNoIllegalIndices); (try rewrite !pathCompressPreservesLength); (try lia); (try assumption); [| rewrite pathCompressPreservesAncestorLength; try (assumption || lia)]; apply ancestorLtLength; (assumption || lia)) ltac:(pose proof pathCompressPreservesWithoutCycles (pathCompress dsu (length dsu) a (ancestor dsu (length dsu) a)) as kw; rewrite !pathCompressPreservesLength in kw; rewrite !pathCompressPreservesLength; apply kw; (try lia); (try apply pathCompressPreservesNoIllegalIndices); (try apply pathCompressPreservesWithoutCycles); (try assumption); (try lia); apply ancestorLtLength; (assumption || lia)) as ii.
      rewrite !pathCompressPreservesLength in *.
      exact (ii g1 hg1 g hg).
+  - pose proof performMergePreservesWithoutCycles (pathCompress
+        (pathCompress dsu (length dsu) a (ancestor dsu (length dsu) a))
+        (length
+           (pathCompress dsu (length dsu) a (ancestor dsu (length dsu) a))) b
+        (ancestor
+           (pathCompress dsu (length dsu) a (ancestor dsu (length dsu) a))
+           (length
+              (pathCompress dsu (length dsu) a (ancestor dsu (length dsu) a)))
+           b)) (ancestor dsu (length dsu) a)
+     (ancestor
+        (pathCompress dsu (length dsu) a (ancestor dsu (length dsu) a))
+        (length
+           (pathCompress dsu (length dsu) a (ancestor dsu (length dsu) a))) b) ltac:(rewrite !pathCompressPreservesLength; apply ancestorLtLength; (assumption || lia)) ltac:(rewrite !pathCompressPreservesLength,!pathCompressPreservesAncestorLength; try (assumption || lia); apply ancestorLtLength; (assumption || lia)) ltac:(rewrite !pathCompressPreservesLength,!pathCompressPreservesAncestorLength in *; try (assumption || lia)) g g1 ltac:(apply pathCompressPreservesNoIllegalIndices; (try apply pathCompressPreservesNoIllegalIndices); (try rewrite !pathCompressPreservesLength); (try lia); (try assumption); [| rewrite pathCompressPreservesAncestorLength; try (assumption || lia)]; apply ancestorLtLength; (assumption || lia)) ltac:(pose proof pathCompressPreservesWithoutCycles (pathCompress dsu (length dsu) a (ancestor dsu (length dsu) a)) as kw; rewrite !pathCompressPreservesLength in kw; rewrite !pathCompressPreservesLength; apply kw; (try lia); (try apply pathCompressPreservesNoIllegalIndices); (try apply pathCompressPreservesWithoutCycles); (try assumption); (try lia); apply ancestorLtLength; (assumption || lia)) as ii.
+     rewrite !pathCompressPreservesLength in *.
+     exact (ii g hg g1 hg1).
 Qed.
