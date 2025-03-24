@@ -1502,9 +1502,34 @@ Proof.
   unfold modelScore. rewrite ((ltac:(easy) : forall a b, a :: b = [a] ++ b) (a, b)) map_app (ltac:(easy) : map (λ _0 : Z * Z, let (_1, _2) := _0 in (Z.to_nat _1, Z.to_nat _2))
   [(a, b)] = [(Z.to_nat a, Z.to_nat b)]) -(ltac:(easy) : forall a b, a :: b = [a] ++ b). rewrite (ltac:(simpl; reflexivity) : dsuFromInteractions _ (_ :: _) = _).
   case_decide as hv; rewrite repeat_length in hv.
-  - rewrite firstInteraction; try lia. admit.
+  - rewrite firstInteraction; try lia.
+    clear hN IH.
+    assert (ah : withoutCyclesN (repeat (Ancestor Unit) 100) 100).
+    { rewrite withoutCyclesNIffWithoutCyclesBool. easy. }
+    assert (jh : noIllegalIndices (repeat (Ancestor Unit) 100)).
+    { intros aa jj kk.
+      rewrite nth_repeat in kk. easy. }
+    pose proof unitePreservesWithoutCycles (repeat (Ancestor Unit) 100) (Z.to_nat a) (Z.to_nat b) jh ltac:(rewrite repeat_length; exact ah) as st1.
+    rewrite repeat_length in st1.
+    pose proof unitePreservesNoIllegalIndices (repeat (Ancestor Unit) 100) (Z.to_nat a) (Z.to_nat b) jh as st2.
+    clear ah jh.
+    remember (unite (repeat (Ancestor Unit) 100) (Z.to_nat a) (Z.to_nat b)) as dsu eqn:w.
+    assert (hL : length dsu = 100).
+    { rewrite w. rewrite unitePreservesLength. easy. }
+    clear w h1 h2 h3 h4 hv a b.
+    induction tail as [| head tail IH].
+    + easy.
+    + destruct head as [a b]. simpl.
+      case_decide as hv.
+      * admit.
+      * destruct (ltac:(lia) : Z.le 100 a \/ Z.le 100 b) as [h5 | h5].
+        { rewrite (ltac:(easy) : [1%Z; 1%Z; 1%Z; 1%Z; 1%Z; 1%Z; 1%Z; 1%Z; 1%Z; 1%Z; 1%Z; 1%Z; 1%Z; 1%Z;
+     1%Z; 1%Z; 1%Z; 1%Z; 1%Z; 1%Z]
+ = repeat 1%Z 20) (ltac:(easy) : [0%Z; 0%Z; 0%Z; 0%Z; 0%Z; 0%Z; 0%Z; 0%Z; 0%Z; 0%Z; 0%Z; 0%Z; 0%Z; 0%Z;
+     0%Z; 0%Z; 0%Z; 0%Z; 0%Z; 0%Z] = repeat 0%Z 20).
+          pose proof outOfBoundsInteractionNA. }
+    admit.
   - destruct (ltac:(lia) : Z.le 100 a \/ Z.le 100 b) as [h5 | h5].
     + rewrite outOfBoundsInteraction1A; try assumption. apply IH. intros m1 m2 m3. apply hN. right. exact m3.
     + rewrite outOfBoundsInteraction1B; try assumption. apply IH. intros m1 m2 m3. apply hN. right. exact m3.
-  (* can't directly do induction here, must use an auxiliary lemma *)
 Admitted.
