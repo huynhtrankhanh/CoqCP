@@ -1235,6 +1235,26 @@ Proof.
   apply functional_extensionality_dep. intro x. unfold update. unfold stateAfterInteractions. repeat case_decide; easy.
 Qed.
 
+Lemma outOfBoundsInteractionNAC (a b : Z) (hOOB : Z.le 100 a) (hUB : Z.lt a 256) (dsu : list Slot) (hL : length dsu = 100) : invokeContract (repeat 1%Z 20) (repeat 0%Z 20) 0%Z (stateAfterInteractions (fun x => match x with | arraydef_0__result => [0%Z] | arraydef_0__hasBeenInitialized => [1%Z] | arraydef_0__dsu => convertToArray dsu end) (dsuScore dsu)) (stateAfterInteractions (fun x => match x with | arraydef_0__result => [0%Z] | arraydef_0__hasBeenInitialized => [1%Z] | arraydef_0__dsu => convertToArray dsu end) (dsuScore dsu)) [a; b] 1 = Some ([], (stateAfterInteractions (fun x => match x with | arraydef_0__result => [0%Z] | arraydef_0__hasBeenInitialized => [1%Z] | arraydef_0__dsu => convertToArray dsu end) (dsuScore dsu))).
+Proof.
+  unfold invokeContract. rewrite (ltac:(easy) : stateAfterInteractions _ _ (repeat 0%Z 20) = BlockchainContract _ _ _ _ _ _). unfold funcdef_0__main at 2. rewrite !leftIdentity. unfold retrieve at 1. rewrite <- !bindAssoc. pose proof pushDispatch2 (λ _ : varsfuncdef_0__main, false) (λ _ : varsfuncdef_0__main, 0%Z) (λ _ : varsfuncdef_0__main, repeat 0%Z 20) (Retrieve arrayIndex0 (arrayType arrayIndex0 environment0) arraydef_0__hasBeenInitialized 0) as step. autorewrite with combined_unfold in step. rewrite step. clear step. autorewrite with advance_program. case_decide as h; simpl in h; [| lia]. rewrite !leftIdentity.
+  unfold readByte at 1. rewrite pushDispatch2 bindDispatch unfoldInvoke_S_ReadByte. case_decide as hs; [| simpl in hs; lia]. clear hs.
+  rewrite !leftIdentity.
+  unfold readByte at 1. rewrite bindDispatch pushDispatch2 unfoldInvoke_S_ReadByte. case_decide as hs; [| simpl in hs; lia]. rewrite !leftIdentity.
+  assert (variableList : (update
+              (update (fun=> 0%Z) vardef_0__unite_u
+                 (nth (Z.to_nat 0) [a; b] 0%Z)) vardef_0__unite_v
+              (nth (Z.to_nat 1) [a; b] 0%Z)) = fun x => match x with | vardef_0__unite_u => a | vardef_0__unite_v => b | _ => 0%Z end).
+  { apply functional_extensionality_dep. intro x. destruct x; easy. } rewrite variableList. clear variableList.
+  rewrite eliminateLift. unfold funcdef_0__unite. unfold numberLocalGet at 1. rewrite -!bindAssoc pushNumberGet2 !leftIdentity eliminateLift. unfold funcdef_0__ancestor at 1. unfold numberLocalGet at 1. rewrite pushNumberGet2 pushNumberSet2 !leftIdentity loop_S !liftToWithinLoopBind -!bindAssoc dropWithinLoopLiftToWithinLoop. unfold numberLocalGet at 1. rewrite -!bindAssoc pushNumberGet2 (ltac:(easy) : (update (update (fun=> 0%Z) vardef_0__ancestor_vertex a)
+                    vardef_0__ancestor_work
+                    (update (fun=> 0%Z) vardef_0__ancestor_vertex a
+                       vardef_0__ancestor_vertex) vardef_0__ancestor_work) = a) !leftIdentity dropWithinLoopLiftToWithinLoop.
+  unfold retrieve at 1. rewrite -!bindAssoc pushDispatch2 bindDispatch unfoldInvoke_S_Retrieve.
+  case_decide as ht; [| reflexivity]. exfalso. rewrite lengthConvert hL in ht.
+  unfold coerceInt in ht. rewrite Z.mod_small in ht. { lia. } lia.
+Qed.
+
 Lemma outOfBoundsInteractionNA (a b : Z) (hOOB : Z.le 100 a) (hUB : Z.lt a 256) (dsu : list Slot) (hL : length dsu = 100) : invokeContract (repeat 1%Z 20) (repeat 0%Z 20) 0%Z state (stateAfterInteractions (fun x => match x with | arraydef_0__result => [0%Z] | arraydef_0__hasBeenInitialized => [1%Z] | arraydef_0__dsu => convertToArray dsu end) (dsuScore dsu)) [a; b] 1 = Some ([], state).
 Proof.
   unfold invokeContract. rewrite (ltac:(easy) : stateAfterInteractions _ _ (repeat 0%Z 20) = BlockchainContract _ _ _ _ _ _). unfold funcdef_0__main at 2. rewrite !leftIdentity. unfold retrieve at 1. rewrite <- !bindAssoc. pose proof pushDispatch2 (λ _ : varsfuncdef_0__main, false) (λ _ : varsfuncdef_0__main, 0%Z) (λ _ : varsfuncdef_0__main, repeat 0%Z 20) (Retrieve arrayIndex0 (arrayType arrayIndex0 environment0) arraydef_0__hasBeenInitialized 0) as step. autorewrite with combined_unfold in step. rewrite step. clear step. autorewrite with advance_program. case_decide as h; simpl in h; [| lia]. rewrite !leftIdentity.
@@ -1312,6 +1332,37 @@ end) = fun (x : arrayIndex0) => match x with | arraydef_0__hasBeenInitialized =>
            (update (fun=> 0%Z) vardef_0__ancestor_vertex a
               vardef_0__ancestor_vertex) vardef_0__ancestor_work) = a) in hs.
   simpl in *. unfold coerceInt in hs. rewrite Z.mod_small in hs. { lia. } lia.
+Qed.
+
+Lemma outOfBoundsInteractionNBC (a b : Z) (hLA : Z.le 0 a) (hUA : Z.lt a 256) (hOOB : Z.le 100 b) (hUB : Z.lt b 256) (dsu : list Slot) (hL : length dsu = 100) (hL1 : Z.to_nat (dsuLeafCount dsu) = length dsu) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) : invokeContract (repeat 1%Z 20) (repeat 0%Z 20) 0%Z (stateAfterInteractions (fun x => match x with | arraydef_0__result => [0%Z] | arraydef_0__hasBeenInitialized => [1%Z] | arraydef_0__dsu => convertToArray dsu end) (dsuScore dsu)) (stateAfterInteractions (fun x => match x with | arraydef_0__result => [0%Z] | arraydef_0__hasBeenInitialized => [1%Z] | arraydef_0__dsu => convertToArray dsu end) (dsuScore dsu)) [a; b] 1 = Some ([], (stateAfterInteractions (fun x => match x with | arraydef_0__result => [0%Z] | arraydef_0__hasBeenInitialized => [1%Z] | arraydef_0__dsu => convertToArray dsu end) (dsuScore dsu))).
+Proof.
+  destruct (decide (Z.le 100 a)) as [hy | hy].
+  { apply outOfBoundsInteractionNAC; assumption. }
+  unfold invokeContract. rewrite (ltac:(easy) : stateAfterInteractions _ _ (repeat 0%Z 20) = BlockchainContract _ _ _ _ _ _). unfold funcdef_0__main at 2. rewrite !leftIdentity. unfold retrieve at 1. rewrite <- !bindAssoc. pose proof pushDispatch2 (λ _ : varsfuncdef_0__main, false) (λ _ : varsfuncdef_0__main, 0%Z) (λ _ : varsfuncdef_0__main, repeat 0%Z 20) (Retrieve arrayIndex0 (arrayType arrayIndex0 environment0) arraydef_0__hasBeenInitialized 0) as step. autorewrite with combined_unfold in step. rewrite step. clear step. autorewrite with advance_program. case_decide as h; simpl in h; [| lia]. rewrite !leftIdentity.
+  unfold readByte at 1. rewrite pushDispatch2 bindDispatch unfoldInvoke_S_ReadByte. case_decide as hs; [| simpl in hs; lia]. clear hs.
+  rewrite !leftIdentity.
+  unfold readByte at 1. rewrite bindDispatch pushDispatch2 unfoldInvoke_S_ReadByte. case_decide as hs; [| simpl in hs; lia]. rewrite !leftIdentity.
+  assert (variableList : (update
+              (update (fun=> 0%Z) vardef_0__unite_u
+                 (nth (Z.to_nat 0) [a; b] 0%Z)) vardef_0__unite_v
+              (nth (Z.to_nat 1) [a; b] 0%Z)) = fun x => match x with | vardef_0__unite_u => a | vardef_0__unite_v => b | _ => 0%Z end).
+  { apply functional_extensionality_dep. intro x. destruct x; easy. } rewrite variableList. clear variableList.
+  rewrite eliminateLift. unfold funcdef_0__unite. unfold numberLocalGet at 1. rewrite -!bindAssoc pushNumberGet2 !leftIdentity eliminateLift -!bindAssoc runAncestor; try (assumption || lia). unfold retrieve at 1. rewrite pushDispatch2 bindDispatch unfoldInvoke_S_Retrieve.
+  case_decide as ht; [| simpl in ht; lia]. unfold numberLocalSet at 1. rewrite pushNumberSet2. unfold numberLocalGet at 1. rewrite pushNumberGet2 !leftIdentity eliminateLift. unfold funcdef_0__ancestor. rewrite (ltac:(easy) : (update
+           (λ _0 : varsfuncdef_0__unite,
+              match _0 with
+              | vardef_0__unite_u => a
+              | vardef_0__unite_v => b
+              | vardef_0__unite_z => 0%Z
+              end) vardef_0__unite_u
+           (nth_lt [Z.of_nat (ancestor dsu (length dsu) (Z.to_nat a))]
+              (Z.to_nat 0) ht) vardef_0__unite_v) = b).
+  unfold numberLocalGet at 1. rewrite pushNumberGet2 pushNumberSet2 !leftIdentity loop_S !liftToWithinLoopBind -!bindAssoc dropWithinLoopLiftToWithinLoop. unfold numberLocalGet at 1. rewrite -!bindAssoc pushNumberGet2 !leftIdentity (ltac:(easy) : (update (update (fun=> 0%Z) vardef_0__ancestor_vertex b)
+                    vardef_0__ancestor_work
+                    (update (fun=> 0%Z) vardef_0__ancestor_vertex b
+                       vardef_0__ancestor_vertex) vardef_0__ancestor_work) = b).
+  unfold coerceInt at 1. rewrite Z.mod_small. { lia. }
+  rewrite dropWithinLoopLiftToWithinLoop. unfold retrieve at 1. rewrite -!bindAssoc pushDispatch2 unfoldInvoke_S_Retrieve. case_decide as hu; [| reflexivity]. exfalso. rewrite lengthConvert pathCompressPreservesLength in hu. lia.
 Qed.
 
 Lemma outOfBoundsInteractionNB (a b : Z) (hLA : Z.le 0 a) (hUA : Z.lt a 256) (hOOB : Z.le 100 b) (hUB : Z.lt b 256) (dsu : list Slot) (hL : length dsu = 100) (hL1 : Z.to_nat (dsuLeafCount dsu) = length dsu) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) : invokeContract (repeat 1%Z 20) (repeat 0%Z 20) 0%Z state (stateAfterInteractions (fun x => match x with | arraydef_0__result => [0%Z] | arraydef_0__hasBeenInitialized => [1%Z] | arraydef_0__dsu => convertToArray dsu end) (dsuScore dsu)) [a; b] 1 = Some ([], state).
@@ -1527,7 +1578,7 @@ Proof.
      1%Z; 1%Z; 1%Z; 1%Z; 1%Z; 1%Z]
  = repeat 1%Z 20) (ltac:(easy) : [0%Z; 0%Z; 0%Z; 0%Z; 0%Z; 0%Z; 0%Z; 0%Z; 0%Z; 0%Z; 0%Z; 0%Z; 0%Z; 0%Z;
      0%Z; 0%Z; 0%Z; 0%Z; 0%Z; 0%Z] = repeat 0%Z 20).
-          pose proof outOfBoundsInteractionNA. }
+           }
     admit.
   - destruct (ltac:(lia) : Z.le 100 a \/ Z.le 100 b) as [h5 | h5].
     + rewrite outOfBoundsInteraction1A; try assumption. apply IH. intros m1 m2 m3. apply hN. right. exact m3.
