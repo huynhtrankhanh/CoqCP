@@ -1259,6 +1259,101 @@ Proof.
   - unfold performMerge. rewrite !insert_length, !pathCompressPreservesLength. reflexivity.
 Qed.
 
+Lemma unitePreservesLeafCount (dsu : list Slot) (hN : noIllegalIndices dsu) (a b : nat) : dsuLeafCount (unite dsu a b) = dsuLeafCount dsu.
+Proof.
+  unfold unite. case_decide as h1. { reflexivity. } case_decide as h2. { reflexivity. } case_decide as h3. { rewrite !pathCompressPreservesLength, !pathCompressPreservesLeafCount. reflexivity. }
+  remember (nth (ancestor dsu (length dsu) a) _ _) as ya eqn:yb.
+  destruct ya as [m | m]. { rewrite !pathCompressPreservesLength, !pathCompressPreservesLeafCount. reflexivity. } remember (nth (ancestor (pathCompress dsu (length dsu) a (ancestor dsu (length dsu) a))
+    (length (pathCompress dsu (length dsu) a (ancestor dsu (length dsu) a)))
+    b) _ _) as za eqn:zb. destruct za as [n | n]. { rewrite !pathCompressPreservesLength, !pathCompressPreservesLeafCount. reflexivity. } case_decide as h4.
+  - unfold performMerge.
+    remember (ancestor dsu (length dsu) a) as x eqn:hx.
+    assert (xL : x < length dsu).
+    { rewrite hx. apply ancestorLtLength. { exact hN. } lia. }
+    remember (ancestor (pathCompress dsu (length dsu) a x) (length (pathCompress dsu (length dsu) a x)) b) as y eqn:hy.
+    assert (yL : y < length dsu).
+    { rewrite hy. rewrite (ltac:(rewrite pathCompressPreservesLength; reflexivity): length dsu = (length (pathCompress dsu (length dsu) a x))) at 3. apply ancestorLtLength.
+      - apply pathCompressPreservesNoIllegalIndices. { assumption. } { lia. } { exact xL. }
+      - rewrite pathCompressPreservesLength. lia. }
+    assert (lp : dsuLeafCount dsu = dsuLeafCount (pathCompress (pathCompress dsu (length dsu) a x) (length dsu) b y)).
+    { rewrite !pathCompressPreservesLeafCount. reflexivity. }
+    rewrite lp, !pathCompressPreservesLength.
+    remember (pathCompress (pathCompress dsu (length dsu) a x) (length dsu) b y) as f eqn:hf.
+    assert (cr : length dsu = length f).
+    { rewrite hf, !pathCompressPreservesLength. reflexivity. }
+    destruct (ltac:(lia) : x < y \/ y < x) as [jj | jj].
+    + rewrite insert_take_drop, drop_insert_gt; try rewrite ?insert_length; try lia.
+      rewrite insert_take_drop, take_app, take_take, take_length, (ltac:(lia) : y `min` x = x), (ltac:(lia) : x `min` length f = x), (ltac:(easy) : Ancestor (Unite m n) :: drop (S x) f = [Ancestor (Unite m n)] ++ drop (S x) f), take_app; try lia. simpl.
+      assert (stp : take (y - x) [Ancestor (Unite m n)] = [Ancestor (Unite m n)]).
+      { rewrite (ltac:(lia) : y - x = S (y - x - 1)). simpl. rewrite take_nil. reflexivity. }
+      rewrite stp, (ltac:(easy) : ReferTo x :: drop (S y) f = [ReferTo x] ++ drop (S y) f).
+      rewrite (ListDecomposition.listDecomposition f x y jj ltac:(lia) (Ancestor Unit)) at 4. unfold dsuLeafCount.
+      rewrite !map_app, !list_sum_app, take_drop_commute, (ltac:(lia) : S x + (y - x - 1) = y). rewrite !pathCompressPreservesLength in yb, zb.
+      rewrite <- hf in yb, zb. rewrite <- yb, <- zb. simpl. rewrite (ltac:(lia) : y + 1 = S y). lia.
+    + rewrite insert_take_drop, drop_insert_le; try rewrite ?insert_length; try lia.
+      rewrite insert_take_drop, take_app, take_take, take_length, (ltac:(lia) : y `min` x = y), (ltac:(lia) : x `min` length f = x), (ltac:(easy) : Ancestor (Unite m n) :: drop (S x) f = [Ancestor (Unite m n)] ++ drop (S x) f), take_app; try lia. simpl.
+      assert (stp : take (y - x) [Ancestor (Unite m n)] = []).
+      { rewrite (ltac:(lia) : y - x = 0). simpl. reflexivity. }
+      rewrite stp, !app_nil_l, insert_take_drop, drop_drop, !take_drop_commute, (ltac:(lia) : S y + S (x - S y) = S x), (ltac:(lia) : S x + (y - x - 1) = S x), (ltac:(lia) : S y + (x - S y) = x); [| rewrite drop_length; lia].
+      rewrite (ltac:(intros; simpl; easy) : forall a b, a :: b = [a] ++ b), ((ltac:(intros; simpl; easy) : forall a b, a :: b = [a] ++ b) (Ancestor (Unite m n)) (drop (S x) f)).
+      rewrite (ListDecomposition.listDecomposition f y x jj ltac:(lia) (Ancestor Unit)) at 5. unfold dsuLeafCount.
+      rewrite !map_app, !list_sum_app. rewrite !pathCompressPreservesLength in yb, zb.
+      rewrite <- hf in yb, zb. rewrite <- yb, <- zb.
+      simpl. rewrite (ltac:(lia) : x + 1 = S x).
+      assert (ms : drop (S x) (take (S x) f) = []).
+      { assert (mt : length (drop (S x) (take (S x) f)) = 0).
+        { rewrite drop_length, take_length. lia. }
+        exact (nil_length_inv _ mt). }
+      rewrite ms. simpl.
+      lia.
+  - unfold performMerge.
+    remember (ancestor dsu (length dsu) a) as x eqn:hx.
+    assert (xL : x < length dsu).
+    { rewrite hx. apply ancestorLtLength. { exact hN. } lia. }
+    remember (ancestor (pathCompress dsu (length dsu) a x) (length (pathCompress dsu (length dsu) a x)) b) as y eqn:hy.
+    assert (yL : y < length dsu).
+    { rewrite hy. rewrite (ltac:(rewrite pathCompressPreservesLength; reflexivity): length dsu = (length (pathCompress dsu (length dsu) a x))) at 3. apply ancestorLtLength.
+      - apply pathCompressPreservesNoIllegalIndices. { assumption. } { lia. } { exact xL. }
+      - rewrite pathCompressPreservesLength. lia. }
+    assert (lp : dsuLeafCount dsu = dsuLeafCount (pathCompress (pathCompress dsu (length dsu) a x) (length dsu) b y)).
+    { rewrite !pathCompressPreservesLeafCount. reflexivity. }
+    rewrite lp, !pathCompressPreservesLength.
+    remember (pathCompress (pathCompress dsu (length dsu) a x) (length dsu) b y) as f eqn:hf.
+    assert (cr : length dsu = length f).
+    { rewrite hf, !pathCompressPreservesLength. reflexivity. }
+    destruct (ltac:(lia) : x < y \/ y < x) as [jj | jj].
+    + rewrite insert_take_drop, drop_insert_le; try rewrite ?insert_length; try lia.
+      rewrite insert_take_drop, take_app, take_take, take_length, (ltac:(lia) : x `min` y = x), (ltac:(lia) : y `min` length f = y), (ltac:(easy) : Ancestor (Unite n m) :: drop (S y) f = [Ancestor (Unite n m)] ++ drop (S y) f), take_app; try lia. simpl.
+      assert (stp : take (x - y) [Ancestor (Unite n m)] = []).
+      { rewrite (ltac:(lia) : x - y = 0). easy. }
+      rewrite stp, !app_nil_l, insert_take_drop, drop_drop, !take_drop_commute, (ltac:(lia) : S x + S (y - S x) = S y), (ltac:(lia) : S x + (y - S x) = y), (ltac:(lia) : S y + (x - y - 1) = S y); [| rewrite drop_length; lia].
+      rewrite (ltac:(intros; simpl; easy) : forall a b, a :: b = [a] ++ b), ((ltac:(intros; simpl; easy) : forall a b, a :: b = [a] ++ b) (Ancestor (Unite n m))).
+      rewrite (ListDecomposition.listDecomposition f x y jj ltac:(lia) (Ancestor Unit)) at 5. unfold dsuLeafCount.
+      rewrite !map_app, !list_sum_app. rewrite !pathCompressPreservesLength in yb, zb.
+      rewrite <- hf in yb, zb. rewrite <- yb, <- zb. simpl. rewrite (ltac:(lia) : y + 1 = S y).
+      assert (ms : drop (S y) (take (S y) f) = []).
+      { assert (mt : length (drop (S y) (take (S y) f)) = 0).
+        { rewrite drop_length, take_length. lia. }
+        exact (nil_length_inv _ mt). }
+      rewrite ms. simpl.
+      lia.
+    + rewrite insert_take_drop, drop_insert_gt; try rewrite ?insert_length; try lia.
+      rewrite insert_take_drop, take_app, take_take, take_length, (ltac:(lia) : x `min` y = y), (ltac:(lia) : y `min` length f = y), (ltac:(easy) : Ancestor (Unite n m) :: drop (S y) f = [Ancestor (Unite n m)] ++ drop (S y) f), take_app; try lia. simpl.
+      assert (stp : take (x - y) [Ancestor (Unite n m)] = [Ancestor (Unite n m)]).
+      { rewrite (ltac:(lia) : x - y = S (x - y - 1)). simpl. rewrite take_nil. reflexivity. }
+      rewrite stp, !take_drop_commute, (ltac:(lia) : S y + (x - y - 1) = x).
+      rewrite ((ltac:(intros; simpl; easy) : forall a b, a :: b = [a] ++ b) (ReferTo _)).
+      rewrite (ListDecomposition.listDecomposition f y x jj ltac:(lia) (Ancestor Unit)) at 4. unfold dsuLeafCount.
+      rewrite !map_app, !list_sum_app. rewrite !pathCompressPreservesLength in yb, zb.
+      rewrite <- hf in yb, zb. rewrite <- yb, <- zb.
+      simpl. rewrite (ltac:(lia) : x + 1 = S x).
+      assert (ms : drop (S x) (take (S x) f) = []).
+      { assert (mt : length (drop (S x) (take (S x) f)) = 0).
+        { rewrite drop_length, take_length. lia. }
+        exact (nil_length_inv _ mt). }
+      lia.
+Qed.
+
 Lemma unitePreservesNoIllegalIndices (dsu : list Slot) (a b : nat) (h : noIllegalIndices dsu) : noIllegalIndices (unite dsu a b).
 Proof.
   unfold unite. case_decide as h1. { exact h. } case_decide as h2. { exact h. }

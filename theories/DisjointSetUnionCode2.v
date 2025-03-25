@@ -1554,6 +1554,9 @@ Proof.
   [(a, b)] = [(Z.to_nat a, Z.to_nat b)]) -(ltac:(easy) : forall a b, a :: b = [a] ++ b). rewrite (ltac:(simpl; reflexivity) : dsuFromInteractions _ (_ :: _) = _).
   case_decide as hv; rewrite repeat_length in hv.
   - rewrite firstInteraction; try lia.
+    assert (mN : forall a b : Z, In (a, b) tail -> (0 <= a /\ a < 256 /\ 0 <= b /\ b < 256)%Z).
+    { intros t y p. apply hN.
+      - simpl. tauto. }
     clear hN IH.
     assert (ah : withoutCyclesN (repeat (Ancestor Unit) 100) 100).
     { rewrite withoutCyclesNIffWithoutCyclesBool. easy. }
@@ -1567,6 +1570,8 @@ Proof.
     remember (unite (repeat (Ancestor Unit) 100) (Z.to_nat a) (Z.to_nat b)) as dsu eqn:w.
     assert (hL : length dsu = 100).
     { rewrite w. rewrite unitePreservesLength. easy. }
+    assert (hC : dsuLeafCount dsu = 100%Z).
+    { rewrite w unitePreservesLeafCount. }
     clear w h1 h2 h3 h4 hv a b.
     induction tail as [| head tail IH].
     + easy.
@@ -1578,7 +1583,17 @@ Proof.
      1%Z; 1%Z; 1%Z; 1%Z; 1%Z; 1%Z]
  = repeat 1%Z 20) (ltac:(easy) : [0%Z; 0%Z; 0%Z; 0%Z; 0%Z; 0%Z; 0%Z; 0%Z; 0%Z; 0%Z; 0%Z; 0%Z; 0%Z; 0%Z;
      0%Z; 0%Z; 0%Z; 0%Z; 0%Z; 0%Z] = repeat 0%Z 20).
-           }
+          pose proof mN a b ltac:(simpl; tauto).
+          rewrite outOfBoundsInteractionNAC; try lia.
+          apply IH. intros t y p. apply mN. simpl. tauto. }
+        { rewrite (ltac:(easy) : [1%Z; 1%Z; 1%Z; 1%Z; 1%Z; 1%Z; 1%Z; 1%Z; 1%Z; 1%Z; 1%Z; 1%Z; 1%Z; 1%Z;
+     1%Z; 1%Z; 1%Z; 1%Z; 1%Z; 1%Z]
+ = repeat 1%Z 20) (ltac:(easy) : [0%Z; 0%Z; 0%Z; 0%Z; 0%Z; 0%Z; 0%Z; 0%Z; 0%Z; 0%Z; 0%Z; 0%Z; 0%Z; 0%Z;
+     0%Z; 0%Z; 0%Z; 0%Z; 0%Z; 0%Z] = repeat 0%Z 20).
+          pose proof mN a b ltac:(simpl; tauto).
+          rewrite outOfBoundsInteractionNBC; try (lia || assumption).
+          - 
+          - apply IH. intros t y p. apply mN. simpl. tauto. }
     admit.
   - destruct (ltac:(lia) : Z.le 100 a \/ Z.le 100 b) as [h5 | h5].
     + rewrite outOfBoundsInteraction1A; try assumption. apply IH. intros m1 m2 m3. apply hN. right. exact m3.
