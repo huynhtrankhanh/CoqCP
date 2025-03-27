@@ -1,6 +1,6 @@
 From stdpp Require Import numbers list.
 
-Fixpoint knapsack (l : nat * nat) (limit : nat) :=
+Fixpoint knapsack (l : list (nat * nat)) (limit : nat) :=
   match l with
   | [] => 0
   | (weight, value) :: tail =>
