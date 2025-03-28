@@ -80,13 +80,13 @@ procedure(
             get('b3')
         )
         set('limit_plus_1', get('limit') + coerceInt64(1))
-        set('product', multiply(get('N') + coerceInt64(1), get('limit_plus_1')))
+        set('product', (get('N') + coerceInt64(1)) * get('limit_plus_1'))
         if (less(coerceInt64(1000000), get('product'))) {
         } else {
           range(get('N'), (i_idx) => {
             set('i', get('i_idx') + coerceInt64(1))
             set('i_minus_1', get('i') - coerceInt64(1))
-            set('pos_weight', multiply(get('i_minus_1'), coerceInt64(4)))
+            set('pos_weight', get('i_minus_1') * coerceInt64(4))
             set(
               'w0',
               coerceInt64(retrieve(get('pos_weight'))) & coerceInt64(255)
@@ -115,8 +115,8 @@ procedure(
             )
             set(
               'pos_value',
-              multiply(coerceInt64(4), get('N')) +
-                multiply(get('i_minus_1'), coerceInt64(4))
+              coerceInt64(4) * get('N') +
+                get('i_minus_1') * coerceInt64(4)
             )
             set(
               'v0',
@@ -148,11 +148,11 @@ procedure(
               set('w', get('w'))
               set(
                 'current_idx',
-                multiply(get('i'), get('limit_plus_1')) + get('w')
+                get('i') * get('limit_plus_1') + get('w')
               )
               set(
                 'prev_idx',
-                multiply(get('i_minus_1'), get('limit_plus_1')) + get('w')
+                get('i_minus_1') * get('limit_plus_1') + get('w')
               )
               set('prev_val', retrieve('dp', get('prev_idx'))[0])
               if (less(get('w'), get('weight'))) {
@@ -161,7 +161,7 @@ procedure(
                 set('remaining_w', get('w') - get('weight'))
                 set(
                   'prev_remaining_idx',
-                  multiply(get('i_minus_1'), get('limit_plus_1')) +
+                  get('i_minus_1') * get('limit_plus_1') +
                     get('remaining_w')
                 )
                 set(
@@ -177,7 +177,7 @@ procedure(
               }
             })
           })
-          set('max_idx', multiply(get('N'), get('limit_plus_1')) + get('limit'))
+          set('max_idx', get('N') * get('limit_plus_1') + get('limit'))
           set('max_value', retrieve('dp', get('max_idx'))[0])
           if (!less(get('commSize'), coerceInt64(8))) {
             range(8, (j) => {
