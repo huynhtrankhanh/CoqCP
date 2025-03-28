@@ -115,8 +115,7 @@ procedure(
             )
             set(
               'pos_value',
-              coerceInt64(4) * get('N') +
-                get('i_minus_1') * coerceInt64(4)
+              coerceInt64(4) * get('N') + get('i_minus_1') * coerceInt64(4)
             )
             set(
               'v0',
@@ -146,14 +145,8 @@ procedure(
             )
             range(get('limit_plus_1'), (w) => {
               set('w', get('w'))
-              set(
-                'current_idx',
-                get('i') * get('limit_plus_1') + get('w')
-              )
-              set(
-                'prev_idx',
-                get('i_minus_1') * get('limit_plus_1') + get('w')
-              )
+              set('current_idx', get('i') * get('limit_plus_1') + get('w'))
+              set('prev_idx', get('i_minus_1') * get('limit_plus_1') + get('w'))
               set('prev_val', retrieve('dp', get('prev_idx'))[0])
               if (less(get('w'), get('weight'))) {
                 store('dp', get('current_idx'), [get('prev_val')])
@@ -161,8 +154,7 @@ procedure(
                 set('remaining_w', get('w') - get('weight'))
                 set(
                   'prev_remaining_idx',
-                  get('i_minus_1') * get('limit_plus_1') +
-                    get('remaining_w')
+                  get('i_minus_1') * get('limit_plus_1') + get('remaining_w')
                 )
                 set(
                   'prev_remaining_val',
