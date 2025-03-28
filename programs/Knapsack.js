@@ -55,7 +55,7 @@ procedure(
       if (get('remainder') != coerceInt64(0)) {
       } else {
         set('N', divide(get('temp'), coerceInt64(8)))
-        set('pos_limit', multiply(get('N'), coerceInt64(8)))
+        set('pos_limit', get('N') * coerceInt64(8))
         set('b0', coerceInt64(retrieve(get('pos_limit'))) & coerceInt64(255))
         set(
           'b1',
