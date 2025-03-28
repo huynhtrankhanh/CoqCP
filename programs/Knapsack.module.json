@@ -1,0 +1,6 @@
+{
+  "type": "blockchain",
+  "inputs": ["Knapsack.js"],
+  "solidityOutput": "../generated-solidity/Knapsack.sol",
+  "coqOutput": "../generated-coq/Knapsack.v"
+}
