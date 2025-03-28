@@ -49,12 +49,10 @@ procedure(
   () => {
     set('commSize', communicationSize())
     if (less(get('commSize'), coerceInt64(8))) {
-      ;('break')
     } else {
       set('temp', get('commSize') - coerceInt64(4))
       set('remainder', get('temp') % coerceInt64(8))
       if (get('remainder') != coerceInt64(0)) {
-        ;('break')
       } else {
         set('N', divide(get('temp'), coerceInt64(8)))
         set('pos_limit', multiply(get('N'), coerceInt64(8)))
@@ -84,7 +82,6 @@ procedure(
         set('limit_plus_1', get('limit') + coerceInt64(1))
         set('product', multiply(get('N') + coerceInt64(1), get('limit_plus_1')))
         if (less(coerceInt64(1000000), get('product'))) {
-          ;('break')
         } else {
           range(get('N'), (i_idx) => {
             set('i', get('i_idx') + coerceInt64(1))
