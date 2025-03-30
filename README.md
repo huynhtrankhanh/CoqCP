@@ -1,7 +1,3 @@
-:warning: **NOTE TO SELF:** formalize https://codeforces.com/problemset/problem/865/D and https://codeforces.com/problemset/problem/1974/E so I have something interesting to talk about on thesis defense day
-
-**STOP BEING LAZY**
-
 **You can't bluff a computer.**
 
 This is a repository of formally verified competitive programming code. Formal verification is very important.
