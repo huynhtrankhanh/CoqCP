@@ -106,7 +106,7 @@ contract GeneratedCode {
         for (uint i = 0; i < 1000000; i++) environment0.push(Tuple0(0));
     }
     function procedure0(Tuple0[] storage environment0, uint64 local0, uint64 local1, uint64 local2, uint64 local3, uint64 local4, uint64 local5, uint64 local6, uint64 local7, uint64 local8, uint64 local9, uint64 local10, uint64 local11, uint64 local12, uint64 local13, uint64 local14, uint64 local15, uint64 local16, uint64 local17, uint64 local18, uint64 local19, uint64 local20, uint64 local21, uint64 local22, uint64 local23, uint64 local24, uint64 local25, uint64 local26, uint64 local27, uint64 local28, uint64 local29, uint64 local30, uint64 local31, uint64 local32, uint64 local33, uint64 local34, uint64 local35, uint64 local36, uint64 local37, uint64 local38, uint64 local39, bytes memory communication) private { unchecked {
-        local0 = msg.data.length;
+        local0 = int64(msg.data.length);
         if ((local0 < uint64(uint64(8)))) {
         } else {
             local1 = (local0 - uint64(uint64(4)));
