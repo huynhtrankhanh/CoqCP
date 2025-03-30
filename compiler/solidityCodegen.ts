@@ -308,7 +308,7 @@ contract GeneratedCode {
               retrievedType
             )
           case 'communication area size':
-            return adorn(`int64(msg.data.length)`, 'int64')
+            return adorn(`uint64(msg.data.length)`, 'int64')
           case 'invoke':
             assert(inBlock.type === 'inside block')
             const currentIndent = indent.repeat(inBlock.indentLevel)
