@@ -180,7 +180,7 @@ contract GeneratedCode {
     } }
 
     function procedure4(Tuple0[] storage environment0, Tuple0[] storage environment1, uint32 local0, uint64 local1, bytes memory communication) private { unchecked {
-        for (uint64 binder0 = 0; binder0 < divint64((int64(msg.data.length)), (uint64(4))); binder0++) {
+        for (uint64 binder0 = 0; binder0 < divint64((uint64(msg.data.length)), (uint64(4))); binder0++) {
             local0 = ((((uint32(communicationGet(communication, (binder0 * uint64(4)))) * uint32(uint64(16777216))) + (uint32(communicationGet(communication, ((binder0 * uint64(4)) + uint64(1)))) * uint32(uint64(65536)))) + (uint32(communicationGet(communication, ((binder0 * uint64(4)) + uint64(2)))) * uint32(uint64(256)))) + uint32(communicationGet(communication, ((binder0 * uint64(4)) + uint64(3)))));
             if ((arrayGet(environment1, uint64(0)).item0 != uint32(uint64(0)))) {
                 if ((!(local0 < arrayGet(environment0, uint64(0)).item0))) {

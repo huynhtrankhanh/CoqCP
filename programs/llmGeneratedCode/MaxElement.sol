@@ -90,7 +90,7 @@ contract GeneratedCode {
     constructor() {
     }
     function procedure0(uint64 local0, uint64 local1, uint64 local2, uint64 local3, bytes memory communication) private { unchecked {
-        local0 = divint64((int64(msg.data.length)), (uint64(uint64(8))));
+        local0 = divint64((uint64(msg.data.length)), (uint64(uint64(8))));
         if ((local0 != uint64(uint64(0)))) {
             local1 = ((((((((uint64(communicationGet(communication, uint64(uint64(0)))) * uint64(uint64(72057594037927936))) + (uint64(communicationGet(communication, uint64(uint64(1)))) * uint64(uint64(281474976710656)))) + (uint64(communicationGet(communication, uint64(uint64(2)))) * uint64(uint64(1099511627776)))) + (uint64(communicationGet(communication, uint64(uint64(3)))) * uint64(uint64(4294967296)))) + (uint64(communicationGet(communication, uint64(uint64(4)))) * uint64(uint64(16777216)))) + (uint64(communicationGet(communication, uint64(uint64(5)))) * uint64(uint64(65536)))) + (uint64(communicationGet(communication, uint64(uint64(6)))) * uint64(uint64(256)))) + uint64(communicationGet(communication, uint64(uint64(7)))));
             for (uint64 binder0 = 0; binder0 < (local0 - uint64(uint64(1))); binder0++) {
