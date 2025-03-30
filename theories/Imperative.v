@@ -369,6 +369,19 @@ Proof. unfold update. case_decide; easy. Qed.
 Lemma lookupDifferent {indexType : Type} {A} (map : indexType -> A) (key key' : indexType) (hdiff : key <> key') (value : A) `{EqDecision indexType} : update map key value key' = map key'.
 Proof. unfold update. case_decide as f; [| easy]. exfalso. exact (hdiff ltac:(symmetry; exact f)). Qed.
 
+Lemma updateSame {indexType : Type} {A} (map : indexType -> A) (key : indexType) (value value' : A) `{EqDecision indexType} : update (update map key value) key value' = update map key value'.
+Proof.
+  unfold update. apply functional_extensionality_dep.
+  intro x. case_decide as r; reflexivity.
+Qed.
+
+Lemma updateDifferent {indexType : Type} {A} (map : indexType -> A) (key key' : indexType) (value value' : A) (hDiff : key <> key') `{EqDecision indexType} : update (update map key value) key' value' = update (update map key' value') key value.
+Proof.
+  unfold update. apply functional_extensionality_dep.
+  intro x. case_decide as r; case_decide as s; try easy.
+  rewrite s in r. exfalso. exact (hDiff r).
+Qed.
+
 Lemma eliminateLocalVariables {arrayIndex arrayType variableIndex} `{EqDecision variableIndex} (bools : variableIndex -> bool) (numbers : variableIndex -> Z) (addresses : variableIndex -> list Z) (action : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue unit) : Action (WithArrays arrayIndex arrayType) withArraysReturnValue unit.
 Proof.
   induction action as [x | effect continuation IH] in bools, numbers, addresses |- *;
