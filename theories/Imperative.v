@@ -363,6 +363,12 @@ Fixpoint loopString (s : string) {arrayIndex arrayType variableIndex} (body : Z 
 
 Definition update {indexType : Type} {A} (map : indexType -> A) (key : indexType) (value : A) `{EqDecision indexType} := fun x => if decide (x = key) then value else map x.
 
+Lemma lookupSame {indexType : Type} {A} (map : indexType -> A) (key : indexType) (value : A) `{EqDecision indexType} : update map key value key = value.
+Proof. unfold update. case_decide; easy. Qed.
+
+Lemma lookupDifferent {indexType : Type} {A} (map : indexType -> A) (key key' : indexType) (hdiff : key <> key') (value : A) `{EqDecision indexType} : update map key value key' = map key'.
+Proof. unfold update. case_decide as f; [| easy]. exfalso. exact (hdiff ltac:(symmetry; exact f)). Qed.
+
 Lemma eliminateLocalVariables {arrayIndex arrayType variableIndex} `{EqDecision variableIndex} (bools : variableIndex -> bool) (numbers : variableIndex -> Z) (addresses : variableIndex -> list Z) (action : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue unit) : Action (WithArrays arrayIndex arrayType) withArraysReturnValue unit.
 Proof.
   induction action as [x | effect continuation IH] in bools, numbers, addresses |- *;
