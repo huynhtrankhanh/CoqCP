@@ -29,5 +29,8 @@ theories/CountingBits.v
 theories/DisjointSetUnionCode.v
 theories/DisjointSetUnionCode2.v
 theories/DisjointSetUnionCode3.v
+theories/Knapsack.v
+theories/KnapsackCode.v
 -R generated-coq/ Generated
 generated-coq/DisjointSetUnion.v
+generated-coq/Knapsack.v
