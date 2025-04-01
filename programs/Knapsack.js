@@ -10,7 +10,7 @@ procedure('compute n', {}, () => {
 
 procedure('get weight', { index: int64 }, () => {})
 
-procedure('get value', { index: int64 }, {})
+procedure('get value', { index: int64 }, () => {})
 
 procedure(
   'main',
