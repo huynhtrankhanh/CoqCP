@@ -31,6 +31,7 @@ theories/DisjointSetUnionCode2.v
 theories/DisjointSetUnionCode3.v
 theories/Knapsack.v
 theories/KnapsackCode.v
+theories/KnapsackCode2.v
 -R generated-coq/ Generated
 generated-coq/DisjointSetUnion.v
 generated-coq/Knapsack.v
