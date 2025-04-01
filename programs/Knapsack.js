@@ -1,18 +1,16 @@
 environment({
   dp: array([int64], 1000000),
   message: array([int32], 1),
-  n: array([int64], 1)
+  n: array([int64], 1),
 })
 
 procedure('compute n', {}, () => {
-  store('n', 0, [divide(communicationSize() - 4, 8)]);
-});
+  store('n', 0, [divide(communicationSize() - 4, 8)])
+})
 
-procedure('get weight', { index: int64 }, () => {
-});
+procedure('get weight', { index: int64 }, () => {})
 
-procedure('get value', { index: int64 }, {
-});
+procedure('get value', { index: int64 }, {})
 
 procedure(
   'main',
