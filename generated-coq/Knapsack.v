@@ -3,13 +3,27 @@ From stdpp Require Import numbers list strings.
 Require Import Coq.Strings.Ascii.
 Open Scope type_scope.
 Inductive arrayIndex0 :=
-| arraydef_0__dp.
+| arraydef_0__dp
+| arraydef_0__message
+| arraydef_0__n.
 
-Definition environment0 : Environment arrayIndex0 := {| arrayType := fun name => match name with | arraydef_0__dp => Z end; arrays := fun name => match name with | arraydef_0__dp => repeat (0%Z) 1000000 end |}.
+Definition environment0 : Environment arrayIndex0 := {| arrayType := fun name => match name with | arraydef_0__dp => Z | arraydef_0__message => Z | arraydef_0__n => Z end; arrays := fun name => match name with | arraydef_0__dp => repeat (0%Z) 1000000 | arraydef_0__message => repeat (0%Z) 1 | arraydef_0__n => repeat (0%Z) 1 end |}.
 
 #[export] Instance arrayIndexEqualityDecidable0 : EqDecision arrayIndex0 := ltac:(solve_decision).
 #[export] Instance arrayTypeEqualityDecidable0 name : EqDecision (arrayType _ environment0 name).
 Proof. simpl. repeat destruct name. all: solve_decision. Defined.
+Inductive varsfuncdef_0__computen : Type :=.
+#[export] Instance variableIndexEqualityDecidablevarsfuncdef_0__computen : EqDecision varsfuncdef_0__computen := ltac:(solve_decision).
+Definition funcdef_0__computen (bools : varsfuncdef_0__computen -> bool) (numbers : varsfuncdef_0__computen -> Z) (addresses : varsfuncdef_0__computen -> list Z): Action (WithArrays _ (arrayType _ environment0)) withArraysReturnValue unit := eliminateLocalVariables bools numbers addresses (((Done _ _ _ 0%Z) >>= fun x => ((divIntUnsigned (subInt 64 (getCommunicationSize _ _ _) (Done _ _ _ 4%Z)) (Done _ _ _ 8%Z)) >>= fun tuple_element_0 => Done _ _ _ (tuple_element_0)) >>= fun y => store arrayIndex0 (arrayType _ environment0) varsfuncdef_0__computen (arraydef_0__n) x y) >>=
+fun _ => Done _ _ _ tt).
+Inductive varsfuncdef_0__getweight :=
+| vardef_0__getweight_index.
+#[export] Instance variableIndexEqualityDecidablevarsfuncdef_0__getweight : EqDecision varsfuncdef_0__getweight := ltac:(solve_decision).
+Definition funcdef_0__getweight (bools : varsfuncdef_0__getweight -> bool) (numbers : varsfuncdef_0__getweight -> Z) (addresses : varsfuncdef_0__getweight -> list Z): Action (WithArrays _ (arrayType _ environment0)) withArraysReturnValue unit := eliminateLocalVariables bools numbers addresses (Done _ _ _ tt).
+Inductive varsfuncdef_0__getvalue :=
+| vardef_0__getvalue_index.
+#[export] Instance variableIndexEqualityDecidablevarsfuncdef_0__getvalue : EqDecision varsfuncdef_0__getvalue := ltac:(solve_decision).
+Definition funcdef_0__getvalue (bools : varsfuncdef_0__getvalue -> bool) (numbers : varsfuncdef_0__getvalue -> Z) (addresses : varsfuncdef_0__getvalue -> list Z): Action (WithArrays _ (arrayType _ environment0)) withArraysReturnValue unit := eliminateLocalVariables bools numbers addresses (Done _ _ _ tt).
 Inductive varsfuncdef_0__main :=
 | vardef_0__main_commSize
 | vardef_0__main_temp

@@ -101,11 +101,39 @@ contract GeneratedCode {
     }
 
     Tuple0[] private environment0;
+    struct Tuple1 {
+        uint32 item0;
+    }
+
+    function arrayGet(Tuple1[] storage array, uint64 index) private returns (Tuple1 memory) {
+        if (index >= array.length) { assembly { revert(0, 0) } }
+        return array[index];
+    }
+
+    function arraySet(Tuple1[] storage array, uint64 index, Tuple1 memory value) private {
+        if (index >= array.length) { assembly { revert(0, 0) } }
+        array[index] = value;
+    }
+
+    Tuple1[] private environment1;
+    Tuple0[] private environment2;
 
     constructor() {
         for (uint i = 0; i < 1000000; i++) environment0.push(Tuple0(0));
+        for (uint i = 0; i < 1; i++) environment1.push(Tuple1(0));
+        for (uint i = 0; i < 1; i++) environment2.push(Tuple0(0));
     }
-    function procedure0(Tuple0[] storage environment0, uint64 local0, uint64 local1, uint64 local2, uint64 local3, uint64 local4, uint64 local5, uint64 local6, uint64 local7, uint64 local8, uint64 local9, uint64 local10, uint64 local11, uint64 local12, uint64 local13, uint64 local14, uint64 local15, uint64 local16, uint64 local17, uint64 local18, uint64 local19, uint64 local20, uint64 local21, uint64 local22, uint64 local23, uint64 local24, uint64 local25, uint64 local26, uint64 local27, uint64 local28, uint64 local29, uint64 local30, uint64 local31, uint64 local32, uint64 local33, uint64 local34, uint64 local35, uint64 local36, uint64 local37, uint64 local38, uint64 local39, bytes memory communication) private { unchecked {
+    function procedure0(Tuple0[] storage environment0, Tuple1[] storage environment1, Tuple0[] storage environment2, bytes memory communication) private { unchecked {
+        arraySet(environment2, uint64(0), Tuple0(divint64(((uint64(msg.data.length) - uint64(4))), (uint64(8)))));
+    } }
+
+    function procedure1(Tuple0[] storage environment0, Tuple1[] storage environment1, Tuple0[] storage environment2, uint64 local0, bytes memory communication) private { unchecked {
+    } }
+
+    function procedure2(Tuple0[] storage environment0, Tuple1[] storage environment1, Tuple0[] storage environment2, uint64 local0, bytes memory communication) private { unchecked {
+    } }
+
+    function procedure3(Tuple0[] storage environment0, Tuple1[] storage environment1, Tuple0[] storage environment2, uint64 local0, uint64 local1, uint64 local2, uint64 local3, uint64 local4, uint64 local5, uint64 local6, uint64 local7, uint64 local8, uint64 local9, uint64 local10, uint64 local11, uint64 local12, uint64 local13, uint64 local14, uint64 local15, uint64 local16, uint64 local17, uint64 local18, uint64 local19, uint64 local20, uint64 local21, uint64 local22, uint64 local23, uint64 local24, uint64 local25, uint64 local26, uint64 local27, uint64 local28, uint64 local29, uint64 local30, uint64 local31, uint64 local32, uint64 local33, uint64 local34, uint64 local35, uint64 local36, uint64 local37, uint64 local38, uint64 local39, bytes memory communication) private { unchecked {
         local0 = uint64(msg.data.length);
         if ((local0 < uint64(uint64(8)))) {
         } else {
@@ -189,7 +217,7 @@ contract GeneratedCode {
 
     fallback() external payable {
         bytes memory data = msg.data;
-        procedure0(environment0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, data);
+        procedure3(environment0, environment1, environment2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, data);
         assembly {
             return(add(data, 0x20), mload(data))
         }
