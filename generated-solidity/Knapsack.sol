@@ -123,19 +123,15 @@ contract GeneratedCode {
         for (uint i = 0; i < 1; i++) environment1.push(Tuple1(0));
         for (uint i = 0; i < 1; i++) environment2.push(Tuple0(0));
     }
-    function procedure0(Tuple0[] storage environment0, Tuple1[] storage environment1, Tuple0[] storage environment2, bytes memory communication) private { unchecked {
-        arraySet(environment2, uint64(0), Tuple0(divint64(((uint64(msg.data.length) - uint64(4))), (uint64(8)))));
-    } }
-
-    function procedure1(Tuple0[] storage environment0, Tuple1[] storage environment1, Tuple0[] storage environment2, uint64 local0, bytes memory communication) private { unchecked {
+    function procedure0(Tuple0[] storage environment0, Tuple1[] storage environment1, Tuple0[] storage environment2, uint64 local0, bytes memory communication) private { unchecked {
         arraySet(environment1, uint64(0), Tuple1(((((uint32(communicationGet(communication, (uint64(4) * local0))) * uint32((uint64(1) << uint64(24)))) + (uint32(communicationGet(communication, ((uint64(4) * local0) + uint64(1)))) * uint32((uint64(1) << uint64(16))))) + (uint32(communicationGet(communication, ((uint64(4) * local0) + uint64(2)))) * uint32((uint64(1) << uint64(8))))) + uint32(communicationGet(communication, ((uint64(4) * local0) + uint64(3)))))));
     } }
 
-    function procedure2(Tuple0[] storage environment0, Tuple1[] storage environment1, Tuple0[] storage environment2, uint64 local0, bytes memory communication) private { unchecked {
+    function procedure1(Tuple0[] storage environment0, Tuple1[] storage environment1, Tuple0[] storage environment2, uint64 local0, bytes memory communication) private { unchecked {
         arraySet(environment1, uint64(0), Tuple1(((((uint32(communicationGet(communication, ((uint64(4) * arrayGet(environment2, uint64(0)).item0) + (uint64(4) * local0)))) * uint32((uint64(1) << uint64(24)))) + (uint32(communicationGet(communication, (((uint64(4) * arrayGet(environment2, uint64(0)).item0) + (uint64(4) * local0)) + uint64(1)))) * uint32((uint64(1) << uint64(16))))) + (uint32(communicationGet(communication, (((uint64(4) * arrayGet(environment2, uint64(0)).item0) + (uint64(4) * local0)) + uint64(2)))) * uint32((uint64(1) << uint64(8))))) + uint32(communicationGet(communication, (((uint64(4) * arrayGet(environment2, uint64(0)).item0) + (uint64(4) * local0)) + uint64(3)))))));
     } }
 
-    function procedure3(Tuple0[] storage environment0, Tuple1[] storage environment1, Tuple0[] storage environment2, uint64 local0, bytes memory communication) private { unchecked {
+    function procedure2(Tuple0[] storage environment0, Tuple1[] storage environment1, Tuple0[] storage environment2, uint64 local0, bytes memory communication) private { unchecked {
         communicationSet(communication, uint64(0), uint8((local0 >> uint64(56))));
         communicationSet(communication, uint64(1), uint8(((local0 >> uint64(48)) & uint64(255))));
         communicationSet(communication, uint64(2), uint8(((local0 >> uint64(40)) & uint64(255))));
@@ -146,12 +142,13 @@ contract GeneratedCode {
         communicationSet(communication, uint64(7), uint8((local0 & uint64(255))));
     } }
 
-    function procedure4(Tuple0[] storage environment0, Tuple1[] storage environment1, Tuple0[] storage environment2, bytes memory communication) private { unchecked {
+    function procedure3(Tuple0[] storage environment0, Tuple1[] storage environment1, Tuple0[] storage environment2, bytes memory communication) private { unchecked {
+        arraySet(environment2, uint64(0), Tuple0(divint64(((uint64(msg.data.length) - uint64(4))), (uint64(8)))));
     } }
 
     fallback() external payable {
         bytes memory data = msg.data;
-        procedure4(environment0, environment1, environment2, data);
+        procedure3(environment0, environment1, environment2, data);
         assembly {
             return(add(data, 0x20), mload(data))
         }

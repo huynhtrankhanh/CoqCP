@@ -12,10 +12,6 @@ Definition environment0 : Environment arrayIndex0 := {| arrayType := fun name =>
 #[export] Instance arrayIndexEqualityDecidable0 : EqDecision arrayIndex0 := ltac:(solve_decision).
 #[export] Instance arrayTypeEqualityDecidable0 name : EqDecision (arrayType _ environment0 name).
 Proof. simpl. repeat destruct name. all: solve_decision. Defined.
-Inductive varsfuncdef_0__computen : Type :=.
-#[export] Instance variableIndexEqualityDecidablevarsfuncdef_0__computen : EqDecision varsfuncdef_0__computen := ltac:(solve_decision).
-Definition funcdef_0__computen (bools : varsfuncdef_0__computen -> bool) (numbers : varsfuncdef_0__computen -> Z) (addresses : varsfuncdef_0__computen -> list Z): Action (WithArrays _ (arrayType _ environment0)) withArraysReturnValue unit := eliminateLocalVariables bools numbers addresses (((Done _ _ _ 0%Z) >>= fun x => ((divIntUnsigned (subInt 64 (getCommunicationSize _ _ _) (Done _ _ _ 4%Z)) (Done _ _ _ 8%Z)) >>= fun tuple_element_0 => Done _ _ _ (tuple_element_0)) >>= fun y => store arrayIndex0 (arrayType _ environment0) varsfuncdef_0__computen (arraydef_0__n) x y) >>=
-fun _ => Done _ _ _ tt).
 Inductive varsfuncdef_0__getweight :=
 | vardef_0__getweight_index.
 #[export] Instance variableIndexEqualityDecidablevarsfuncdef_0__getweight : EqDecision varsfuncdef_0__getweight := ltac:(solve_decision).
@@ -40,4 +36,5 @@ fun _ => ((Done _ _ _ 7%Z) >>= fun x => ((andBits (numberLocalGet arrayIndex0 (a
 fun _ => Done _ _ _ tt).
 Inductive varsfuncdef_0__main : Type :=.
 #[export] Instance variableIndexEqualityDecidablevarsfuncdef_0__main : EqDecision varsfuncdef_0__main := ltac:(solve_decision).
-Definition funcdef_0__main (bools : varsfuncdef_0__main -> bool) (numbers : varsfuncdef_0__main -> Z) (addresses : varsfuncdef_0__main -> list Z): Action (WithArrays _ (arrayType _ environment0)) withArraysReturnValue unit := eliminateLocalVariables bools numbers addresses (Done _ _ _ tt).
+Definition funcdef_0__main (bools : varsfuncdef_0__main -> bool) (numbers : varsfuncdef_0__main -> Z) (addresses : varsfuncdef_0__main -> list Z): Action (WithArrays _ (arrayType _ environment0)) withArraysReturnValue unit := eliminateLocalVariables bools numbers addresses (((Done _ _ _ 0%Z) >>= fun x => ((divIntUnsigned (subInt 64 (getCommunicationSize _ _ _) (Done _ _ _ 4%Z)) (Done _ _ _ 8%Z)) >>= fun tuple_element_0 => Done _ _ _ (tuple_element_0)) >>= fun y => store arrayIndex0 (arrayType _ environment0) varsfuncdef_0__main (arraydef_0__n) x y) >>=
+fun _ => Done _ _ _ tt).
