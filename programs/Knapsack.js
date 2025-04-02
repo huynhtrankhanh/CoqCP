@@ -29,7 +29,16 @@ procedure('get value', { index: int64 }, () => {
   ])
 })
 
-procedure('get value', { index: int64 }, () => {})
+procedure('store result', { x: int64 }, () => {
+  store(0, coerceInt8(x >> 56));
+  store(1, coerceInt8((x >> 48) & 255));
+  store(2, coerceInt8((x >> 40) & 255));
+  store(3, coerceInt8((x >> 32) & 255));
+  store(4, coerceInt8((x >> 24) & 255));
+  store(5, coerceInt8((x >> 16) & 255));
+  store(6, coerceInt8((x >> 8) & 255));
+  store(7, coerceInt8(x & 255));
+})
 
 procedure(
   'main',
