@@ -10,19 +10,22 @@ procedure('compute n', {}, () => {
 
 procedure('get weight', { index: int64 }, () => {
   store('message', 0, [
-    coerceInt32(retrieve(4 * index)) * coerceInt32(1 << 24)
-    + coerceInt32(retrieve(4 * index + 1)) * coerceInt32(1 << 16)
-    + coerceInt32(retrieve(4 * index + 2)) * coerceInt32(1 << 8)
-    + coerceInt32(retrieve(4 * index + 3))
-  ]);
+    coerceInt32(retrieve(4 * index)) * coerceInt32(1 << 24) +
+      coerceInt32(retrieve(4 * index + 1)) * coerceInt32(1 << 16) +
+      coerceInt32(retrieve(4 * index + 2)) * coerceInt32(1 << 8) +
+      coerceInt32(retrieve(4 * index + 3)),
+  ])
 })
 
 procedure('get value', { index: int64 }, () => {
   store('message', 0, [
-    coerceInt32(retrieve(4 * retrieve('n', 0)[0] + 4 * index)) * coerceInt32(1 << 24)
-    + coerceInt32(retrieve(4 * retrieve('n', 0)[0] + 4 * index + 1)) * coerceInt32(1 << 16)
-    + coerceInt32(retrieve(4 * retrieve('n', 0)[0] + 4 * index + 2)) * coerceInt32(1 << 8)
-    + coerceInt32(retrieve(4 * retrieve('n', 0)[0] + 4 * index + 3))
+    coerceInt32(retrieve(4 * retrieve('n', 0)[0] + 4 * index)) *
+      coerceInt32(1 << 24) +
+      coerceInt32(retrieve(4 * retrieve('n', 0)[0] + 4 * index + 1)) *
+        coerceInt32(1 << 16) +
+      coerceInt32(retrieve(4 * retrieve('n', 0)[0] + 4 * index + 2)) *
+        coerceInt32(1 << 8) +
+      coerceInt32(retrieve(4 * retrieve('n', 0)[0] + 4 * index + 3)),
   ])
 })
 
