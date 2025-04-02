@@ -38,14 +38,13 @@ procedure('store result', { x: int64 }, () => {
 
 procedure('get limit', {}, () => {
   store('message', 0, [
-    coerceInt32(retrieve(8 * retrieve('n', 0)[0])) * coerceInt32(1 << 24)
-    + coerceInt32(retrieve(8 * retrieve('n', 0)[0])) * coerceInt32(1 << 16)
-    + coerceInt32(retrieve(8 * retrieve('n', 0)[0])) * coerceInt32(1 << 8)
-    + coerceInt32(retrieve(8 * retrieve('n', 0)[0]))
+    coerceInt32(retrieve(8 * retrieve('n', 0)[0])) * coerceInt32(1 << 24) +
+      coerceInt32(retrieve(8 * retrieve('n', 0)[0])) * coerceInt32(1 << 16) +
+      coerceInt32(retrieve(8 * retrieve('n', 0)[0])) * coerceInt32(1 << 8) +
+      coerceInt32(retrieve(8 * retrieve('n', 0)[0])),
   ])
 })
 
-procedure('main', { }, () => {
+procedure('main', {}, () => {
   store('n', 0, [divide(communicationSize() - 4, 8)])
-  
 })
