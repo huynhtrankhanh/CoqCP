@@ -61,13 +61,34 @@ procedure('main', { limit: int64, weight: int64, value: int64 }, () => {
           retrieve('dp', (i - 1) * (get('limit') + 1) + cap)[0],
         ])
       } else {
-        if (less(retrieve('dp', (i - 1) * (get('limit') + 1) + cap)[0], retrieve('dp', (i - 1) * (get('limit') + 1) + (cap - get('weight')) + get('value'))[0])) {
-          store('dp', i * (get('limit') + 1) + cap, [retrieve('dp', (i - 1) * (get('limit') + 1) + (cap - get('weight')) + get('value'))[0]])
+        if (
+          less(
+            retrieve('dp', (i - 1) * (get('limit') + 1) + cap)[0],
+            retrieve(
+              'dp',
+              (i - 1) * (get('limit') + 1) +
+                (cap - get('weight')) +
+                get('value')
+            )[0]
+          )
+        ) {
+          store('dp', i * (get('limit') + 1) + cap, [
+            retrieve(
+              'dp',
+              (i - 1) * (get('limit') + 1) +
+                (cap - get('weight')) +
+                get('value')
+            )[0],
+          ])
         } else {
-          store('dp', i * (get('limit') + 1) + cap, [retrieve('dp', (i - 1) * (get('limit') + 1) + cap)[0]])
+          store('dp', i * (get('limit') + 1) + cap, [
+            retrieve('dp', (i - 1) * (get('limit') + 1) + cap)[0],
+          ])
         }
       }
     })
   })
-  call('store result', { x: retrieve('dp', retrieve('n', 0)[0]) * (get('limit') + 1) + get('limit') })
+  call('store result', {
+    x: retrieve('dp', retrieve('n', 0)[0]) * (get('limit') + 1) + get('limit'),
+  })
 })
