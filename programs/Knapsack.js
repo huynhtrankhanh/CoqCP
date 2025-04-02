@@ -10,34 +10,34 @@ procedure('compute n', {}, () => {
 
 procedure('get weight', { index: int64 }, () => {
   store('message', 0, [
-    coerceInt32(retrieve(4 * index)) * coerceInt32(1 << 24) +
-      coerceInt32(retrieve(4 * index + 1)) * coerceInt32(1 << 16) +
-      coerceInt32(retrieve(4 * index + 2)) * coerceInt32(1 << 8) +
-      coerceInt32(retrieve(4 * index + 3)),
+    coerceInt32(retrieve(4 * get('index'))) * coerceInt32(1 << 24) +
+      coerceInt32(retrieve(4 * get('index') + 1)) * coerceInt32(1 << 16) +
+      coerceInt32(retrieve(4 * get('index') + 2)) * coerceInt32(1 << 8) +
+      coerceInt32(retrieve(4 * get('index') + 3)),
   ])
 })
 
 procedure('get value', { index: int64 }, () => {
   store('message', 0, [
-    coerceInt32(retrieve(4 * retrieve('n', 0)[0] + 4 * index)) *
+    coerceInt32(retrieve(4 * retrieve('n', 0)[0] + 4 * get('index'))) *
       coerceInt32(1 << 24) +
-      coerceInt32(retrieve(4 * retrieve('n', 0)[0] + 4 * index + 1)) *
+      coerceInt32(retrieve(4 * retrieve('n', 0)[0] + 4 * get('index') + 1)) *
         coerceInt32(1 << 16) +
-      coerceInt32(retrieve(4 * retrieve('n', 0)[0] + 4 * index + 2)) *
+      coerceInt32(retrieve(4 * retrieve('n', 0)[0] + 4 * get('index') + 2)) *
         coerceInt32(1 << 8) +
-      coerceInt32(retrieve(4 * retrieve('n', 0)[0] + 4 * index + 3)),
+      coerceInt32(retrieve(4 * retrieve('n', 0)[0] + 4 * get('index') + 3)),
   ])
 })
 
 procedure('store result', { x: int64 }, () => {
-  store(0, coerceInt8(x >> 56))
-  store(1, coerceInt8((x >> 48) & 255))
-  store(2, coerceInt8((x >> 40) & 255))
-  store(3, coerceInt8((x >> 32) & 255))
-  store(4, coerceInt8((x >> 24) & 255))
-  store(5, coerceInt8((x >> 16) & 255))
-  store(6, coerceInt8((x >> 8) & 255))
-  store(7, coerceInt8(x & 255))
+  store(0, coerceInt8(get('x') >> 56))
+  store(1, coerceInt8((get('x') >> 48) & 255))
+  store(2, coerceInt8((get('x') >> 40) & 255))
+  store(3, coerceInt8((get('x') >> 32) & 255))
+  store(4, coerceInt8((get('x') >> 24) & 255))
+  store(5, coerceInt8((get('x') >> 16) & 255))
+  store(6, coerceInt8((get('x') >> 8) & 255))
+  store(7, coerceInt8(get('x') & 255))
 })
 
 procedure(
