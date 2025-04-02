@@ -91,6 +91,7 @@ procedure('main', { limit: int64, weight: int64, value: int64 }, () => {
     })
   })
   call('store result', {
-    x: retrieve('dp', retrieve('n', 0)[0]) * (get('limit') + 1) + get('limit'),
+    x: retrieve('dp', retrieve('n', 0)[0] * (get('limit') + 1) + get('limit')
+    )[0],
   })
 })
