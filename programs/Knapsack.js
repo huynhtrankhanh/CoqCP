@@ -45,11 +45,20 @@ procedure('get limit', {}, () => {
   ])
 })
 
-procedure('main', { limit: int64 }, () => {
+procedure('main', { limit: int64, weight: int32, value: int32 }, () => {
   store('n', 0, [divide(communicationSize() - 4, 8)])
   call('get limit', {})
   set('limit', coerceInt64(retrieve('message', 0)[0]))
   range(retrieve('n', 0)[0] + 1, (i) => {
-    range(get('limit') + 1, (cap) => {})
+    if (i == 0) "continue";
+    range(get('limit') + 1, (cap) => {
+      call('get weight', { index: i })
+      set('weight', retrieve('message', 0)[0])
+      call('get value', { index: i })
+      set('value', retrieve('message', 0)[0])
+      if (less(cap, get('weight'))) {
+        store('dp', i * (get('limit') + 1) + cap, [retrieve('dp', (i - 1) * (get("limit") + 1) + cap)[0]])
+      }
+    })
   })
 })
