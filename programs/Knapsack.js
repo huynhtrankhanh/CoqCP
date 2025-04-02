@@ -40,10 +40,4 @@ procedure('store result', { x: int64 }, () => {
   store(7, coerceInt8(get('x') & 255))
 })
 
-procedure(
-  'main',
-  {
-  },
-  () => {
-  }
-)
+procedure('main', {}, () => {})
