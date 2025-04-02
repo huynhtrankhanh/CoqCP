@@ -39,7 +39,8 @@ procedure('store result', { x: int64 }, () => {
 procedure('get limit', {}, () => {
   store('message', 0, [
     coerceInt32(retrieve(8 * retrieve('n', 0)[0])) * coerceInt32(1 << 24) +
-      coerceInt32(retrieve(8 * retrieve('n', 0)[0] + 1)) * coerceInt32(1 << 16) +
+      coerceInt32(retrieve(8 * retrieve('n', 0)[0] + 1)) *
+        coerceInt32(1 << 16) +
       coerceInt32(retrieve(8 * retrieve('n', 0)[0] + 2)) * coerceInt32(1 << 8) +
       coerceInt32(retrieve(8 * retrieve('n', 0)[0] + 3)),
   ])
@@ -68,19 +69,15 @@ procedure('main', { limit: int64, weight: int64, value: int64 }, () => {
             retrieve('dp', (i - 1) * (get('limit') + 1) + cap)[0],
             retrieve(
               'dp',
-              (i - 1) * (get('limit') + 1) +
-                (cap - get('weight'))
-            )[0] +
-            get('value')
+              (i - 1) * (get('limit') + 1) + (cap - get('weight'))
+            )[0] + get('value')
           )
         ) {
           store('dp', i * (get('limit') + 1) + cap, [
             retrieve(
               'dp',
-              (i - 1) * (get('limit') + 1) +
-                (cap - get('weight'))
-            )[0] +
-            get('value'),
+              (i - 1) * (get('limit') + 1) + (cap - get('weight'))
+            )[0] + get('value'),
           ])
         } else {
           store('dp', i * (get('limit') + 1) + cap, [
