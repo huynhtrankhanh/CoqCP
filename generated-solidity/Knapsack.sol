@@ -150,8 +150,8 @@ contract GeneratedCode {
         arraySet(environment2, uint64(0), Tuple0(divint64(((uint64(msg.data.length) - uint64(4))), (uint64(8)))));
         procedure3(environment0, environment1, environment2, communication);
         local0 = uint64(arrayGet(environment1, uint64(0)).item0);
-        for (uint64 binder0 = 0; binder0 < arrayGet(environment2, uint64(0)).item0; binder0++) {
-            for (uint64 binder1 = 0; binder1 < local0; binder1++) {
+        for (uint64 binder0 = 0; binder0 < (arrayGet(environment2, uint64(0)).item0 + uint64(1)); binder0++) {
+            for (uint64 binder1 = 0; binder1 < (local0 + uint64(1)); binder1++) {
             }
         }
     } }
