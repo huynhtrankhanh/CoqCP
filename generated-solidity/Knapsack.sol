@@ -143,12 +143,16 @@ contract GeneratedCode {
     } }
 
     function procedure3(Tuple0[] storage environment0, Tuple1[] storage environment1, Tuple0[] storage environment2, bytes memory communication) private { unchecked {
+        arraySet(environment1, uint64(0), Tuple1(((((uint32(communicationGet(communication, (uint64(8) * arrayGet(environment2, uint64(0)).item0))) * uint32((uint64(1) << uint64(24)))) + (uint32(communicationGet(communication, (uint64(8) * arrayGet(environment2, uint64(0)).item0))) * uint32((uint64(1) << uint64(16))))) + (uint32(communicationGet(communication, (uint64(8) * arrayGet(environment2, uint64(0)).item0))) * uint32((uint64(1) << uint64(8))))) + uint32(communicationGet(communication, (uint64(8) * arrayGet(environment2, uint64(0)).item0))))));
+    } }
+
+    function procedure4(Tuple0[] storage environment0, Tuple1[] storage environment1, Tuple0[] storage environment2, bytes memory communication) private { unchecked {
         arraySet(environment2, uint64(0), Tuple0(divint64(((uint64(msg.data.length) - uint64(4))), (uint64(8)))));
     } }
 
     fallback() external payable {
         bytes memory data = msg.data;
-        procedure3(environment0, environment1, environment2, data);
+        procedure4(environment0, environment1, environment2, data);
         assembly {
             return(add(data, 0x20), mload(data))
         }
