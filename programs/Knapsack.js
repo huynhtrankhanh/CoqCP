@@ -49,7 +49,7 @@ procedure('main', { limit: int64 }, () => {
   store('n', 0, [divide(communicationSize() - 4, 8)])
   call('get limit', {})
   set('limit', coerceInt64(retrieve('message', 0)[0]))
-  range(retrieve('n', 0)[0], i => {
-    range(get('limit'), cap => {})
+  range(retrieve('n', 0)[0], (i) => {
+    range(get('limit'), (cap) => {})
   })
 })
