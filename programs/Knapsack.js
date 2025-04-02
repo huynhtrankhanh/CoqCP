@@ -4,10 +4,6 @@ environment({
   n: array([int64], 1),
 })
 
-procedure('compute n', {}, () => {
-  store('n', 0, [divide(communicationSize() - 4, 8)])
-})
-
 procedure('get weight', { index: int64 }, () => {
   store('message', 0, [
     coerceInt32(retrieve(4 * get('index'))) * coerceInt32(1 << 24) +
@@ -40,4 +36,6 @@ procedure('store result', { x: int64 }, () => {
   store(7, coerceInt8(get('x') & 255))
 })
 
-procedure('main', {}, () => {})
+procedure('main', {}, () => {
+  store('n', 0, [divide(communicationSize() - 4, 8)])
+})
