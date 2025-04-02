@@ -143,7 +143,7 @@ contract GeneratedCode {
     } }
 
     function procedure3(Tuple0[] storage environment0, Tuple1[] storage environment1, Tuple0[] storage environment2, bytes memory communication) private { unchecked {
-        arraySet(environment1, uint64(0), Tuple1(((((uint32(communicationGet(communication, (uint64(8) * arrayGet(environment2, uint64(0)).item0))) * uint32((uint64(1) << uint64(24)))) + (uint32(communicationGet(communication, (uint64(8) * arrayGet(environment2, uint64(0)).item0))) * uint32((uint64(1) << uint64(16))))) + (uint32(communicationGet(communication, (uint64(8) * arrayGet(environment2, uint64(0)).item0))) * uint32((uint64(1) << uint64(8))))) + uint32(communicationGet(communication, (uint64(8) * arrayGet(environment2, uint64(0)).item0))))));
+        arraySet(environment1, uint64(0), Tuple1(((((uint32(communicationGet(communication, (uint64(8) * arrayGet(environment2, uint64(0)).item0))) * uint32((uint64(1) << uint64(24)))) + (uint32(communicationGet(communication, ((uint64(8) * arrayGet(environment2, uint64(0)).item0) + uint64(1)))) * uint32((uint64(1) << uint64(16))))) + (uint32(communicationGet(communication, ((uint64(8) * arrayGet(environment2, uint64(0)).item0) + uint64(2)))) * uint32((uint64(1) << uint64(8))))) + uint32(communicationGet(communication, ((uint64(8) * arrayGet(environment2, uint64(0)).item0) + uint64(3)))))));
     } }
 
     function procedure4(Tuple0[] storage environment0, Tuple1[] storage environment1, Tuple0[] storage environment2, uint64 local0, uint64 local1, uint64 local2, bytes memory communication) private { unchecked {
@@ -163,8 +163,8 @@ contract GeneratedCode {
                 if ((binder1 < local1)) {
                     arraySet(environment0, ((binder0 * (local0 + uint64(1))) + binder1), Tuple0(arrayGet(environment0, (((binder0 - uint64(1)) * (local0 + uint64(1))) + binder1)).item0));
                 } else {
-                    if ((arrayGet(environment0, (((binder0 - uint64(1)) * (local0 + uint64(1))) + binder1)).item0 < arrayGet(environment0, ((((binder0 - uint64(1)) * (local0 + uint64(1))) + (binder1 - local1)) + local2)).item0)) {
-                        arraySet(environment0, ((binder0 * (local0 + uint64(1))) + binder1), Tuple0(arrayGet(environment0, ((((binder0 - uint64(1)) * (local0 + uint64(1))) + (binder1 - local1)) + local2)).item0));
+                    if ((arrayGet(environment0, (((binder0 - uint64(1)) * (local0 + uint64(1))) + binder1)).item0 < (arrayGet(environment0, (((binder0 - uint64(1)) * (local0 + uint64(1))) + (binder1 - local1))).item0 + local2))) {
+                        arraySet(environment0, ((binder0 * (local0 + uint64(1))) + binder1), Tuple0((arrayGet(environment0, (((binder0 - uint64(1)) * (local0 + uint64(1))) + (binder1 - local1))).item0 + local2)));
                     } else {
                         arraySet(environment0, ((binder0 * (local0 + uint64(1))) + binder1), Tuple0(arrayGet(environment0, (((binder0 - uint64(1)) * (local0 + uint64(1))) + binder1)).item0));
                     }
