@@ -50,7 +50,7 @@ procedure('main', { limit: int64, weight: int64, value: int64 }, () => {
   call('get limit', {})
   set('limit', coerceInt64(retrieve('message', 0)[0]))
   range(retrieve('n', 0)[0] + 1, (i) => {
-    if (i == 0) 'continue'
+    if (i == 0) {'continue'}
     range(get('limit') + 1, (cap) => {
       call('get weight', { index: i })
       set('weight', coerceInt64(retrieve('message', 0)[0]))
