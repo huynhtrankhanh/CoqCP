@@ -36,6 +36,16 @@ procedure('store result', { x: int64 }, () => {
   store(7, coerceInt8(get('x') & 255))
 })
 
-procedure('main', {}, () => {
+procedure('get limit', {}, () => {
+  store('message', 0, [
+    coerceInt32(retrieve(8 * retrieve('n', 0)[0])) * coerceInt32(1 << 24)
+    + coerceInt32(retrieve(8 * retrieve('n', 0)[0])) * coerceInt32(1 << 16)
+    + coerceInt32(retrieve(8 * retrieve('n', 0)[0])) * coerceInt32(1 << 8)
+    + coerceInt32(retrieve(8 * retrieve('n', 0)[0]))
+  ])
+})
+
+procedure('main', { }, () => {
   store('n', 0, [divide(communicationSize() - 4, 8)])
+  
 })
