@@ -72,4 +72,111 @@ Proof.
     { apply Nat.div_lt. { lia. }
       apply Nat.pow_gt_1; clear; lia. }
     lia. } reflexivity. } rewrite st !leftIdentity.
+  clear tr.
+  (* next byte *)
+  unfold retrieve at 1. rewrite -!bindAssoc pushDispatch bindDispatch.
+  rewrite unfoldInvoke_S_Retrieve. case_decide as tr; [| simpl in tr; lia].
+  rewrite (ltac:(simpl; unfold coerceInt; rewrite Z.mod_small; lia) : coerceInt (8 * nth_lt [Z.of_nat (length items)] (Z.to_nat 0) tr) 64 = (8 * Z.of_nat (length items))%Z) !leftIdentity.
+  unfold readByte. rewrite pushDispatch2 bindDispatch unfoldInvoke_S_ReadByte. clear tr.
+  rewrite (ltac:(simpl; unfold coerceInt; rewrite Z.mod_small; lia) : coerceInt (8 * Z.of_nat (length items) + 1) 64 = (8 * Z.of_nat (length items) + 1)%Z) !leftIdentity.
+  case_decide as tr; [| rewrite dataLength in tr; lia].
+  unfold retrieve at 1. rewrite -!bindAssoc pushDispatch bindDispatch.
+  rewrite unfoldInvoke_S_Retrieve. clear tr. case_decide as tr; [| simpl in tr; lia].
+  rewrite (ltac:(simpl; unfold coerceInt; rewrite Z.mod_small; lia) : coerceInt (8 * nth_lt [Z.of_nat (length items)] (Z.to_nat 0) tr) 64 = (8 * Z.of_nat (length items))%Z) !leftIdentity.
+  rewrite (ltac:(lia) : Z.to_nat (8 * Z.of_nat (length items) + 1) = (8 * length items) + 1)%nat nthGenerateData.
+  rewrite pushDispatch2 bindDispatch unfoldInvoke_S_ReadByte. clear tr.
+  case_decide as tr; [| simpl in tr; rewrite (ltac:(simpl; unfold coerceInt; rewrite Z.mod_small; lia) : coerceInt (8 * Z.of_nat (length items) + 2) 64 = (8 * Z.of_nat (length items) + 2)%Z) dataLength in tr; lia]. clear st.
+  assert (st : coerceInt (nth 1 (to32 limit) 0) 32 = Z.of_nat (limit / (2^16) mod 256)).
+  { unfold coerceInt, to32. rewrite (ltac:(easy) : forall a b c d e, nth 1 [a; b; c; d] e = b) Z.mod_small.
+  { constructor. { lia. }
+    rewrite Nat2Z.inj_mod.
+    pose proof (proj2 (Z.mod_pos_bound (Z.of_nat (limit `div` 2 ^ 16)) (Z.of_nat 256) ltac:(easy))).
+    lia. } reflexivity. } rewrite st !leftIdentity.
+  unfold retrieve at 1. rewrite -!bindAssoc pushDispatch bindDispatch.
+  rewrite unfoldInvoke_S_Retrieve. clear tr. case_decide as tr; [| simpl in tr; lia].
+  rewrite !leftIdentity.
+  assert (uw : coerceInt
+  (coerceInt
+     (8 * nth_lt [Z.of_nat (length items)] (Z.to_nat 0) tr) 64 +
+   3) 64 = (8 * Z.of_nat (length items) + 3)%Z).
+  { unfold coerceInt. rewrite Z.mod_small; rewrite Z.mod_small; simpl; lia. } clear uw.
+  rewrite -!bindAssoc pushDispatch bindDispatch.
+  rewrite unfoldInvoke_S_ReadByte.
+  case_decide as jj; [| simpl in jj; unfold coerceInt in jj; rewrite dataLength in jj; rewrite !Z.mod_small in jj; lia].
+  rewrite !leftIdentity (ltac:(easy) : nth_lt [Z.of_nat (length items)] (Z.to_nat 0) tr = Z.of_nat (length items)).
+  clear st. assert (st : coerceInt (nth 2 (to32 limit) 0) 32 = Z.of_nat ((limit / (2^8)) mod 256)).
+  { unfold coerceInt, to32. rewrite (ltac:(easy) : forall a b c d e, nth 2 [a; b; c; d] e = c) Z.mod_small.
+  { constructor. { lia. }
+    rewrite Nat2Z.inj_mod.
+    pose proof (proj2 (Z.mod_pos_bound (Z.of_nat (limit `div` 2 ^ 8)) (Z.of_nat 256) ltac:(easy))).
+    lia. } reflexivity. }
+  assert (j1 : Z.to_nat (coerceInt (8 * Z.of_nat (length items) + 2) 64) = (8 * length items + 2)%nat).
+  { unfold coerceInt. rewrite Z.mod_small; lia. } rewrite j1. clear j1.
+  rewrite nthGenerateData st. clear st.
+  assert (j1 : Z.to_nat (coerceInt (coerceInt (8 * Z.of_nat (length items)) 64 + 3) 64) = (8 * length items + 3)%nat).
+  { unfold coerceInt. rewrite Z.mod_small; rewrite Z.mod_small; lia. } rewrite j1. clear j1.
+  rewrite nthGenerateData.
+  assert (st : coerceInt (nth 3 (to32 limit) 0) 32 = Z.of_nat (limit mod 256)).
+  { unfold coerceInt, to32. rewrite (ltac:(easy) : forall a b c d e, nth 3 [a; b; c; d] e = d) Z.mod_small.
+  { constructor. { lia. }
+    rewrite Nat2Z.inj_mod.
+    pose proof (proj2 (Z.mod_pos_bound (Z.of_nat limit) (Z.of_nat 256) ltac:(easy))).
+    lia. } reflexivity. } rewrite st. clear st.
+  assert (s1 : coerceInt (Z.land (1 ≪ 24) (Z.ones 64)) 32 = 2^24).
+  { clear. easy. } rewrite s1. clear s1.
+  rewrite (ltac:(clear; easy) : coerceInt (Z.land (1 ≪ 8) (Z.ones 64)) 32 = 2^8).
+  rewrite (ltac:(clear; easy) : coerceInt (Z.land (1 ≪ 16) (Z.ones 64)) 32 = 2^16).
+  assert (ut : (coerceInt
+  (coerceInt
+     (coerceInt
+        (coerceInt (Z.of_nat (limit `div` 2 ^ 24) * 2 ^ 24) 32 +
+         coerceInt (Z.of_nat ((limit `div` 2 ^ 16) `mod` 256) * 2 ^ 16)
+           32) 32 +
+      coerceInt (Z.of_nat ((limit `div` 2 ^ 8) `mod` 256) * 2 ^ 8) 32) 32 +
+   Z.of_nat (limit `mod` 256)) 32) = Z.of_nat limit).
+  { unfold coerceInt.
+    rewrite !Nat2Z.inj_mod; (try rewrite !Nat2Z.inj_div).
+    rewrite (ltac:(easy) : Z.of_nat 256 = 256).
+    rewrite (ltac:(rewrite Nat2Z.inj_pow; clear; easy) : Z.of_nat (2 ^ 24) = 2^24) (ltac:(rewrite Nat2Z.inj_pow; clear; easy) : Z.of_nat (2 ^ 16) = 2^16).
+    pose proof Z.div_le_mono _ _ (2 ^ 24) ltac:(clear; easy) hl as j1. simpl in j1. rewrite (ltac:(clear; easy) : 999999 `div` 2 ^ 24 = 0) in j1.
+    pose proof Z.div_le_mono _ _ (2 ^ 16) ltac:(clear; easy) hl as j2. simpl in j2. rewrite (ltac:(clear; easy) : 999999 `div` 2 ^ 16 = 15) in j2.
+    pose proof Z.div_le_mono _ _ (2 ^ 8) ltac:(clear; easy) hl as j3. simpl in j3. rewrite (ltac:(clear; easy) : 999999 `div` 2 ^ 8 = 3906) in j3.
+    pose proof Z.mod_pos_bound (Z.of_nat limit `div` 2 ^ 24) 256 ltac:(clear; easy) as [y1 z1].
+    pose proof Z.mod_pos_bound (Z.of_nat limit `div` 2 ^ 16) 256 ltac:(clear; easy) as [y2 z2].
+    pose proof Z.mod_pos_bound (Z.of_nat limit `div` 2 ^ 8) 256 ltac:(clear; easy) as [y3 z3].
+    pose proof Z.mod_pos_bound (Z.of_nat limit `div` 256) 256 ltac:(clear; easy) as [y4 z4].
+    pose proof Z.mod_pos_bound (Z.of_nat limit) 256 ltac:(clear; easy) as [y5 z5].
+    pose proof Z.div_le_mono _ _ (2 ^ 24) ltac:(clear; easy) (Zle_0_nat limit) as i1. simpl in i1. rewrite (ltac:(clear; easy) : 0 `div` 2 ^ 24 = 0) in i1.
+    pose proof Z.div_le_mono _ _ (2 ^ 16) ltac:(clear; easy) (Zle_0_nat limit) as i2. simpl in i2. rewrite (ltac:(clear; easy) : 0 `div` 2 ^ 16 = 0) in i2.
+    pose proof Z.div_le_mono _ _ (2 ^ 8) ltac:(clear; easy) (Zle_0_nat limit) as i3. simpl in i3. rewrite (ltac:(clear; easy) : 0 `div` 2 ^ 8 = 0) in i3.
+    pose proof Z.div_le_mono _ _ 256 ltac:(clear; easy) (Zle_0_nat limit) as i4. simpl in i4. rewrite (ltac:(clear; easy) : 0 `div` 256 = 0) in i4.
+    rewrite !(Z.mod_small _ (2^32)); try constructor; try lia.
+    pose proof Z.div_mod (Z.of_nat limit) 256 ltac:(clear;easy) as ut.
+    pose proof Z.div_mod (Z.of_nat limit `div` 256) 256 ltac:(clear;easy) as uy. rewrite (Z.div_div _ _ _) in uy. {clear;easy. }{clear;easy. } 
+    pose proof Z.div_mod (Z.of_nat limit `div` (256*256)) 256 ltac:(clear;easy) as u8. rewrite (Z.div_div _ _ _) in u8. {clear;easy. }{clear;easy. } 
+    pose proof Z.div_mod (Z.of_nat limit `div` (256*256*256)) 256 ltac:(clear;easy) as u7. rewrite (Z.div_div _ _ _) in u7. {clear;easy. }{clear;easy. } 
+
+    assert (yu : Z.of_nat limit `mod` 2 ^ 24 = Z.of_nat limit).
+    { rewrite Z.mod_small; lia. }
+    rewrite -> (ltac:(clear;easy) : (2^8)%Z=(256)%Z) in *.
+    rewrite -> (ltac:(clear;easy) : (2^16)%Z=(256*256)%Z) in *.
+    rewrite -> (ltac:(clear;easy) : (2^24)%Z=(256*256*256)%Z) in *. lia. }
+  rewrite ut. clear tr jj ut.
+  unfold store. rewrite pushDispatch2 bindDispatch unfoldInvoke_S_Store.
+  case_decide as ei; [| simpl in ei; lia].
+  remember (λ _0 : arrayIndex0, _) as sel eqn:hel.
+  assert (iu : sel = (fun x => match x with | arraydef_0__dp => repeat 0 1000000 | arraydef_0__message => [Z.of_nat limit] | arraydef_0__n => [Z.of_nat (length items)] end)).
+  { rewrite hel. apply functional_extensionality_dep. intro u.
+    destruct u; clear; easy. }
+  rewrite iu. clear sel hel iu ei.
+  rewrite !leftIdentity pushDispatch2 bindDispatch unfoldInvoke_S_Retrieve. case_decide as i8; [| simpl in i8; lia].
+  assert (up : (coerceInt
+                (nth_lt [Z.of_nat limit] (Z.to_nat 0) i8) 64) = Z.of_nat limit).
+  { unfold coerceInt. simpl. rewrite Z.mod_small; lia. }
+  rewrite up. clear up. rewrite !leftIdentity pushNumberSet2 pushDispatch2 bindDispatch unfoldInvoke_S_Retrieve. case_decide as yb; [| simpl in yb; lia]. clear i8.
+  rewrite (ltac:(easy) : nth_lt [Z.of_nat (length items)] (Z.to_nat 0) yb = Z.of_nat (length items)) !leftIdentity.
+  assert (ue : (Z.to_nat
+  (coerceInt (Z.of_nat (length items) + 1) 64)) = (length items + 1)%nat).
+  { unfold coerceInt. rewrite Z.mod_small; lia. }
+  rewrite ue. clear ue.
 Admitted.
