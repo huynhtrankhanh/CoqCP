@@ -63,7 +63,26 @@ Proof.
   unfold addInt, multInt. rewrite !leftIdentity.
   rewrite -!bindAssoc pushNumberGet2 !leftIdentity.
   rewrite pushDispatch2 bindDispatch unfoldInvoke_S_ReadByte.
-  rewrite dataLength (ltac:(unfold coerceInt; rewrite Z.mod_small; lia) : (coerceInt (4 * index) 64 = 4 * index)%Z).
+  rewrite dataLength (ltac:(unfold coerceInt; rewrite Z.mod_small; lia) : (coerceInt (4 * index) 64 = 4 * index)%Z) (ltac:(lia) : (Z.to_nat (4 * index) = 4 * Z.to_nat index + 0)%nat) nthGenerateDataWeight. { lia. } { lia. }
+  case_decide as uw; [| lia]. rewrite !leftIdentity.
+  rewrite -!bindAssoc pushNumberGet !leftIdentity.
+  rewrite (ltac:(unfold coerceInt; rewrite !Z.mod_small; lia) : coerceInt (coerceInt (4 * index) 64 + 1) 64 = (4 * index + 1)%Z).
+  rewrite pushDispatch2 bindDispatch unfoldInvoke_S_ReadByte.
+  case_decide as jk; [| rewrite dataLength in jk; lia].
+  rewrite (ltac:(lia) : (Z.to_nat (4 * index + 1) = 4 * Z.to_nat index + 1)%nat) nthGenerateDataWeight. { lia. } { lia. }
+  (* barrier *)
+  rewrite !leftIdentity -!bindAssoc pushNumberGet !leftIdentity.
+  rewrite (ltac:(unfold coerceInt; rewrite !Z.mod_small; lia) : coerceInt (coerceInt (4 * index) 64 + 2) 64 = (4 * index + 2)%Z).
+  rewrite pushDispatch2 bindDispatch unfoldInvoke_S_ReadByte.
+  clear jk; case_decide as jk; [| rewrite dataLength in jk; lia].
+  rewrite (ltac:(lia) : (Z.to_nat (4 * index + 2) = 4 * Z.to_nat index + 2)%nat) nthGenerateDataWeight. { lia. } { lia. }
+  (* barrier *)
+  rewrite !leftIdentity -!bindAssoc pushNumberGet !leftIdentity.
+  rewrite (ltac:(unfold coerceInt; rewrite !Z.mod_small; lia) : coerceInt (coerceInt (4 * index) 64 + 3) 64 = (4 * index + 3)%Z).
+  rewrite pushDispatch2 bindDispatch unfoldInvoke_S_ReadByte.
+  clear jk; case_decide as jk; [| rewrite dataLength in jk; lia].
+  rewrite (ltac:(lia) : (Z.to_nat (4 * index + 3) = 4 * Z.to_nat index + 3)%nat) nthGenerateDataWeight. { lia. } { lia. }
+Admitted.
 
 Lemma extractAnswerEq (items : list (nat * nat)) (notNil : items <> []) (limit : nat) (hp : ((limit + 1%nat) * (length items + 1%nat) <= 1000000%nat)%nat) (a32 : forall x, (fst (nth x items (0%nat,0%nat)) < 2^32)%nat) (b32 : forall x, (snd (nth x items (0%nat,0%nat)) < 2^32)%nat) : extractAnswer (start items limit) = Z.of_nat (knapsack items limit).
 Proof.
