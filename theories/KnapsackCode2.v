@@ -16,10 +16,32 @@ Proof.
   rewrite -nth_lookup serializeWeightsLength serializeValuesLength (ltac:(lia) : (8 * length items + x - 4 * length items - 4 * length items = x)%nat). reflexivity.
 Qed.
 
-Lemma nthGenerateData2 (items : list (nat * nat)) (limit x : nat) p : nth_lt (generateData items limit) (8 * length items + x) p = nth x (to32 limit) 0%Z.
+Lemma nthGenerateDataWeight (items : list (nat * nat)) (limit x index : nat) (hx : (x < 4)%nat) (hIndex : (index < length items)%nat) : nth (4 * index + x) (generateData items limit) (0%Z) = nth x (to32 (fst (nth index items (0%nat,0%nat)))) 0%Z.
 Proof.
-  rewrite (nth_lt_default _ _ _ 0%Z) nthGenerateData. reflexivity.
+  unfold generateData. rewrite nth_lookup lookup_app_l.
+  { rewrite serializeWeightsLength. lia. }
+  rewrite -nth_lookup. clear limit.
+  revert index hIndex. induction items as [| head tail IH]. { easy. }
+  intro n.
+  destruct head as [weight value].
+  rewrite (ltac:(simpl; reflexivity) : length ((weight, value) :: tail) = (1 + length tail)%nat) (ltac:(clear; easy) : serializeWeights ((weight, value) :: tail) = to32 weight ++ serializeWeights tail).
+  destruct n as [| n].
+  - intro j. rewrite (ltac:(clear; lia) : (4 * 0 + x = x)%nat).
+    rewrite nth_lookup lookup_app_l. { unfold to32. rewrite (ltac:(easy) : forall a b c d, (length [a; b; c; d] = 4)%nat). exact hx. }
+    rewrite (ltac:(easy) : (nth 0 ((weight, value) :: tail) (0%nat, 0%nat)).1 = weight). rewrite -nth_lookup. reflexivity.
+  - intro j. rewrite (ltac:(lia) : (4 * S n + x = 4 + (4 * n + x))%nat).
+    rewrite !nth_lookup lookup_app_r.
+    { unfold to32. rewrite (ltac:(easy) : forall a b c d, (length [a; b; c; d] = 4)%nat). lia. }
+    rewrite (ltac:(unfold to32; rewrite (ltac:(easy) : forall a b c d, (length [a; b; c; d] = 4)%nat); lia) : (4 + (4 * n + x) - length (to32 weight))%nat = (4 * n + x)%nat) (ltac:(easy) : ((weight, value) :: tail) !! S n = tail !! n) -!nth_lookup. apply IH. lia.
 Qed.
+
+Lemma readWeight (items : list (nat * nat)) (hl : Z.of_nat (length items) < 2^32) (limit : nat) (a32 : forall x, (fst (nth x items (0%nat,0%nat)) < 2^32)%nat) (b32 : forall x, (snd (nth x items (0%nat,0%nat)) < 2^32)%nat) whatever index (hZ : 0 <= index) (hIndex : (Z.to_nat index < length items)%nat) cont whatever2 whatever3 ol ju : invokeContractAux (repeat 1 20) (repeat 0 20) 0 state state (generateData items limit) 1 arrayIndex0 arrayIndexEqualityDecidable0 (arrayType arrayIndex0 environment0) (fun x => match x with | arraydef_0__message => ol | arraydef_0__dp => ju | arraydef_0__n => [Z.of_nat (length items)] end) whatever (funcdef_0__getweight whatever2 (fun=> index) whatever3 >>= cont) = invokeContractAux (repeat 1 20) (repeat 0 20) 0 state state (generateData items limit) 1 arrayIndex0 arrayIndexEqualityDecidable0 (arrayType arrayIndex0 environment0) (fun x => match x with | arraydef_0__message => [Z.of_nat (fst (nth (Z.to_nat index) items (0%nat,0%nat)))] | arraydef_0__dp => ju | arraydef_0__n => [Z.of_nat (length items)] end) whatever (cont tt).
+Proof.
+  unfold funcdef_0__getweight.
+  unfold addInt, multInt. rewrite !leftIdentity.
+  rewrite -!bindAssoc pushNumberGet2 !leftIdentity.
+  rewrite pushDispatch2 bindDispatch unfoldInvoke_S_ReadByte.
+  rewrite dataLength (ltac:(unfold coerceInt; rewrite Z.mod_small; lia) : (coerceInt (4 * index) 64 = 4 * index)%Z).
 
 Lemma extractAnswerEq (items : list (nat * nat)) (notNil : items <> []) (limit : nat) (hp : ((limit + 1%nat) * (length items + 1%nat) <= 1000000%nat)%nat) (a32 : forall x, (fst (nth x items (0%nat,0%nat)) < 2^32)%nat) (b32 : forall x, (snd (nth x items (0%nat,0%nat)) < 2^32)%nat) : extractAnswer (start items limit) = Z.of_nat (knapsack items limit).
 Proof.
