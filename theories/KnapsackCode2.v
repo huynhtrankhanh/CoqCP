@@ -57,7 +57,81 @@ Proof.
     rewrite (ltac:(unfold to32; rewrite (ltac:(easy) : forall a b c d, (length [a; b; c; d] = 4)%nat); lia) : (4 + (4 * n + x) - length (to32 weight))%nat = (4 * n + x)%nat) (ltac:(easy) : ((weight, value) :: tail) !! S n = tail !! n) -!nth_lookup. apply IH. lia.
 Qed.
 
-Lemma readWeight (items : list (nat * nat)) (hl : Z.of_nat (length items) < 2^32) (limit : nat) (a32 : forall x, (fst (nth x items (0%nat,0%nat)) < 2^32)%nat) (b32 : forall x, (snd (nth x items (0%nat,0%nat)) < 2^32)%nat) whatever index (hZ : 0 <= index) (hIndex : (Z.to_nat index < length items)%nat) cont whatever2 whatever3 ol ju : invokeContractAux (repeat 1 20) (repeat 0 20) 0 state state (generateData items limit) 1 arrayIndex0 arrayIndexEqualityDecidable0 (arrayType arrayIndex0 environment0) (fun x => match x with | arraydef_0__message => ol | arraydef_0__dp => ju | arraydef_0__n => [Z.of_nat (length items)] end) whatever (funcdef_0__getweight whatever2 (fun=> index) whatever3 >>= cont) = invokeContractAux (repeat 1 20) (repeat 0 20) 0 state state (generateData items limit) 1 arrayIndex0 arrayIndexEqualityDecidable0 (arrayType arrayIndex0 environment0) (fun x => match x with | arraydef_0__message => [Z.of_nat (fst (nth (Z.to_nat index) items (0%nat,0%nat)))] | arraydef_0__dp => ju | arraydef_0__n => [Z.of_nat (length items)] end) whatever (cont tt).
+Lemma assembly (x : nat) (hx : Z.of_nat x < 2^32) : (coerceInt
+(coerceInt
+   (coerceInt
+      (coerceInt
+         (coerceInt
+            (nth 0%nat
+               (to32 x) 0) 32 *
+          coerceInt (Z.land (1 ≪ 24) (Z.ones 64)) 32)
+         32 +
+       coerceInt
+         (coerceInt
+            (nth 1%nat
+               (to32 x) 0) 32 *
+          coerceInt (Z.land (1 ≪ 16) (Z.ones 64)) 32)
+         32) 32 +
+    coerceInt
+      (coerceInt
+         (nth 2%nat
+            (to32 x) 0) 32 *
+       coerceInt (Z.land (1 ≪ 8) (Z.ones 64)) 32) 32)
+   32 +
+ coerceInt
+   (nth 3%nat
+      (to32 x)
+      0) 32) 32) = Z.of_nat x.
+Proof.
+  assert (m1 : Z.of_nat (2^24) = 2^24). { rewrite Nat2Z.inj_pow; easy. }
+  assert (m2 : Z.of_nat (2^16) = 2^16). { rewrite Nat2Z.inj_pow; easy. }
+  assert (m3 : Z.of_nat (2^8) = 2^8). { rewrite Nat2Z.inj_pow; easy. }
+  pose proof Z.div_le_mono (Z.of_nat x) (2^32 - 1) (2^24) ltac:(lia) ltac:(lia) as i1.
+  pose proof Z.div_le_mono (Z.of_nat x) (2^32 - 1) (2^16) ltac:(lia) ltac:(lia) as i2.
+  pose proof Z.div_le_mono (Z.of_nat x) (2^32 - 1) (2^8) ltac:(lia) ltac:(lia) as i3.
+  pose proof Zle_0_nat x as j.
+  pose proof Z.div_le_mono _ _ (2^24) ltac:(lia) j as j1.
+  pose proof Z.div_le_mono _ _ (2^16) ltac:(lia) j as j2.
+  pose proof Z.div_le_mono _ _ (2^8) ltac:(lia) j as j3.
+  rewrite -> (ltac:(easy) : (2 ^ 32 - 1) `div` 2 ^ 24 = 2^8 - 1) in i1.
+  rewrite -> (ltac:(clear; easy) : (2 ^ 32 - 1) `div` 2 ^ 16 = 2^16 - 1) in i2.
+  rewrite -> (ltac:(clear; easy) : (2 ^ 32 - 1) `div` 2 ^ 8 = 2^24 - 1) in i3.
+  rewrite -> (ltac:(clear; easy) : 0 `div` 2 ^ 24 = 0) in j1.
+  rewrite -> (ltac:(clear; easy) : 0 `div` 2 ^ 16 = 0) in j2.
+  rewrite -> (ltac:(clear; easy) : 0 `div` 2 ^ 8 = 0) in j3.
+  assert (s1 : coerceInt (nth 0 (to32 x) 0) 32 = Z.of_nat x / (2^24)).
+  { unfold coerceInt, to32. rewrite (ltac:(easy) : forall a b c d e, nth 0%nat [a;b;c;d] e = a). rewrite Z.mod_small Nat2Z.inj_div m1; lia. }
+  assert (s2 : coerceInt (nth 1 (to32 x) 0) 32 = (Z.of_nat x / (2^16)) `mod` 256).
+  { unfold coerceInt, to32. rewrite (ltac:(easy) : forall a b c d e, nth 1%nat [a;b;c;d] e = b). rewrite Z.mod_small Nat2Z.inj_mod Nat2Z.inj_div m2; [| clear; lia]. pose proof Z.mod_bound_pos (Z.of_nat x `div` 2 ^ 16) 256 ltac:(lia) ltac:(lia). lia. }
+  assert (s3 : coerceInt (nth 2 (to32 x) 0) 32 = (Z.of_nat x / (2^8)) `mod` 256).
+  { unfold coerceInt, to32. rewrite (ltac:(easy) : forall a b c d e, nth 2%nat [a;b;c;d] e = c). rewrite Z.mod_small Nat2Z.inj_mod Nat2Z.inj_div m3; [| clear; rewrite !(ltac:(easy) : 2^8 = 256); lia]. pose proof Z.mod_bound_pos (Z.of_nat x `div` 2 ^ 8) (2^8) ltac:(lia) ltac:(lia). lia. }
+  assert (s4 : coerceInt (nth 3 (to32 x) 0) 32 = Z.of_nat x `mod` 256).
+  { unfold coerceInt, to32. rewrite (ltac:(easy) : forall a b c d e, nth 3%nat [a;b;c;d] e = d). rewrite Z.mod_small Nat2Z.inj_mod; [| clear; lia]. pose proof Z.mod_bound_pos (Z.of_nat x) 256 ltac:(lia) ltac:(lia). lia. }
+  rewrite s1 s2 s3 s4.
+  assert (q1 : coerceInt (Z.land (1 ≪ 24) (Z.ones 64)) 32 = 2^24). { clear. easy. }
+  assert (q2 : coerceInt (Z.land (1 ≪ 16) (Z.ones 64)) 32 = 2^16). { clear. easy. }
+  assert (q3 : coerceInt (Z.land (1 ≪ 8) (Z.ones 64)) 32 = 2^8). { clear. easy. }
+  rewrite q1 q2 q3.
+  pose proof Z.mod_bound_pos (Z.of_nat x `div` 2 ^ 16) 256 ltac:(assumption) as u1.
+  pose proof Z.mod_bound_pos (Z.of_nat x `div` 2 ^ 8) 256 ltac:(assumption) as u2.
+  pose proof Z.mod_bound_pos (Z.of_nat x) 256 ltac:(assumption) as u3.
+  assert (w1 : coerceInt (Z.of_nat x `div` 2 ^ 24 * 2 ^ 24) 32 = (Z.of_nat x `div` 2 ^ 24 * 2 ^ 24)%Z).
+  { unfold coerceInt. rewrite Z.mod_small; lia. }
+  assert (w2 : coerceInt ((Z.of_nat x `div` 2 ^ 16) `mod` 256 * 2 ^ 16) 32 = ((Z.of_nat x `div` 2 ^ 16) `mod` 256 * 2 ^ 16)%Z).
+  { unfold coerceInt. rewrite Z.mod_small; [| reflexivity]. lia. }
+  assert (w3 : coerceInt ((Z.of_nat x `div` 2 ^ 8) `mod` 256 * 2 ^ 8) 32 = ((Z.of_nat x `div` 2 ^ 8) `mod` 256 * 2 ^ 8)%Z).
+  { unfold coerceInt. rewrite Z.mod_small; [| reflexivity]. lia. }
+  rewrite w1 w2 w3.
+  unfold coerceInt. rewrite !(Z.mod_small _ (2^32)); try lia.
+  pose proof Z.div_mod (Z.of_nat x) 256 ltac:(clear; easy) as r1.
+  pose proof Z.div_mod (Z.of_nat x / 256) 256 ltac:(clear; easy) as r2.
+  pose proof Z.div_mod (Z.of_nat x / (256 * 256)) 256 ltac:(clear; easy) as r3.
+  rewrite (Z.div_div (Z.of_nat x) 256 256 ltac:(clear; easy) ltac:(clear; easy)) in r2.
+  rewrite (Z.div_div (Z.of_nat x) (256 * 256) 256 ltac:(clear; easy) ltac:(clear; easy)) in r3.
+  rewrite !(ltac:(clear; easy) : 2^8 = 256) !(ltac:(clear; easy) : 2^16 = (256 * 256)%Z) !(ltac:(clear; easy) : 2^24 = (256 * 256 * 256)%Z). lia.
+Qed.
+
+Lemma readWeight (items : list (nat * nat)) (hl : Z.of_nat (length items) < 2^32) (limit : nat) (a32 : forall x, (fst (nth x items (0%nat,0%nat)) < 2^32)%nat) whatever index (hZ : 0 <= index) (hIndex : (Z.to_nat index < length items)%nat) cont whatever2 whatever3 ol ju : invokeContractAux (repeat 1 20) (repeat 0 20) 0 state state (generateData items limit) 1 arrayIndex0 arrayIndexEqualityDecidable0 (arrayType arrayIndex0 environment0) (fun x => match x with | arraydef_0__message => [ol] | arraydef_0__dp => ju | arraydef_0__n => [Z.of_nat (length items)] end) whatever (funcdef_0__getweight whatever2 (fun=> index) whatever3 >>= cont) = invokeContractAux (repeat 1 20) (repeat 0 20) 0 state state (generateData items limit) 1 arrayIndex0 arrayIndexEqualityDecidable0 (arrayType arrayIndex0 environment0) (fun x => match x with | arraydef_0__message => [Z.of_nat (fst (nth (Z.to_nat index) items (0%nat,0%nat)))] | arraydef_0__dp => ju | arraydef_0__n => [Z.of_nat (length items)] end) whatever (cont tt).
 Proof.
   unfold funcdef_0__getweight.
   unfold addInt, multInt. rewrite !leftIdentity.
@@ -82,7 +156,17 @@ Proof.
   rewrite pushDispatch2 bindDispatch unfoldInvoke_S_ReadByte.
   clear jk; case_decide as jk; [| rewrite dataLength in jk; lia].
   rewrite (ltac:(lia) : (Z.to_nat (4 * index + 3) = 4 * Z.to_nat index + 3)%nat) nthGenerateDataWeight. { lia. } { lia. }
-Admitted.
+  rewrite assembly.
+  { pose proof a32 (Z.to_nat index).
+    rewrite (ltac:(rewrite Nat2Z.inj_pow; easy) : 2^32 = Z.of_nat (2^32)). lia. }
+  rewrite !leftIdentity pushDispatch2 bindDispatch unfoldInvoke_S_Store.
+  case_decide as rr; [| simpl in rr; lia].
+  remember (fun x : arrayIndex0 => _) as s1 eqn:h1.
+  remember (fun x : arrayIndex0 => _) as s2 eqn:h2 in |- * at 1.
+  assert (df : s1 = s2).
+  { apply functional_extensionality_dep. intro y. subst s1 s2. destruct y; easy. }
+  rewrite df. easy.
+Qed.
 
 Lemma extractAnswerEq (items : list (nat * nat)) (notNil : items <> []) (limit : nat) (hp : ((limit + 1%nat) * (length items + 1%nat) <= 1000000%nat)%nat) (a32 : forall x, (fst (nth x items (0%nat,0%nat)) < 2^32)%nat) (b32 : forall x, (snd (nth x items (0%nat,0%nat)) < 2^32)%nat) : extractAnswer (start items limit) = Z.of_nat (knapsack items limit).
 Proof.
