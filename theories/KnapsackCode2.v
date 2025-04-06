@@ -168,6 +168,60 @@ Proof.
   rewrite df. easy.
 Qed.
 
+Lemma readValue (items : list (nat * nat)) (hl : Z.of_nat (length items) < 2^32) (limit : nat) (a32 : forall x, (snd (nth x items (0%nat,0%nat)) < 2^32)%nat) whatever index (hZ : 0 <= index) (hIndex : (Z.to_nat index < length items)%nat) cont whatever2 whatever3 ol ju : invokeContractAux (repeat 1 20) (repeat 0 20) 0 state state (generateData items limit) 1 arrayIndex0 arrayIndexEqualityDecidable0 (arrayType arrayIndex0 environment0) (fun x => match x with | arraydef_0__message => [ol] | arraydef_0__dp => ju | arraydef_0__n => [Z.of_nat (length items)] end) whatever (funcdef_0__getvalue whatever2 (fun=> index) whatever3 >>= cont) = invokeContractAux (repeat 1 20) (repeat 0 20) 0 state state (generateData items limit) 1 arrayIndex0 arrayIndexEqualityDecidable0 (arrayType arrayIndex0 environment0) (fun x => match x with | arraydef_0__message => [Z.of_nat (snd (nth (Z.to_nat index) items (0%nat,0%nat)))] | arraydef_0__dp => ju | arraydef_0__n => [Z.of_nat (length items)] end) whatever (cont tt).
+Proof.
+  unfold funcdef_0__getvalue.
+  unfold addInt, multInt. rewrite !leftIdentity.
+  rewrite -!bindAssoc pushDispatch bindDispatch unfoldInvoke_S_Retrieve. case_decide as tu; [| simpl in tu; lia]. rewrite (ltac:(clear; easy) : nth_lt [Z.of_nat (length items)] (Z.to_nat 0) tu = Z.of_nat (length items)). clear tu. rewrite !leftIdentity.
+  rewrite -!bindAssoc pushNumberGet2 !leftIdentity.
+  rewrite pushDispatch2 bindDispatch unfoldInvoke_S_ReadByte.
+  rewrite dataLength (ltac:(unfold coerceInt; rewrite Z.mod_small; lia) : coerceInt (4 * Z.of_nat (length items)) 64 = (4 * Z.of_nat (length items))%Z) (ltac:(unfold coerceInt; rewrite Z.mod_small; lia) : (coerceInt (4 * index) 64 = 4 * index)%Z) (ltac:(unfold coerceInt; rewrite Z.mod_small; lia) : Z.to_nat (coerceInt (4 * Z.of_nat (length items) + 4 * index) 64) = (4 * length items + 4 * Z.to_nat index + 0)%nat) nthGenerateDataValue. { lia. } { lia. }
+  case_decide as uw; [| lia]. rewrite !leftIdentity -!bindAssoc pushDispatch bindDispatch unfoldInvoke_S_Retrieve.
+  case_decide as tu; [| simpl in tu; lia]. rewrite (ltac:(clear; easy) : nth_lt [Z.of_nat (length items)] (Z.to_nat 0) tu = Z.of_nat (length items)). clear tu. rewrite !leftIdentity.
+  rewrite -!bindAssoc pushNumberGet2 !leftIdentity.
+  rewrite pushDispatch2 bindDispatch unfoldInvoke_S_ReadByte.
+  assert (yu : (Z.to_nat
+  (coerceInt
+     (coerceInt
+        (coerceInt (4 * Z.of_nat (length items)) 64 +
+         coerceInt (4 * index) 64) 64 + 1) 64)) = (4 * length items + 4 * Z.to_nat index + 1)%nat).
+  { unfold coerceInt. rewrite !Z.mod_small; lia. } rewrite yu. clear yu. rewrite nthGenerateDataValue. { lia. } { lia. }
+  case_decide as tu; [| rewrite dataLength in tu; lia]. clear uw tu.
+  rewrite !leftIdentity.
+  rewrite -!bindAssoc pushDispatch bindDispatch unfoldInvoke_S_Retrieve. case_decide as tu; [| simpl in tu; lia]. rewrite (ltac:(clear; easy) : nth_lt [Z.of_nat (length items)] (Z.to_nat 0) tu = Z.of_nat (length items)). clear tu. rewrite !leftIdentity.
+  rewrite -!bindAssoc pushNumberGet2 !leftIdentity.
+  rewrite pushDispatch2 bindDispatch unfoldInvoke_S_ReadByte.
+  assert (yu : (Z.to_nat
+  (coerceInt
+     (coerceInt
+        (coerceInt (4 * Z.of_nat (length items)) 64 + coerceInt (4 * index) 64)
+        64 + 2) 64)) = (4 * length items + 4 * Z.to_nat index + 2)%nat).
+  { unfold coerceInt. rewrite !Z.mod_small; lia. } rewrite yu. clear yu. case_decide as rt; [| rewrite dataLength in rt; lia].
+  rewrite !leftIdentity.
+  rewrite -!bindAssoc pushDispatch bindDispatch unfoldInvoke_S_Retrieve. case_decide as tu; [| simpl in tu; lia]. rewrite (ltac:(clear; easy) : nth_lt [Z.of_nat (length items)] (Z.to_nat 0) tu = Z.of_nat (length items)). clear tu. rewrite !leftIdentity.
+  rewrite -!bindAssoc pushNumberGet2 !leftIdentity.
+  rewrite pushDispatch2 bindDispatch unfoldInvoke_S_ReadByte.
+  assert (yu : (Z.to_nat
+  (coerceInt
+     (coerceInt
+        (coerceInt (4 * Z.of_nat (length items)) 64 + coerceInt (4 * index) 64)
+        64 + 3) 64)) = (4 * length items + 4 * Z.to_nat index + 3)%nat).
+  { unfold coerceInt. rewrite !Z.mod_small; lia. } rewrite yu. clear yu.
+  case_decide as yi; [| rewrite dataLength in yi; lia].
+  rewrite !nthGenerateDataValue. { lia. } { lia. } { lia. } { lia. }
+  (* BIG BARRIER *)
+  rewrite assembly.
+  { pose proof a32 (Z.to_nat index).
+    rewrite (ltac:(rewrite Nat2Z.inj_pow; easy) : 2^32 = Z.of_nat (2^32)). lia. }
+  rewrite !leftIdentity pushDispatch2 bindDispatch unfoldInvoke_S_Store.
+  case_decide as rr; [| simpl in rr; lia].
+  remember (fun x : arrayIndex0 => _) as s1 eqn:h1.
+  remember (fun x : arrayIndex0 => _) as s2 eqn:h2 in |- * at 1.
+  assert (df : s1 = s2).
+  { apply functional_extensionality_dep. intro y. subst s1 s2. destruct y; easy. }
+  rewrite df. easy.
+Qed.
+
 Lemma extractAnswerEq (items : list (nat * nat)) (notNil : items <> []) (limit : nat) (hp : ((limit + 1%nat) * (length items + 1%nat) <= 1000000%nat)%nat) (a32 : forall x, (fst (nth x items (0%nat,0%nat)) < 2^32)%nat) (b32 : forall x, (snd (nth x items (0%nat,0%nat)) < 2^32)%nat) : extractAnswer (start items limit) = Z.of_nat (knapsack items limit).
 Proof.
   unfold start, invokeContract, state at 1. case_decide as uu; [| easy].
