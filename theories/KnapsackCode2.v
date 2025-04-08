@@ -230,6 +230,33 @@ Fixpoint fill (items : list (nat * nat)) (maxLimit : nat) (top : nat) :=
     fill items maxLimit top ++ [knapsack (drop (length items - top / (maxLimit + 1)) items) (top `mod` (maxLimit + 1))]
   end.
 
+Lemma lengthFill (items : list (nat * nat)) (maxLimit : nat) (top : nat) : length (fill items maxLimit top) = top.
+Proof.
+  induction top as [| top IH].
+  { easy. }
+  simpl. rewrite app_length IH. simpl. lia.
+Qed.
+
+Lemma retrievalFact (items : list (nat * nat)) (maxLimit : nat) (top : nat) (index limit : nat) (hLimit : (limit <= maxLimit)%nat) (hsave : (index * (maxLimit + 1) + limit < top)%nat) : nth ((index * (maxLimit + 1) + limit)%nat) (fill items maxLimit top) 0%nat = knapsack (drop ((length items - index)%nat) items) limit.
+Proof.
+  remember (index * (maxLimit + 1) + limit)%nat as jw eqn:ol.
+  assert (f1 : (jw `mod` (maxLimit + 1))%nat = limit).
+  { subst jw. rewrite Nat.add_mod. { lia. }
+    rewrite Nat.mod_mul. { lia. } rewrite Nat.add_0_l.
+    rewrite Nat.mod_mod. { lia. } rewrite Nat.mod_small; lia. }
+  assert (f2 : (jw `div` (maxLimit + 1))%nat = index).
+  { subst jw. rewrite Nat.div_add_l. { lia. }
+    rewrite Nat.div_small; lia. }
+    subst limit index. clear ol hLimit.
+  revert jw hsave. induction top as [| top IH]; intros jw hsave. { lia. }
+  simpl.
+  destruct (ltac:(lia) : (jw = top \/ jw < top)%nat) as [dj | dj].
+  { subst jw. rewrite nth_lookup lookup_app_r. { rewrite lengthFill. lia. }
+    rewrite lengthFill Nat.sub_diag. easy. }
+  rewrite nth_lookup lookup_app_l. { rewrite lengthFill. lia. }
+  rewrite -nth_lookup IH; lia.
+Qed.
+
 Lemma extractAnswerEq (items : list (nat * nat)) (notNil : items <> []) (limit : nat) (hp : ((limit + 1%nat) * (length items + 1%nat) <= 1000000%nat)%nat) (a32 : forall x, (fst (nth x items (0%nat,0%nat)) < 2^32)%nat) (b32 : forall x, (snd (nth x items (0%nat,0%nat)) < 2^32)%nat) : extractAnswer (start items limit) = Z.of_nat (knapsack items limit).
 Proof.
   unfold start, invokeContract, state at 1. case_decide as uu; [| easy].
