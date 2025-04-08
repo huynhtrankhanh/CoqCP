@@ -222,6 +222,14 @@ Proof.
   rewrite df. easy.
 Qed.
 
+(* CAVEAT: the list of items has to be reversed to match the imperative implementation *)
+Fixpoint fill (items : list (nat * nat)) (maxLimit : nat) (top : nat) :=
+  match top with
+  | O => []
+  | S top =>
+    fill items maxLimit top ++ [knapsack (drop (length items - top / (maxLimit + 1)) items) (top `mod` (maxLimit + 1))]
+  end.
+
 Lemma extractAnswerEq (items : list (nat * nat)) (notNil : items <> []) (limit : nat) (hp : ((limit + 1%nat) * (length items + 1%nat) <= 1000000%nat)%nat) (a32 : forall x, (fst (nth x items (0%nat,0%nat)) < 2^32)%nat) (b32 : forall x, (snd (nth x items (0%nat,0%nat)) < 2^32)%nat) : extractAnswer (start items limit) = Z.of_nat (knapsack items limit).
 Proof.
   unfold start, invokeContract, state at 1. case_decide as uu; [| easy].
