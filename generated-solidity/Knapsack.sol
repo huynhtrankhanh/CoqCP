@@ -156,9 +156,9 @@ contract GeneratedCode {
             } else {
             }
             for (uint64 binder1 = 0; binder1 < (local0 + uint64(1)); binder1++) {
-                procedure0(environment0, environment1, environment2, binder0, communication);
+                procedure0(environment0, environment1, environment2, (binder0 - uint64(1)), communication);
                 local1 = uint64(arrayGet(environment1, uint64(0)).item0);
-                procedure1(environment0, environment1, environment2, binder0, communication);
+                procedure1(environment0, environment1, environment2, (binder0 - uint64(1)), communication);
                 local2 = uint64(arrayGet(environment1, uint64(0)).item0);
                 if ((binder1 < local1)) {
                     arraySet(environment0, ((binder0 * (local0 + uint64(1))) + binder1), Tuple0(arrayGet(environment0, (((binder0 - uint64(1)) * (local0 + uint64(1))) + binder1)).item0));
