@@ -55,9 +55,9 @@ procedure('main', { limit: int64, weight: int64, value: int64 }, () => {
       ;('continue')
     }
     range(get('limit') + 1, (cap) => {
-      call('get weight', { index: i })
+      call('get weight', { index: i - 1 })
       set('weight', coerceInt64(retrieve('message', 0)[0]))
-      call('get value', { index: i })
+      call('get value', { index: i - 1 })
       set('value', coerceInt64(retrieve('message', 0)[0]))
       if (less(cap, get('weight'))) {
         store('dp', i * (get('limit') + 1) + cap, [

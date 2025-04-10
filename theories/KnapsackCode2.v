@@ -415,4 +415,41 @@ Proof.
   (coerceInt (Z.of_nat (length items) + 1) 64)) = (length items + 1)%nat).
   { unfold coerceInt. rewrite Z.mod_small; lia. }
   rewrite ue. clear ue.
+  remember (loop _ _) as de eqn:ed.
+  remember (length items)%nat as na eqn:nb in ed at 1.
+  assert (ub : (na <= length items)%nat). { lia. }
+  (* assert (wi : coerceInt (Z.of_nat (length items) + 1) 64 = (Z.of_nat na + 1)%Z).
+  { unfold coerceInt. rewrite Z.mod_small; lia. }
+  rewrite !wi in ed. clear wi. *)
+  assert (ow : length items <> 0%nat).
+  { intro sa. pose proof nil_length_inv _ sa as hw. exact (notNil hw). }
+  assert (wu : forall cont msg jk, invokeContractAux (repeat 1 20) (repeat 0 20) 0 state state (generateData items limit) 1 arrayIndex0 arrayIndexEqualityDecidable0 (arrayType arrayIndex0 environment0) (fun x => match x with | arraydef_0__dp => repeat 0 (1000000%nat) | arraydef_0__message => [msg] | arraydef_0__n => [Z.of_nat (length items)] end) jk (eliminateLocalVariables xpred0 (update (fun=> 0) vardef_0__main_limit (Z.of_nat limit)) (fun=> repeat 0 20) (de >>= cont)) = invokeContractAux (repeat 1 20) (repeat 0 20) 0 state state (generateData items limit) 1 arrayIndex0 arrayIndexEqualityDecidable0 (arrayType arrayIndex0 environment0) (fun x => match x with | arraydef_0__dp => map Z.of_nat (fill (reverse items) limit ((na + 1) * (limit + 1))%nat) ++ repeat 0 (1000000 - (na + 1) * (limit + 1))%nat | arraydef_0__message => [msg] | arraydef_0__n => [Z.of_nat (length items)] end) jk (eliminateLocalVariables xpred0 (update (fun=> 0) vardef_0__main_limit (Z.of_nat limit)) (fun=> repeat 0 20) (cont tt))).
+  { intros cont msg jk.
+    clear nb. subst de. induction na as [| na IH].
+    { rewrite loop_S !leftIdentity.
+      rewrite (ltac:(clear; lia) : ((0 + 1) * (limit + 1) = limit + 1)%nat).
+      assert (sb : coerceInt (Z.of_nat (length items) + 1) 64 = (Z.of_nat (length items) + 1)%Z).
+      { unfold coerceInt. rewrite Z.mod_small; lia. }
+      rewrite sb. case_bool_decide as tw. { lia. }
+      rewrite !leftIdentity dropWithinLoopLiftToWithinLoop. rewrite -!bindAssoc pushNumberGet2.
+      rewrite !leftIdentity.
+      remember (Z.to_nat (coerceInt _ 64)) as dw eqn:wb in |- * at 1.
+      assert (wual : dw = (limit + 1)%nat).
+      { subst dw. unfold coerceInt. rewrite Z.mod_small; unfold update; simpl; lia. }
+      clear wb. subst dw.
+      remember (loop _ _) as wla eqn:wie.
+      remember limit as xx eqn:XX in wie at 1.
+      assert (pd : (xx <= limit)%nat). { lia. }
+      rewrite (ltac:(lia) : (limit + 1 = xx + 1)%nat).
+      clear XX.
+      subst wla.
+      induction xx as [| xx IH].
+      { rewrite loop_S !leftIdentity. rewrite <- !bindAssoc. rewrite -> dropWithinLoopLiftToWithinLoop. rewrite <- !bindAssoc. rewrite -> eliminateLift.
+        rewrite readWeight.
+        - lia.
+        - assumption.
+        - unfold update. simpl. lia.
+        - unfold update. simpl. lia. } }
+    rewrite (ltac:(clear;easy) : (S na + 1)%nat = S (na + 1)) loop_S !leftIdentity.
+    case_bool_decide as dl; [| lia]. clear dl. }
 Admitted.
