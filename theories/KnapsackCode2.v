@@ -466,5 +466,37 @@ Proof.
     remember (limit + 1)%nat as ej eqn:wg in ud at 1.
     assert (av : (ej <= limit + 1)%nat). { revert wg. clear. intro wg. lia. }
     assert (adv : forall cont msg jk, invokeContractAux (repeat 1 20) (repeat 0 20) 0 state state (generateData items limit) 1 arrayIndex0 arrayIndexEqualityDecidable0 (arrayType arrayIndex0 environment0) (fun x => match x with | arraydef_0__dp => map Z.of_nat (fill (reverse items) limit ((length items + 1 - na) * (limit + 1) - ej)%nat) ++ repeat 0 (1000000 - (length items + 1 - na) * (limit + 1) - ej)%nat | arraydef_0__message => [msg] | arraydef_0__n => [Z.of_nat (length items)] end) jk (eliminateLocalVariables xpred0 (update (fun=> 0) vardef_0__main_limit (Z.of_nat limit)) (fun=> repeat 0 20) (dk >>= cont)) = invokeContractAux (repeat 1 20) (repeat 0 20) 0 state state (generateData items limit) 1 arrayIndex0 arrayIndexEqualityDecidable0 (arrayType arrayIndex0 environment0) (fun x => match x with | arraydef_0__dp => map Z.of_nat (fill (reverse items) limit ((length items + 1 - na) * (limit + 1))%nat) ++ repeat 0 (1000000 - (length items + 1 - na) * (limit + 1))%nat | arraydef_0__message => [msg] | arraydef_0__n => [Z.of_nat (length items)] end) jk (eliminateLocalVariables xpred0 (update (fun=> 0) vardef_0__main_limit (Z.of_nat limit)) (fun=> repeat 0 20) (cont tt))).
-    { admit. } }
+    { clear wg. intros cont1 msg1 jk1. subst dk. induction ej as [| ej ID].
+      { rewrite !Nat.sub_0_r.
+        rewrite (ltac:(simpl; reflexivity) : loop 0 _ = _).
+        rewrite !leftIdentity. reflexivity. }
+      rewrite loop_S.
+      rewrite <- !bindAssoc.
+      rewrite !leftIdentity.
+      rewrite -> dropWithinLoopLiftToWithinLoop.
+      rewrite <- !bindAssoc, -> eliminateLift.
+      rewrite readWeight.
+      { lia. } { tauto. }
+      { unfold update. simpl. unfold coerceInt. rewrite Z.mod_small; lia. }
+      { unfold update. simpl. unfold coerceInt. rewrite Z.mod_small; lia. }
+      { exact (fun x => false). }
+      { exact (fun x => []). }
+      assert (qat : (Z.to_nat
+      (update (fun=> 0) vardef_0__getweight_index
+         (coerceInt
+            (Z.of_nat (length items) - Z.of_nat na - 1) 64)
+         vardef_0__getweight_index)) = (length items - na - 1)%nat).
+      { unfold update. simpl. unfold coerceInt. rewrite Z.mod_small; lia. }
+      rewrite qat. clear qat.
+      rewrite dropWithinLoopLiftToWithinLoop.
+      rewrite <- !bindAssoc. rewrite pushDispatch. rewrite unfoldInvoke_S_Retrieve.
+      case_decide as wla; [| simpl in wla; lia].
+      rewrite (ltac:(simpl; reflexivity) : nth_lt [_] 0 _ = _).
+      unfold coerceInt at 1. rewrite Z.mod_small.
+      { constructor. { clear. lia. }
+        pose proof a32 (length items - na - 1)%nat as bv.
+        rewrite (ltac:(rewrite Znat.Z2Nat.inj_pow; [lia | lia | easy]) : (2^32)%nat = Z.to_nat (2^32)%Z) in bv.
+        lia. }
+      rewrite -> !leftIdentity.
+      rewrite pushNumberSet2. } }
 Admitted.
