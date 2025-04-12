@@ -416,40 +416,51 @@ Proof.
   { unfold coerceInt. rewrite Z.mod_small; lia. }
   rewrite ue. clear ue.
   remember (loop _ _) as de eqn:ed.
-  remember (length items)%nat as na eqn:nb in ed at 1.
-  assert (ub : (na <= length items)%nat). { lia. }
-  (* assert (wi : coerceInt (Z.of_nat (length items) + 1) 64 = (Z.of_nat na + 1)%Z).
-  { unfold coerceInt. rewrite Z.mod_small; lia. }
-  rewrite !wi in ed. clear wi. *)
+  remember (length items + 1)%nat as na eqn:nb in ed at 1.
+  assert (ub : (na <= length items + 1)%nat). { lia. }
   assert (ow : length items <> 0%nat).
   { intro sa. pose proof nil_length_inv _ sa as hw. exact (notNil hw). }
-  assert (wu : forall cont msg jk, invokeContractAux (repeat 1 20) (repeat 0 20) 0 state state (generateData items limit) 1 arrayIndex0 arrayIndexEqualityDecidable0 (arrayType arrayIndex0 environment0) (fun x => match x with | arraydef_0__dp => repeat 0 (1000000%nat) | arraydef_0__message => [msg] | arraydef_0__n => [Z.of_nat (length items)] end) jk (eliminateLocalVariables xpred0 (update (fun=> 0) vardef_0__main_limit (Z.of_nat limit)) (fun=> repeat 0 20) (de >>= cont)) = invokeContractAux (repeat 1 20) (repeat 0 20) 0 state state (generateData items limit) 1 arrayIndex0 arrayIndexEqualityDecidable0 (arrayType arrayIndex0 environment0) (fun x => match x with | arraydef_0__dp => map Z.of_nat (fill (reverse items) limit ((na + 1) * (limit + 1))%nat) ++ repeat 0 (1000000 - (na + 1) * (limit + 1))%nat | arraydef_0__message => [msg] | arraydef_0__n => [Z.of_nat (length items)] end) jk (eliminateLocalVariables xpred0 (update (fun=> 0) vardef_0__main_limit (Z.of_nat limit)) (fun=> repeat 0 20) (cont tt))).
+  assert (wu : forall cont msg jk, invokeContractAux (repeat 1 20) (repeat 0 20) 0 state state (generateData items limit) 1 arrayIndex0 arrayIndexEqualityDecidable0 (arrayType arrayIndex0 environment0) (fun x => match x with | arraydef_0__dp => map Z.of_nat (fill (reverse items) limit ((length items + 1 - na) * (limit + 1))%nat) ++ repeat 0 (1000000 - (length items + 1 - na) * (limit + 1))%nat | arraydef_0__message => [msg] | arraydef_0__n => [Z.of_nat (length items)] end) jk (eliminateLocalVariables xpred0 (update (fun=> 0) vardef_0__main_limit (Z.of_nat limit)) (fun=> repeat 0 20) (de >>= cont)) = invokeContractAux (repeat 1 20) (repeat 0 20) 0 state state (generateData items limit) 1 arrayIndex0 arrayIndexEqualityDecidable0 (arrayType arrayIndex0 environment0) (fun x => match x with | arraydef_0__dp => map Z.of_nat (fill (reverse items) limit ((length items + 1) * (limit + 1))%nat) ++ repeat 0 (1000000 - (length items + 1) * (limit + 1))%nat | arraydef_0__message => [msg] | arraydef_0__n => [Z.of_nat (length items)] end) jk (eliminateLocalVariables xpred0 (update (fun=> 0) vardef_0__main_limit (Z.of_nat limit)) (fun=> repeat 0 20) (cont tt))).
   { intros cont msg jk.
     clear nb. subst de. induction na as [| na IH].
-    { rewrite loop_S !leftIdentity.
-      rewrite (ltac:(clear; lia) : ((0 + 1) * (limit + 1) = limit + 1)%nat).
-      assert (sb : coerceInt (Z.of_nat (length items) + 1) 64 = (Z.of_nat (length items) + 1)%Z).
-      { unfold coerceInt. rewrite Z.mod_small; lia. }
-      rewrite sb. case_bool_decide as tw. { lia. }
-      rewrite !leftIdentity dropWithinLoopLiftToWithinLoop. rewrite -!bindAssoc pushNumberGet2.
+    { rewrite (ltac:(clear; simpl; reflexivity) : forall x, loop 0 x = _). rewrite leftIdentity. rewrite Nat.sub_0_r. reflexivity. }
+    rewrite loop_S !leftIdentity.
+    assert (ueo: (coerceInt (Z.of_nat (length items) + 1) 64 - Z.of_nat na - 1 = Z.of_nat (length items) - Z.of_nat na)).
+    { unfold coerceInt. rewrite Z.mod_small; lia. }
+    rewrite ueo.
+    case_bool_decide as iem.
+    { rewrite (ltac:(lia) : (length items + 1%nat - S na = 0)%nat).
+      rewrite Nat.mul_0_l Nat.sub_0_r.
       rewrite !leftIdentity.
-      remember (Z.to_nat (coerceInt _ 64)) as dw eqn:wb in |- * at 1.
-      assert (wual : dw = (limit + 1)%nat).
-      { subst dw. unfold coerceInt. rewrite Z.mod_small; unfold update; simpl; lia. }
-      clear wb. subst dw.
-      remember (loop _ _) as wla eqn:wie.
-      remember limit as xx eqn:XX in wie at 1.
-      assert (pd : (xx <= limit)%nat). { lia. }
-      rewrite (ltac:(lia) : (limit + 1 = xx + 1)%nat).
-      clear XX.
-      subst wla.
-      induction xx as [| xx IH].
-      { rewrite loop_S !leftIdentity. rewrite <- !bindAssoc. rewrite -> dropWithinLoopLiftToWithinLoop. rewrite <- !bindAssoc. rewrite -> eliminateLift.
-        rewrite readWeight.
-        - lia.
-        - assumption.
-        - unfold update. simpl. lia.
-        - unfold update. simpl. lia. } }
-    rewrite (ltac:(clear;easy) : (S na + 1)%nat = S (na + 1)) loop_S !leftIdentity.
-    case_bool_decide as dl; [| lia]. clear dl. }
+      rewrite (ltac:(clear;easy) : map Z.of_nat (fill (reverse items) limit 0) = []) app_nil_l.
+      rewrite (ltac:(lia) : ((length items + 1 - na) * (limit + 1) = limit + 1)%nat) in IH.
+      assert (uas : forall jd, (jd <= limit)%nat -> map Z.of_nat (fill (reverse items) limit (jd + 1)%nat) = repeat 0 (jd + 1)%nat).
+      { clear. intros jd hd.
+        induction jd as [| jd IH].
+        { unfold fill. unfold map. simpl.
+          rewrite Nat.div_0_l. { lia. }
+          rewrite Nat.mod_0_l. { lia. }
+          rewrite Nat.sub_0_r drop_all. easy. }
+          simpl.
+          rewrite Nat.div_small. { lia. }
+          rewrite Nat.sub_0_r drop_all. simpl.
+          rewrite map_app. rewrite IH. { lia. }
+          simpl. rewrite (ltac:(clear;easy) : Z.of_nat 0 = 0).
+          rewrite repeat_cons. reflexivity. }
+        rewrite uas in IH. { clear. lia. }
+        rewrite <- !repeat_app in IH.
+        rewrite -> (ltac:(lia) : (limit + 1 + (1000000 - (limit + 1)) = 1000000)%nat) in IH.
+        rewrite IH. { lia. }
+        reflexivity. }
+    rewrite !leftIdentity.
+    rewrite -> dropWithinLoopLiftToWithinLoop.
+    rewrite -!bindAssoc pushNumberGet2 !leftIdentity.
+    assert (dat : (Z.to_nat
+    (coerceInt
+       (update (fun=> 0) vardef_0__main_limit 
+          (Z.of_nat limit) vardef_0__main_limit + 1) 64)) = (limit + 1)%nat).
+    { unfold coerceInt. rewrite Z.mod_small. { unfold update. simpl. lia. }
+      unfold update. simpl. lia. }
+    rewrite dat. clear dat.
+    remember (loop (limit + 1) _) as dk eqn:ud in |- * at 1. }
 Admitted.
