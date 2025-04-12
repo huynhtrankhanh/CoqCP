@@ -503,5 +503,21 @@ Proof.
       rewrite <- !bindAssoc.
       rewrite eliminateLift.
       rewrite readValue.
-      { lia. } { exact b32. } { unfold update. simpl. unfold coerceInt. rewrite Z.mod_small; lia. } { unfold update. simpl. unfold coerceInt. rewrite Z.mod_small; lia. } { exact (fun x => false). } { exact (fun x => []). } } }
+      { lia. } { exact b32. } { unfold update. simpl. unfold coerceInt. rewrite Z.mod_small; lia. } { unfold update. simpl. unfold coerceInt. rewrite Z.mod_small; lia. } { exact (fun x => false). } { exact (fun x => []). }
+      assert (qat : (Z.to_nat
+      (update (fun=> 0) vardef_0__getweight_index
+         (coerceInt
+            (Z.of_nat (length items) - Z.of_nat na - 1) 64)
+         vardef_0__getweight_index)) = (length items - na - 1)%nat).
+      { unfold update. simpl. unfold coerceInt. rewrite Z.mod_small; lia. }
+      rewrite qat. clear qat.
+      rewrite dropWithinLoopLiftToWithinLoop.
+      rewrite <- !bindAssoc. rewrite pushDispatch. rewrite unfoldInvoke_S_Retrieve. clear wla.
+      case_decide as wla; [| simpl in wla; lia].
+      rewrite (ltac:(simpl; reflexivity) : nth_lt [_] 0 _ = _).
+      unfold coerceInt at 1. rewrite Z.mod_small.
+      { constructor. { clear. lia. }
+        pose proof b32 (length items - na - 1)%nat as bv.
+        rewrite (ltac:(rewrite Znat.Z2Nat.inj_pow; [lia | lia | easy]) : (2^32)%nat = Z.to_nat (2^32)%Z) in bv.
+        lia. } } }
 Admitted.
