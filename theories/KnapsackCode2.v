@@ -498,5 +498,10 @@ Proof.
         rewrite (ltac:(rewrite Znat.Z2Nat.inj_pow; [lia | lia | easy]) : (2^32)%nat = Z.to_nat (2^32)%Z) in bv.
         lia. }
       rewrite -> !leftIdentity.
-      rewrite pushNumberSet2. } }
+      rewrite pushNumberSet2.
+      rewrite dropWithinLoopLiftToWithinLoop.
+      rewrite <- !bindAssoc.
+      rewrite eliminateLift.
+      rewrite readValue.
+      { lia. } { exact b32. } { unfold update. simpl. unfold coerceInt. rewrite Z.mod_small; lia. } { unfold update. simpl. unfold coerceInt. rewrite Z.mod_small; lia. } { exact (fun x => false). } { exact (fun x => []). } } }
 Admitted.
