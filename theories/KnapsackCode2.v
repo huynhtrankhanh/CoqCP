@@ -462,5 +462,9 @@ Proof.
     { unfold coerceInt. rewrite Z.mod_small. { unfold update. simpl. lia. }
       unfold update. simpl. lia. }
     rewrite dat. clear dat.
-    remember (loop (limit + 1) _) as dk eqn:ud in |- * at 1. }
+    remember (loop (limit + 1) _) as dk eqn:ud in |- * at 1.
+    remember (limit + 1)%nat as ej eqn:wg in ud at 1.
+    assert (av : (ej <= limit + 1)%nat). { revert wg. clear. intro wg. lia. }
+    assert (adv : forall cont msg jk, invokeContractAux (repeat 1 20) (repeat 0 20) 0 state state (generateData items limit) 1 arrayIndex0 arrayIndexEqualityDecidable0 (arrayType arrayIndex0 environment0) (fun x => match x with | arraydef_0__dp => map Z.of_nat (fill (reverse items) limit ((length items + 1 - na) * (limit + 1) - ej)%nat) ++ repeat 0 (1000000 - (length items + 1 - na) * (limit + 1) - ej)%nat | arraydef_0__message => [msg] | arraydef_0__n => [Z.of_nat (length items)] end) jk (eliminateLocalVariables xpred0 (update (fun=> 0) vardef_0__main_limit (Z.of_nat limit)) (fun=> repeat 0 20) (dk >>= cont)) = invokeContractAux (repeat 1 20) (repeat 0 20) 0 state state (generateData items limit) 1 arrayIndex0 arrayIndexEqualityDecidable0 (arrayType arrayIndex0 environment0) (fun x => match x with | arraydef_0__dp => map Z.of_nat (fill (reverse items) limit ((length items + 1 - na) * (limit + 1))%nat) ++ repeat 0 (1000000 - (length items + 1 - na) * (limit + 1))%nat | arraydef_0__message => [msg] | arraydef_0__n => [Z.of_nat (length items)] end) jk (eliminateLocalVariables xpred0 (update (fun=> 0) vardef_0__main_limit (Z.of_nat limit)) (fun=> repeat 0 20) (cont tt))).
+    { admit. } }
 Admitted.
