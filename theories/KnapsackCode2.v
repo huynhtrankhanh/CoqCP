@@ -465,7 +465,7 @@ Proof.
     remember (loop (limit + 1) _) as dk eqn:ud in |- * at 1.
     remember (limit + 1)%nat as ej eqn:wg in ud at 1.
     assert (av : (ej <= limit + 1)%nat). { revert wg. clear. intro wg. lia. }
-    assert (adv : forall cont msg jk, invokeContractAux (repeat 1 20) (repeat 0 20) 0 state state (generateData items limit) 1 arrayIndex0 arrayIndexEqualityDecidable0 (arrayType arrayIndex0 environment0) (fun x => match x with | arraydef_0__dp => map Z.of_nat (fill (reverse items) limit ((length items + 1 - na) * (limit + 1) - ej)%nat) ++ repeat 0 (1000000 - (length items + 1 - na) * (limit + 1) - ej)%nat | arraydef_0__message => [msg] | arraydef_0__n => [Z.of_nat (length items)] end) jk (eliminateLocalVariables xpred0 (update (fun=> 0) vardef_0__main_limit (Z.of_nat limit)) (fun=> repeat 0 20) (dk >>= cont)) = invokeContractAux (repeat 1 20) (repeat 0 20) 0 state state (generateData items limit) 1 arrayIndex0 arrayIndexEqualityDecidable0 (arrayType arrayIndex0 environment0) (fun x => match x with | arraydef_0__dp => map Z.of_nat (fill (reverse items) limit ((length items + 1 - na) * (limit + 1))%nat) ++ repeat 0 (1000000 - (length items + 1 - na) * (limit + 1))%nat | arraydef_0__message => [msg] | arraydef_0__n => [Z.of_nat (length items)] end) jk (eliminateLocalVariables xpred0 (update (fun=> 0) vardef_0__main_limit (Z.of_nat limit)) (fun=> repeat 0 20) (cont tt))).
+    assert (adv : forall cont msg jk, invokeContractAux (repeat 1 20) (repeat 0 20) 0 state state (generateData items limit) 1 arrayIndex0 arrayIndexEqualityDecidable0 (arrayType arrayIndex0 environment0) (fun x => match x with | arraydef_0__dp => map Z.of_nat (fill (reverse items) limit ((length items + 1 - na) * (limit + 1) - ej)%nat) ++ repeat 0 (1000000 - ((length items + 1 - na) * (limit + 1) - ej))%nat | arraydef_0__message => [msg] | arraydef_0__n => [Z.of_nat (length items)] end) jk (eliminateLocalVariables xpred0 (update (fun=> 0) vardef_0__main_limit (Z.of_nat limit)) (fun=> repeat 0 20) (dk >>= cont)) = invokeContractAux (repeat 1 20) (repeat 0 20) 0 state state (generateData items limit) 1 arrayIndex0 arrayIndexEqualityDecidable0 (arrayType arrayIndex0 environment0) (fun x => match x with | arraydef_0__dp => map Z.of_nat (fill (reverse items) limit ((length items + 1 - na) * (limit + 1))%nat) ++ repeat 0 (1000000 - (length items + 1 - na) * (limit + 1))%nat | arraydef_0__message => [msg] | arraydef_0__n => [Z.of_nat (length items)] end) jk (eliminateLocalVariables xpred0 (update (fun=> 0) vardef_0__main_limit (Z.of_nat limit)) (fun=> repeat 0 20) (cont tt))).
     { clear wg. intros cont1 msg1 jk1. subst dk. induction ej as [| ej ID].
       { rewrite !Nat.sub_0_r.
         rewrite (ltac:(simpl; reflexivity) : loop 0 _ = _).
@@ -551,5 +551,51 @@ Proof.
          (Z.of_nat limit + 1) +
          (Z.of_nat limit + 1 - Z.of_nat ej - 1))) = ((length items - na - 1) * (limit + 1) + (limit - ej))%nat) in g3g.
         rewrite retrievalFact in g3g. { lia. } { nia. }
-       } }
+        rewrite pushDispatch unfoldInvoke_S_Store.
+        case_decide as wnv; [| rewrite app_length repeat_length map_length lengthFill in wnv; nia].
+        remember (fun x => _) as wjv eqn:igm in |- *.
+        (* (map Z.of_nat (fill (reverse items) limit ((length items + 1 - na) * (limit + 1) - ej)) ++ repeat 0 (1000000 - (length items + 1 - na) * (limit + 1) - ej)) *)
+        assert (cfl : wjv = fun x => match x with | arraydef_0__dp => (<[Z.to_nat
+        ((Z.of_nat (length items) - Z.of_nat na) * (Z.of_nat limit + 1) +
+        (Z.of_nat limit + 1 - Z.of_nat ej - 1)):=nw2]>
+        (map Z.of_nat
+          (fill (reverse items) limit
+            ((length items + 1 - na) * (limit + 1) - S ej)) ++
+        repeat 0 (1000000 -
+          ((length items + 1 - na) * (limit + 1) - S ej)))) | arraydef_0__message => [Z.of_nat (nth (length items - na - 1) items (0%nat, 0%nat)).2] | arraydef_0__n => [Z.of_nat (length items)] end).
+        { apply functional_extensionality_dep. subst wjv. intro x.
+          destruct x; easy. }
+        subst wjv. rewrite cfl. clear cfl.
+        remember (<[_ := _]> _) as ty eqn:iv in |- *.
+        assert (il : ty = (map Z.of_nat (fill (reverse items) limit ((length items + 1 - na) * (limit + 1) - ej)) ++ repeat 0 (1000000 - (length items + 1 - na) * (limit + 1) - ej))).
+        { subst ty. apply list_eq. intro u.
+          destruct (ltac:(lia) : (u < (length items + 1 - na) * (limit + 1) - S ej \/ u = (length items + 1 - na) * (limit + 1) - S ej \/ (length items + 1 - na) * (limit + 1) - S ej < u)%nat) as [c | [c | c]].
+          - rewrite list_lookup_insert_ne. { lia. }
+            rewrite lookup_app_l.
+            { rewrite -> map_length, lengthFill. exact c. }
+            rewrite lookup_app_l.
+            { rewrite -> map_length, lengthFill. lia. }
+            remember (_ !! _) as n1 eqn:y1 in |- *.
+            remember (_ !! _) as n2 eqn:y2 in |- *.
+            assert (stask : default (Z.of_nat 0%nat) n1 = default (Z.of_nat 0%nat) n2).
+            { subst n1 n2. rewrite <- !nth_lookup. rewrite -> !map_nth.
+              rewrite (ltac:(lia) : ((length items + 1 - na) * (limit + 1) - S ej = (length items - na) * (limit + 1) + (limit - ej))%nat).
+              rewrite (ltac:(lia) : ((length items + 1 - na) * (limit + 1) - ej = S ((length items - na) * (limit + 1) + (limit - ej)))%nat).
+              simpl.
+              rewrite -> !nth_lookup, lookup_app_l. { reflexivity. }
+              rewrite -> lengthFill. lia. }
+            destruct n1 as [n1 |].
+            + destruct n2 as [n2 |].
+              * simpl in stask. rewrite stask. reflexivity.
+              * symmetry in y2. pose proof lookup_ge_None_1 _ _ y2 as iw. rewrite -> map_length, lengthFill in iw. lia.
+            + symmetry in y1. pose proof lookup_ge_None_1 _ _ y1 as iw. rewrite -> map_length, lengthFill in iw. lia.
+          - remember (Z.to_nat _) as la eqn:gi in |- *.
+            rewrite (ltac:(lia) : la = u). rewrite list_lookup_insert.
+            { rewrite -> app_length, map_length, lengthFill, repeat_length. lia. }
+            remember (_ !! _) as vn eqn:uj in |- *.
+            assert (cq : default (Z.of_nat 0%nat) vn = nw2).
+            { subst vn. rewrite -> lookup_app_l, <- nth_lookup, map_nth; [| rewrite -> map_length, lengthFill; nia]. subst nw2.
+              rewrite (ltac:(nia) : u = ((length items - na) * (limit + 1) + (limit - ej))%nat).
+              rewrite retrievalFact. { lia. } { lia. } } }
+         } }
 Admitted.
