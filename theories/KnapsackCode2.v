@@ -519,5 +519,30 @@ Proof.
       { constructor. { clear. lia. }
         pose proof b32 (length items - na - 1)%nat as bv.
         rewrite (ltac:(rewrite Znat.Z2Nat.inj_pow; [lia | lia | easy]) : (2^32)%nat = Z.to_nat (2^32)%Z) in bv.
-        lia. } } }
+        lia. }
+      rewrite -> !leftIdentity.
+      rewrite pushNumberSet2.
+      rewrite dropWithinLoopLiftToWithinLoop.
+      rewrite <- !bindAssoc.
+      rewrite pushNumberGet2.
+      case_bool_decide as wy; unfold coerceInt in wy; unfold update in wy; simpl in wy; rewrite Z.mod_small in wy; try lia; rewrite -> !leftIdentity, <- !bindAssoc, dropWithinLoopLiftToWithinLoop; unfold numberLocalGet at 1; rewrite <- !bindAssoc; rewrite pushNumberGet2 !leftIdentity.
+      - rewrite pushNumberGet2.
+        remember (coerceInt _ 64) as wmm eqn:iwd in |- *.
+        unfold coerceInt in iwd. unfold update in iwd. simpl in iwd.
+        pose proof (ltac:(clear; rewrite Z2Nat.inj_pow; easy) : Z.of_nat (2^32)%nat = (2^32)%Z).
+        pose proof (ltac:(clear; rewrite Z2Nat.inj_pow; easy) : Z.of_nat (2^64)%nat = (2^64)%Z).
+        rewrite !Z.mod_small in iwd; try lia.
+        { constructor. { nia. } lia. }
+        { constructor. { nia. } lia. }
+        { constructor. { nia. } lia. }
+        subst wmm. rewrite pushDispatch2 unfoldInvoke_S_Retrieve.
+        case_decide as wjm; [| rewrite app_length repeat_length map_length lengthFill in wjm; nia].
+        remember (coerceInt _ 64) as mvw eqn:ica in |- *.
+        unfold coerceInt in ica. unfold update in ica. simpl in ica.
+        rewrite !Z.mod_small in ica; try lia.
+        { constructor. { nia. } lia. }
+        { constructor. { nia. } lia. }
+        { constructor. { nia. } lia. }
+        subst mvw.
+       } }
 Admitted.
