@@ -23,16 +23,6 @@
 *.vok
 *.vos
 .coq-native
-.csdp.cache
-.lia.cache
-.nia.cache
-.nlia.cache
-.nra.cache
-csdp.cache
-lia.cache
-nia.cache
-nlia.cache
-nra.cache
 native_compute_profile_*.data
 
 # generated timing files

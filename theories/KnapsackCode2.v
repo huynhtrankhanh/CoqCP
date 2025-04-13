@@ -543,6 +543,13 @@ Proof.
         { constructor. { nia. } lia. }
         { constructor. { nia. } lia. }
         { constructor. { nia. } lia. }
-        subst mvw.
+        subst mvw. remember (nth_lt _ _ _) as nw2 eqn:g3g.
+        rewrite (nth_lt_default _ _ _ 0%Z) in g3g.
+        rewrite -> nth_lookup, lookup_app_l, <- nth_lookup, (ltac:(clear; easy) : 0%Z = Z.of_nat (0%nat)), map_nth in g3g; [| rewrite -> map_length, lengthFill; nia].
+        rewrite (ltac:(nia) : (Z.to_nat
+        ((Z.of_nat (length items) - Z.of_nat na - 1) *
+         (Z.of_nat limit + 1) +
+         (Z.of_nat limit + 1 - Z.of_nat ej - 1))) = ((length items - na - 1) * (limit + 1) + (limit - ej))%nat) in g3g.
+        rewrite retrievalFact in g3g. { lia. } { nia. }
        } }
 Admitted.
