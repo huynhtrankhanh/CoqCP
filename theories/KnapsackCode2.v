@@ -1,5 +1,5 @@
 From stdpp Require Import numbers list.
-From CoqCP Require Import Options Imperative Knapsack KnapsackCode.
+From CoqCP Require Import Options Imperative Knapsack KnapsackCode ListsEqual.
 From Generated Require Import Knapsack.
 From Coq Require Import ssreflect ssrfun ssrbool.
 Require Import Coq.Logic.FunctionalExtensionality.
@@ -465,16 +465,19 @@ Proof.
     remember (loop (limit + 1) _) as dk eqn:ud in |- * at 1.
     remember (limit + 1)%nat as ej eqn:wg in ud at 1.
     assert (av : (ej <= limit + 1)%nat). { revert wg. clear. intro wg. lia. }
-    assert (adv : forall cont msg jk, invokeContractAux (repeat 1 20) (repeat 0 20) 0 state state (generateData items limit) 1 arrayIndex0 arrayIndexEqualityDecidable0 (arrayType arrayIndex0 environment0) (fun x => match x with | arraydef_0__dp => map Z.of_nat (fill (reverse items) limit ((length items + 1 - na) * (limit + 1) - ej)%nat) ++ repeat 0 (1000000 - ((length items + 1 - na) * (limit + 1) - ej))%nat | arraydef_0__message => [msg] | arraydef_0__n => [Z.of_nat (length items)] end) jk (eliminateLocalVariables xpred0 (update (fun=> 0) vardef_0__main_limit (Z.of_nat limit)) (fun=> repeat 0 20) (dk >>= cont)) = invokeContractAux (repeat 1 20) (repeat 0 20) 0 state state (generateData items limit) 1 arrayIndex0 arrayIndexEqualityDecidable0 (arrayType arrayIndex0 environment0) (fun x => match x with | arraydef_0__dp => map Z.of_nat (fill (reverse items) limit ((length items + 1 - na) * (limit + 1))%nat) ++ repeat 0 (1000000 - (length items + 1 - na) * (limit + 1))%nat | arraydef_0__message => [msg] | arraydef_0__n => [Z.of_nat (length items)] end) jk (eliminateLocalVariables xpred0 (update (fun=> 0) vardef_0__main_limit (Z.of_nat limit)) (fun=> repeat 0 20) (cont tt))).
-    { clear wg. intros cont1 msg1 jk1. subst dk. induction ej as [| ej ID].
+    assert (adv : forall cont msg jk, exists nmsg, invokeContractAux (repeat 1 20) (repeat 0 20) 0 state state (generateData items limit) 1 arrayIndex0 arrayIndexEqualityDecidable0 (arrayType arrayIndex0 environment0) (fun x => match x with | arraydef_0__dp => map Z.of_nat (fill (reverse items) limit ((length items + 1 - na) * (limit + 1) - ej)%nat) ++ repeat 0 (1000000 - ((length items + 1 - na) * (limit + 1) - ej))%nat | arraydef_0__message => [msg] | arraydef_0__n => [Z.of_nat (length items)] end) jk (eliminateLocalVariables xpred0 (update (fun=> 0) vardef_0__main_limit (Z.of_nat limit)) (fun=> repeat 0 20) (dk >>= cont)) = invokeContractAux (repeat 1 20) (repeat 0 20) 0 state state (generateData items limit) 1 arrayIndex0 arrayIndexEqualityDecidable0 (arrayType arrayIndex0 environment0) (fun x => match x with | arraydef_0__dp => map Z.of_nat (fill (reverse items) limit ((length items + 1 - na) * (limit + 1))%nat) ++ repeat 0 (1000000 - (length items + 1 - na) * (limit + 1))%nat | arraydef_0__message => [nmsg] | arraydef_0__n => [Z.of_nat (length items)] end) jk (eliminateLocalVariables xpred0 (update (fun=> 0) vardef_0__main_limit (Z.of_nat limit)) (fun=> repeat 0 20) (cont tt))).
+    { clear wg. intros cont1 msg1 jk1. revert msg1. subst dk. induction ej as [| ej ID].
       { rewrite !Nat.sub_0_r.
         rewrite (ltac:(simpl; reflexivity) : loop 0 _ = _).
-        rewrite !leftIdentity. reflexivity. }
+        rewrite !leftIdentity. intro ad. exists ad. reflexivity. }
       rewrite loop_S.
       rewrite <- !bindAssoc.
       rewrite !leftIdentity.
       rewrite -> dropWithinLoopLiftToWithinLoop.
       rewrite <- !bindAssoc, -> eliminateLift.
+      pose proof ID ltac:(lia) (Z.of_nat (nth (length items - na - 1)%nat items (0%nat, 0%nat)).2) as [wit ID2].
+      clear ID.
+      exists wit.
       rewrite readWeight.
       { lia. } { tauto. }
       { unfold update. simpl. unfold coerceInt. rewrite Z.mod_small; lia. }
@@ -554,7 +557,6 @@ Proof.
         rewrite pushDispatch unfoldInvoke_S_Store.
         case_decide as wnv; [| rewrite app_length repeat_length map_length lengthFill in wnv; nia].
         remember (fun x => _) as wjv eqn:igm in |- *.
-        (* (map Z.of_nat (fill (reverse items) limit ((length items + 1 - na) * (limit + 1) - ej)) ++ repeat 0 (1000000 - (length items + 1 - na) * (limit + 1) - ej)) *)
         assert (cfl : wjv = fun x => match x with | arraydef_0__dp => (<[Z.to_nat
         ((Z.of_nat (length items) - Z.of_nat na) * (Z.of_nat limit + 1) +
         (Z.of_nat limit + 1 - Z.of_nat ej - 1)):=nw2]>
@@ -567,8 +569,8 @@ Proof.
           destruct x; easy. }
         subst wjv. rewrite cfl. clear cfl.
         remember (<[_ := _]> _) as ty eqn:iv in |- *.
-        assert (il : ty = (map Z.of_nat (fill (reverse items) limit ((length items + 1 - na) * (limit + 1) - ej)) ++ repeat 0 (1000000 - (length items + 1 - na) * (limit + 1) - ej))).
-        { subst ty. apply list_eq. intro u.
+        assert (il : ty = (map Z.of_nat (fill (reverse items) limit ((length items + 1 - na) * (limit + 1) - ej)) ++ repeat 0 (1000000 - ((length items + 1 - na) * (limit + 1) - ej)))).
+        { subst ty. remember (Init.Nat.of_num_uint _) as dw eqn:wd. apply list_eq. intro u.
           destruct (ltac:(lia) : (u < (length items + 1 - na) * (limit + 1) - S ej \/ u = (length items + 1 - na) * (limit + 1) - S ej \/ (length items + 1 - na) * (limit + 1) - S ej < u)%nat) as [c | [c | c]].
           - rewrite list_lookup_insert_ne. { lia. }
             rewrite lookup_app_l.
@@ -596,6 +598,53 @@ Proof.
             assert (cq : default (Z.of_nat 0%nat) vn = nw2).
             { subst vn. rewrite -> lookup_app_l, <- nth_lookup, map_nth; [| rewrite -> map_length, lengthFill; nia]. subst nw2.
               rewrite (ltac:(nia) : u = ((length items - na) * (limit + 1) + (limit - ej))%nat).
-              rewrite retrievalFact. { lia. } { lia. } } }
-         } }
+              rewrite retrievalFact. { lia. } { lia. }
+              pose proof take_drop_middle (reverse items) na as int.
+              rewrite reverse_length.
+              rewrite (ltac:(lia) : (length items - (length items - na) = na)%nat).
+              rewrite (ltac:(lia) : (length items - (length items - na - 1) = na + 1)%nat).
+              rewrite reverse_lookup in int. { lia. }
+              pose proof int (nth (length items - na - 1) items (0%nat, 0%nat)) ltac:(rewrite nth_lookup; rewrite (ltac:(lia) : (length items - na - 1 = length items - S na)%nat); remember (_ !! _) as vmw eqn:ige; destruct vmw as [vmw |]; [easy |]; symmetry in ige; pose proof lookup_ge_None_1 _ _ ige; lia) as ni.
+              rewrite -ni.
+              rewrite -> drop_app_ge; [| rewrite take_length reverse_length; lia].
+              rewrite -> take_length, -> reverse_length, (ltac:(lia) : (na - na `min` length items = 0)%nat), (ltac:(clear; easy) : forall x, drop 0 x = x).
+              rewrite (ltac:(clear; intros a b cc; listsEqual) : forall a b c, a ++ b :: c = (a ++ [b]) ++ c).
+              rewrite -> drop_app_ge; [| rewrite -> app_length, -> take_length, -> reverse_length, (ltac:(easy) : length [_] = 1%nat); lia].
+              rewrite -> app_length, -> take_length, -> reverse_length, (ltac:(lia) : (na `min` length items = na)%nat), (ltac:(clear; easy) : forall a, length [a] = 1%nat), Nat.sub_diag, (ltac:(clear; easy) : forall x, drop 0 x = x).
+              simpl.
+              clear IH ID2.
+              remember (nth (length items - na - 1) items (0%nat, 0%nat)) as eqd eqn:ugn.
+              destruct eqd as [jgs amv].
+              simpl in wy.
+              case_decide as ywq; [| lia]. reflexivity. }
+          destruct vn as [vn |]. { simpl in cq. rewrite cq. reflexivity. }
+          symmetry in uj. pose proof lookup_ge_None_1 _ _ uj as ta.
+          rewrite -> app_length, map_length, repeat_length, lengthFill in ta. nia.
+        - rewrite (ltac:(lia) : Z.to_nat ((Z.of_nat (length items) - Z.of_nat na) * (Z.of_nat limit + 1) + (Z.of_nat limit + 1 - Z.of_nat ej - 1)) = ((length items + 1 - na) * (limit + 1) - S ej)%nat).
+          rewrite insert_app_r_alt. { rewrite -> map_length, lengthFill. clear. lia. }
+          rewrite -> map_length, lengthFill, Nat.sub_diag.
+          rewrite -> insert_take_drop, (ltac:(clear; easy) : forall x, take 0 x = []), app_nil_l; [| rewrite repeat_length; lia].
+          rewrite -> (ltac:(clear; intros x y z; listsEqual) : forall x y z, x ++ y :: z = (x ++ [y]) ++ z).
+          rewrite -> !lookup_app_r.
+          + rewrite -> !map_length, !lengthFill.
+            remember (_ !! _) as lgv eqn:wkv in |- *.
+            remember (_ !! _) as fmw eqn:igk in |- *.
+            symmetry in wkv. symmetry in igk.
+            destruct lgv as [lgv |]; [| pose proof lookup_ge_None_1 _ _ wkv as tjv; rewrite -> drop_length, repeat_length, app_length, (ltac:(clear; easy) : forall x, length [x] = 1%nat), map_length, lengthFill in tjv].
+            * destruct fmw as [fmw |].
+              { assert (jak : default 0 (Some lgv) = default 0 (Some fmw)).
+                { rewrite <- wkv, <- igk, lookup_drop.
+                  rewrite <- !nth_lookup, -> !nth_repeat. reflexivity. }
+                simpl in jak. subst lgv. reflexivity. }
+              { pose proof lookup_ge_None_1 _ _ igk as tjv.
+                pose proof lookup_lt_is_Some_1 _ _ (mk_is_Some _ _ wkv) as tyv.
+                rewrite repeat_length in tjv. rewrite -> app_length, map_length, drop_length, repeat_length, lengthFill, (ltac:(clear; easy) : forall x, length [x] = 1%nat) in tyv.
+                lia. }
+            * destruct fmw as [fmw |].
+              { pose proof lookup_lt_is_Some_1 _ _ (mk_is_Some _ _ igk) as tyv.
+                rewrite repeat_length in tyv. lia. }
+              { reflexivity. }
+          + rewrite -> !map_length, !lengthFill. lia.
+          + rewrite -> app_length, !map_length, !lengthFill, (ltac:(clear; easy) : forall x, length [x] = 1%nat). lia. }
+        rewrite il. rewrite ID2. } }
 Admitted.

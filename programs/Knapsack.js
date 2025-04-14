@@ -85,6 +85,8 @@ procedure('main', { limit: int64, weight: int64, value: int64 }, () => {
           ])
         }
       }
+      set('weight', 0)
+      set('value', 0)
     })
   })
   call('store result', {
