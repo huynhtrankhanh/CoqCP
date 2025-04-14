@@ -169,6 +169,8 @@ contract GeneratedCode {
                         arraySet(environment0, ((binder0 * (local0 + uint64(1))) + binder1), Tuple0(arrayGet(environment0, (((binder0 - uint64(1)) * (local0 + uint64(1))) + binder1)).item0));
                     }
                 }
+                local1 = uint64(0);
+                local2 = uint64(0);
             }
         }
         procedure2(environment0, environment1, environment2, arrayGet(environment0, ((arrayGet(environment2, uint64(0)).item0 * (local0 + uint64(1))) + local0)).item0, communication);

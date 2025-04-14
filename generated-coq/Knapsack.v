@@ -71,6 +71,8 @@ fun _ => ((addInt 64 ((Done _ _ _ 0%Z) >>= fun x => retrieve arrayIndex0 (arrayT
       )) >>=
       fun _ => Done _ _ _ tt
     )) >>=
+    fun _ => (liftToWithinLoop ((Done _ _ _ 0%Z) >>= fun x => numberLocalSet arrayIndex0 (arrayType _ environment0) varsfuncdef_0__main (vardef_0__main_weight) x)) >>=
+    fun _ => (liftToWithinLoop ((Done _ _ _ 0%Z) >>= fun x => numberLocalSet arrayIndex0 (arrayType _ environment0) varsfuncdef_0__main (vardef_0__main_value) x)) >>=
     fun _ => Done _ _ _ tt
   ))))) >>=
   fun _ => Done _ _ _ tt
