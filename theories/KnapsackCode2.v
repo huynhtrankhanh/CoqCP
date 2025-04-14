@@ -646,5 +646,49 @@ Proof.
               { reflexivity. }
           + rewrite -> !map_length, !lengthFill. lia.
           + rewrite -> app_length, !map_length, !lengthFill, (ltac:(clear; easy) : forall x, length [x] = 1%nat). lia. }
-        rewrite il. rewrite ID2. } }
+        rewrite il. rewrite dropWithinLoopLiftToWithinLoop pushNumberSet2 pushNumberSet2.
+        remember (update _ _ _) as ye eqn:jq in |- *.
+        remember (update _ _ _) as te eqn:jt in |- * at 3.
+        assert (ad : te = ye).
+        { subst ye te. apply functional_extensionality_dep. intro az. destruct az; clear; easy. }
+        symmetry in ad. rewrite ad jt. clear ad jt jq te ye.
+        rewrite ID2. reflexivity.
+      - remember (coerceInt _ _) as tew eqn:mwd in |- * at 1.
+        unfold coerceInt in mwd.
+        unfold update in mwd. simpl in mwd.
+        rewrite !Z.mod_small in mwd; try lia. { nia. } { nia. } { nia. }
+        subst tew. rewrite bindDispatch pushDispatch2 unfoldInvoke_S_Retrieve. case_decide as gkw; [| rewrite -> app_length, map_length, repeat_length, lengthFill in gkw; lia].
+        unfold subInt, multInt at 1. rewrite -> !leftIdentity.
+        rewrite <- !bindAssoc. rewrite pushNumberGet2.
+        rewrite -> !leftIdentity, <- !bindAssoc. rewrite pushNumberGet2.
+        rewrite -> !leftIdentity. remember (coerceInt _ _) as qlf eqn:vmt in |- * at 1.
+        unfold coerceInt, update in vmt. simpl in vmt.
+        rewrite !Z.mod_small in vmt; try lia. { nia. } { nia. } { nia. } subst qlf.
+        rewrite pushDispatch2 unfoldInvoke_S_Retrieve. case_decide as tds; [| rewrite -> app_length, map_length, repeat_length, lengthFill in tds; lia].
+        rewrite pushNumberGet.
+        assert (ptw : update
+        (update (update (fun=> 0) vardef_0__main_limit (Z.of_nat limit))
+           vardef_0__main_weight
+           (Z.of_nat (nth (length items - na - 1) items (0%nat, 0%nat)).1))
+        vardef_0__main_value
+        (Z.of_nat (nth (length items - na - 1) items (0%nat, 0%nat)).2)
+        vardef_0__main_value = Z.of_nat (nth (length items - na - 1) items (0%nat, 0%nat)).2).
+        { unfold update. simpl. reflexivity. }
+        rewrite ptw. clear ptw.
+        rewrite !(nth_lt_default _ _ _ (Z.of_nat 0%nat)).
+        remember (bool_decide _) as bd eqn:hbd in |- * at 1.
+        rewrite -> !nth_lookup, !lookup_app_l, <- !nth_lookup in hbd; [| rewrite <- nth_lookup, map_length, lengthFill; nia |rewrite -> map_length, lengthFill; nia].
+        rewrite -> !map_nth in hbd.
+        assert (wlx : (Z.to_nat
+        ((Z.of_nat (length items) - Z.of_nat na - 1) * (Z.of_nat limit + 1) +
+         (Z.of_nat limit + 1 - Z.of_nat ej - 1))) = ((length items - na - 1) * (limit + 1) + (limit - ej))%nat). { nia. }
+        rewrite -> wlx, retrievalFact in hbd; [| lia | lia].
+        assert (xmd : (Z.to_nat
+        ((Z.of_nat (length items) - Z.of_nat na - 1) *
+         (Z.of_nat limit + 1) +
+         (Z.of_nat limit + 1 - Z.of_nat ej - 1 -
+          Z.of_nat (nth (length items - na - 1) items (0%nat, 0%nat)).1))) = ((length items - na - 1) * (limit + 1) + (limit - ej - (nth (length items - na - 1) items (0%nat, 0%nat)).1))%nat). { nia. }
+        rewrite xmd in hbd. rewrite retrievalFact in hbd.
+        { lia. } { lia. }
+         } }
 Admitted.
