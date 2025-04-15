@@ -690,5 +690,71 @@ Proof.
           Z.of_nat (nth (length items - na - 1) items (0%nat, 0%nat)).1))) = ((length items - na - 1) * (limit + 1) + (limit - ej - (nth (length items - na - 1) items (0%nat, 0%nat)).1))%nat). { nia. }
         rewrite xmd in hbd. rewrite retrievalFact in hbd.
         { lia. } { lia. }
+        pose proof knapsackMax (drop (length (reverse items) - (length items - na - 1)) (reverse items)) (limit - ej - (nth (length items - na - 1) items (0%nat, 0%nat)).1) as ad.
+        destruct ad as [[ae [af [ag ah]]] _].
+        unfold coerceInt in hbd.
+        assert (dsk : (forall a b, a `sublist_of` b -> foldr (fun (k : nat * nat) (ac : nat) => (k.2 + ac)%nat) 0%nat a <= foldr (fun (k : nat * nat) (ac : nat) => (k.2 + ac)%nat) 0%nat b)%nat).
+        { clear. intros a b c.
+          induction c as [| [c k] y z IH ID | [c k] y z IH ID].
+          - easy.
+          - rewrite !foldrSum9. lia.
+          - rewrite !foldrSum9. lia. }
+        assert (dt : ae `sublist_of` reverse items).
+        { transitivity (drop (length (reverse items) - (length items - na - 1)) (reverse items)). { exact af. }
+          apply sublist_drop. }
+        pose proof dsk _ _ dt as tep. rewrite ag in tep.
+        assert (frA : forall l p, (foldr (fun (x : nat * nat) (c : nat) => (x.2 + c)%nat) 0%nat (l ++ [p]))%nat = (foldr (fun (x : nat * nat) (c : nat) => x.2 + c) 0%nat l + p.2)%nat).
+        { clear. intros l p.
+          induction l as [| head tail IH].
+          { simpl. lia. }
+          rewrite !(ltac:(intros; listsEqual) : forall a b c, (a :: b) ++ [c] = a :: (b ++ [c])).
+          destruct head as [m n].
+          rewrite !foldrSum9 IH. lia. }
+        assert (bts : (foldr (λ (_0 : nat * nat) (_1 : nat), _0.2 + _1) 0 (reverse items) <= length items * Z.to_nat (2^32))%nat).
+        { revert frA b32. clear. intros frA b32. induction items as [| head tail IX].
+          - easy.
+          - remember (Z.to_nat (2^32)) as dtw eqn:vns in |- *.
+            simpl. rewrite reverse_cons.
+            rewrite frA.
+            assert (md : ∀ _0 : nat, ((nth _0 tail (0, 0)).2 < 2 ^ 32)%nat).
+            { intro k. pose proof b32 (S k) as da.
+              rewrite (ltac:(easy) : nth (S k) (head :: tail) (0%nat, 0%nat) = nth k tail (0%nat, 0%nat)) in da. exact da. }
+            pose proof IX md as tje.
+            pose proof b32 O as da.
+            rewrite (ltac:(easy) : nth O (head :: tail) (0%nat, 0%nat) = head) in da.
+            pose proof (ltac:(clear; rewrite Nat2Z.inj_pow; easy) : Z.of_nat (2 ^ 32) = 2^32). lia. }
+        rewrite Z.mod_small in hbd.
+        { constructor. { lia. }
+          pose proof b32 (length items - na - 1)%nat as stone.
+          pose proof (ltac:(clear; rewrite Nat2Z.inj_pow; easy) : Z.of_nat (2 ^ 32) = 2^32).
+          lia. }
+        case_bool_decide as mid; rewrite !leftIdentity; subst bd.
+        + rewrite -!bindAssoc dropWithinLoopLiftToWithinLoop !leftIdentity -!bindAssoc pushNumberGet2 !leftIdentity -!bindAssoc pushNumberGet2 !leftIdentity -!bindAssoc pushNumberGet2 !leftIdentity.
+          remember (coerceInt _ _) as yr eqn:yu in |- * at 1.
+          unfold update in yu. simpl in yu. unfold coerceInt in yu. rewrite !Z.mod_small in yu; try lia. { nia. } { constructor.
+          { pose proof (ltac:(lia) : (Z.of_nat (length items) - Z.of_nat na - 1) >= 0) as ta1.
+            pose proof (ltac:(lia) : (Z.of_nat limit + 1) >= 0) as ta2.
+            pose proof (ltac:(lia) : (Z.of_nat limit + 1 - Z.of_nat ej - 1 - Z.of_nat (nth (length items - na - 1) items (0%nat, 0%nat)).1) >= 0) as ta3.
+            revert ta1 ta2 ta3. clear. nia. }
+          lia. } { nia. }
+          subst yr. rewrite pushDispatch2 unfoldInvoke_S_Retrieve.
+          case_decide as ry; [| rewrite app_length map_length repeat_length lengthFill in ry; lia].
+          rewrite pushNumberGet2. remember (coerceInt _ _) as twn eqn:wlv in |- * at 1.
+          unfold update in wlv. case_decide as uh; [| exfalso; revert uh; clear; easy].
+          clear uh. rewrite (nth_lt_default _ _ _ 0) in wlv.
+          rewrite -> nth_lookup, lookup_app_l in wlv; [| rewrite map_length lengthFill; lia].
+          rewrite !leftIdentity pushDispatch.
+          remember (coerceInt _ _) as tjh eqn:uwl in |- * at 1.
+          unfold update in uwl. simpl in uwl. unfold coerceInt in uwl. rewrite !Z.mod_small in uwl; try lia.
+          rewrite (ltac:(clear;easy) : 0 = Z.of_nat O) -nth_lookup in wlv.
+          rewrite map_nth xmd retrievalFact in wlv. { lia. } { lia. }
+          unfold coerceInt in wlv. rewrite Z.mod_small in wlv.
+          { constructor. { lia. }
+            pose proof b32 (length items - na - 1)%nat as stone.
+            pose proof (ltac:(clear; rewrite Nat2Z.inj_pow; easy) : Z.of_nat (2 ^ 32) = 2^32).
+            lia. }
+          rewrite unfoldInvoke_S_Store.
+          rewrite (ltac:(lia) : Z.to_nat tjh = ((length items + 1 - na) * (limit + 1) - S ej)%nat).
+          case_decide as kew; [| rewrite app_length map_length repeat_length lengthFill in kew; lia].
          } }
 Admitted.
