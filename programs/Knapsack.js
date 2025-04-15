@@ -50,7 +50,7 @@ procedure('main', { limit: int64, weight: int64, value: int64 }, () => {
   store('n', 0, [divide(communicationSize() - 4, 8)])
   call('get limit', {})
   set('limit', coerceInt64(retrieve('message', 0)[0]))
-  store('message', 0, [coerceInt32(0)]);
+  store('message', 0, [coerceInt32(0)])
   range(retrieve('n', 0)[0] + 1, (i) => {
     if (i == 0) {
       ;('continue')
@@ -89,7 +89,7 @@ procedure('main', { limit: int64, weight: int64, value: int64 }, () => {
       set('weight', 0)
       set('value', 0)
     })
-    store('message', 0, [coerceInt32(0)]);
+    store('message', 0, [coerceInt32(0)])
   })
   call('store result', {
     x: retrieve(
