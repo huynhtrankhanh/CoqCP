@@ -409,7 +409,14 @@ Proof.
   assert (up : (coerceInt
                 (nth_lt [Z.of_nat limit] (Z.to_nat 0) i8) 64) = Z.of_nat limit).
   { unfold coerceInt. simpl. rewrite Z.mod_small; lia. }
-  rewrite up. clear up. rewrite !leftIdentity pushNumberSet2 pushDispatch2 bindDispatch unfoldInvoke_S_Retrieve. case_decide as yb; [| simpl in yb; lia]. clear i8.
+  rewrite up. clear up. rewrite !leftIdentity pushNumberSet2 pushDispatch2 bindDispatch unfoldInvoke_S_Store.
+  case_decide as ikv; [| simpl in ikv; lia]. rewrite !leftIdentity.
+  remember (fun (x : arrayIndex0) => _) as eks eqn:ovk in |- * at 1.
+  assert (iex : eks = (fun x => match x with | arraydef_0__message => [0%Z] | arraydef_0__dp => repeat 0 1000000%nat | arraydef_0__n => [Z.of_nat (length items)] end)).
+  { subst eks. apply functional_extensionality_dep.
+    intro u. destruct u; easy. }
+  clear ovk. subst eks. rewrite pushDispatch2 unfoldInvoke_S_Retrieve.
+  case_decide as yb; [| simpl in yb; lia]. clear i8.
   rewrite (ltac:(easy) : nth_lt [Z.of_nat (length items)] (Z.to_nat 0) yb = Z.of_nat (length items)) !leftIdentity.
   assert (ue : (Z.to_nat
   (coerceInt (Z.of_nat (length items) + 1) 64)) = (length items + 1)%nat).
@@ -756,5 +763,121 @@ Proof.
           rewrite unfoldInvoke_S_Store.
           rewrite (ltac:(lia) : Z.to_nat tjh = ((length items + 1 - na) * (limit + 1) - S ej)%nat).
           case_decide as kew; [| rewrite app_length map_length repeat_length lengthFill in kew; lia].
-         } }
+          rewrite dropWithinLoopLiftToWithinLoop pushNumberSet2.
+          rewrite pushNumberSet.
+          remember (update _ _ _) as tyt eqn:tut in |- * at 1.
+          assert (cqa : tyt = update (fun=> 0) vardef_0__main_limit (Z.of_nat limit)).
+          { subst tyt. clear. apply functional_extensionality_dep. intro ga. destruct ga; easy. }
+          clear tut. subst tyt.
+          remember (fun (x : arrayIndex0) => _) as tyt eqn:tut in |- * at 1.
+          assert (nek : tyt = (fun x => match x with | arraydef_0__dp => <[((length items + 1 - na) * (limit + 1) - S ej)%nat:=twn]> ((map Z.of_nat (fill (reverse items) limit ((length items + 1 - na) * (limit + 1) - S ej))) ++ repeat 0 (1000000 - ((length items + 1 - na) * (limit + 1) - S ej))%nat) | arraydef_0__message => [Z.of_nat (nth (length items - na - 1) items (0%nat, 0%nat)).2] | arraydef_0__n => [Z.of_nat (length items)] end)).
+          { subst tyt. clear. apply functional_extensionality_dep. intro x.
+            destruct x; easy. }
+          clear tut. subst tyt.
+          assert (td : <[((length items + 1 - na) * (limit + 1) - S ej)%nat:=twn]> ((map Z.of_nat (fill (reverse items) limit ((length items + 1 - na) * (limit + 1) - S ej))) ++ repeat 0 (1000000 - ((length items + 1 - na) * (limit + 1) - S ej))%nat) = (map Z.of_nat (fill (reverse items) limit ((length items + 1 - na) * (limit + 1) - ej))) ++ repeat 0 (1000000 - ((length items + 1 - na) * (limit + 1) - ej))%nat).
+          { apply list_eq. intro u.
+            destruct (ltac:(lia) : u < ((length items + 1 - na) * (limit + 1) - S ej) \/ u = ((length items + 1 - na) * (limit + 1) - S ej) \/ ((length items + 1 - na) * (limit + 1) - S ej) < u)%nat as [dh | [dh | dh]].
+            - rewrite list_lookup_insert_ne. { revert dh. clear. lia. }
+              rewrite -> lookup_app_l, -> lookup_app_l; [| rewrite map_length lengthFill | rewrite map_length lengthFill]; try lia.
+              remember (_ !! _) as ka1 eqn:qa1.
+              remember (_ !! _) as ka2 eqn:qa2 in |- *.
+              symmetry in qa1, qa2.
+              destruct ka1 as [ka1 |].
+              + destruct ka2 as [ka2 |].
+                { assert (kt : default (Z.of_nat 0) (Some ka1) = default (Z.of_nat 0) (Some ka2)).
+                  { rewrite <- qa1, <- qa2, <- !nth_lookup, !map_nth.
+                    rewrite (ltac:(lia) : (length items + 1 - na) * (limit + 1) - ej = S ((length items + 1 - na) * (limit + 1) - S ej))%nat.
+                    simpl. rewrite -> !nth_lookup.
+                    rewrite -> lookup_app_l. { reflexivity. }
+                    rewrite lengthFill. lia. }
+                  simpl in kt. rewrite -> kt. reflexivity. }
+                  pose proof lookup_ge_None_1 _ _ qa2 as j1.
+                  pose proof lookup_lt_is_Some_1 _ _ (mk_is_Some _ _ qa1) as j2.
+                  rewrite map_length lengthFill in j1.
+                  rewrite map_length lengthFill in j2.
+                  lia.
+              + pose proof lookup_ge_None_1 _ _ qa1 as j1.
+                destruct ka2 as [ka2 |].
+                { pose proof lookup_lt_is_Some_1 _ _ (mk_is_Some _ _ qa2) as j2.
+                  rewrite map_length lengthFill in j1.
+                  rewrite map_length lengthFill in j2. lia. }
+                reflexivity.
+            - rewrite dh list_lookup_insert.
+              { rewrite app_length map_length repeat_length lengthFill. lia. }
+              remember (_ !! _) as ka eqn:qa. symmetry in qa.
+              destruct ka as [ka |]; [| pose proof lookup_ge_None_1 _ _ qa as ta; rewrite app_length map_length repeat_length lengthFill in ta; lia].
+              rewrite lookup_app_l in qa.
+              { rewrite map_length lengthFill. lia. }
+              assert (dak : twn = default (Z.of_nat O) (Some ka)).
+              { rewrite <- qa, <- nth_lookup, map_nth.
+                assert (ql : ((length items + 1 - na) * (limit + 1) - S ej = (length items - na) * (limit + 1) + (limit - ej))%nat).
+                { rewrite (ltac:(lia) : (length items + 1 - na = (length items - na) + 1)%nat).
+                  rewrite -> Nat.mul_add_distr_r, Nat.mul_1_l.
+                  pose proof (ltac:(lia) : (ej <= limit)%nat) as cq.
+                  revert cq. clear. nia. }
+                rewrite -> ql, retrievalFact.
+                { subst twn.
+                  assert (km : reverse items !! (length (reverse items) - (length items - na - 1) - 1)%nat =
+                  Some (nth (length items - na - 1) items (0%nat, 0%nat))).
+                  { remember (_ !! _) as cm eqn:ls in |- *.
+                    symmetry in ls.
+                    destruct cm as [cm |].
+                    { rewrite (ltac:(clear; easy) : cm = default (O, O) (Some cm)).
+                      rewrite <- ls, nth_lookup.
+                      rewrite reverse_lookup. { 
+                      pose proof (ltac:(lia) : length items <> O) as dak.
+                      rewrite reverse_length. revert ub dak. clear. lia. }
+                      rewrite (ltac:(rewrite reverse_length; lia) : length items - S (length (reverse items) - (length items - na - 1) - 1) = (length items - na - 1))%nat.
+                      reflexivity. }
+                    pose proof lookup_ge_None_1 _ _ ls as lsv. rewrite reverse_length in lsv. lia. }
+                  pose proof (take_drop_middle (reverse items) (length (reverse items) - (length items - na - 1) - 1) (nth (length items - na - 1) items (0%nat, 0%nat))) km as hg.
+                  pose proof reverse_length items as vz.
+                  rewrite (ltac:(lia) : (length (reverse items) - (length items - na - 1) = na + 1)%nat).
+                  rewrite (ltac:(lia) : length (reverse items) - (length items - na) = na)%nat.
+                  rewrite (ltac:(lia) : length (reverse items) - (length items - na - 1) - 1 = na)%nat in hg.
+                  rewrite <- hg.
+                  rewrite -> (ltac:(intros; listsEqual) : forall a b c, a ++ b :: c = (a ++ [b]) ++ c) at 1.
+                  rewrite drop_app_ge.
+                  { rewrite app_length take_length. simpl. lia. }
+                  rewrite app_length take_length reverse_length (ltac:(lia) : (na `min` length items = na)%nat) (ltac:(clear; easy) : forall x, length [x] = 1%nat) Nat.sub_diag (ltac:(clear; easy) : forall x, drop 0 x = x) drop_app_ge take_length reverse_length (ltac:(lia) : (na `min` length items = na))%nat. { lia. }
+                  rewrite Nat.sub_diag (ltac:(clear; easy) : forall x, drop 0 x = x).
+                  simpl.
+                  remember (nth (length items - na - 1) items (0%nat, 0%nat)) as ku eqn:iu.
+                  destruct ku as [ku1 ku2].
+                  rewrite -> (ltac:(clear; easy) : (ku1, ku2).1 = ku1) in *.
+                  rewrite -> (ltac:(clear; easy) : (ku1, ku2).2 = ku2) in *.
+                  case_decide as nk. { lia. }
+                  rewrite (ltac:(lia) : (length (reverse items) - (length items - na - 1) = S na)%nat) in mid. lia. }
+                - clear. lia.
+                - lia. }
+              simpl in dak. rewrite dak. reflexivity.
+            - rewrite list_lookup_insert_ne. { revert dh. clear. lia. }
+              rewrite -> lookup_app_r; [| rewrite -> map_length, lengthFill; lia].
+              rewrite -> lookup_app_r; [| rewrite -> map_length, lengthFill; lia].
+              remember (_ !! _) as t1 eqn:r1 in |- * at 1.
+              remember (_ !! _) as t2 eqn:r2 in |- * at 1.
+              destruct t1 as [t1 |].
+              + destruct t2 as [t2 |].
+                * assert (uh : default 0 (Some t1) = default 0 (Some t2)).
+                  { rewrite -> r1, r2. rewrite <- !nth_lookup.
+                    rewrite -> !nth_repeat. reflexivity. }
+                  simpl in uh. rewrite uh.
+                  reflexivity.
+                * symmetry in r1, r2.
+                  pose proof lookup_ge_None_1 _ _ r2 as d1.
+                  pose proof lookup_lt_is_Some_1 _ _ (mk_is_Some _ _ r1) as d2.
+                  rewrite map_length repeat_length lengthFill in d1.
+                  rewrite map_length repeat_length lengthFill in d2.
+                  lia.
+              + destruct t2 as [t2 |].
+                * symmetry in r1, r2.
+                  pose proof lookup_ge_None_1 _ _ r1 as d1.
+                  pose proof lookup_lt_is_Some_1 _ _ (mk_is_Some _ _ r2) as d2.
+                  rewrite map_length repeat_length lengthFill in d1.
+                  rewrite map_length repeat_length lengthFill in d2.
+                  lia.
+                * reflexivity. }
+          rewrite td.
+          rewrite ID2. reflexivity.
+        + admit. } }
 Admitted.
