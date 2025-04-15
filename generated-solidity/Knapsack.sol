@@ -150,6 +150,7 @@ contract GeneratedCode {
         arraySet(environment2, uint64(0), Tuple0(divint64(((uint64(msg.data.length) - uint64(4))), (uint64(8)))));
         procedure3(environment0, environment1, environment2, communication);
         local0 = uint64(arrayGet(environment1, uint64(0)).item0);
+        arraySet(environment1, uint64(0), Tuple1(uint32(uint64(0))));
         for (uint64 binder0 = 0; binder0 < (arrayGet(environment2, uint64(0)).item0 + uint64(1)); binder0++) {
             if ((binder0 == uint64(0))) {
                 continue;
@@ -172,6 +173,7 @@ contract GeneratedCode {
                 local1 = uint64(0);
                 local2 = uint64(0);
             }
+            arraySet(environment1, uint64(0), Tuple1(uint32(uint64(0))));
         }
         procedure2(environment0, environment1, environment2, arrayGet(environment0, ((arrayGet(environment2, uint64(0)).item0 * (local0 + uint64(1))) + local0)).item0, communication);
     } }
