@@ -895,35 +895,34 @@ Proof.
           case_decide as uh; [exfalso; revert uh; clear; easy |]. clear uh.
           case_decide as uh; [| exfalso; revert uh; clear; easy]. clear uh.
           unfold coerceInt in wlv. rewrite !Z.mod_small in wlv; try lia.
-          (* PICK UP WHERE YOU LEFT OFF *)
-          clear uh. rewrite (nth_lt_default _ _ _ 0) in wlv.
-          rewrite -> nth_lookup, lookup_app_l in wlv; [| rewrite map_length lengthFill; lia].
-          rewrite !leftIdentity pushDispatch.
-          remember (coerceInt _ _) as tjh eqn:uwl in |- * at 1.
-          unfold update in uwl. simpl in uwl. unfold coerceInt in uwl. rewrite !Z.mod_small in uwl; try lia.
-          rewrite (ltac:(clear;easy) : 0 = Z.of_nat O) -nth_lookup in wlv.
-          rewrite map_nth xmd retrievalFact in wlv. { lia. } { lia. }
-          unfold coerceInt in wlv. rewrite Z.mod_small in wlv.
-          { constructor. { lia. }
-            pose proof b32 (length items - na - 1)%nat as stone.
-            pose proof (ltac:(clear; rewrite Nat2Z.inj_pow; easy) : Z.of_nat (2 ^ 32) = 2^32).
-            lia. }
-          rewrite unfoldInvoke_S_Store.
-          rewrite (ltac:(lia) : Z.to_nat tjh = ((length items + 1 - na) * (limit + 1) - S ej)%nat).
-          (* END OF SUFFERING *)
-          case_decide as kew; [| rewrite app_length map_length repeat_length lengthFill in kew; lia].
-          rewrite dropWithinLoopLiftToWithinLoop pushNumberSet2.
-          rewrite pushNumberSet.
+          rewrite -> wlv. clear wlv. remember (nth_lt _ _ _) as yn eqn:kn in |- *.
+          rewrite (nth_lt_default _ _ _ 0) in kn.
+          assert (cr : (Z.to_nat
+          ((Z.of_nat (length items) - Z.of_nat na - 1) *
+           (Z.of_nat limit + 1) +
+           (Z.of_nat limit + 1 - Z.of_nat ej - 1))) = ((length items - na - 1) * (limit + 1) + (limit - ej))%nat). { lia. } rewrite cr in kn. clear cr.
+          rewrite nth_lookup lookup_app_l in kn. { rewrite map_length lengthFill. lia. }
+          rewrite <- nth_lookup, (ltac:(clear; easy) : 0 = Z.of_nat O) in kn.
+          rewrite -> map_nth, retrievalFact in kn; [| lia | lia].
+          rewrite -> bindDispatch, -> pushDispatch.
+          remember (coerceInt _ _) as uj eqn:lk in |- * at 1.
+          unfold update in lk. simpl in lk.
+          unfold coerceInt in lk. rewrite !Z.mod_small in lk; try lia.
+          subst uj. rewrite unfoldInvoke_S_Store.
+          case_decide as nn; [| rewrite app_length map_length repeat_length lengthFill in nn; lia]. rewrite !leftIdentity.
+          rewrite dropWithinLoopLiftToWithinLoop pushNumberSet2 pushNumberSet2.
+          remember (Z.to_nat _) as tjh eqn:uwl in |- * at 1.
+          rewrite (ltac:(lia) : tjh = ((length items + 1 - na) * (limit + 1) - S ej)%nat).
           remember (update _ _ _) as tyt eqn:tut in |- * at 1.
           assert (cqa : tyt = update (fun=> 0) vardef_0__main_limit (Z.of_nat limit)).
           { subst tyt. clear. apply functional_extensionality_dep. intro ga. destruct ga; easy. }
           clear tut. subst tyt.
           remember (fun (x : arrayIndex0) => _) as tyt eqn:tut in |- * at 1.
-          assert (nek : tyt = (fun x => match x with | arraydef_0__dp => <[((length items + 1 - na) * (limit + 1) - S ej)%nat:=twn]> ((map Z.of_nat (fill (reverse items) limit ((length items + 1 - na) * (limit + 1) - S ej))) ++ repeat 0 (1000000 - ((length items + 1 - na) * (limit + 1) - S ej))%nat) | arraydef_0__message => [Z.of_nat (nth (length items - na - 1) items (0%nat, 0%nat)).2] | arraydef_0__n => [Z.of_nat (length items)] end)).
+          assert (nek : tyt = (fun x => match x with | arraydef_0__dp => <[((length items + 1 - na) * (limit + 1) - S ej)%nat:=yn]> ((map Z.of_nat (fill (reverse items) limit ((length items + 1 - na) * (limit + 1) - S ej))) ++ repeat 0 (1000000 - ((length items + 1 - na) * (limit + 1) - S ej))%nat) | arraydef_0__message => [Z.of_nat (nth (length items - na - 1) items (0%nat, 0%nat)).2] | arraydef_0__n => [Z.of_nat (length items)] end)).
           { subst tyt. clear. apply functional_extensionality_dep. intro x.
             destruct x; easy. }
           clear tut. subst tyt.
-          assert (td : <[((length items + 1 - na) * (limit + 1) - S ej)%nat:=twn]> ((map Z.of_nat (fill (reverse items) limit ((length items + 1 - na) * (limit + 1) - S ej))) ++ repeat 0 (1000000 - ((length items + 1 - na) * (limit + 1) - S ej))%nat) = (map Z.of_nat (fill (reverse items) limit ((length items + 1 - na) * (limit + 1) - ej))) ++ repeat 0 (1000000 - ((length items + 1 - na) * (limit + 1) - ej))%nat).
+          assert (td : <[((length items + 1 - na) * (limit + 1) - S ej)%nat:=yn]> ((map Z.of_nat (fill (reverse items) limit ((length items + 1 - na) * (limit + 1) - S ej))) ++ repeat 0 (1000000 - ((length items + 1 - na) * (limit + 1) - S ej))%nat) = (map Z.of_nat (fill (reverse items) limit ((length items + 1 - na) * (limit + 1) - ej))) ++ repeat 0 (1000000 - ((length items + 1 - na) * (limit + 1) - ej))%nat).
           { apply list_eq. intro u.
             destruct (ltac:(lia) : u < ((length items + 1 - na) * (limit + 1) - S ej) \/ u = ((length items + 1 - na) * (limit + 1) - S ej) \/ ((length items + 1 - na) * (limit + 1) - S ej) < u)%nat as [dh | [dh | dh]].
             - rewrite list_lookup_insert_ne. { revert dh. clear. lia. }
@@ -957,7 +956,7 @@ Proof.
               destruct ka as [ka |]; [| pose proof lookup_ge_None_1 _ _ qa as ta; rewrite app_length map_length repeat_length lengthFill in ta; lia].
               rewrite lookup_app_l in qa.
               { rewrite map_length lengthFill. lia. }
-              assert (dak : twn = default (Z.of_nat O) (Some ka)).
+              assert (dak : yn = default (Z.of_nat O) (Some ka)).
               { rewrite <- qa, <- nth_lookup, map_nth.
                 assert (ql : ((length items + 1 - na) * (limit + 1) - S ej = (length items - na) * (limit + 1) + (limit - ej))%nat).
                 { rewrite (ltac:(lia) : (length items + 1 - na = (length items - na) + 1)%nat).
@@ -965,7 +964,7 @@ Proof.
                   pose proof (ltac:(lia) : (ej <= limit)%nat) as cq.
                   revert cq. clear. nia. }
                 rewrite -> ql, retrievalFact.
-                { subst twn.
+                { subst yn.
                   assert (km : reverse items !! (length (reverse items) - (length items - na - 1) - 1)%nat =
                   Some (nth (length items - na - 1) items (0%nat, 0%nat))).
                   { remember (_ !! _) as cm eqn:ls in |- *.
@@ -1027,5 +1026,9 @@ Proof.
                   lia.
                 * reflexivity. }
           rewrite td.
-          rewrite ID2. reflexivity. } }
+          rewrite ID2. reflexivity. }
+          remember (fun (x : unit) => _) as seecont eqn:hseecont in |- * at 1.
+          pose proof adv seecont msg (Done _ _ _ tt) as [hwit hrew].
+          rewrite unfoldInvoke_S_Done in hrew.
+          rewrite hrew. }
 Admitted.
