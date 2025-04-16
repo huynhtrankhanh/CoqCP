@@ -1028,7 +1028,7 @@ Proof.
           rewrite td.
           rewrite ID2. reflexivity. }
           remember (fun (x : unit) => _) as seecont eqn:hseecont in |- * at 1.
-          pose proof adv seecont msg (Done _ _ _ tt) as [hwit hrew].
-          rewrite unfoldInvoke_S_Done in hrew.
+          pose proof adv seecont msg jk as [hwit hrew].
+          
           rewrite hrew. }
 Admitted.
