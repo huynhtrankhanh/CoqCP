@@ -427,9 +427,9 @@ Proof.
   assert (ub : (na <= length items + 1)%nat). { lia. }
   assert (ow : length items <> 0%nat).
   { intro sa. pose proof nil_length_inv _ sa as hw. exact (notNil hw). }
-  assert (wu : forall cont msg jk, invokeContractAux (repeat 1 20) (repeat 0 20) 0 state state (generateData items limit) 1 arrayIndex0 arrayIndexEqualityDecidable0 (arrayType arrayIndex0 environment0) (fun x => match x with | arraydef_0__dp => map Z.of_nat (fill (reverse items) limit ((length items + 1 - na) * (limit + 1))%nat) ++ repeat 0 (1000000 - (length items + 1 - na) * (limit + 1))%nat | arraydef_0__message => [msg] | arraydef_0__n => [Z.of_nat (length items)] end) jk (eliminateLocalVariables xpred0 (update (fun=> 0) vardef_0__main_limit (Z.of_nat limit)) (fun=> repeat 0 20) (de >>= cont)) = invokeContractAux (repeat 1 20) (repeat 0 20) 0 state state (generateData items limit) 1 arrayIndex0 arrayIndexEqualityDecidable0 (arrayType arrayIndex0 environment0) (fun x => match x with | arraydef_0__dp => map Z.of_nat (fill (reverse items) limit ((length items + 1) * (limit + 1))%nat) ++ repeat 0 (1000000 - (length items + 1) * (limit + 1))%nat | arraydef_0__message => [msg] | arraydef_0__n => [Z.of_nat (length items)] end) jk (eliminateLocalVariables xpred0 (update (fun=> 0) vardef_0__main_limit (Z.of_nat limit)) (fun=> repeat 0 20) (cont tt))).
+  assert (wu : forall cont msg jk, invokeContractAux (repeat 1 20) (repeat 0 20) 0 state state (generateData items limit) 1 arrayIndex0 arrayIndexEqualityDecidable0 (arrayType arrayIndex0 environment0) (fun x => match x with | arraydef_0__dp => map Z.of_nat (fill (reverse items) limit ((length items + 1 - na) * (limit + 1))%nat) ++ repeat 0 (1000000 - (length items + 1 - na) * (limit + 1))%nat | arraydef_0__message => [msg] | arraydef_0__n => [Z.of_nat (length items)] end) jk (eliminateLocalVariables xpred0 (update (fun=> 0) vardef_0__main_limit (Z.of_nat limit)) (fun=> repeat 0 20) (de >>= cont)) = invokeContractAux (repeat 1 20) (repeat 0 20) 0 state state (generateData items limit) 1 arrayIndex0 arrayIndexEqualityDecidable0 (arrayType arrayIndex0 environment0) (fun x => match x with | arraydef_0__dp => map Z.of_nat (fill (reverse items) limit ((length items + 1) * (limit + 1))%nat) ++ repeat 0 (1000000 - (length items + 1) * (limit + 1))%nat | arraydef_0__message => [0] | arraydef_0__n => [Z.of_nat (length items)] end) jk (eliminateLocalVariables xpred0 (update (fun=> 0) vardef_0__main_limit (Z.of_nat limit)) (fun=> repeat 0 20) (cont tt))).
   { intros cont msg jk.
-    clear nb. subst de. induction na as [| na IH].
+    clear nb. subst de. revert msg. induction na as [| na IH].
     { rewrite (ltac:(clear; simpl; reflexivity) : forall x, loop 0 x = _). rewrite leftIdentity. rewrite Nat.sub_0_r. reflexivity. }
     rewrite loop_S !leftIdentity.
     assert (ueo: (coerceInt (Z.of_nat (length items) + 1) 64 - Z.of_nat na - 1 = Z.of_nat (length items) - Z.of_nat na)).
@@ -456,8 +456,8 @@ Proof.
           rewrite repeat_cons. reflexivity. }
         rewrite uas in IH. { clear. lia. }
         rewrite <- !repeat_app in IH.
-        rewrite -> (ltac:(lia) : (limit + 1 + (1000000 - (limit + 1)) = 1000000)%nat) in IH.
-        rewrite IH. { lia. }
+        rewrite -> (ltac:(lia) : (limit + 1 + (1000000 - (limit + 1)) = 1000000)%nat) in IH. intro msgt.
+        rewrite (IH ltac:(lia) msgt).
         reflexivity. }
     rewrite !leftIdentity.
     rewrite -> dropWithinLoopLiftToWithinLoop.
@@ -1028,10 +1028,23 @@ Proof.
           rewrite td.
           rewrite ID2. reflexivity. }
           remember (fun (x : unit) => _) as seecont eqn:hseecont in |- * at 1.
+          intro msg.
           pose proof adv seecont msg jk as [hwit hrew].
           assert (ll : ((length items + 1 - na) * (limit + 1) - ej = (length items + 1 - S na) * (limit + 1))%nat).
           { subst ej.
             pose proof (ltac:(lia) : (length items >= na)%nat) as fa. revert fa. clear. nia. }
           rewrite ll in hrew.
-          rewrite hrew. }
+          rewrite hrew.
+          clear hrew adv.
+          subst seecont. rewrite dropWithinLoopLiftToWithinLoop.
+          rewrite pushDispatch2 unfoldInvoke_S_Store.
+          rewrite (ltac:(easy) : <[Z.to_nat 0:=coerceInt 0 32]> [hwit] = [0]).
+          remember (fun (x : arrayIndex0) => _) as tw eqn:ew in |- * at 1.
+          case_decide as cl; [| simpl in cl; lia].
+          assert (mk : tw = fun (x : arrayIndex0) => match x with | arraydef_0__dp => map Z.of_nat (fill (reverse items) limit ((length items + 1 - na) * (limit + 1))) ++ repeat 0 (1000000 - (length items + 1 - na) * (limit + 1))%nat | arraydef_0__message => [0] | arraydef_0__n => [Z.of_nat (length items)] end).
+          { subst tw. apply functional_extensionality_dep. intro x. destruct x; easy. }
+          rewrite mk. clear mk.
+          pose proof IH ltac:(lia) 0 as ID. clear IH.
+          rewrite !bindAssoc !bindDispatch. rewrite !bindAssoc !bindDispatch in ID.
+          rewrite ID. reflexivity. }
 Admitted.
