@@ -1049,4 +1049,76 @@ Proof.
   rewrite (ltac:(lia) : (length items + 1 - na) * (limit + 1) = 0)%nat in wu.
   rewrite (ltac:(clear;easy) : map Z.of_nat (fill (reverse items) limit 0) = []) Nat.sub_0_r app_nil_l in wu.
   rewrite wu.
+  rewrite pushDispatch2.
+  rewrite unfoldInvoke_S_Retrieve. case_decide as dl; [| simpl in dl; lia].
+  rewrite (ltac:(easy) : nth_lt [Z.of_nat (length items)] (Z.to_nat 0) dl = Z.of_nat (length items)).
+  rewrite pushNumberGet2.
+  rewrite pushNumberGet2.
+  remember (coerceInt _ _) as dm eqn:wm in |- * at 1.
+  unfold update in wm. simpl in wm.
+  unfold coerceInt in wm. rewrite !Z.mod_small in wm; try lia.
+  subst dm.
+  rewrite pushDispatch2 unfoldInvoke_S_Retrieve.
+  case_decide as nw;
+  [| rewrite app_length map_length repeat_length lengthFill in nw; lia].
+  rewrite !leftIdentity eliminateLift.
+  rewrite (nth_lt_default _ _ _ 0) (ltac:(lia) : (Z.to_nat (Z.of_nat (length items) * (Z.of_nat limit + 1) + Z.of_nat limit)) = (length items) * (limit + 1) + limit)%nat.
+  rewrite nth_lookup lookup_app_l. { rewrite map_length lengthFill. lia. }
+  rewrite <- nth_lookup.
+  remember (nth _ (map _ _) _) as df eqn:ff in |- * at 1.
+  rewrite (ltac:(clear; easy) : 0 = Z.of_nat O) in ff.
+  rewrite map_nth retrievalFact in ff. { lia. } { lia. }
+  rewrite reverse_length Nat.sub_diag (ltac:(clear; easy) : forall x, drop 0 x = x) in ff.
+  assert (ma : knapsack (reverse items) limit = knapsack items limit).
+  { pose proof knapsackMax (reverse items) limit as [ga gb].
+    pose proof knapsackMax items limit as [xa xb].
+    assert (rsub : forall A (l1 l2 : list A), l1 `sublist_of` l2 -> reverse l1 `sublist_of` reverse l2).
+    { clear. intros A l1 l2 i.
+      induction i as [| x l1 l2 IH IJ | x l1 l2 IH IJ ].
+      - easy.
+      - rewrite !reverse_cons.
+        apply sublist_app. { assumption. } { easy. }
+      - rewrite reverse_cons.
+        pose proof sublist_app _ _ [] [x] IJ ltac:(apply sublist_nil_l) as re.
+        rewrite app_nil_r in re. exact re. }
+    assert (frA : forall l p, (foldr (fun (x : nat * nat) (c : nat) => (x.2 + c)%nat) 0%nat (l ++ [p]))%nat = (foldr (fun (x : nat * nat) (c : nat) => x.2 + c) 0%nat l + p.2)%nat).
+    { clear. intros l p.
+      induction l as [| head tail IH].
+      { simpl. lia. }
+      rewrite !(ltac:(intros; listsEqual) : forall a b c, (a :: b) ++ [c] = a :: (b ++ [c])).
+      destruct head as [m n].
+      rewrite !foldrSum9 IH. lia. }
+    assert (frev1 : forall r1, foldr (λ (_0 : nat * nat) (_1 : nat), (_0.2 + _1)%nat) 0%nat (reverse r1) = foldr (λ (_0 : nat * nat) (_1 : nat), (_0.2 + _1)%nat) 0%nat r1).
+    { intro y.
+      induction y as [| [a b] tail IH].
+      { easy. }
+      rewrite reverse_cons foldrSum9 frA. simpl. lia. }
+    assert (frB : forall l p, (foldr (fun (x : nat * nat) (c : nat) => (x.1 + c)%nat) 0%nat (l ++ [p]))%nat = (foldr (fun (x : nat * nat) (c : nat) => x.1 + c) 0%nat l + p.1)%nat).
+    { clear. intros l p.
+      induction l as [| head tail IH].
+      { simpl. lia. }
+      rewrite !(ltac:(intros; listsEqual) : forall a b c, (a :: b) ++ [c] = a :: (b ++ [c])).
+      destruct head as [m n].
+      rewrite !foldrSum11 IH. lia. }
+    assert (frev2 : forall r1, foldr (λ (_0 : nat * nat) (_1 : nat), (_0.1 + _1)%nat) 0%nat (reverse r1) = foldr (λ (_0 : nat * nat) (_1 : nat), (_0.1 + _1)%nat) 0%nat r1).
+    { intro y.
+      induction y as [| [a b] tail IH].
+      { easy. }
+      rewrite reverse_cons foldrSum11 frB. simpl. lia. }
+    assert (ka1 : (knapsack (reverse items) limit <= knapsack items limit)%nat).
+    { apply xb.
+      destruct ga as [r1 [r2 [r3 r4]]].
+      exists (reverse r1).
+      pose proof rsub _ _ _ r2 as nac.
+      rewrite reverse_involutive in nac. constructor. { exact nac. }
+      rewrite frev1 frev2. tauto. }
+    assert (ka2 : (knapsack items limit <= knapsack (reverse items) limit)%nat).
+    { apply gb.
+      destruct xa as [r1 [r2 [r3 r4]]].
+      exists (reverse r1).
+      pose proof rsub _ _ _ r2 as nac.
+      constructor. { exact nac. }
+      rewrite frev1 frev2. tauto. }
+    lia. }
+  rewrite ma in ff.
 Admitted.
