@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html class="alectryon-standalone"><head><title>ListsEqual.v</title><meta charset="utf-8"><meta content="Alectryon" name="generator"><meta name="viewport" content="width=device-width, initial-scale=1"><link href="alectryon.css" rel="stylesheet"><link href="pygments.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/IBM-type/0.5.4/css/ibm-type.min.css" integrity="sha512-sky5cf9Ts6FY1kstGOBHSybfKqdHR41M0Ldb0BjNiv3ifltoQIsg0zIaQ+wwdwgQ0w9vKFW7Js50lxH9vqNSSw==" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/firacode/5.2.0/fira_code.min.css" integrity="sha512-MbysAYimH1hH2xYzkkMHB6MqxBqfP0megxsCLknbYqHVwXTCg9IqHbk+ZP/vnhO8UEW6PaXAkKe2vQ+SWACxxA==" crossorigin="anonymous" /><script src="alectryon.js"></script></head><body><article class="alectryon-root alectryon-centered"><div class="alectryon-banner">Built with <a href="https://github.com/cpitclaudel/alectryon/">Alectryon</a>, running Coq+SerAPI v8.19.0+0.19.3. Bubbles (<span class="alectryon-bubble"></span>) indicate interactive fragments: hover for details, tap to reveal contents. Use <kbd>Ctrl+↑</kbd> <kbd>Ctrl+↓</kbd> to navigate, <kbd>Ctrl+🖱️</kbd> to focus. On Mac, use <kbd>⌘</kbd> instead of <kbd>Ctrl</kbd>.</div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk0" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk0"><span class="kn">From</span> stdpp <span class="kn">Require Import</span> numbers list.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message">[Loading ML file ring_plugin.cmxs (<span class="nb">using</span> legacy method) ... <span class="bp">done</span>]</blockquote><blockquote class="alectryon-message">[Loading ML file zify_plugin.cmxs (<span class="nb">using</span> legacy method) ... <span class="bp">done</span>]</blockquote><blockquote class="alectryon-message">[Loading ML file micromega_plugin.cmxs (<span class="nb">using</span> legacy method) ... <span class="bp">done</span>]</blockquote><blockquote class="alectryon-message">[Loading ML file btauto_plugin.cmxs (<span class="nb">using</span> legacy method) ... <span class="bp">done</span>]</blockquote><blockquote class="alectryon-message">[Loading ML file ssrmatching_plugin.cmxs (<span class="nb">using</span> legacy method) ... <span class="bp">done</span>]</blockquote><blockquote class="alectryon-message">[Loading ML file ssreflect_plugin.cmxs (<span class="nb">using</span> legacy method) ... <span class="bp">done</span>]</blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Inductive</span> <span class="nf">ListExpression</span> (<span class="nv">A</span> : <span class="kt">Type</span>) :=
+| NilExpression
+| VarExpression (x : list A)
+| ConsExpression (head : A) (tail : ListExpression A)
+| AppExpression (l1 l2 : ListExpression A).</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Fixpoint</span> <span class="nf">interpret</span> {<span class="nv">A</span> : <span class="kt">Type</span>} (<span class="nv">expression</span> : ListExpression A) : list A :=
+  <span class="kr">match</span> expression <span class="kr">with</span>
+  | NilExpression _ =&gt; []
+  | VarExpression _ x =&gt; x
+  | ConsExpression _ a b =&gt; a :: interpret b
+  | AppExpression _ l1 l2 =&gt; interpret l1 ++ interpret l2
+  <span class="kr">end</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Inductive</span> <span class="nf">ListExpressionFlattenedTerm</span> (<span class="nv">A</span> : <span class="kt">Type</span>) :=
+| Singleton (x : A)
+| AnyList (x : list A).</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Fixpoint</span> <span class="nf">flatten</span> {<span class="nv">A</span> : <span class="kt">Type</span>} (<span class="nv">expression</span> : ListExpression A) : list (ListExpressionFlattenedTerm A) :=
+  <span class="kr">match</span> expression <span class="kr">with</span>
+  | (NilExpression _) =&gt; []
+  | (VarExpression _ x) =&gt; [AnyList _ x]
+  | (ConsExpression _ head tail) =&gt; [Singleton _ head] ++ flatten tail
+  | (AppExpression _ l1 l2) =&gt; flatten l1 ++ flatten l2
+  <span class="kr">end</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Fixpoint</span> <span class="nf">interpretFlattened</span> {<span class="nv">A</span> : <span class="kt">Type</span>} (<span class="nv">flattenedExpression</span> : list (ListExpressionFlattenedTerm A)) :=
+  <span class="kr">match</span> flattenedExpression <span class="kr">with</span>
+  | [] =&gt; []
+  | (Singleton _ x :: tail) =&gt; x :: interpretFlattened tail
+  | (AnyList _ x :: tail) =&gt; x ++ interpretFlattened tail
+  <span class="kr">end</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">
+</span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk1" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk1"><span class="kn">Lemma</span> <span class="nf">flattenCorrect</span> {<span class="nv">A</span> : <span class="kt">Type</span>} (<span class="nv">expression</span> : ListExpression A) : interpret expression = interpretFlattened (flatten expression).</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">interpret expression =
+interpretFlattened (flatten expression)</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk2" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk2"><span class="kn">Proof</span>.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">interpret expression =
+interpretFlattened (flatten expression)</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk3" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk3"><span class="nb">assert</span> (h1 : <span class="kr">forall</span> <span class="nv">head</span> <span class="nv">expression</span>, interpret (ConsExpression A head expression) = head :: interpret expression).</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</div></blockquote><div class="alectryon-extra-goals"><input class="alectryon-extra-goal-toggle" id="ListsEqual-v-chk4" style="display: none" type="checkbox"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br></div><label class="goal-separator" for="ListsEqual-v-chk4"><hr></label><div class="goal-conclusion">interpret expression =
+interpretFlattened (flatten expression)</div></blockquote></div></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk5" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk5">{</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk6" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk6"><span class="nb">unfold</span> interpret.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  head
+  :: (<span class="kr">fix</span> interpret
+        (A : <span class="kt">Type</span>) (expression0 : ListExpression A)
+        {<span class="kr">struct</span> expression0} : 
+      list A :=
+        <span class="kr">match</span> expression0 <span class="kr">with</span>
+        | NilExpression _ =&gt; []
+        | VarExpression _ x =&gt; x
+        | ConsExpression _ a b =&gt; a :: interpret A b
+        | AppExpression _ l1 l2 =&gt;
+            interpret A l1 ++ interpret A l2
+        <span class="kr">end</span>) A expression =
+  head
+  :: (<span class="kr">fix</span> interpret
+        (A : <span class="kt">Type</span>) (expression0 : ListExpression A)
+        {<span class="kr">struct</span> expression0} : 
+      list A :=
+        <span class="kr">match</span> expression0 <span class="kr">with</span>
+        | NilExpression _ =&gt; []
+        | VarExpression _ x =&gt; x
+        | ConsExpression _ a b =&gt; a :: interpret A b
+        | AppExpression _ l1 l2 =&gt;
+            interpret A l1 ++ interpret A l2
+        <span class="kr">end</span>) A expression</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">easy</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk7" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk7">}</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">interpret expression =
+interpretFlattened (flatten expression)</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk8" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk8"><span class="nb">assert</span> (h2 : <span class="kr">forall</span> <span class="nv">head</span> <span class="nv">expression</span>, flatten (ConsExpression A head expression) = [Singleton _ head] ++ flatten expression).</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</div></blockquote><div class="alectryon-extra-goals"><input class="alectryon-extra-goal-toggle" id="ListsEqual-v-chk9" style="display: none" type="checkbox"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br></div><label class="goal-separator" for="ListsEqual-v-chk9"><hr></label><div class="goal-conclusion">interpret expression =
+interpretFlattened (flatten expression)</div></blockquote></div></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chka" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chka">{</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chkb" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chkb"><span class="nb">unfold</span> interpret.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">easy</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chkc" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chkc">}</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">interpret expression =
+interpretFlattened (flatten expression)</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chkd" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chkd"><span class="nb">assert</span> (h3 : <span class="kr">forall</span> <span class="nv">expression1</span> <span class="nv">expression2</span>, interpret (AppExpression A expression1 expression2) = interpret expression1 ++ interpret expression2).</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</div></blockquote><div class="alectryon-extra-goals"><input class="alectryon-extra-goal-toggle" id="ListsEqual-v-chke" style="display: none" type="checkbox"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br><span><var>h3</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret
+    (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</span></span></span><br></div><label class="goal-separator" for="ListsEqual-v-chke"><hr></label><div class="goal-conclusion">interpret expression =
+interpretFlattened (flatten expression)</div></blockquote></div></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chkf" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chkf">{</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk10" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk10"><span class="nb">unfold</span> interpret.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  (<span class="kr">fix</span> interpret
+     (A : <span class="kt">Type</span>) (expression : ListExpression A)
+     {<span class="kr">struct</span> expression} : 
+   list A :=
+     <span class="kr">match</span> expression <span class="kr">with</span>
+     | NilExpression _ =&gt; []
+     | VarExpression _ x =&gt; x
+     | ConsExpression _ a b =&gt; a :: interpret A b
+     | AppExpression _ l1 l2 =&gt;
+         interpret A l1 ++ interpret A l2
+     <span class="kr">end</span>) A expression1 ++
+  (<span class="kr">fix</span> interpret
+     (A : <span class="kt">Type</span>) (expression : ListExpression A)
+     {<span class="kr">struct</span> expression} : 
+   list A :=
+     <span class="kr">match</span> expression <span class="kr">with</span>
+     | NilExpression _ =&gt; []
+     | VarExpression _ x =&gt; x
+     | ConsExpression _ a b =&gt; a :: interpret A b
+     | AppExpression _ l1 l2 =&gt;
+         interpret A l1 ++ interpret A l2
+     <span class="kr">end</span>) A expression2 =
+  (<span class="kr">fix</span> interpret
+     (A : <span class="kt">Type</span>) (expression : ListExpression A)
+     {<span class="kr">struct</span> expression} : 
+   list A :=
+     <span class="kr">match</span> expression <span class="kr">with</span>
+     | NilExpression _ =&gt; []
+     | VarExpression _ x =&gt; x
+     | ConsExpression _ a b =&gt; a :: interpret A b
+     | AppExpression _ l1 l2 =&gt;
+         interpret A l1 ++ interpret A l2
+     <span class="kr">end</span>) A expression1 ++
+  (<span class="kr">fix</span> interpret
+     (A : <span class="kt">Type</span>) (expression : ListExpression A)
+     {<span class="kr">struct</span> expression} : 
+   list A :=
+     <span class="kr">match</span> expression <span class="kr">with</span>
+     | NilExpression _ =&gt; []
+     | VarExpression _ x =&gt; x
+     | ConsExpression _ a b =&gt; a :: interpret A b
+     | AppExpression _ l1 l2 =&gt;
+         interpret A l1 ++ interpret A l2
+     <span class="kr">end</span>) A expression2</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">easy</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk11" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk11">}</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br><span><var>h3</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret
+    (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">interpret expression =
+interpretFlattened (flatten expression)</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk12" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk12"><span class="nb">assert</span> (h4 : <span class="kr">forall</span> <span class="nv">expression1</span> <span class="nv">expression2</span>, flatten (AppExpression A expression1 expression2) = flatten expression1 ++ flatten expression2).</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br><span><var>h3</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret
+    (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  flatten (AppExpression A expression1 expression2) =
+  flatten expression1 ++ flatten expression2</div></blockquote><div class="alectryon-extra-goals"><input class="alectryon-extra-goal-toggle" id="ListsEqual-v-chk13" style="display: none" type="checkbox"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br><span><var>h3</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret
+    (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</span></span></span><br><span><var>h4</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  flatten
+    (AppExpression A expression1 expression2) =
+  flatten expression1 ++ flatten expression2</span></span></span><br></div><label class="goal-separator" for="ListsEqual-v-chk13"><hr></label><div class="goal-conclusion">interpret expression =
+interpretFlattened (flatten expression)</div></blockquote></div></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk14" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk14">{</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br><span><var>h3</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret
+    (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  flatten (AppExpression A expression1 expression2) =
+  flatten expression1 ++ flatten expression2</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk15" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk15"><span class="nb">unfold</span> flatten.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br><span><var>h3</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret
+    (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  (<span class="kr">fix</span> flatten
+     (A : <span class="kt">Type</span>) (expression : ListExpression A)
+     {<span class="kr">struct</span> expression} :
+       list (ListExpressionFlattenedTerm A) :=
+     <span class="kr">match</span> expression <span class="kr">with</span>
+     | NilExpression _ =&gt; []
+     | VarExpression _ x =&gt; [AnyList A x]
+     | ConsExpression _ head tail =&gt;
+         [Singleton A head] ++ flatten A tail
+     | AppExpression _ l1 l2 =&gt;
+         flatten A l1 ++ flatten A l2
+     <span class="kr">end</span>) A expression1 ++
+  (<span class="kr">fix</span> flatten
+     (A : <span class="kt">Type</span>) (expression : ListExpression A)
+     {<span class="kr">struct</span> expression} :
+       list (ListExpressionFlattenedTerm A) :=
+     <span class="kr">match</span> expression <span class="kr">with</span>
+     | NilExpression _ =&gt; []
+     | VarExpression _ x =&gt; [AnyList A x]
+     | ConsExpression _ head tail =&gt;
+         [Singleton A head] ++ flatten A tail
+     | AppExpression _ l1 l2 =&gt;
+         flatten A l1 ++ flatten A l2
+     <span class="kr">end</span>) A expression2 =
+  (<span class="kr">fix</span> flatten
+     (A : <span class="kt">Type</span>) (expression : ListExpression A)
+     {<span class="kr">struct</span> expression} :
+       list (ListExpressionFlattenedTerm A) :=
+     <span class="kr">match</span> expression <span class="kr">with</span>
+     | NilExpression _ =&gt; []
+     | VarExpression _ x =&gt; [AnyList A x]
+     | ConsExpression _ head tail =&gt;
+         [Singleton A head] ++ flatten A tail
+     | AppExpression _ l1 l2 =&gt;
+         flatten A l1 ++ flatten A l2
+     <span class="kr">end</span>) A expression1 ++
+  (<span class="kr">fix</span> flatten
+     (A : <span class="kt">Type</span>) (expression : ListExpression A)
+     {<span class="kr">struct</span> expression} :
+       list (ListExpressionFlattenedTerm A) :=
+     <span class="kr">match</span> expression <span class="kr">with</span>
+     | NilExpression _ =&gt; []
+     | VarExpression _ x =&gt; [AnyList A x]
+     | ConsExpression _ head tail =&gt;
+         [Singleton A head] ++ flatten A tail
+     | AppExpression _ l1 l2 =&gt;
+         flatten A l1 ++ flatten A l2
+     <span class="kr">end</span>) A expression2</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">easy</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk16" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk16">}</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br><span><var>h3</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret
+    (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</span></span></span><br><span><var>h4</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  flatten
+    (AppExpression A expression1 expression2) =
+  flatten expression1 ++ flatten expression2</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">interpret expression =
+interpretFlattened (flatten expression)</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk17" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk17"><span class="nb">assert</span> (h5 : <span class="kr">forall</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A, interpretFlattened (flatten expression1 ++ flatten expression2) = interpretFlattened (flatten expression1) ++ interpretFlattened (flatten expression2)).</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br><span><var>h3</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret
+    (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</span></span></span><br><span><var>h4</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  flatten
+    (AppExpression A expression1 expression2) =
+  flatten expression1 ++ flatten expression2</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten expression1 ++ flatten expression2) =
+  interpretFlattened (flatten expression1) ++
+  interpretFlattened (flatten expression2)</div></blockquote><div class="alectryon-extra-goals"><input class="alectryon-extra-goal-toggle" id="ListsEqual-v-chk18" style="display: none" type="checkbox"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br><span><var>h3</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret
+    (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</span></span></span><br><span><var>h4</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  flatten
+    (AppExpression A expression1 expression2) =
+  flatten expression1 ++ flatten expression2</span></span></span><br><span><var>h5</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten expression1 ++ flatten expression2) =
+  interpretFlattened (flatten expression1) ++
+  interpretFlattened (flatten expression2)</span></span></span><br></div><label class="goal-separator" for="ListsEqual-v-chk18"><hr></label><div class="goal-conclusion">interpret expression =
+interpretFlattened (flatten expression)</div></blockquote></div></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk19" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk19">{</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br><span><var>h3</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret
+    (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</span></span></span><br><span><var>h4</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  flatten
+    (AppExpression A expression1 expression2) =
+  flatten expression1 ++ flatten expression2</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten expression1 ++ flatten expression2) =
+  interpretFlattened (flatten expression1) ++
+  interpretFlattened (flatten expression2)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk1a" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk1a"><span class="nb">intro</span> expression1.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br><span><var>h3</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret
+    (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</span></span></span><br><span><var>h4</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  flatten
+    (AppExpression A expression1 expression2) =
+  flatten expression1 ++ flatten expression2</span></span></span><br><span><var>expression1</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kr">∀</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten expression1 ++ flatten expression2) =
+  interpretFlattened (flatten expression1) ++
+  interpretFlattened (flatten expression2)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk1b" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk1b"><span class="nb">induction</span> expression1.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br><span><var>h3</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret
+    (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</span></span></span><br><span><var>h4</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  flatten
+    (AppExpression A expression1 expression2) =
+  flatten expression1 ++ flatten expression2</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kr">∀</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten (NilExpression A) ++ flatten expression2) =
+  interpretFlattened (flatten (NilExpression A)) ++
+  interpretFlattened (flatten expression2)</div></blockquote><div class="alectryon-extra-goals"><input class="alectryon-extra-goal-toggle" id="ListsEqual-v-chk1c" style="display: none" type="checkbox"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br><span><var>h3</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret
+    (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</span></span></span><br><span><var>h4</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  flatten
+    (AppExpression A expression1 expression2) =
+  flatten expression1 ++ flatten expression2</span></span></span><br><span><var>x</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br></div><label class="goal-separator" for="ListsEqual-v-chk1c"><hr></label><div class="goal-conclusion"><span class="kr">∀</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten (VarExpression A x) ++
+     flatten expression2) =
+  interpretFlattened (flatten (VarExpression A x)) ++
+  interpretFlattened (flatten expression2)</div></blockquote><input class="alectryon-extra-goal-toggle" id="ListsEqual-v-chk1d" style="display: none" type="checkbox"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br><span><var>h3</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret
+    (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</span></span></span><br><span><var>h4</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  flatten
+    (AppExpression A expression1 expression2) =
+  flatten expression1 ++ flatten expression2</span></span></span><br><span><var>head</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>expression1</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>IHexpression1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten expression1 ++
+     flatten expression2) =
+  interpretFlattened
+    (flatten expression1) ++
+  interpretFlattened
+    (flatten expression2)</span></span></span><br></div><label class="goal-separator" for="ListsEqual-v-chk1d"><hr></label><div class="goal-conclusion"><span class="kr">∀</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten (ConsExpression A head expression1) ++
+     flatten expression2) =
+  interpretFlattened
+    (flatten (ConsExpression A head expression1)) ++
+  interpretFlattened (flatten expression2)</div></blockquote><input class="alectryon-extra-goal-toggle" id="ListsEqual-v-chk1e" style="display: none" type="checkbox"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br><span><var>h3</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret
+    (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</span></span></span><br><span><var>h4</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  flatten
+    (AppExpression A expression1 expression2) =
+  flatten expression1 ++ flatten expression2</span></span></span><br><span><var>expression1_1, expression1_2</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>IHexpression1_1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten expression1_1 ++
+     flatten expression2) =
+  interpretFlattened
+    (flatten expression1_1) ++
+  interpretFlattened
+    (flatten expression2)</span></span></span><br><span><var>IHexpression1_2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten expression1_2 ++
+     flatten expression2) =
+  interpretFlattened
+    (flatten expression1_2) ++
+  interpretFlattened
+    (flatten expression2)</span></span></span><br></div><label class="goal-separator" for="ListsEqual-v-chk1e"><hr></label><div class="goal-conclusion"><span class="kr">∀</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten
+       (AppExpression A expression1_1 expression1_2) ++
+     flatten expression2) =
+  interpretFlattened
+    (flatten
+       (AppExpression A expression1_1 expression1_2)) ++
+  interpretFlattened (flatten expression2)</div></blockquote></div></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk1f" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk1f">-</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br><span><var>h3</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret
+    (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</span></span></span><br><span><var>h4</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  flatten
+    (AppExpression A expression1 expression2) =
+  flatten expression1 ++ flatten expression2</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kr">∀</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten (NilExpression A) ++ flatten expression2) =
+  interpretFlattened (flatten (NilExpression A)) ++
+  interpretFlattened (flatten expression2)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk20" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk20"><span class="nb">simpl</span>.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br><span><var>h3</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret
+    (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</span></span></span><br><span><var>h4</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  flatten
+    (AppExpression A expression1 expression2) =
+  flatten expression1 ++ flatten expression2</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kr">∀</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened (flatten expression2) =
+  interpretFlattened (flatten expression2)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">easy</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk21" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk21">-</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br><span><var>h3</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret
+    (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</span></span></span><br><span><var>h4</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  flatten
+    (AppExpression A expression1 expression2) =
+  flatten expression1 ++ flatten expression2</span></span></span><br><span><var>x</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kr">∀</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten (VarExpression A x) ++
+     flatten expression2) =
+  interpretFlattened (flatten (VarExpression A x)) ++
+  interpretFlattened (flatten expression2)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk22" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk22"><span class="nb">simpl</span>.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br><span><var>h3</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret
+    (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</span></span></span><br><span><var>h4</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  flatten
+    (AppExpression A expression1 expression2) =
+  flatten expression1 ++ flatten expression2</span></span></span><br><span><var>x</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kr">∀</span> <span class="nv">expression2</span> : ListExpression A,
+  x ++ interpretFlattened (flatten expression2) =
+  (x ++ []) ++
+  interpretFlattened (flatten expression2)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk23" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk23"><span class="nb">rewrite</span> app_nil_r.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br><span><var>h3</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret
+    (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</span></span></span><br><span><var>h4</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  flatten
+    (AppExpression A expression1 expression2) =
+  flatten expression1 ++ flatten expression2</span></span></span><br><span><var>x</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kr">∀</span> <span class="nv">expression2</span> : ListExpression A,
+  x ++ interpretFlattened (flatten expression2) =
+  x ++ interpretFlattened (flatten expression2)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">easy</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk24" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk24">-</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br><span><var>h3</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret
+    (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</span></span></span><br><span><var>h4</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  flatten
+    (AppExpression A expression1 expression2) =
+  flatten expression1 ++ flatten expression2</span></span></span><br><span><var>head</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>expression1</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>IHexpression1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten expression1 ++
+     flatten expression2) =
+  interpretFlattened
+    (flatten expression1) ++
+  interpretFlattened
+    (flatten expression2)</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kr">∀</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten (ConsExpression A head expression1) ++
+     flatten expression2) =
+  interpretFlattened
+    (flatten (ConsExpression A head expression1)) ++
+  interpretFlattened (flatten expression2)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk25" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk25"><span class="nb">intros</span>.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br><span><var>h3</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret
+    (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</span></span></span><br><span><var>h4</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  flatten
+    (AppExpression A expression1 expression2) =
+  flatten expression1 ++ flatten expression2</span></span></span><br><span><var>head</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>expression1</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>IHexpression1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten expression1 ++
+     flatten expression2) =
+  interpretFlattened
+    (flatten expression1) ++
+  interpretFlattened
+    (flatten expression2)</span></span></span><br><span><var>expression2</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">interpretFlattened
+  (flatten (ConsExpression A head expression1) ++
+   flatten expression2) =
+interpretFlattened
+  (flatten (ConsExpression A head expression1)) ++
+interpretFlattened (flatten expression2)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk26" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk26"><span class="nb">simpl</span>.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br><span><var>h3</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret
+    (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</span></span></span><br><span><var>h4</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  flatten
+    (AppExpression A expression1 expression2) =
+  flatten expression1 ++ flatten expression2</span></span></span><br><span><var>head</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>expression1</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>IHexpression1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten expression1 ++
+     flatten expression2) =
+  interpretFlattened
+    (flatten expression1) ++
+  interpretFlattened
+    (flatten expression2)</span></span></span><br><span><var>expression2</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">head
+:: interpretFlattened
+     (flatten expression1 ++ flatten expression2) =
+head
+:: interpretFlattened (flatten expression1) ++
+   interpretFlattened (flatten expression2)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk27" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk27"><span class="nb">rewrite</span> IHexpression1.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br><span><var>h3</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret
+    (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</span></span></span><br><span><var>h4</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  flatten
+    (AppExpression A expression1 expression2) =
+  flatten expression1 ++ flatten expression2</span></span></span><br><span><var>head</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>expression1</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>IHexpression1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten expression1 ++
+     flatten expression2) =
+  interpretFlattened
+    (flatten expression1) ++
+  interpretFlattened
+    (flatten expression2)</span></span></span><br><span><var>expression2</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">head
+:: interpretFlattened (flatten expression1) ++
+   interpretFlattened (flatten expression2) =
+head
+:: interpretFlattened (flatten expression1) ++
+   interpretFlattened (flatten expression2)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">easy</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk28" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk28">-</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br><span><var>h3</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret
+    (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</span></span></span><br><span><var>h4</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  flatten
+    (AppExpression A expression1 expression2) =
+  flatten expression1 ++ flatten expression2</span></span></span><br><span><var>expression1_1, expression1_2</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>IHexpression1_1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten expression1_1 ++
+     flatten expression2) =
+  interpretFlattened
+    (flatten expression1_1) ++
+  interpretFlattened
+    (flatten expression2)</span></span></span><br><span><var>IHexpression1_2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten expression1_2 ++
+     flatten expression2) =
+  interpretFlattened
+    (flatten expression1_2) ++
+  interpretFlattened
+    (flatten expression2)</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kr">∀</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten
+       (AppExpression A expression1_1 expression1_2) ++
+     flatten expression2) =
+  interpretFlattened
+    (flatten
+       (AppExpression A expression1_1 expression1_2)) ++
+  interpretFlattened (flatten expression2)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk29" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk29"><span class="nb">intros</span>.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br><span><var>h3</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret
+    (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</span></span></span><br><span><var>h4</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  flatten
+    (AppExpression A expression1 expression2) =
+  flatten expression1 ++ flatten expression2</span></span></span><br><span><var>expression1_1, expression1_2</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>IHexpression1_1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten expression1_1 ++
+     flatten expression2) =
+  interpretFlattened
+    (flatten expression1_1) ++
+  interpretFlattened
+    (flatten expression2)</span></span></span><br><span><var>IHexpression1_2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten expression1_2 ++
+     flatten expression2) =
+  interpretFlattened
+    (flatten expression1_2) ++
+  interpretFlattened
+    (flatten expression2)</span></span></span><br><span><var>expression2</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">interpretFlattened
+  (flatten
+     (AppExpression A expression1_1 expression1_2) ++
+   flatten expression2) =
+interpretFlattened
+  (flatten
+     (AppExpression A expression1_1 expression1_2)) ++
+interpretFlattened (flatten expression2)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk2a" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk2a"><span class="nb">simpl</span>.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br><span><var>h3</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret
+    (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</span></span></span><br><span><var>h4</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  flatten
+    (AppExpression A expression1 expression2) =
+  flatten expression1 ++ flatten expression2</span></span></span><br><span><var>expression1_1, expression1_2</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>IHexpression1_1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten expression1_1 ++
+     flatten expression2) =
+  interpretFlattened
+    (flatten expression1_1) ++
+  interpretFlattened
+    (flatten expression2)</span></span></span><br><span><var>IHexpression1_2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten expression1_2 ++
+     flatten expression2) =
+  interpretFlattened
+    (flatten expression1_2) ++
+  interpretFlattened
+    (flatten expression2)</span></span></span><br><span><var>expression2</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">interpretFlattened
+  ((flatten expression1_1 ++ flatten expression1_2) ++
+   flatten expression2) =
+interpretFlattened
+  (flatten expression1_1 ++ flatten expression1_2) ++
+interpretFlattened (flatten expression2)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk2b" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk2b"><span class="nb">rewrite</span> &lt;- app_assoc.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br><span><var>h3</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret
+    (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</span></span></span><br><span><var>h4</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  flatten
+    (AppExpression A expression1 expression2) =
+  flatten expression1 ++ flatten expression2</span></span></span><br><span><var>expression1_1, expression1_2</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>IHexpression1_1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten expression1_1 ++
+     flatten expression2) =
+  interpretFlattened
+    (flatten expression1_1) ++
+  interpretFlattened
+    (flatten expression2)</span></span></span><br><span><var>IHexpression1_2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten expression1_2 ++
+     flatten expression2) =
+  interpretFlattened
+    (flatten expression1_2) ++
+  interpretFlattened
+    (flatten expression2)</span></span></span><br><span><var>expression2</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">interpretFlattened
+  (flatten expression1_1 ++
+   flatten expression1_2 ++ flatten expression2) =
+interpretFlattened
+  (flatten expression1_1 ++ flatten expression1_2) ++
+interpretFlattened (flatten expression2)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk2c" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk2c"><span class="nb">rewrite</span> &lt;- h4.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br><span><var>h3</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret
+    (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</span></span></span><br><span><var>h4</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  flatten
+    (AppExpression A expression1 expression2) =
+  flatten expression1 ++ flatten expression2</span></span></span><br><span><var>expression1_1, expression1_2</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>IHexpression1_1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten expression1_1 ++
+     flatten expression2) =
+  interpretFlattened
+    (flatten expression1_1) ++
+  interpretFlattened
+    (flatten expression2)</span></span></span><br><span><var>IHexpression1_2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten expression1_2 ++
+     flatten expression2) =
+  interpretFlattened
+    (flatten expression1_2) ++
+  interpretFlattened
+    (flatten expression2)</span></span></span><br><span><var>expression2</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">interpretFlattened
+  (flatten expression1_1 ++
+   flatten (AppExpression A expression1_2 expression2)) =
+interpretFlattened
+  (flatten expression1_1 ++ flatten expression1_2) ++
+interpretFlattened (flatten expression2)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk2d" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk2d"><span class="kp">repeat</span> <span class="nb">rewrite</span> IHexpression1_1.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br><span><var>h3</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret
+    (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</span></span></span><br><span><var>h4</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  flatten
+    (AppExpression A expression1 expression2) =
+  flatten expression1 ++ flatten expression2</span></span></span><br><span><var>expression1_1, expression1_2</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>IHexpression1_1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten expression1_1 ++
+     flatten expression2) =
+  interpretFlattened
+    (flatten expression1_1) ++
+  interpretFlattened
+    (flatten expression2)</span></span></span><br><span><var>IHexpression1_2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten expression1_2 ++
+     flatten expression2) =
+  interpretFlattened
+    (flatten expression1_2) ++
+  interpretFlattened
+    (flatten expression2)</span></span></span><br><span><var>expression2</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">interpretFlattened (flatten expression1_1) ++
+interpretFlattened
+  (flatten (AppExpression A expression1_2 expression2)) =
+(interpretFlattened (flatten expression1_1) ++
+ interpretFlattened (flatten expression1_2)) ++
+interpretFlattened (flatten expression2)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk2e" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk2e"><span class="nb">rewrite</span> h4.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br><span><var>h3</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret
+    (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</span></span></span><br><span><var>h4</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  flatten
+    (AppExpression A expression1 expression2) =
+  flatten expression1 ++ flatten expression2</span></span></span><br><span><var>expression1_1, expression1_2</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>IHexpression1_1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten expression1_1 ++
+     flatten expression2) =
+  interpretFlattened
+    (flatten expression1_1) ++
+  interpretFlattened
+    (flatten expression2)</span></span></span><br><span><var>IHexpression1_2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten expression1_2 ++
+     flatten expression2) =
+  interpretFlattened
+    (flatten expression1_2) ++
+  interpretFlattened
+    (flatten expression2)</span></span></span><br><span><var>expression2</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">interpretFlattened (flatten expression1_1) ++
+interpretFlattened
+  (flatten expression1_2 ++ flatten expression2) =
+(interpretFlattened (flatten expression1_1) ++
+ interpretFlattened (flatten expression1_2)) ++
+interpretFlattened (flatten expression2)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk2f" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk2f"><span class="nb">rewrite</span> IHexpression1_2.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br><span><var>h3</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret
+    (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</span></span></span><br><span><var>h4</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  flatten
+    (AppExpression A expression1 expression2) =
+  flatten expression1 ++ flatten expression2</span></span></span><br><span><var>expression1_1, expression1_2</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>IHexpression1_1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten expression1_1 ++
+     flatten expression2) =
+  interpretFlattened
+    (flatten expression1_1) ++
+  interpretFlattened
+    (flatten expression2)</span></span></span><br><span><var>IHexpression1_2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten expression1_2 ++
+     flatten expression2) =
+  interpretFlattened
+    (flatten expression1_2) ++
+  interpretFlattened
+    (flatten expression2)</span></span></span><br><span><var>expression2</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">interpretFlattened (flatten expression1_1) ++
+interpretFlattened (flatten expression1_2) ++
+interpretFlattened (flatten expression2) =
+(interpretFlattened (flatten expression1_1) ++
+ interpretFlattened (flatten expression1_2)) ++
+interpretFlattened (flatten expression2)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk30" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk30"><span class="nb">rewrite</span> app_assoc.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br><span><var>h3</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret
+    (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</span></span></span><br><span><var>h4</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  flatten
+    (AppExpression A expression1 expression2) =
+  flatten expression1 ++ flatten expression2</span></span></span><br><span><var>expression1_1, expression1_2</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>IHexpression1_1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten expression1_1 ++
+     flatten expression2) =
+  interpretFlattened
+    (flatten expression1_1) ++
+  interpretFlattened
+    (flatten expression2)</span></span></span><br><span><var>IHexpression1_2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten expression1_2 ++
+     flatten expression2) =
+  interpretFlattened
+    (flatten expression1_2) ++
+  interpretFlattened
+    (flatten expression2)</span></span></span><br><span><var>expression2</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">(interpretFlattened (flatten expression1_1) ++
+ interpretFlattened (flatten expression1_2)) ++
+interpretFlattened (flatten expression2) =
+(interpretFlattened (flatten expression1_1) ++
+ interpretFlattened (flatten expression1_2)) ++
+interpretFlattened (flatten expression2)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">easy</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk31" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk31">}</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br><span><var>h3</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret
+    (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</span></span></span><br><span><var>h4</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  flatten
+    (AppExpression A expression1 expression2) =
+  flatten expression1 ++ flatten expression2</span></span></span><br><span><var>h5</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten expression1 ++ flatten expression2) =
+  interpretFlattened (flatten expression1) ++
+  interpretFlattened (flatten expression2)</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">interpret expression =
+interpretFlattened (flatten expression)</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk32" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk32"><span class="nb">induction</span> expression.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br><span><var>h3</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret
+    (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</span></span></span><br><span><var>h4</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  flatten
+    (AppExpression A expression1 expression2) =
+  flatten expression1 ++ flatten expression2</span></span></span><br><span><var>h5</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten expression1 ++ flatten expression2) =
+  interpretFlattened (flatten expression1) ++
+  interpretFlattened (flatten expression2)</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">interpret (NilExpression A) =
+interpretFlattened (flatten (NilExpression A))</div></blockquote><div class="alectryon-extra-goals"><input class="alectryon-extra-goal-toggle" id="ListsEqual-v-chk33" style="display: none" type="checkbox"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>x</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br><span><var>h3</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret
+    (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</span></span></span><br><span><var>h4</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  flatten
+    (AppExpression A expression1 expression2) =
+  flatten expression1 ++ flatten expression2</span></span></span><br><span><var>h5</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten expression1 ++ flatten expression2) =
+  interpretFlattened (flatten expression1) ++
+  interpretFlattened (flatten expression2)</span></span></span><br></div><label class="goal-separator" for="ListsEqual-v-chk33"><hr></label><div class="goal-conclusion">interpret (VarExpression A x) =
+interpretFlattened (flatten (VarExpression A x))</div></blockquote><input class="alectryon-extra-goal-toggle" id="ListsEqual-v-chk34" style="display: none" type="checkbox"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>head</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br><span><var>h3</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret
+    (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</span></span></span><br><span><var>h4</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  flatten
+    (AppExpression A expression1 expression2) =
+  flatten expression1 ++ flatten expression2</span></span></span><br><span><var>h5</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten expression1 ++ flatten expression2) =
+  interpretFlattened (flatten expression1) ++
+  interpretFlattened (flatten expression2)</span></span></span><br><span><var>IHexpression</var><span class="hyp-type"><b>: </b><span>interpret expression =
+interpretFlattened (flatten expression)</span></span></span><br></div><label class="goal-separator" for="ListsEqual-v-chk34"><hr></label><div class="goal-conclusion">interpret (ConsExpression A head expression) =
+interpretFlattened
+  (flatten (ConsExpression A head expression))</div></blockquote><input class="alectryon-extra-goal-toggle" id="ListsEqual-v-chk35" style="display: none" type="checkbox"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression1, expression2</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br><span><var>h3</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret
+    (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</span></span></span><br><span><var>h4</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  flatten
+    (AppExpression A expression1 expression2) =
+  flatten expression1 ++ flatten expression2</span></span></span><br><span><var>h5</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten expression1 ++ flatten expression2) =
+  interpretFlattened (flatten expression1) ++
+  interpretFlattened (flatten expression2)</span></span></span><br><span><var>IHexpression1</var><span class="hyp-type"><b>: </b><span>interpret expression1 =
+interpretFlattened
+  (flatten expression1)</span></span></span><br><span><var>IHexpression2</var><span class="hyp-type"><b>: </b><span>interpret expression2 =
+interpretFlattened
+  (flatten expression2)</span></span></span><br></div><label class="goal-separator" for="ListsEqual-v-chk35"><hr></label><div class="goal-conclusion">interpret (AppExpression A expression1 expression2) =
+interpretFlattened
+  (flatten (AppExpression A expression1 expression2))</div></blockquote></div></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk36" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk36">-</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br><span><var>h3</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret
+    (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</span></span></span><br><span><var>h4</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  flatten
+    (AppExpression A expression1 expression2) =
+  flatten expression1 ++ flatten expression2</span></span></span><br><span><var>h5</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten expression1 ++ flatten expression2) =
+  interpretFlattened (flatten expression1) ++
+  interpretFlattened (flatten expression2)</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">interpret (NilExpression A) =
+interpretFlattened (flatten (NilExpression A))</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">easy</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk37" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk37">-</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>x</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br><span><var>h3</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret
+    (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</span></span></span><br><span><var>h4</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  flatten
+    (AppExpression A expression1 expression2) =
+  flatten expression1 ++ flatten expression2</span></span></span><br><span><var>h5</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten expression1 ++ flatten expression2) =
+  interpretFlattened (flatten expression1) ++
+  interpretFlattened (flatten expression2)</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">interpret (VarExpression A x) =
+interpretFlattened (flatten (VarExpression A x))</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk38" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk38"><span class="nb">simpl</span>.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>x</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br><span><var>h3</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret
+    (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</span></span></span><br><span><var>h4</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  flatten
+    (AppExpression A expression1 expression2) =
+  flatten expression1 ++ flatten expression2</span></span></span><br><span><var>h5</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten expression1 ++ flatten expression2) =
+  interpretFlattened (flatten expression1) ++
+  interpretFlattened (flatten expression2)</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">x = x ++ []</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk39" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk39"><span class="nb">rewrite</span> app_nil_r.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>x</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br><span><var>h3</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret
+    (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</span></span></span><br><span><var>h4</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  flatten
+    (AppExpression A expression1 expression2) =
+  flatten expression1 ++ flatten expression2</span></span></span><br><span><var>h5</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten expression1 ++ flatten expression2) =
+  interpretFlattened (flatten expression1) ++
+  interpretFlattened (flatten expression2)</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">x = x</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">reflexivity</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk3a" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk3a">-</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>head</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br><span><var>h3</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret
+    (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</span></span></span><br><span><var>h4</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  flatten
+    (AppExpression A expression1 expression2) =
+  flatten expression1 ++ flatten expression2</span></span></span><br><span><var>h5</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten expression1 ++ flatten expression2) =
+  interpretFlattened (flatten expression1) ++
+  interpretFlattened (flatten expression2)</span></span></span><br><span><var>IHexpression</var><span class="hyp-type"><b>: </b><span>interpret expression =
+interpretFlattened (flatten expression)</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">interpret (ConsExpression A head expression) =
+interpretFlattened
+  (flatten (ConsExpression A head expression))</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk3b" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk3b"><span class="nb">rewrite</span> h1, h2.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>head</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br><span><var>h3</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret
+    (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</span></span></span><br><span><var>h4</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  flatten
+    (AppExpression A expression1 expression2) =
+  flatten expression1 ++ flatten expression2</span></span></span><br><span><var>h5</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten expression1 ++ flatten expression2) =
+  interpretFlattened (flatten expression1) ++
+  interpretFlattened (flatten expression2)</span></span></span><br><span><var>IHexpression</var><span class="hyp-type"><b>: </b><span>interpret expression =
+interpretFlattened (flatten expression)</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">head :: interpret expression =
+interpretFlattened
+  ([Singleton A head] ++ flatten expression)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk3c" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk3c"><span class="nb">simpl</span>.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>head</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br><span><var>h3</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret
+    (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</span></span></span><br><span><var>h4</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  flatten
+    (AppExpression A expression1 expression2) =
+  flatten expression1 ++ flatten expression2</span></span></span><br><span><var>h5</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten expression1 ++ flatten expression2) =
+  interpretFlattened (flatten expression1) ++
+  interpretFlattened (flatten expression2)</span></span></span><br><span><var>IHexpression</var><span class="hyp-type"><b>: </b><span>interpret expression =
+interpretFlattened (flatten expression)</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">head :: interpret expression =
+head :: interpretFlattened (flatten expression)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk3d" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk3d"><span class="nb">rewrite</span> IHexpression.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>head</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>expression</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br><span><var>h3</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret
+    (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</span></span></span><br><span><var>h4</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  flatten
+    (AppExpression A expression1 expression2) =
+  flatten expression1 ++ flatten expression2</span></span></span><br><span><var>h5</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten expression1 ++ flatten expression2) =
+  interpretFlattened (flatten expression1) ++
+  interpretFlattened (flatten expression2)</span></span></span><br><span><var>IHexpression</var><span class="hyp-type"><b>: </b><span>interpret expression =
+interpretFlattened (flatten expression)</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">head :: interpretFlattened (flatten expression) =
+head :: interpretFlattened (flatten expression)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">reflexivity</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk3e" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk3e">-</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression1, expression2</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br><span><var>h3</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret
+    (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</span></span></span><br><span><var>h4</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  flatten
+    (AppExpression A expression1 expression2) =
+  flatten expression1 ++ flatten expression2</span></span></span><br><span><var>h5</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten expression1 ++ flatten expression2) =
+  interpretFlattened (flatten expression1) ++
+  interpretFlattened (flatten expression2)</span></span></span><br><span><var>IHexpression1</var><span class="hyp-type"><b>: </b><span>interpret expression1 =
+interpretFlattened
+  (flatten expression1)</span></span></span><br><span><var>IHexpression2</var><span class="hyp-type"><b>: </b><span>interpret expression2 =
+interpretFlattened
+  (flatten expression2)</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">interpret (AppExpression A expression1 expression2) =
+interpretFlattened
+  (flatten (AppExpression A expression1 expression2))</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk3f" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk3f"><span class="nb">rewrite</span> h3, h4, h5, &lt;- IHexpression1, &lt;- IHexpression2.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression1, expression2</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h1</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  interpret (ConsExpression A head expression) =
+  head :: interpret expression</span></span></span><br><span><var>h2</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> (<span class="nv">head</span> : A) (<span class="nv">expression</span> : ListExpression A),
+  flatten (ConsExpression A head expression) =
+  [Singleton A head] ++ flatten expression</span></span></span><br><span><var>h3</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpret
+    (AppExpression A expression1 expression2) =
+  interpret expression1 ++ interpret expression2</span></span></span><br><span><var>h4</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  flatten
+    (AppExpression A expression1 expression2) =
+  flatten expression1 ++ flatten expression2</span></span></span><br><span><var>h5</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A,
+  interpretFlattened
+    (flatten expression1 ++ flatten expression2) =
+  interpretFlattened (flatten expression1) ++
+  interpretFlattened (flatten expression2)</span></span></span><br><span><var>IHexpression1</var><span class="hyp-type"><b>: </b><span>interpret expression1 =
+interpretFlattened
+  (flatten expression1)</span></span></span><br><span><var>IHexpression2</var><span class="hyp-type"><b>: </b><span>interpret expression2 =
+interpretFlattened
+  (flatten expression2)</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">interpret expression1 ++ interpret expression2 =
+interpret expression1 ++ interpret expression2</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">reflexivity</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">
+</span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk40" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk40"><span class="kn">Lemma</span> <span class="nf">listsEqualReflect</span> {<span class="nv">A</span> : <span class="kt">Type</span>} (<span class="nv">expression1</span> <span class="nv">expression2</span> : ListExpression A) : interpretFlattened (flatten expression1) = interpretFlattened (flatten expression2) -&gt; interpret expression1 = interpret expression2.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression1, expression2</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">interpretFlattened (flatten expression1) =
+interpretFlattened (flatten expression2)
+→ interpret expression1 = interpret expression2</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk41" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk41"><span class="kn">Proof</span>.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression1, expression2</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">interpretFlattened (flatten expression1) =
+interpretFlattened (flatten expression2)
+→ interpret expression1 = interpret expression2</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk42" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk42"><span class="nb">intro</span> h.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression1, expression2</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h</var><span class="hyp-type"><b>: </b><span>interpretFlattened (flatten expression1) =
+interpretFlattened (flatten expression2)</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">interpret expression1 = interpret expression2</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk43" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk43"><span class="kp">repeat</span> <span class="nb">rewrite</span> flattenCorrect.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>expression1, expression2</var><span class="hyp-type"><b>: </b><span>ListExpression A</span></span></span><br><span><var>h</var><span class="hyp-type"><b>: </b><span>interpretFlattened (flatten expression1) =
+interpretFlattened (flatten expression2)</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">interpretFlattened (flatten expression1) =
+interpretFlattened (flatten expression2)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">easy</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Ltac</span> <span class="nf">listExpressionReify</span> me :=
+  <span class="kr">match</span> me <span class="kr">with</span>
+  | nil =&gt; NilExpression
+  | <span class="nl">?head</span> :: <span class="nl">?tail</span> =&gt;
+    <span class="kr">let</span> <span class="nv">r1</span> := listExpressionReify head <span class="kr">in</span>
+    <span class="kr">let</span> <span class="nv">r2</span> := listExpressionReify tail <span class="kr">in</span>
+      <span class="kp">constr</span>:(ConsExpression _ r1 r2)
+  | <span class="nl">?l1</span> ++ <span class="nl">?l2</span> =&gt;
+    <span class="kr">let</span> <span class="nv">r1</span> := listExpressionReify l1 <span class="kr">in</span>
+    <span class="kr">let</span> <span class="nv">r2</span> := listExpressionReify l2 <span class="kr">in</span>
+      <span class="kp">constr</span>:(AppExpression _ r1 r2)
+  | _ =&gt; <span class="kp">constr</span>:(VarExpression _ me)
+  <span class="kr">end</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Ltac</span> <span class="nf">listsEqual</span> :=
+  <span class="kr">match goal with</span>
+  | [|- <span class="nl">?me1</span> = <span class="nl">?me2</span>] =&gt;
+    <span class="kr">let</span> <span class="nv">r1</span> := listExpressionReify me1 <span class="kr">in</span>
+    <span class="kr">let</span> <span class="nv">r2</span> := listExpressionReify me2 <span class="kr">in</span>
+      <span class="nb">change</span> (interpret r1 = interpret r2);
+        <span class="nb">apply</span> listsEqualReflect; <span class="nb">simpl</span>; <span class="kp">repeat</span> <span class="nb">rewrite</span> app_nil_r; <span class="bp">reflexivity</span>
+  <span class="kr">end</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">
+</span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk44" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk44"><span class="kn">Lemma</span> <span class="nf">test0</span> (<span class="nv">l1</span> : list nat) (<span class="nv">x</span> : nat) : [x] ++ l1 = x :: l1.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>l1</var><span class="hyp-type"><b>: </b><span>list nat</span></span></span><br><span><var>x</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">[x] ++ l1 = x :: l1</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk45" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk45"><span class="kn">Proof</span>.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>l1</var><span class="hyp-type"><b>: </b><span>list nat</span></span></span><br><span><var>x</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">[x] ++ l1 = x :: l1</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input">listsEqual.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">
+</span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk46" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk46"><span class="kn">Lemma</span> <span class="nf">test1</span> (<span class="nv">l1</span> <span class="nv">l2</span> <span class="nv">l3</span> : list nat) (<span class="nv">x</span> : nat) : l1 ++ [x] ++ l2 ++ l3 = l1 ++ (x :: l2) ++ l3.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>l1, l2, l3</var><span class="hyp-type"><b>: </b><span>list nat</span></span></span><br><span><var>x</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">l1 ++ [x] ++ l2 ++ l3 = l1 ++ (x :: l2) ++ l3</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk47" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk47"><span class="kn">Proof</span>.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>l1, l2, l3</var><span class="hyp-type"><b>: </b><span>list nat</span></span></span><br><span><var>x</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">l1 ++ [x] ++ l2 ++ l3 = l1 ++ (x :: l2) ++ l3</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input">listsEqual.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">
+</span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk48" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk48"><span class="kn">Lemma</span> <span class="nf">test2</span> (<span class="nv">a</span> <span class="nv">b</span> <span class="nv">c</span> <span class="nv">d</span> <span class="nv">e</span> : nat) : [a; b; c] ++ [] ++ [d; e] = [a; b; c; d; e] ++ [] ++ [].</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>a, b, c, d, e</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">[a; b; c] ++ [] ++ [d; e] =
+[a; b; c; d; e] ++ [] ++ []</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk49" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk49"><span class="kn">Proof</span>.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>a, b, c, d, e</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">[a; b; c] ++ [] ++ [d; e] =
+[a; b; c; d; e] ++ [] ++ []</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input">listsEqual.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">
+</span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk4a" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk4a"><span class="kn">Lemma</span> <span class="nf">test3</span> (<span class="nv">l1</span> <span class="nv">l2</span> <span class="nv">l3</span> : list nat) (<span class="nv">x</span> : nat) : l1 ++ [x] ++ l2 ++ l3 = l1 ++ (x :: l2 ++ l3).</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>l1, l2, l3</var><span class="hyp-type"><b>: </b><span>list nat</span></span></span><br><span><var>x</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">l1 ++ [x] ++ l2 ++ l3 = l1 ++ x :: l2 ++ l3</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="ListsEqual-v-chk4b" style="display: none" type="checkbox"><label class="alectryon-input" for="ListsEqual-v-chk4b"><span class="kn">Proof</span>.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>l1, l2, l3</var><span class="hyp-type"><b>: </b><span>list nat</span></span></span><br><span><var>x</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">l1 ++ [x] ++ l2 ++ l3 = l1 ++ x :: l2 ++ l3</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input">listsEqual.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span></span></pre></article></body></html>

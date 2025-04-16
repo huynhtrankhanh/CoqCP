@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html class="alectryon-standalone"><head><title>PickSmallestInRangeProperties.v</title><meta charset="utf-8"><meta content="Alectryon" name="generator"><meta name="viewport" content="width=device-width, initial-scale=1"><link href="alectryon.css" rel="stylesheet"><link href="pygments.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/IBM-type/0.5.4/css/ibm-type.min.css" integrity="sha512-sky5cf9Ts6FY1kstGOBHSybfKqdHR41M0Ldb0BjNiv3ifltoQIsg0zIaQ+wwdwgQ0w9vKFW7Js50lxH9vqNSSw==" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/firacode/5.2.0/fira_code.min.css" integrity="sha512-MbysAYimH1hH2xYzkkMHB6MqxBqfP0megxsCLknbYqHVwXTCg9IqHbk+ZP/vnhO8UEW6PaXAkKe2vQ+SWACxxA==" crossorigin="anonymous" /><script src="alectryon.js"></script></head><body><article class="alectryon-root alectryon-centered"><div class="alectryon-banner">Built with <a href="https://github.com/cpitclaudel/alectryon/">Alectryon</a>, running Coq+SerAPI v8.19.0+0.19.3. Bubbles (<span class="alectryon-bubble"></span>) indicate interactive fragments: hover for details, tap to reveal contents. Use <kbd>Ctrl+↑</kbd> <kbd>Ctrl+↓</kbd> to navigate, <kbd>Ctrl+🖱️</kbd> to focus. On Mac, use <kbd>⌘</kbd> instead of <kbd>Ctrl</kbd>.</div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk0" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk0"><span class="kn">From</span> stdpp <span class="kn">Require Import</span> numbers list.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message">[Loading ML file ring_plugin.cmxs (<span class="nb">using</span> legacy method) ... <span class="bp">done</span>]</blockquote><blockquote class="alectryon-message">[Loading ML file zify_plugin.cmxs (<span class="nb">using</span> legacy method) ... <span class="bp">done</span>]</blockquote><blockquote class="alectryon-message">[Loading ML file micromega_plugin.cmxs (<span class="nb">using</span> legacy method) ... <span class="bp">done</span>]</blockquote><blockquote class="alectryon-message">[Loading ML file btauto_plugin.cmxs (<span class="nb">using</span> legacy method) ... <span class="bp">done</span>]</blockquote><blockquote class="alectryon-message">[Loading ML file ssrmatching_plugin.cmxs (<span class="nb">using</span> legacy method) ... <span class="bp">done</span>]</blockquote><blockquote class="alectryon-message">[Loading ML file ssreflect_plugin.cmxs (<span class="nb">using</span> legacy method) ... <span class="bp">done</span>]</blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">From</span> CoqCP <span class="kn">Require Import</span> Options ListRange Foldl Comparator SelectionSort.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">
+</span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk1" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk1"><span class="kn">Lemma</span> <span class="nf">pickSmallestInRangeFold</span> {<span class="nv">A</span> : <span class="kt">Type</span>} (<span class="nv">default</span> : A) (<span class="nv">compare</span> : A -&gt; A -&gt; bool) (<span class="nv">l</span> : list A) (<span class="nv">i</span> <span class="nv">delta</span> : nat) : foldl (<span class="kr">fun</span> <span class="nv">accumulated</span> <span class="nv">current</span> =&gt; <span class="kr">if</span> <span class="nb">compare</span> (nth current l default) (nth accumulated l default) <span class="kr">then</span> current <span class="kr">else</span> accumulated) i (range2 i (i + delta)) = pickSmallestInRange default <span class="nb">compare</span> i (i + delta) l.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">foldl
+  (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+     <span class="kr">if</span> <span class="nb">compare</span> (nth _1 l default) (nth _0 l default)
+     <span class="kr">then</span> _1
+     <span class="kr">else</span> _0) i (range2 i (i + delta)) =
+pickSmallestInRange default <span class="nb">compare</span> i (i + delta) l</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk2" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk2"><span class="kn">Proof</span>.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">foldl
+  (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+     <span class="kr">if</span> <span class="nb">compare</span> (nth _1 l default) (nth _0 l default)
+     <span class="kr">then</span> _1
+     <span class="kr">else</span> _0) i (range2 i (i + delta)) =
+pickSmallestInRange default <span class="nb">compare</span> i (i + delta) l</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">easy</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">
+</span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk3" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk3"><span class="kn">Lemma</span> <span class="nf">pickSmallestInRangeInvariant</span> {<span class="nv">A</span> : <span class="kt">Type</span>} (<span class="nv">default</span> : A) (<span class="nv">compare</span> : A -&gt; A -&gt; bool) (<span class="nv">l</span> : list A) (<span class="nv">i</span> <span class="nv">delta</span> : nat) : i &lt;= foldl (<span class="kr">fun</span> <span class="nv">accumulated</span> <span class="nv">current</span> =&gt; <span class="kr">if</span> <span class="nb">compare</span> (nth current l default) (nth accumulated l default) <span class="kr">then</span> current <span class="kr">else</span> accumulated) i (range2 i (i + delta)).</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">i
+≤ foldl
+    (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+       <span class="kr">if</span>
+        <span class="nb">compare</span> (nth _1 l default) (nth _0 l default)
+       <span class="kr">then</span> _1
+       <span class="kr">else</span> _0) i (range2 i (i + delta))</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk4" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk4"><span class="kn">Proof</span>.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">i
+≤ foldl
+    (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+       <span class="kr">if</span>
+        <span class="nb">compare</span> (nth _1 l default) (nth _0 l default)
+       <span class="kr">then</span> _1
+       <span class="kr">else</span> _0) i (range2 i (i + delta))</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk5" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk5"><span class="nb">induction</span> delta <span class="kr">as</span> [| delta IH].</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">i
+≤ foldl
+    (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+       <span class="kr">if</span>
+        <span class="nb">compare</span> (nth _1 l default) (nth _0 l default)
+       <span class="kr">then</span> _1
+       <span class="kr">else</span> _0) i (range2 i (i + <span class="mi">0</span>))</div></blockquote><div class="alectryon-extra-goals"><input class="alectryon-extra-goal-toggle" id="PickSmallestInRangeProperties-v-chk6" style="display: none" type="checkbox"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>IH</var><span class="hyp-type"><b>: </b><span>i
+≤ foldl
+    (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+       <span class="kr">if</span>
+        <span class="nb">compare</span> (nth _1 l default)
+          (nth _0 l default)
+       <span class="kr">then</span> _1
+       <span class="kr">else</span> _0) i (range2 i (i + delta))</span></span></span><br></div><label class="goal-separator" for="PickSmallestInRangeProperties-v-chk6"><hr></label><div class="goal-conclusion">i
+≤ foldl
+    (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+       <span class="kr">if</span>
+        <span class="nb">compare</span> (nth _1 l default) (nth _0 l default)
+       <span class="kr">then</span> _1
+       <span class="kr">else</span> _0) i (range2 i (i + S delta))</div></blockquote></div></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk7" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk7">-</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">i
+≤ foldl
+    (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+       <span class="kr">if</span>
+        <span class="nb">compare</span> (nth _1 l default) (nth _0 l default)
+       <span class="kr">then</span> _1
+       <span class="kr">else</span> _0) i (range2 i (i + <span class="mi">0</span>))</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk8" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk8"><span class="nb">rewrite</span> Nat.add_0_r, range2LeftLeft.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">i
+≤ foldl
+    (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+       <span class="kr">if</span>
+        <span class="nb">compare</span> (nth _1 l default) (nth _0 l default)
+       <span class="kr">then</span> _1
+       <span class="kr">else</span> _0) i [i]</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk9" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk9"><span class="nb">simpl</span>.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">i
+≤ (<span class="kr">if</span> <span class="nb">compare</span> (nth i l default) (nth i l default)
+   <span class="kr">then</span> i
+   <span class="kr">else</span> i)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (<span class="nb">compare</span> _); <span class="bp">easy</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chka" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chka">-</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>IH</var><span class="hyp-type"><b>: </b><span>i
+≤ foldl
+    (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+       <span class="kr">if</span>
+        <span class="nb">compare</span> (nth _1 l default)
+          (nth _0 l default)
+       <span class="kr">then</span> _1
+       <span class="kr">else</span> _0) i (range2 i (i + delta))</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">i
+≤ foldl
+    (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+       <span class="kr">if</span>
+        <span class="nb">compare</span> (nth _1 l default) (nth _0 l default)
+       <span class="kr">then</span> _1
+       <span class="kr">else</span> _0) i (range2 i (i + S delta))</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chkb" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chkb"><span class="nb">rewrite</span> Nat.add_succ_r, range2LeftAdd, foldl_app, foldlSingleton.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>IH</var><span class="hyp-type"><b>: </b><span>i
+≤ foldl
+    (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+       <span class="kr">if</span>
+        <span class="nb">compare</span> (nth _1 l default)
+          (nth _0 l default)
+       <span class="kr">then</span> _1
+       <span class="kr">else</span> _0) i (range2 i (i + delta))</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">i
+≤ (<span class="kr">if</span>
+    <span class="nb">compare</span> (nth (S (i + delta)) l default)
+      (nth
+         (foldl
+            (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+               <span class="kr">if</span>
+                <span class="nb">compare</span> 
+                  (nth _1 l default)
+                  (nth _0 l default)
+               <span class="kr">then</span> _1
+               <span class="kr">else</span> _0) i 
+            (range2 i (i + delta))) l default)
+   <span class="kr">then</span> S (i + delta)
+   <span class="kr">else</span>
+    foldl
+      (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+         <span class="kr">if</span>
+          <span class="nb">compare</span> (nth _1 l default)
+            (nth _0 l default)
+         <span class="kr">then</span> _1
+         <span class="kr">else</span> _0) i (range2 i (i + delta)))</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chkc" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chkc"><span class="nb">destruct</span> (<span class="nb">compare</span> (nth (S (i + delta)) l default)).</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>IH</var><span class="hyp-type"><b>: </b><span>i
+≤ foldl
+    (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+       <span class="kr">if</span>
+        <span class="nb">compare</span> (nth _1 l default)
+          (nth _0 l default)
+       <span class="kr">then</span> _1
+       <span class="kr">else</span> _0) i (range2 i (i + delta))</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">i ≤ S (i + delta)</div></blockquote><div class="alectryon-extra-goals"><input class="alectryon-extra-goal-toggle" id="PickSmallestInRangeProperties-v-chkd" style="display: none" type="checkbox"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>IH</var><span class="hyp-type"><b>: </b><span>i
+≤ foldl
+    (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+       <span class="kr">if</span>
+        <span class="nb">compare</span> (nth _1 l default)
+          (nth _0 l default)
+       <span class="kr">then</span> _1
+       <span class="kr">else</span> _0) i (range2 i (i + delta))</span></span></span><br></div><label class="goal-separator" for="PickSmallestInRangeProperties-v-chkd"><hr></label><div class="goal-conclusion">i
+≤ foldl
+    (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+       <span class="kr">if</span>
+        <span class="nb">compare</span> (nth _1 l default) (nth _0 l default)
+       <span class="kr">then</span> _1
+       <span class="kr">else</span> _0) i (range2 i (i + delta))</div></blockquote></div></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chke" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chke">+</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>IH</var><span class="hyp-type"><b>: </b><span>i
+≤ foldl
+    (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+       <span class="kr">if</span>
+        <span class="nb">compare</span> (nth _1 l default)
+          (nth _0 l default)
+       <span class="kr">then</span> _1
+       <span class="kr">else</span> _0) i (range2 i (i + delta))</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">i ≤ S (i + delta)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">lia</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chkf" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chkf">+</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>IH</var><span class="hyp-type"><b>: </b><span>i
+≤ foldl
+    (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+       <span class="kr">if</span>
+        <span class="nb">compare</span> (nth _1 l default)
+          (nth _0 l default)
+       <span class="kr">then</span> _1
+       <span class="kr">else</span> _0) i (range2 i (i + delta))</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">i
+≤ foldl
+    (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+       <span class="kr">if</span>
+        <span class="nb">compare</span> (nth _1 l default) (nth _0 l default)
+       <span class="kr">then</span> _1
+       <span class="kr">else</span> _0) i (range2 i (i + delta))</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">assumption</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">
+</span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk10" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk10"><span class="kn">Lemma</span> <span class="nf">iLessEqualPickSmallestInRange</span> {<span class="nv">A</span> : <span class="kt">Type</span>} (<span class="nv">default</span> : A) (<span class="nv">compare</span> : A -&gt; A -&gt; bool) (<span class="nv">l</span> : list A) (<span class="nv">i</span> <span class="nv">delta</span> : nat) : i &lt;= pickSmallestInRange default <span class="nb">compare</span> i (i + delta) l.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">i
+≤ pickSmallestInRange default <span class="nb">compare</span> i (i + delta) l</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk11" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk11"><span class="kn">Proof</span>.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">i
+≤ pickSmallestInRange default <span class="nb">compare</span> i (i + delta) l</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk12" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk12"><span class="nb">unfold</span> pickSmallestInRange.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">i
+≤ foldl
+    (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+       <span class="kr">if</span>
+        <span class="nb">compare</span> (nth _1 l default) (nth _0 l default)
+       <span class="kr">then</span> _1
+       <span class="kr">else</span> _0) i (range2 i (i + delta))</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> pickSmallestInRangeInvariant.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">
+</span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk13" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk13"><span class="kn">Lemma</span> <span class="nf">pickSmallestInRangeLtIffNeq</span> {<span class="nv">A</span> : <span class="kt">Type</span>} (<span class="nv">default</span> : A) (<span class="nv">compare</span> : A -&gt; A -&gt; bool) (<span class="nv">l</span> : list A) (<span class="nv">i</span> <span class="nv">delta</span> : nat) : i &lt; pickSmallestInRange default <span class="nb">compare</span> i (i + delta) l &lt;-&gt; i &lt;&gt; pickSmallestInRange default <span class="nb">compare</span> i (i + delta) l.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">i &lt;
+pickSmallestInRange default <span class="nb">compare</span> i (i + delta) l
+↔ i
+  ≠ pickSmallestInRange default <span class="nb">compare</span> i (i + delta)
+      l</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk14" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk14"><span class="kn">Proof</span>.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">i &lt;
+pickSmallestInRange default <span class="nb">compare</span> i (i + delta) l
+↔ i
+  ≠ pickSmallestInRange default <span class="nb">compare</span> i 
+      (i + delta) l</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">split</span>; <span class="nb">pose proof</span> iLessEqualPickSmallestInRange default <span class="nb">compare</span> l i delta; <span class="nb">intros</span>; <span class="bp">lia</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">
+</span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk15" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk15"><span class="kn">Lemma</span> <span class="nf">pickSmallestInRangeSuccDelta</span> {<span class="nv">A</span> : <span class="kt">Type</span>} (<span class="nv">default</span> : A) (<span class="nv">compare</span> : A -&gt; A -&gt; bool) (<span class="nv">l</span> : list A) (<span class="nv">i</span> <span class="nv">delta</span> : nat) : pickSmallestInRange default <span class="nb">compare</span> i (i + S delta) l = pickSmallestInRange default <span class="nb">compare</span> i (i + delta) l \/ pickSmallestInRange default <span class="nb">compare</span> i (i + S delta) l = i + S delta.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">pickSmallestInRange default <span class="nb">compare</span> i (i + S delta) l =
+pickSmallestInRange default <span class="nb">compare</span> i (i + delta) l
+∨ pickSmallestInRange default <span class="nb">compare</span> i (i + S delta)
+    l = i + S delta</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk16" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk16"><span class="kn">Proof</span>.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">pickSmallestInRange default <span class="nb">compare</span> i (i + S delta) l =
+pickSmallestInRange default <span class="nb">compare</span> i (i + delta) l
+∨ pickSmallestInRange default <span class="nb">compare</span> i 
+    (i + S delta) l = i + S delta</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk17" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk17"><span class="nb">remember</span> (<span class="nb">compare</span> (nth (i + S delta) l default) (nth (pickSmallestInRange default <span class="nb">compare</span> i (i + delta) l) l default)) <span class="kr">as</span> H <span class="nb">eqn</span>:HeqH.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>H</var><span class="hyp-type"><b>: </b><span>bool</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span>H =
+<span class="nb">compare</span> (nth (i + S delta) l default)
+  (nth
+     (pickSmallestInRange default <span class="nb">compare</span> i
+        (i + delta) l) l default)</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">pickSmallestInRange default <span class="nb">compare</span> i (i + S delta) l =
+pickSmallestInRange default <span class="nb">compare</span> i (i + delta) l
+∨ pickSmallestInRange default <span class="nb">compare</span> i 
+    (i + S delta) l = i + S delta</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk18" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk18"><span class="nb">destruct</span> H.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span>true =
+<span class="nb">compare</span> (nth (i + S delta) l default)
+  (nth
+     (pickSmallestInRange default <span class="nb">compare</span> i
+        (i + delta) l) l default)</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">pickSmallestInRange default <span class="nb">compare</span> i (i + S delta) l =
+pickSmallestInRange default <span class="nb">compare</span> i (i + delta) l
+∨ pickSmallestInRange default <span class="nb">compare</span> i 
+    (i + S delta) l = i + S delta</div></blockquote><div class="alectryon-extra-goals"><input class="alectryon-extra-goal-toggle" id="PickSmallestInRangeProperties-v-chk19" style="display: none" type="checkbox"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span>false =
+<span class="nb">compare</span> (nth (i + S delta) l default)
+  (nth
+     (pickSmallestInRange default <span class="nb">compare</span> i
+        (i + delta) l) l default)</span></span></span><br></div><label class="goal-separator" for="PickSmallestInRangeProperties-v-chk19"><hr></label><div class="goal-conclusion">pickSmallestInRange default <span class="nb">compare</span> i (i + S delta) l =
+pickSmallestInRange default <span class="nb">compare</span> i (i + delta) l
+∨ pickSmallestInRange default <span class="nb">compare</span> i 
+    (i + S delta) l = i + S delta</div></blockquote></div></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk1a" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk1a">-</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span>true =
+<span class="nb">compare</span> (nth (i + S delta) l default)
+  (nth
+     (pickSmallestInRange default <span class="nb">compare</span> i
+        (i + delta) l) l default)</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">pickSmallestInRange default <span class="nb">compare</span> i (i + S delta) l =
+pickSmallestInRange default <span class="nb">compare</span> i (i + delta) l
+∨ pickSmallestInRange default <span class="nb">compare</span> i 
+    (i + S delta) l = i + S delta</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk1b" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk1b"><span class="nb">right</span>.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span>true =
+<span class="nb">compare</span> (nth (i + S delta) l default)
+  (nth
+     (pickSmallestInRange default <span class="nb">compare</span> i
+        (i + delta) l) l default)</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">pickSmallestInRange default <span class="nb">compare</span> i (i + S delta) l =
+i + S delta</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk1c" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk1c"><span class="nb">unfold</span> pickSmallestInRange.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span>true =
+<span class="nb">compare</span> (nth (i + S delta) l default)
+  (nth
+     (pickSmallestInRange default <span class="nb">compare</span> i
+        (i + delta) l) l default)</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">foldl
+  (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+     <span class="kr">if</span> <span class="nb">compare</span> (nth _1 l default) (nth _0 l default)
+     <span class="kr">then</span> _1
+     <span class="kr">else</span> _0) i (range2 i (i + S delta)) = 
+i + S delta</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk1d" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk1d"><span class="nb">rewrite</span> Nat.add_succ_r, range2LeftAdd, foldl_app, foldlSingleton.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span>true =
+<span class="nb">compare</span> (nth (i + S delta) l default)
+  (nth
+     (pickSmallestInRange default <span class="nb">compare</span> i
+        (i + delta) l) l default)</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">(<span class="kr">if</span>
+  <span class="nb">compare</span> (nth (S (i + delta)) l default)
+    (nth
+       (foldl
+          (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+             <span class="kr">if</span>
+              <span class="nb">compare</span> (nth _1 l default)
+                (nth _0 l default)
+             <span class="kr">then</span> _1
+             <span class="kr">else</span> _0) i 
+          (range2 i (i + delta))) l default)
+ <span class="kr">then</span> S (i + delta)
+ <span class="kr">else</span>
+  foldl
+    (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+       <span class="kr">if</span>
+        <span class="nb">compare</span> (nth _1 l default) (nth _0 l default)
+       <span class="kr">then</span> _1
+       <span class="kr">else</span> _0) i (range2 i (i + delta))) =
+S (i + delta)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk1e" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk1e"><span class="nb">unfold</span> pickSmallestInRange <span class="kr">in</span> HeqH.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span>true =
+<span class="nb">compare</span> (nth (i + S delta) l default)
+  (nth
+     (foldl
+        (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+           <span class="kr">if</span>
+            <span class="nb">compare</span> (nth _1 l default)
+              (nth _0 l default)
+           <span class="kr">then</span> _1
+           <span class="kr">else</span> _0) i (range2 i (i + delta))) l
+     default)</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">(<span class="kr">if</span>
+  <span class="nb">compare</span> (nth (S (i + delta)) l default)
+    (nth
+       (foldl
+          (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+             <span class="kr">if</span>
+              <span class="nb">compare</span> (nth _1 l default)
+                (nth _0 l default)
+             <span class="kr">then</span> _1
+             <span class="kr">else</span> _0) i 
+          (range2 i (i + delta))) l default)
+ <span class="kr">then</span> S (i + delta)
+ <span class="kr">else</span>
+  foldl
+    (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+       <span class="kr">if</span>
+        <span class="nb">compare</span> (nth _1 l default) (nth _0 l default)
+       <span class="kr">then</span> _1
+       <span class="kr">else</span> _0) i (range2 i (i + delta))) =
+S (i + delta)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk1f" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk1f"><span class="nb">rewrite</span> Nat.add_succ_r <span class="kr">in</span> HeqH.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span>true =
+<span class="nb">compare</span> (nth (S (i + delta)) l default)
+  (nth
+     (foldl
+        (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+           <span class="kr">if</span>
+            <span class="nb">compare</span> (nth _1 l default)
+              (nth _0 l default)
+           <span class="kr">then</span> _1
+           <span class="kr">else</span> _0) i (range2 i (i + delta))) l
+     default)</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">(<span class="kr">if</span>
+  <span class="nb">compare</span> (nth (S (i + delta)) l default)
+    (nth
+       (foldl
+          (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+             <span class="kr">if</span>
+              <span class="nb">compare</span> (nth _1 l default)
+                (nth _0 l default)
+             <span class="kr">then</span> _1
+             <span class="kr">else</span> _0) i 
+          (range2 i (i + delta))) l default)
+ <span class="kr">then</span> S (i + delta)
+ <span class="kr">else</span>
+  foldl
+    (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+       <span class="kr">if</span>
+        <span class="nb">compare</span> (nth _1 l default) (nth _0 l default)
+       <span class="kr">then</span> _1
+       <span class="kr">else</span> _0) i (range2 i (i + delta))) =
+S (i + delta)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk20" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk20"><span class="nb">rewrite</span> &lt;- HeqH.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span>true =
+<span class="nb">compare</span> (nth (S (i + delta)) l default)
+  (nth
+     (foldl
+        (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+           <span class="kr">if</span>
+            <span class="nb">compare</span> (nth _1 l default)
+              (nth _0 l default)
+           <span class="kr">then</span> _1
+           <span class="kr">else</span> _0) i (range2 i (i + delta))) l
+     default)</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">S (i + delta) = S (i + delta)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">reflexivity</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk21" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk21">-</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span>false =
+<span class="nb">compare</span> (nth (i + S delta) l default)
+  (nth
+     (pickSmallestInRange default <span class="nb">compare</span> i
+        (i + delta) l) l default)</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">pickSmallestInRange default <span class="nb">compare</span> i (i + S delta) l =
+pickSmallestInRange default <span class="nb">compare</span> i (i + delta) l
+∨ pickSmallestInRange default <span class="nb">compare</span> i 
+    (i + S delta) l = i + S delta</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk22" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk22"><span class="nb">left</span>.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span>false =
+<span class="nb">compare</span> (nth (i + S delta) l default)
+  (nth
+     (pickSmallestInRange default <span class="nb">compare</span> i
+        (i + delta) l) l default)</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">pickSmallestInRange default <span class="nb">compare</span> i (i + S delta) l =
+pickSmallestInRange default <span class="nb">compare</span> i (i + delta) l</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk23" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk23"><span class="nb">unfold</span> pickSmallestInRange.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span>false =
+<span class="nb">compare</span> (nth (i + S delta) l default)
+  (nth
+     (pickSmallestInRange default <span class="nb">compare</span> i
+        (i + delta) l) l default)</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">foldl
+  (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+     <span class="kr">if</span> <span class="nb">compare</span> (nth _1 l default) (nth _0 l default)
+     <span class="kr">then</span> _1
+     <span class="kr">else</span> _0) i (range2 i (i + S delta)) =
+foldl
+  (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+     <span class="kr">if</span> <span class="nb">compare</span> (nth _1 l default) (nth _0 l default)
+     <span class="kr">then</span> _1
+     <span class="kr">else</span> _0) i (range2 i (i + delta))</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk24" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk24"><span class="nb">rewrite</span> Nat.add_succ_r, range2LeftAdd, foldl_app, foldlSingleton.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span>false =
+<span class="nb">compare</span> (nth (i + S delta) l default)
+  (nth
+     (pickSmallestInRange default <span class="nb">compare</span> i
+        (i + delta) l) l default)</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">(<span class="kr">if</span>
+  <span class="nb">compare</span> (nth (S (i + delta)) l default)
+    (nth
+       (foldl
+          (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+             <span class="kr">if</span>
+              <span class="nb">compare</span> (nth _1 l default)
+                (nth _0 l default)
+             <span class="kr">then</span> _1
+             <span class="kr">else</span> _0) i 
+          (range2 i (i + delta))) l default)
+ <span class="kr">then</span> S (i + delta)
+ <span class="kr">else</span>
+  foldl
+    (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+       <span class="kr">if</span>
+        <span class="nb">compare</span> (nth _1 l default) (nth _0 l default)
+       <span class="kr">then</span> _1
+       <span class="kr">else</span> _0) i (range2 i (i + delta))) =
+foldl
+  (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+     <span class="kr">if</span> <span class="nb">compare</span> (nth _1 l default) (nth _0 l default)
+     <span class="kr">then</span> _1
+     <span class="kr">else</span> _0) i (range2 i (i + delta))</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk25" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk25"><span class="nb">unfold</span> pickSmallestInRange <span class="kr">in</span> HeqH.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span>false =
+<span class="nb">compare</span> (nth (i + S delta) l default)
+  (nth
+     (foldl
+        (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+           <span class="kr">if</span>
+            <span class="nb">compare</span> (nth _1 l default)
+              (nth _0 l default)
+           <span class="kr">then</span> _1
+           <span class="kr">else</span> _0) i (range2 i (i + delta))) l
+     default)</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">(<span class="kr">if</span>
+  <span class="nb">compare</span> (nth (S (i + delta)) l default)
+    (nth
+       (foldl
+          (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+             <span class="kr">if</span>
+              <span class="nb">compare</span> (nth _1 l default)
+                (nth _0 l default)
+             <span class="kr">then</span> _1
+             <span class="kr">else</span> _0) i 
+          (range2 i (i + delta))) l default)
+ <span class="kr">then</span> S (i + delta)
+ <span class="kr">else</span>
+  foldl
+    (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+       <span class="kr">if</span>
+        <span class="nb">compare</span> (nth _1 l default) (nth _0 l default)
+       <span class="kr">then</span> _1
+       <span class="kr">else</span> _0) i (range2 i (i + delta))) =
+foldl
+  (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+     <span class="kr">if</span> <span class="nb">compare</span> (nth _1 l default) (nth _0 l default)
+     <span class="kr">then</span> _1
+     <span class="kr">else</span> _0) i (range2 i (i + delta))</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk26" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk26"><span class="nb">rewrite</span> Nat.add_succ_r <span class="kr">in</span> HeqH.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span>false =
+<span class="nb">compare</span> (nth (S (i + delta)) l default)
+  (nth
+     (foldl
+        (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+           <span class="kr">if</span>
+            <span class="nb">compare</span> (nth _1 l default)
+              (nth _0 l default)
+           <span class="kr">then</span> _1
+           <span class="kr">else</span> _0) i (range2 i (i + delta))) l
+     default)</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">(<span class="kr">if</span>
+  <span class="nb">compare</span> (nth (S (i + delta)) l default)
+    (nth
+       (foldl
+          (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+             <span class="kr">if</span>
+              <span class="nb">compare</span> (nth _1 l default)
+                (nth _0 l default)
+             <span class="kr">then</span> _1
+             <span class="kr">else</span> _0) i 
+          (range2 i (i + delta))) l default)
+ <span class="kr">then</span> S (i + delta)
+ <span class="kr">else</span>
+  foldl
+    (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+       <span class="kr">if</span>
+        <span class="nb">compare</span> (nth _1 l default) (nth _0 l default)
+       <span class="kr">then</span> _1
+       <span class="kr">else</span> _0) i (range2 i (i + delta))) =
+foldl
+  (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+     <span class="kr">if</span> <span class="nb">compare</span> (nth _1 l default) (nth _0 l default)
+     <span class="kr">then</span> _1
+     <span class="kr">else</span> _0) i (range2 i (i + delta))</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk27" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk27"><span class="nb">rewrite</span> &lt;- HeqH.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span>false =
+<span class="nb">compare</span> (nth (S (i + delta)) l default)
+  (nth
+     (foldl
+        (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+           <span class="kr">if</span>
+            <span class="nb">compare</span> (nth _1 l default)
+              (nth _0 l default)
+           <span class="kr">then</span> _1
+           <span class="kr">else</span> _0) i (range2 i (i + delta))) l
+     default)</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">foldl
+  (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+     <span class="kr">if</span> <span class="nb">compare</span> (nth _1 l default) (nth _0 l default)
+     <span class="kr">then</span> _1
+     <span class="kr">else</span> _0) i (range2 i (i + delta)) =
+foldl
+  (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+     <span class="kr">if</span> <span class="nb">compare</span> (nth _1 l default) (nth _0 l default)
+     <span class="kr">then</span> _1
+     <span class="kr">else</span> _0) i (range2 i (i + delta))</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">reflexivity</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">
+</span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk28" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk28"><span class="kn">Lemma</span> <span class="nf">pickSmallestInRangeUpperBound</span> {<span class="nv">A</span> : <span class="kt">Type</span>} (<span class="nv">default</span> : A) (<span class="nv">compare</span> : A -&gt; A -&gt; bool) (<span class="nv">l</span> : list A) (<span class="nv">i</span> <span class="nv">delta</span> : nat) : pickSmallestInRange default <span class="nb">compare</span> i (i + delta) l &lt;= i + delta.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">pickSmallestInRange default <span class="nb">compare</span> i (i + delta) l
+≤ i + delta</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk29" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk29"><span class="kn">Proof</span>.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">pickSmallestInRange default <span class="nb">compare</span> i (i + delta) l
+≤ i + delta</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk2a" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk2a"><span class="nb">induction</span> delta.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">pickSmallestInRange default <span class="nb">compare</span> i (i + <span class="mi">0</span>) l
+≤ i + <span class="mi">0</span></div></blockquote><div class="alectryon-extra-goals"><input class="alectryon-extra-goal-toggle" id="PickSmallestInRangeProperties-v-chk2b" style="display: none" type="checkbox"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, _0</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>_1</var><span class="hyp-type"><b>: </b><span>pickSmallestInRange default <span class="nb">compare</span> i (i + _0) l
+≤ i + _0</span></span></span><br></div><label class="goal-separator" for="PickSmallestInRangeProperties-v-chk2b"><hr></label><div class="goal-conclusion">pickSmallestInRange default <span class="nb">compare</span> i (i + S _0) l
+≤ i + S _0</div></blockquote></div></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk2c" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk2c">-</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">pickSmallestInRange default <span class="nb">compare</span> i (i + <span class="mi">0</span>) l
+≤ i + <span class="mi">0</span></div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk2d" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk2d"><span class="nb">unfold</span> pickSmallestInRange.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">foldl
+  (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+     <span class="kr">if</span> <span class="nb">compare</span> (nth _1 l default) (nth _0 l default)
+     <span class="kr">then</span> _1
+     <span class="kr">else</span> _0) i (range2 i (i + <span class="mi">0</span>)) ≤ 
+i + <span class="mi">0</span></div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk2e" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk2e"><span class="nb">rewrite</span> Nat.add_0_r, range2LeftLeft, foldlSingleton.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">(<span class="kr">if</span> <span class="nb">compare</span> (nth i l default) (nth i l default)
+ <span class="kr">then</span> i
+ <span class="kr">else</span> i) ≤ i</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (<span class="nb">compare</span> _); <span class="bp">easy</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk2f" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk2f">-</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, _0</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>_1</var><span class="hyp-type"><b>: </b><span>pickSmallestInRange default <span class="nb">compare</span> i (i + _0) l
+≤ i + _0</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">pickSmallestInRange default <span class="nb">compare</span> i (i + S _0) l
+≤ i + S _0</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk30" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk30"><span class="nb">rewrite</span> Nat.add_succ_r.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, _0</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>_1</var><span class="hyp-type"><b>: </b><span>pickSmallestInRange default <span class="nb">compare</span> i (i + _0) l
+≤ i + _0</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">pickSmallestInRange default <span class="nb">compare</span> i (S (i + _0)) l
+≤ S (i + _0)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk31" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk31"><span class="nb">unfold</span> pickSmallestInRange.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, _0</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>_1</var><span class="hyp-type"><b>: </b><span>pickSmallestInRange default <span class="nb">compare</span> i (i + _0) l
+≤ i + _0</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">foldl
+  (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+     <span class="kr">if</span> <span class="nb">compare</span> (nth _1 l default) (nth _0 l default)
+     <span class="kr">then</span> _1
+     <span class="kr">else</span> _0) i (range2 i (S (i + _0))) ≤ 
+S (i + _0)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk32" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk32"><span class="nb">rewrite</span> range2LeftAdd, foldl_app, <span class="nl">?foldlSingleton</span>.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>compare</var><span class="hyp-type"><b>: </b><span>A → A → bool</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, _0</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>_1</var><span class="hyp-type"><b>: </b><span>pickSmallestInRange default <span class="nb">compare</span> i (i + _0) l
+≤ i + _0</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">(<span class="kr">if</span>
+  <span class="nb">compare</span> (nth (S (i + _0)) l default)
+    (nth
+       (foldl
+          (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+             <span class="kr">if</span>
+              <span class="nb">compare</span> (nth _1 l default)
+                (nth _0 l default)
+             <span class="kr">then</span> _1
+             <span class="kr">else</span> _0) i 
+          (range2 i (i + _0))) l default)
+ <span class="kr">then</span> S (i + _0)
+ <span class="kr">else</span>
+  foldl
+    (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+       <span class="kr">if</span>
+        <span class="nb">compare</span> (nth _1 l default) (nth _0 l default)
+       <span class="kr">then</span> _1
+       <span class="kr">else</span> _0) i (range2 i (i + _0))) ≤ 
+S (i + _0)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">destruct</span> (<span class="nb">compare</span> _); <span class="nb">rewrite</span> <span class="nl">?pickSmallestInRangeFold</span>; <span class="bp">lia</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">
+</span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk33" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk33"><span class="kn">Lemma</span> <span class="nf">pickSmallestInRangeCompare</span> {<span class="nv">A</span> : <span class="kt">Type</span>} (<span class="nv">default</span> : A) (<span class="nv">comparator</span> : Comparator A) (<span class="nv">l</span> : list A) (<span class="nv">i</span> <span class="nv">delta</span> <span class="nv">inBetween</span> : nat) (<span class="nv">hInBetween</span> : inBetween &lt;= delta) : ~<span class="nb">compare</span> _ comparator (nth (i + inBetween) l default) (nth (pickSmallestInRange default (<span class="nb">compare</span> _ comparator) i (i + delta) l) l default).</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta, inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ delta</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">¬ <span class="nb">compare</span> A comparator (nth (i + inBetween) l default)
+    (nth
+       (pickSmallestInRange default
+          (<span class="nb">compare</span> A comparator) i (i + delta) l) l
+       default)</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk34" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk34"><span class="kn">Proof</span>.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta, inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ delta</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">¬ <span class="nb">compare</span> A comparator 
+    (nth (i + inBetween) l default)
+    (nth
+       (pickSmallestInRange default
+          (<span class="nb">compare</span> A comparator) i 
+          (i + delta) l) l default)</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk35" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk35"><span class="nb">revert</span> inBetween hInBetween.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kr">∀</span> <span class="nv">_0</span> : nat,
+  _0 ≤ delta
+  → ¬ <span class="nb">compare</span> A comparator 
+        (nth (i + _0) l default)
+        (nth
+           (pickSmallestInRange default
+              (<span class="nb">compare</span> A comparator) i 
+              (i + delta) l) l default)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk36" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk36"><span class="nb">induction</span> delta <span class="kr">as</span> [| delta IHdelta]; <span class="nb">intros</span> inBetween hInBetween.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ <span class="mi">0</span></span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">¬ <span class="nb">compare</span> A comparator 
+    (nth (i + inBetween) l default)
+    (nth
+       (pickSmallestInRange default
+          (<span class="nb">compare</span> A comparator) i 
+          (i + <span class="mi">0</span>) l) l default)</div></blockquote><div class="alectryon-extra-goals"><input class="alectryon-extra-goal-toggle" id="PickSmallestInRangeProperties-v-chk37" style="display: none" type="checkbox"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>IHdelta</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">_0</span> : nat,
+  _0 ≤ delta
+  → ¬ <span class="nb">compare</span> A comparator
+        (nth (i + _0) l default)
+        (nth
+           (pickSmallestInRange default
+              (<span class="nb">compare</span> A comparator) i
+              (i + delta) l) l default)</span></span></span><br><span><var>inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ S delta</span></span></span><br></div><label class="goal-separator" for="PickSmallestInRangeProperties-v-chk37"><hr></label><div class="goal-conclusion">¬ <span class="nb">compare</span> A comparator 
+    (nth (i + inBetween) l default)
+    (nth
+       (pickSmallestInRange default
+          (<span class="nb">compare</span> A comparator) i 
+          (i + S delta) l) l default)</div></blockquote></div></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk38" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk38">-</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ <span class="mi">0</span></span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">¬ <span class="nb">compare</span> A comparator 
+    (nth (i + inBetween) l default)
+    (nth
+       (pickSmallestInRange default
+          (<span class="nb">compare</span> A comparator) i 
+          (i + <span class="mi">0</span>) l) l default)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk39" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk39"><span class="nb">unfold</span> pickSmallestInRange.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ <span class="mi">0</span></span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">¬ <span class="nb">compare</span> A comparator 
+    (nth (i + inBetween) l default)
+    (nth
+       (foldl
+          (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+             <span class="kr">if</span>
+              <span class="nb">compare</span> A comparator 
+                (nth _1 l default) 
+                (nth _0 l default)
+             <span class="kr">then</span> _1
+             <span class="kr">else</span> _0) i 
+          (range2 i (i + <span class="mi">0</span>))) l default)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk3a" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk3a"><span class="nb">rewrite</span> Nat.add_0_r, range2LeftLeft, foldlSingleton.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ <span class="mi">0</span></span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">¬ <span class="nb">compare</span> A comparator 
+    (nth (i + inBetween) l default)
+    (nth
+       (<span class="kr">if</span>
+         <span class="nb">compare</span> A comparator 
+           (nth i l default) 
+           (nth i l default)
+        <span class="kr">then</span> i
+        <span class="kr">else</span> i) l default)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk3b" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk3b"><span class="nb">pose proof</span> irreflexive _ comparator (nth i l default) <span class="kr">as</span> H.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ <span class="mi">0</span></span></span></span><br><span><var>H</var><span class="hyp-type"><b>: </b><span>¬ <span class="nb">compare</span> A comparator 
+    (nth i l default) (nth i l default)</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">¬ <span class="nb">compare</span> A comparator 
+    (nth (i + inBetween) l default)
+    (nth
+       (<span class="kr">if</span>
+         <span class="nb">compare</span> A comparator 
+           (nth i l default) 
+           (nth i l default)
+        <span class="kr">then</span> i
+        <span class="kr">else</span> i) l default)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk3c" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk3c"><span class="nb">rewrite</span> Is_true_false <span class="kr">in</span> H.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ <span class="mi">0</span></span></span></span><br><span><var>H</var><span class="hyp-type"><b>: </b><span><span class="nb">compare</span> A comparator (nth i l default)
+  (nth i l default) = false</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">¬ <span class="nb">compare</span> A comparator 
+    (nth (i + inBetween) l default)
+    (nth
+       (<span class="kr">if</span>
+         <span class="nb">compare</span> A comparator 
+           (nth i l default) 
+           (nth i l default)
+        <span class="kr">then</span> i
+        <span class="kr">else</span> i) l default)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk3d" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk3d"><span class="nb">rewrite</span> H.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ <span class="mi">0</span></span></span></span><br><span><var>H</var><span class="hyp-type"><b>: </b><span><span class="nb">compare</span> A comparator (nth i l default)
+  (nth i l default) = false</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">¬ <span class="nb">compare</span> A comparator 
+    (nth (i + inBetween) l default) 
+    (nth i l default)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk3e" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk3e"><span class="nb">rewrite</span> Is_true_false.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ <span class="mi">0</span></span></span></span><br><span><var>H</var><span class="hyp-type"><b>: </b><span><span class="nb">compare</span> A comparator (nth i l default)
+  (nth i l default) = false</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="nb">compare</span> A comparator (nth (i + inBetween) l default)
+  (nth i l default) = false</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk3f" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk3f"><span class="nb">assert</span> (H&#39; : i + inBetween = i).</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ <span class="mi">0</span></span></span></span><br><span><var>H</var><span class="hyp-type"><b>: </b><span><span class="nb">compare</span> A comparator (nth i l default)
+  (nth i l default) = false</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">i + inBetween = i</div></blockquote><div class="alectryon-extra-goals"><input class="alectryon-extra-goal-toggle" id="PickSmallestInRangeProperties-v-chk40" style="display: none" type="checkbox"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ <span class="mi">0</span></span></span></span><br><span><var>H</var><span class="hyp-type"><b>: </b><span><span class="nb">compare</span> A comparator (nth i l default)
+  (nth i l default) = false</span></span></span><br><span><var>H'</var><span class="hyp-type"><b>: </b><span>i + inBetween = i</span></span></span><br></div><label class="goal-separator" for="PickSmallestInRangeProperties-v-chk40"><hr></label><div class="goal-conclusion"><span class="nb">compare</span> A comparator (nth (i + inBetween) l default)
+  (nth i l default) = false</div></blockquote></div></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk41" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk41">{</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ <span class="mi">0</span></span></span></span><br><span><var>H</var><span class="hyp-type"><b>: </b><span><span class="nb">compare</span> A comparator (nth i l default)
+  (nth i l default) = false</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">i + inBetween = i</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">lia</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk42" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk42">}</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ <span class="mi">0</span></span></span></span><br><span><var>H</var><span class="hyp-type"><b>: </b><span><span class="nb">compare</span> A comparator (nth i l default)
+  (nth i l default) = false</span></span></span><br><span><var>H'</var><span class="hyp-type"><b>: </b><span>i + inBetween = i</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="nb">compare</span> A comparator (nth (i + inBetween) l default)
+  (nth i l default) = false</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk43" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk43"><span class="nb">rewrite</span> H&#39;.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ <span class="mi">0</span></span></span></span><br><span><var>H</var><span class="hyp-type"><b>: </b><span><span class="nb">compare</span> A comparator (nth i l default)
+  (nth i l default) = false</span></span></span><br><span><var>H'</var><span class="hyp-type"><b>: </b><span>i + inBetween = i</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="nb">compare</span> A comparator (nth i l default)
+  (nth i l default) = false</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">assumption</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk44" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk44">-</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>IHdelta</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">_0</span> : nat,
+  _0 ≤ delta
+  → ¬ <span class="nb">compare</span> A comparator
+        (nth (i + _0) l default)
+        (nth
+           (pickSmallestInRange default
+              (<span class="nb">compare</span> A comparator) i
+              (i + delta) l) l default)</span></span></span><br><span><var>inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ S delta</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">¬ <span class="nb">compare</span> A comparator 
+    (nth (i + inBetween) l default)
+    (nth
+       (pickSmallestInRange default
+          (<span class="nb">compare</span> A comparator) i 
+          (i + S delta) l) l default)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk45" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk45"><span class="nb">rewrite</span> Nat.add_succ_r.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>IHdelta</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">_0</span> : nat,
+  _0 ≤ delta
+  → ¬ <span class="nb">compare</span> A comparator
+        (nth (i + _0) l default)
+        (nth
+           (pickSmallestInRange default
+              (<span class="nb">compare</span> A comparator) i
+              (i + delta) l) l default)</span></span></span><br><span><var>inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ S delta</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">¬ <span class="nb">compare</span> A comparator 
+    (nth (i + inBetween) l default)
+    (nth
+       (pickSmallestInRange default
+          (<span class="nb">compare</span> A comparator) i 
+          (S (i + delta)) l) l default)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk46" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk46"><span class="nb">unfold</span> pickSmallestInRange <span class="kr">in</span> *.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>IHdelta</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">_0</span> : nat,
+  _0 ≤ delta
+  → ¬ <span class="nb">compare</span> A comparator
+        (nth (i + _0) l default)
+        (nth
+           (foldl
+              (<span class="kr">λ</span> <span class="nv">_1</span> <span class="nv">_2</span> : nat,
+                 <span class="kr">if</span>
+                  <span class="nb">compare</span> A comparator
+                    (nth _2 l default)
+                    (nth _1 l default)
+                 <span class="kr">then</span> _2
+                 <span class="kr">else</span> _1) i
+              (range2 i (i + delta))) l
+           default)</span></span></span><br><span><var>inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ S delta</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">¬ <span class="nb">compare</span> A comparator 
+    (nth (i + inBetween) l default)
+    (nth
+       (foldl
+          (<span class="kr">λ</span> <span class="nv">_0</span> <span class="nv">_1</span> : nat,
+             <span class="kr">if</span>
+              <span class="nb">compare</span> A comparator 
+                (nth _1 l default) 
+                (nth _0 l default)
+             <span class="kr">then</span> _1
+             <span class="kr">else</span> _0) i 
+          (range2 i (S (i + delta)))) l default)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk47" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk47"><span class="nb">rewrite</span> range2LeftAdd, foldl_app, <span class="nl">?foldlSingleton</span>, pickSmallestInRangeFold.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>IHdelta</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">_0</span> : nat,
+  _0 ≤ delta
+  → ¬ <span class="nb">compare</span> A comparator
+        (nth (i + _0) l default)
+        (nth
+           (foldl
+              (<span class="kr">λ</span> <span class="nv">_1</span> <span class="nv">_2</span> : nat,
+                 <span class="kr">if</span>
+                  <span class="nb">compare</span> A comparator
+                    (nth _2 l default)
+                    (nth _1 l default)
+                 <span class="kr">then</span> _2
+                 <span class="kr">else</span> _1) i
+              (range2 i (i + delta))) l
+           default)</span></span></span><br><span><var>inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ S delta</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">¬ <span class="nb">compare</span> A comparator 
+    (nth (i + inBetween) l default)
+    (nth
+       (<span class="kr">if</span>
+         <span class="nb">compare</span> A comparator
+           (nth (S (i + delta)) l default)
+           (nth
+              (pickSmallestInRange default
+                 (<span class="nb">compare</span> A comparator) i 
+                 (i + delta) l) l default)
+        <span class="kr">then</span> S (i + delta)
+        <span class="kr">else</span>
+         pickSmallestInRange default
+           (<span class="nb">compare</span> A comparator) i 
+           (i + delta) l) l default)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk48" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk48"><span class="nb">rewrite</span> pickSmallestInRangeFold <span class="kr">in</span> IHdelta.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>IHdelta</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">_0</span> : nat,
+  _0 ≤ delta
+  → ¬ <span class="nb">compare</span> A comparator
+        (nth (i + _0) l default)
+        (nth
+           (pickSmallestInRange default
+              (<span class="nb">compare</span> A comparator) i
+              (i + delta) l) l default)</span></span></span><br><span><var>inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ S delta</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">¬ <span class="nb">compare</span> A comparator 
+    (nth (i + inBetween) l default)
+    (nth
+       (<span class="kr">if</span>
+         <span class="nb">compare</span> A comparator
+           (nth (S (i + delta)) l default)
+           (nth
+              (pickSmallestInRange default
+                 (<span class="nb">compare</span> A comparator) i 
+                 (i + delta) l) l default)
+        <span class="kr">then</span> S (i + delta)
+        <span class="kr">else</span>
+         pickSmallestInRange default
+           (<span class="nb">compare</span> A comparator) i 
+           (i + delta) l) l default)</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk49" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk49"><span class="nb">remember</span> (<span class="nb">compare</span> A comparator (nth (S (i + delta)) l default) (nth (pickSmallestInRange default (<span class="nb">compare</span> A comparator) i (i + delta) l) l default)) <span class="kr">as</span> H <span class="nb">eqn</span>:HeqH.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>IHdelta</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">_0</span> : nat,
+  _0 ≤ delta
+  → ¬ <span class="nb">compare</span> A comparator
+        (nth (i + _0) l default)
+        (nth
+           (pickSmallestInRange default
+              (<span class="nb">compare</span> A comparator) i
+              (i + delta) l) l default)</span></span></span><br><span><var>inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ S delta</span></span></span><br><span><var>H</var><span class="hyp-type"><b>: </b><span>bool</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span>H =
+<span class="nb">compare</span> A comparator
+  (nth (S (i + delta)) l default)
+  (nth
+     (pickSmallestInRange default
+        (<span class="nb">compare</span> A comparator) i 
+        (i + delta) l) l default)</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">¬ <span class="nb">compare</span> A comparator 
+    (nth (i + inBetween) l default)
+    (nth
+       (<span class="kr">if</span> H
+        <span class="kr">then</span> S (i + delta)
+        <span class="kr">else</span>
+         pickSmallestInRange default
+           (<span class="nb">compare</span> A comparator) i 
+           (i + delta) l) l default)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk4a" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk4a"><span class="nb">destruct</span> H.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>IHdelta</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">_0</span> : nat,
+  _0 ≤ delta
+  → ¬ <span class="nb">compare</span> A comparator
+        (nth (i + _0) l default)
+        (nth
+           (pickSmallestInRange default
+              (<span class="nb">compare</span> A comparator) i
+              (i + delta) l) l default)</span></span></span><br><span><var>inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ S delta</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span>true =
+<span class="nb">compare</span> A comparator
+  (nth (S (i + delta)) l default)
+  (nth
+     (pickSmallestInRange default
+        (<span class="nb">compare</span> A comparator) i 
+        (i + delta) l) l default)</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">¬ <span class="nb">compare</span> A comparator 
+    (nth (i + inBetween) l default)
+    (nth (S (i + delta)) l default)</div></blockquote><div class="alectryon-extra-goals"><input class="alectryon-extra-goal-toggle" id="PickSmallestInRangeProperties-v-chk4b" style="display: none" type="checkbox"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>IHdelta</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">_0</span> : nat,
+  _0 ≤ delta
+  → ¬ <span class="nb">compare</span> A comparator
+        (nth (i + _0) l default)
+        (nth
+           (pickSmallestInRange default
+              (<span class="nb">compare</span> A comparator) i
+              (i + delta) l) l default)</span></span></span><br><span><var>inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ S delta</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span>false =
+<span class="nb">compare</span> A comparator
+  (nth (S (i + delta)) l default)
+  (nth
+     (pickSmallestInRange default
+        (<span class="nb">compare</span> A comparator) i 
+        (i + delta) l) l default)</span></span></span><br></div><label class="goal-separator" for="PickSmallestInRangeProperties-v-chk4b"><hr></label><div class="goal-conclusion">¬ <span class="nb">compare</span> A comparator 
+    (nth (i + inBetween) l default)
+    (nth
+       (pickSmallestInRange default
+          (<span class="nb">compare</span> A comparator) i 
+          (i + delta) l) l default)</div></blockquote></div></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk4c" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk4c">+</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>IHdelta</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">_0</span> : nat,
+  _0 ≤ delta
+  → ¬ <span class="nb">compare</span> A comparator
+        (nth (i + _0) l default)
+        (nth
+           (pickSmallestInRange default
+              (<span class="nb">compare</span> A comparator) i
+              (i + delta) l) l default)</span></span></span><br><span><var>inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ S delta</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span>true =
+<span class="nb">compare</span> A comparator
+  (nth (S (i + delta)) l default)
+  (nth
+     (pickSmallestInRange default
+        (<span class="nb">compare</span> A comparator) i 
+        (i + delta) l) l default)</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">¬ <span class="nb">compare</span> A comparator 
+    (nth (i + inBetween) l default)
+    (nth (S (i + delta)) l default)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk4d" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk4d"><span class="nb">assert</span> (hSplit : inBetween = S delta \/ inBetween &lt;= delta).</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>IHdelta</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">_0</span> : nat,
+  _0 ≤ delta
+  → ¬ <span class="nb">compare</span> A comparator
+        (nth (i + _0) l default)
+        (nth
+           (pickSmallestInRange default
+              (<span class="nb">compare</span> A comparator) i
+              (i + delta) l) l default)</span></span></span><br><span><var>inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ S delta</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span>true =
+<span class="nb">compare</span> A comparator
+  (nth (S (i + delta)) l default)
+  (nth
+     (pickSmallestInRange default
+        (<span class="nb">compare</span> A comparator) i 
+        (i + delta) l) l default)</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">inBetween = S delta ∨ inBetween ≤ delta</div></blockquote><div class="alectryon-extra-goals"><input class="alectryon-extra-goal-toggle" id="PickSmallestInRangeProperties-v-chk4e" style="display: none" type="checkbox"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>IHdelta</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">_0</span> : nat,
+  _0 ≤ delta
+  → ¬ <span class="nb">compare</span> A comparator
+        (nth (i + _0) l default)
+        (nth
+           (pickSmallestInRange default
+              (<span class="nb">compare</span> A comparator) i
+              (i + delta) l) l default)</span></span></span><br><span><var>inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ S delta</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span>true =
+<span class="nb">compare</span> A comparator
+  (nth (S (i + delta)) l default)
+  (nth
+     (pickSmallestInRange default
+        (<span class="nb">compare</span> A comparator) i 
+        (i + delta) l) l default)</span></span></span><br><span><var>hSplit</var><span class="hyp-type"><b>: </b><span>inBetween = S delta ∨ inBetween ≤ delta</span></span></span><br></div><label class="goal-separator" for="PickSmallestInRangeProperties-v-chk4e"><hr></label><div class="goal-conclusion">¬ <span class="nb">compare</span> A comparator 
+    (nth (i + inBetween) l default)
+    (nth (S (i + delta)) l default)</div></blockquote></div></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk4f" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk4f">{</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>IHdelta</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">_0</span> : nat,
+  _0 ≤ delta
+  → ¬ <span class="nb">compare</span> A comparator
+        (nth (i + _0) l default)
+        (nth
+           (pickSmallestInRange default
+              (<span class="nb">compare</span> A comparator) i
+              (i + delta) l) l default)</span></span></span><br><span><var>inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ S delta</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span>true =
+<span class="nb">compare</span> A comparator
+  (nth (S (i + delta)) l default)
+  (nth
+     (pickSmallestInRange default
+        (<span class="nb">compare</span> A comparator) i 
+        (i + delta) l) l default)</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">inBetween = S delta ∨ inBetween ≤ delta</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">lia</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk50" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk50">}</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>IHdelta</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">_0</span> : nat,
+  _0 ≤ delta
+  → ¬ <span class="nb">compare</span> A comparator
+        (nth (i + _0) l default)
+        (nth
+           (pickSmallestInRange default
+              (<span class="nb">compare</span> A comparator) i
+              (i + delta) l) l default)</span></span></span><br><span><var>inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ S delta</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span>true =
+<span class="nb">compare</span> A comparator
+  (nth (S (i + delta)) l default)
+  (nth
+     (pickSmallestInRange default
+        (<span class="nb">compare</span> A comparator) i 
+        (i + delta) l) l default)</span></span></span><br><span><var>hSplit</var><span class="hyp-type"><b>: </b><span>inBetween = S delta ∨ inBetween ≤ delta</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">¬ <span class="nb">compare</span> A comparator 
+    (nth (i + inBetween) l default)
+    (nth (S (i + delta)) l default)</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk51" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk51"><span class="nb">destruct</span> hSplit <span class="kr">as</span> [H | H].</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>IHdelta</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">_0</span> : nat,
+  _0 ≤ delta
+  → ¬ <span class="nb">compare</span> A comparator
+        (nth (i + _0) l default)
+        (nth
+           (pickSmallestInRange default
+              (<span class="nb">compare</span> A comparator) i
+              (i + delta) l) l default)</span></span></span><br><span><var>inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ S delta</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span>true =
+<span class="nb">compare</span> A comparator
+  (nth (S (i + delta)) l default)
+  (nth
+     (pickSmallestInRange default
+        (<span class="nb">compare</span> A comparator) i 
+        (i + delta) l) l default)</span></span></span><br><span><var>H</var><span class="hyp-type"><b>: </b><span>inBetween = S delta</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">¬ <span class="nb">compare</span> A comparator 
+    (nth (i + inBetween) l default)
+    (nth (S (i + delta)) l default)</div></blockquote><div class="alectryon-extra-goals"><input class="alectryon-extra-goal-toggle" id="PickSmallestInRangeProperties-v-chk52" style="display: none" type="checkbox"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>IHdelta</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">_0</span> : nat,
+  _0 ≤ delta
+  → ¬ <span class="nb">compare</span> A comparator
+        (nth (i + _0) l default)
+        (nth
+           (pickSmallestInRange default
+              (<span class="nb">compare</span> A comparator) i
+              (i + delta) l) l default)</span></span></span><br><span><var>inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ S delta</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span>true =
+<span class="nb">compare</span> A comparator
+  (nth (S (i + delta)) l default)
+  (nth
+     (pickSmallestInRange default
+        (<span class="nb">compare</span> A comparator) i 
+        (i + delta) l) l default)</span></span></span><br><span><var>H</var><span class="hyp-type"><b>: </b><span>inBetween ≤ delta</span></span></span><br></div><label class="goal-separator" for="PickSmallestInRangeProperties-v-chk52"><hr></label><div class="goal-conclusion">¬ <span class="nb">compare</span> A comparator 
+    (nth (i + inBetween) l default)
+    (nth (S (i + delta)) l default)</div></blockquote></div></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk53" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk53">*</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>IHdelta</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">_0</span> : nat,
+  _0 ≤ delta
+  → ¬ <span class="nb">compare</span> A comparator
+        (nth (i + _0) l default)
+        (nth
+           (pickSmallestInRange default
+              (<span class="nb">compare</span> A comparator) i
+              (i + delta) l) l default)</span></span></span><br><span><var>inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ S delta</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span>true =
+<span class="nb">compare</span> A comparator
+  (nth (S (i + delta)) l default)
+  (nth
+     (pickSmallestInRange default
+        (<span class="nb">compare</span> A comparator) i 
+        (i + delta) l) l default)</span></span></span><br><span><var>H</var><span class="hyp-type"><b>: </b><span>inBetween = S delta</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">¬ <span class="nb">compare</span> A comparator 
+    (nth (i + inBetween) l default)
+    (nth (S (i + delta)) l default)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk54" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk54"><span class="nb">rewrite</span> H, Nat.add_succ_r.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>IHdelta</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">_0</span> : nat,
+  _0 ≤ delta
+  → ¬ <span class="nb">compare</span> A comparator
+        (nth (i + _0) l default)
+        (nth
+           (pickSmallestInRange default
+              (<span class="nb">compare</span> A comparator) i
+              (i + delta) l) l default)</span></span></span><br><span><var>inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ S delta</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span>true =
+<span class="nb">compare</span> A comparator
+  (nth (S (i + delta)) l default)
+  (nth
+     (pickSmallestInRange default
+        (<span class="nb">compare</span> A comparator) i 
+        (i + delta) l) l default)</span></span></span><br><span><var>H</var><span class="hyp-type"><b>: </b><span>inBetween = S delta</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">¬ <span class="nb">compare</span> A comparator 
+    (nth (S (i + delta)) l default)
+    (nth (S (i + delta)) l default)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> (irreflexive _ comparator).</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk55" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk55">*</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>IHdelta</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">_0</span> : nat,
+  _0 ≤ delta
+  → ¬ <span class="nb">compare</span> A comparator
+        (nth (i + _0) l default)
+        (nth
+           (pickSmallestInRange default
+              (<span class="nb">compare</span> A comparator) i
+              (i + delta) l) l default)</span></span></span><br><span><var>inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ S delta</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span>true =
+<span class="nb">compare</span> A comparator
+  (nth (S (i + delta)) l default)
+  (nth
+     (pickSmallestInRange default
+        (<span class="nb">compare</span> A comparator) i 
+        (i + delta) l) l default)</span></span></span><br><span><var>H</var><span class="hyp-type"><b>: </b><span>inBetween ≤ delta</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">¬ <span class="nb">compare</span> A comparator 
+    (nth (i + inBetween) l default)
+    (nth (S (i + delta)) l default)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk56" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk56"><span class="nb">pose proof</span> IHdelta inBetween H <span class="kr">as</span> H0.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>IHdelta</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">_0</span> : nat,
+  _0 ≤ delta
+  → ¬ <span class="nb">compare</span> A comparator
+        (nth (i + _0) l default)
+        (nth
+           (pickSmallestInRange default
+              (<span class="nb">compare</span> A comparator) i
+              (i + delta) l) l default)</span></span></span><br><span><var>inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ S delta</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span>true =
+<span class="nb">compare</span> A comparator
+  (nth (S (i + delta)) l default)
+  (nth
+     (pickSmallestInRange default
+        (<span class="nb">compare</span> A comparator) i 
+        (i + delta) l) l default)</span></span></span><br><span><var>H</var><span class="hyp-type"><b>: </b><span>inBetween ≤ delta</span></span></span><br><span><var>H0</var><span class="hyp-type"><b>: </b><span>¬ <span class="nb">compare</span> A comparator
+    (nth (i + inBetween) l default)
+    (nth
+       (pickSmallestInRange default
+          (<span class="nb">compare</span> A comparator) i 
+          (i + delta) l) l default)</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">¬ <span class="nb">compare</span> A comparator 
+    (nth (i + inBetween) l default)
+    (nth (S (i + delta)) l default)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk57" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk57"><span class="nb">symmetry in</span> HeqH.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>IHdelta</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">_0</span> : nat,
+  _0 ≤ delta
+  → ¬ <span class="nb">compare</span> A comparator
+        (nth (i + _0) l default)
+        (nth
+           (pickSmallestInRange default
+              (<span class="nb">compare</span> A comparator) i
+              (i + delta) l) l default)</span></span></span><br><span><var>inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ S delta</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span><span class="nb">compare</span> A comparator
+  (nth (S (i + delta)) l default)
+  (nth
+     (pickSmallestInRange default
+        (<span class="nb">compare</span> A comparator) i 
+        (i + delta) l) l default) = true</span></span></span><br><span><var>H</var><span class="hyp-type"><b>: </b><span>inBetween ≤ delta</span></span></span><br><span><var>H0</var><span class="hyp-type"><b>: </b><span>¬ <span class="nb">compare</span> A comparator
+    (nth (i + inBetween) l default)
+    (nth
+       (pickSmallestInRange default
+          (<span class="nb">compare</span> A comparator) i 
+          (i + delta) l) l default)</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">¬ <span class="nb">compare</span> A comparator 
+    (nth (i + inBetween) l default)
+    (nth (S (i + delta)) l default)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk58" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk58"><span class="nb">rewrite</span> &lt;- Is_true_true <span class="kr">in</span> HeqH.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>IHdelta</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">_0</span> : nat,
+  _0 ≤ delta
+  → ¬ <span class="nb">compare</span> A comparator
+        (nth (i + _0) l default)
+        (nth
+           (pickSmallestInRange default
+              (<span class="nb">compare</span> A comparator) i
+              (i + delta) l) l default)</span></span></span><br><span><var>inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ S delta</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span><span class="nb">compare</span> A comparator
+  (nth (S (i + delta)) l default)
+  (nth
+     (pickSmallestInRange default
+        (<span class="nb">compare</span> A comparator) i 
+        (i + delta) l) l default)</span></span></span><br><span><var>H</var><span class="hyp-type"><b>: </b><span>inBetween ≤ delta</span></span></span><br><span><var>H0</var><span class="hyp-type"><b>: </b><span>¬ <span class="nb">compare</span> A comparator
+    (nth (i + inBetween) l default)
+    (nth
+       (pickSmallestInRange default
+          (<span class="nb">compare</span> A comparator) i 
+          (i + delta) l) l default)</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">¬ <span class="nb">compare</span> A comparator 
+    (nth (i + inBetween) l default)
+    (nth (S (i + delta)) l default)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk59" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk59"><span class="nb">pose proof</span> asymmetry _ _ _ _ HeqH <span class="kr">as</span> H1.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>IHdelta</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">_0</span> : nat,
+  _0 ≤ delta
+  → ¬ <span class="nb">compare</span> A comparator
+        (nth (i + _0) l default)
+        (nth
+           (pickSmallestInRange default
+              (<span class="nb">compare</span> A comparator) i
+              (i + delta) l) l default)</span></span></span><br><span><var>inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ S delta</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span><span class="nb">compare</span> A comparator
+  (nth (S (i + delta)) l default)
+  (nth
+     (pickSmallestInRange default
+        (<span class="nb">compare</span> A comparator) i 
+        (i + delta) l) l default)</span></span></span><br><span><var>H</var><span class="hyp-type"><b>: </b><span>inBetween ≤ delta</span></span></span><br><span><var>H0</var><span class="hyp-type"><b>: </b><span>¬ <span class="nb">compare</span> A comparator
+    (nth (i + inBetween) l default)
+    (nth
+       (pickSmallestInRange default
+          (<span class="nb">compare</span> A comparator) i 
+          (i + delta) l) l default)</span></span></span><br><span><var>H1</var><span class="hyp-type"><b>: </b><span>¬ <span class="nb">compare</span> A comparator
+    (nth
+       (pickSmallestInRange default
+          (<span class="nb">compare</span> A comparator) i 
+          (i + delta) l) l default)
+    (nth (S (i + delta)) l default)</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">¬ <span class="nb">compare</span> A comparator 
+    (nth (i + inBetween) l default)
+    (nth (S (i + delta)) l default)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">apply</span> (negativelyTransitive _ _ _ _ H0 H1).</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk5a" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk5a">+</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>IHdelta</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">_0</span> : nat,
+  _0 ≤ delta
+  → ¬ <span class="nb">compare</span> A comparator
+        (nth (i + _0) l default)
+        (nth
+           (pickSmallestInRange default
+              (<span class="nb">compare</span> A comparator) i
+              (i + delta) l) l default)</span></span></span><br><span><var>inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ S delta</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span>false =
+<span class="nb">compare</span> A comparator
+  (nth (S (i + delta)) l default)
+  (nth
+     (pickSmallestInRange default
+        (<span class="nb">compare</span> A comparator) i 
+        (i + delta) l) l default)</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">¬ <span class="nb">compare</span> A comparator 
+    (nth (i + inBetween) l default)
+    (nth
+       (pickSmallestInRange default
+          (<span class="nb">compare</span> A comparator) i 
+          (i + delta) l) l default)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk5b" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk5b"><span class="nb">assert</span> (hSplit : inBetween = S delta \/ inBetween &lt;= delta).</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>IHdelta</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">_0</span> : nat,
+  _0 ≤ delta
+  → ¬ <span class="nb">compare</span> A comparator
+        (nth (i + _0) l default)
+        (nth
+           (pickSmallestInRange default
+              (<span class="nb">compare</span> A comparator) i
+              (i + delta) l) l default)</span></span></span><br><span><var>inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ S delta</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span>false =
+<span class="nb">compare</span> A comparator
+  (nth (S (i + delta)) l default)
+  (nth
+     (pickSmallestInRange default
+        (<span class="nb">compare</span> A comparator) i 
+        (i + delta) l) l default)</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">inBetween = S delta ∨ inBetween ≤ delta</div></blockquote><div class="alectryon-extra-goals"><input class="alectryon-extra-goal-toggle" id="PickSmallestInRangeProperties-v-chk5c" style="display: none" type="checkbox"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>IHdelta</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">_0</span> : nat,
+  _0 ≤ delta
+  → ¬ <span class="nb">compare</span> A comparator
+        (nth (i + _0) l default)
+        (nth
+           (pickSmallestInRange default
+              (<span class="nb">compare</span> A comparator) i
+              (i + delta) l) l default)</span></span></span><br><span><var>inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ S delta</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span>false =
+<span class="nb">compare</span> A comparator
+  (nth (S (i + delta)) l default)
+  (nth
+     (pickSmallestInRange default
+        (<span class="nb">compare</span> A comparator) i 
+        (i + delta) l) l default)</span></span></span><br><span><var>hSplit</var><span class="hyp-type"><b>: </b><span>inBetween = S delta ∨ inBetween ≤ delta</span></span></span><br></div><label class="goal-separator" for="PickSmallestInRangeProperties-v-chk5c"><hr></label><div class="goal-conclusion">¬ <span class="nb">compare</span> A comparator 
+    (nth (i + inBetween) l default)
+    (nth
+       (pickSmallestInRange default
+          (<span class="nb">compare</span> A comparator) i 
+          (i + delta) l) l default)</div></blockquote></div></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk5d" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk5d">{</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>IHdelta</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">_0</span> : nat,
+  _0 ≤ delta
+  → ¬ <span class="nb">compare</span> A comparator
+        (nth (i + _0) l default)
+        (nth
+           (pickSmallestInRange default
+              (<span class="nb">compare</span> A comparator) i
+              (i + delta) l) l default)</span></span></span><br><span><var>inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ S delta</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span>false =
+<span class="nb">compare</span> A comparator
+  (nth (S (i + delta)) l default)
+  (nth
+     (pickSmallestInRange default
+        (<span class="nb">compare</span> A comparator) i 
+        (i + delta) l) l default)</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">inBetween = S delta ∨ inBetween ≤ delta</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">lia</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk5e" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk5e">}</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>IHdelta</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">_0</span> : nat,
+  _0 ≤ delta
+  → ¬ <span class="nb">compare</span> A comparator
+        (nth (i + _0) l default)
+        (nth
+           (pickSmallestInRange default
+              (<span class="nb">compare</span> A comparator) i
+              (i + delta) l) l default)</span></span></span><br><span><var>inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ S delta</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span>false =
+<span class="nb">compare</span> A comparator
+  (nth (S (i + delta)) l default)
+  (nth
+     (pickSmallestInRange default
+        (<span class="nb">compare</span> A comparator) i 
+        (i + delta) l) l default)</span></span></span><br><span><var>hSplit</var><span class="hyp-type"><b>: </b><span>inBetween = S delta ∨ inBetween ≤ delta</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">¬ <span class="nb">compare</span> A comparator 
+    (nth (i + inBetween) l default)
+    (nth
+       (pickSmallestInRange default
+          (<span class="nb">compare</span> A comparator) i 
+          (i + delta) l) l default)</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk5f" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk5f"><span class="nb">destruct</span> hSplit <span class="kr">as</span> [H | H].</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>IHdelta</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">_0</span> : nat,
+  _0 ≤ delta
+  → ¬ <span class="nb">compare</span> A comparator
+        (nth (i + _0) l default)
+        (nth
+           (pickSmallestInRange default
+              (<span class="nb">compare</span> A comparator) i
+              (i + delta) l) l default)</span></span></span><br><span><var>inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ S delta</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span>false =
+<span class="nb">compare</span> A comparator
+  (nth (S (i + delta)) l default)
+  (nth
+     (pickSmallestInRange default
+        (<span class="nb">compare</span> A comparator) i 
+        (i + delta) l) l default)</span></span></span><br><span><var>H</var><span class="hyp-type"><b>: </b><span>inBetween = S delta</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">¬ <span class="nb">compare</span> A comparator 
+    (nth (i + inBetween) l default)
+    (nth
+       (pickSmallestInRange default
+          (<span class="nb">compare</span> A comparator) i 
+          (i + delta) l) l default)</div></blockquote><div class="alectryon-extra-goals"><input class="alectryon-extra-goal-toggle" id="PickSmallestInRangeProperties-v-chk60" style="display: none" type="checkbox"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>IHdelta</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">_0</span> : nat,
+  _0 ≤ delta
+  → ¬ <span class="nb">compare</span> A comparator
+        (nth (i + _0) l default)
+        (nth
+           (pickSmallestInRange default
+              (<span class="nb">compare</span> A comparator) i
+              (i + delta) l) l default)</span></span></span><br><span><var>inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ S delta</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span>false =
+<span class="nb">compare</span> A comparator
+  (nth (S (i + delta)) l default)
+  (nth
+     (pickSmallestInRange default
+        (<span class="nb">compare</span> A comparator) i 
+        (i + delta) l) l default)</span></span></span><br><span><var>H</var><span class="hyp-type"><b>: </b><span>inBetween ≤ delta</span></span></span><br></div><label class="goal-separator" for="PickSmallestInRangeProperties-v-chk60"><hr></label><div class="goal-conclusion">¬ <span class="nb">compare</span> A comparator 
+    (nth (i + inBetween) l default)
+    (nth
+       (pickSmallestInRange default
+          (<span class="nb">compare</span> A comparator) i 
+          (i + delta) l) l default)</div></blockquote></div></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk61" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk61">*</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>IHdelta</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">_0</span> : nat,
+  _0 ≤ delta
+  → ¬ <span class="nb">compare</span> A comparator
+        (nth (i + _0) l default)
+        (nth
+           (pickSmallestInRange default
+              (<span class="nb">compare</span> A comparator) i
+              (i + delta) l) l default)</span></span></span><br><span><var>inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ S delta</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span>false =
+<span class="nb">compare</span> A comparator
+  (nth (S (i + delta)) l default)
+  (nth
+     (pickSmallestInRange default
+        (<span class="nb">compare</span> A comparator) i 
+        (i + delta) l) l default)</span></span></span><br><span><var>H</var><span class="hyp-type"><b>: </b><span>inBetween = S delta</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">¬ <span class="nb">compare</span> A comparator 
+    (nth (i + inBetween) l default)
+    (nth
+       (pickSmallestInRange default
+          (<span class="nb">compare</span> A comparator) i 
+          (i + delta) l) l default)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk62" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk62"><span class="nb">rewrite</span> H, Nat.add_succ_r.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>IHdelta</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">_0</span> : nat,
+  _0 ≤ delta
+  → ¬ <span class="nb">compare</span> A comparator
+        (nth (i + _0) l default)
+        (nth
+           (pickSmallestInRange default
+              (<span class="nb">compare</span> A comparator) i
+              (i + delta) l) l default)</span></span></span><br><span><var>inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ S delta</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span>false =
+<span class="nb">compare</span> A comparator
+  (nth (S (i + delta)) l default)
+  (nth
+     (pickSmallestInRange default
+        (<span class="nb">compare</span> A comparator) i 
+        (i + delta) l) l default)</span></span></span><br><span><var>H</var><span class="hyp-type"><b>: </b><span>inBetween = S delta</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">¬ <span class="nb">compare</span> A comparator 
+    (nth (S (i + delta)) l default)
+    (nth
+       (pickSmallestInRange default
+          (<span class="nb">compare</span> A comparator) i 
+          (i + delta) l) l default)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk63" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk63"><span class="nb">symmetry in</span> HeqH.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>IHdelta</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">_0</span> : nat,
+  _0 ≤ delta
+  → ¬ <span class="nb">compare</span> A comparator
+        (nth (i + _0) l default)
+        (nth
+           (pickSmallestInRange default
+              (<span class="nb">compare</span> A comparator) i
+              (i + delta) l) l default)</span></span></span><br><span><var>inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ S delta</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span><span class="nb">compare</span> A comparator
+  (nth (S (i + delta)) l default)
+  (nth
+     (pickSmallestInRange default
+        (<span class="nb">compare</span> A comparator) i 
+        (i + delta) l) l default) = false</span></span></span><br><span><var>H</var><span class="hyp-type"><b>: </b><span>inBetween = S delta</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">¬ <span class="nb">compare</span> A comparator 
+    (nth (S (i + delta)) l default)
+    (nth
+       (pickSmallestInRange default
+          (<span class="nb">compare</span> A comparator) i 
+          (i + delta) l) l default)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk64" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk64"><span class="nb">rewrite</span> &lt;- Is_true_false <span class="kr">in</span> HeqH.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>IHdelta</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">_0</span> : nat,
+  _0 ≤ delta
+  → ¬ <span class="nb">compare</span> A comparator
+        (nth (i + _0) l default)
+        (nth
+           (pickSmallestInRange default
+              (<span class="nb">compare</span> A comparator) i
+              (i + delta) l) l default)</span></span></span><br><span><var>inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ S delta</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span>¬ <span class="nb">compare</span> A comparator
+    (nth (S (i + delta)) l default)
+    (nth
+       (pickSmallestInRange default
+          (<span class="nb">compare</span> A comparator) i 
+          (i + delta) l) l default)</span></span></span><br><span><var>H</var><span class="hyp-type"><b>: </b><span>inBetween = S delta</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">¬ <span class="nb">compare</span> A comparator 
+    (nth (S (i + delta)) l default)
+    (nth
+       (pickSmallestInRange default
+          (<span class="nb">compare</span> A comparator) i 
+          (i + delta) l) l default)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">tauto</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk65" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk65">*</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>IHdelta</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">_0</span> : nat,
+  _0 ≤ delta
+  → ¬ <span class="nb">compare</span> A comparator
+        (nth (i + _0) l default)
+        (nth
+           (pickSmallestInRange default
+              (<span class="nb">compare</span> A comparator) i
+              (i + delta) l) l default)</span></span></span><br><span><var>inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ S delta</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span>false =
+<span class="nb">compare</span> A comparator
+  (nth (S (i + delta)) l default)
+  (nth
+     (pickSmallestInRange default
+        (<span class="nb">compare</span> A comparator) i 
+        (i + delta) l) l default)</span></span></span><br><span><var>H</var><span class="hyp-type"><b>: </b><span>inBetween ≤ delta</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">¬ <span class="nb">compare</span> A comparator 
+    (nth (i + inBetween) l default)
+    (nth
+       (pickSmallestInRange default
+          (<span class="nb">compare</span> A comparator) i 
+          (i + delta) l) l default)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk66" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk66"><span class="nb">symmetry in</span> HeqH.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>IHdelta</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">_0</span> : nat,
+  _0 ≤ delta
+  → ¬ <span class="nb">compare</span> A comparator
+        (nth (i + _0) l default)
+        (nth
+           (pickSmallestInRange default
+              (<span class="nb">compare</span> A comparator) i
+              (i + delta) l) l default)</span></span></span><br><span><var>inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ S delta</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span><span class="nb">compare</span> A comparator
+  (nth (S (i + delta)) l default)
+  (nth
+     (pickSmallestInRange default
+        (<span class="nb">compare</span> A comparator) i 
+        (i + delta) l) l default) = false</span></span></span><br><span><var>H</var><span class="hyp-type"><b>: </b><span>inBetween ≤ delta</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">¬ <span class="nb">compare</span> A comparator 
+    (nth (i + inBetween) l default)
+    (nth
+       (pickSmallestInRange default
+          (<span class="nb">compare</span> A comparator) i 
+          (i + delta) l) l default)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk67" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk67"><span class="nb">rewrite</span> &lt;- Is_true_false <span class="kr">in</span> HeqH.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>IHdelta</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">_0</span> : nat,
+  _0 ≤ delta
+  → ¬ <span class="nb">compare</span> A comparator
+        (nth (i + _0) l default)
+        (nth
+           (pickSmallestInRange default
+              (<span class="nb">compare</span> A comparator) i
+              (i + delta) l) l default)</span></span></span><br><span><var>inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ S delta</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span>¬ <span class="nb">compare</span> A comparator
+    (nth (S (i + delta)) l default)
+    (nth
+       (pickSmallestInRange default
+          (<span class="nb">compare</span> A comparator) i 
+          (i + delta) l) l default)</span></span></span><br><span><var>H</var><span class="hyp-type"><b>: </b><span>inBetween ≤ delta</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">¬ <span class="nb">compare</span> A comparator 
+    (nth (i + inBetween) l default)
+    (nth
+       (pickSmallestInRange default
+          (<span class="nb">compare</span> A comparator) i 
+          (i + delta) l) l default)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="PickSmallestInRangeProperties-v-chk68" style="display: none" type="checkbox"><label class="alectryon-input" for="PickSmallestInRangeProperties-v-chk68"><span class="nb">pose proof</span> IHdelta inBetween H <span class="kr">as</span> H&#39;.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>default</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>comparator</var><span class="hyp-type"><b>: </b><span>Comparator A</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br><span><var>i, delta</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>IHdelta</var><span class="hyp-type"><b>: </b><span><span class="kr">∀</span> <span class="nv">_0</span> : nat,
+  _0 ≤ delta
+  → ¬ <span class="nb">compare</span> A comparator
+        (nth (i + _0) l default)
+        (nth
+           (pickSmallestInRange default
+              (<span class="nb">compare</span> A comparator) i
+              (i + delta) l) l default)</span></span></span><br><span><var>inBetween</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>hInBetween</var><span class="hyp-type"><b>: </b><span>inBetween ≤ S delta</span></span></span><br><span><var>HeqH</var><span class="hyp-type"><b>: </b><span>¬ <span class="nb">compare</span> A comparator
+    (nth (S (i + delta)) l default)
+    (nth
+       (pickSmallestInRange default
+          (<span class="nb">compare</span> A comparator) i 
+          (i + delta) l) l default)</span></span></span><br><span><var>H</var><span class="hyp-type"><b>: </b><span>inBetween ≤ delta</span></span></span><br><span><var>H'</var><span class="hyp-type"><b>: </b><span>¬ <span class="nb">compare</span> A comparator
+    (nth (i + inBetween) l default)
+    (nth
+       (pickSmallestInRange default
+          (<span class="nb">compare</span> A comparator) i 
+          (i + delta) l) l default)</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">¬ <span class="nb">compare</span> A comparator 
+    (nth (i + inBetween) l default)
+    (nth
+       (pickSmallestInRange default
+          (<span class="nb">compare</span> A comparator) i 
+          (i + delta) l) l default)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> H&#39;.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
+</span></span></pre></article></body></html>
