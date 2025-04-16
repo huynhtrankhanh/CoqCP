@@ -1029,6 +1029,9 @@ Proof.
           rewrite ID2. reflexivity. }
           remember (fun (x : unit) => _) as seecont eqn:hseecont in |- * at 1.
           pose proof adv seecont msg jk as [hwit hrew].
-          
+          assert (ll : ((length items + 1 - na) * (limit + 1) - ej = (length items + 1 - S na) * (limit + 1))%nat).
+          { subst ej.
+            pose proof (ltac:(lia) : (length items >= na)%nat) as fa. revert fa. clear. nia. }
+          rewrite ll in hrew.
           rewrite hrew. }
 Admitted.
