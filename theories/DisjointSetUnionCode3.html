@@ -1,7 +1,42 @@
-<!DOCTYPE html>
-<html class="alectryon-standalone"><head><title>DisjointSetUnionCode3.v</title><meta charset="utf-8"><meta content="Alectryon" name="generator"><meta name="viewport" content="width=device-width, initial-scale=1"><link href="alectryon.css" rel="stylesheet"><link href="pygments.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/IBM-type/0.5.4/css/ibm-type.min.css" integrity="sha512-sky5cf9Ts6FY1kstGOBHSybfKqdHR41M0Ldb0BjNiv3ifltoQIsg0zIaQ+wwdwgQ0w9vKFW7Js50lxH9vqNSSw==" crossorigin="anonymous" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/firacode/5.2.0/fira_code.min.css" integrity="sha512-MbysAYimH1hH2xYzkkMHB6MqxBqfP0megxsCLknbYqHVwXTCg9IqHbk+ZP/vnhO8UEW6PaXAkKe2vQ+SWACxxA==" crossorigin="anonymous" /><script src="alectryon.js"></script></head><body><article class="alectryon-root alectryon-centered"><div class="alectryon-banner">Built with <a href="https://github.com/cpitclaudel/alectryon/">Alectryon</a>, running Coq+SerAPI v8.19.0+0.19.3. Bubbles (<span class="alectryon-bubble"></span>) indicate interactive fragments: hover for details, tap to reveal contents. Use <kbd>Ctrl+↑</kbd> <kbd>Ctrl+↓</kbd> to navigate, <kbd>Ctrl+🖱️</kbd> to focus. On Mac, use <kbd>⌘</kbd> instead of <kbd>Ctrl</kbd>.</div><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input class="alectryon-toggle" id="DisjointSetUnionCode3-v-chk0" style="display: none" type="checkbox"><label class="alectryon-input" for="DisjointSetUnionCode3-v-chk0"><span class="kn">From</span> CoqCP <span class="kn">Require Import</span> DisjointSetUnionCode Options.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message">[Loading ML file ring_plugin.cmxs (<span class="nb">using</span> legacy method) ... <span class="bp">done</span>]</blockquote><blockquote class="alectryon-message">[Loading ML file zify_plugin.cmxs (<span class="nb">using</span> legacy method) ... <span class="bp">done</span>]</blockquote><blockquote class="alectryon-message">[Loading ML file micromega_plugin.cmxs (<span class="nb">using</span> legacy method) ... <span class="bp">done</span>]</blockquote><blockquote class="alectryon-message">[Loading ML file btauto_plugin.cmxs (<span class="nb">using</span> legacy method) ... <span class="bp">done</span>]</blockquote><blockquote class="alectryon-message">[Loading ML file ssrmatching_plugin.cmxs (<span class="nb">using</span> legacy method) ... <span class="bp">done</span>]</blockquote><blockquote class="alectryon-message">[Loading ML file ssreflect_plugin.cmxs (<span class="nb">using</span> legacy method) ... <span class="bp">done</span>]</blockquote></div></div></small><span class="alectryon-wsp">
+<!doctype html>
+<html class="alectryon-standalone">
+  <head>
+    <title>DisjointSetUnionCode3.v</title>
+    <meta charset="utf-8" />
+    <meta content="Alectryon" name="generator" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="alectryon.css" rel="stylesheet" />
+    <link href="pygments.css" rel="stylesheet" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/IBM-type/0.5.4/css/ibm-type.min.css"
+      integrity="sha512-sky5cf9Ts6FY1kstGOBHSybfKqdHR41M0Ldb0BjNiv3ifltoQIsg0zIaQ+wwdwgQ0w9vKFW7Js50lxH9vqNSSw=="
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/firacode/5.2.0/fira_code.min.css"
+      integrity="sha512-MbysAYimH1hH2xYzkkMHB6MqxBqfP0megxsCLknbYqHVwXTCg9IqHbk+ZP/vnhO8UEW6PaXAkKe2vQ+SWACxxA=="
+      crossorigin="anonymous"
+    />
+    <script src="alectryon.js"></script>
+  </head>
+  <body>
+    <article class="alectryon-root alectryon-centered">
+      <div class="alectryon-banner">
+        Built with
+        <a href="https://github.com/cpitclaudel/alectryon/">Alectryon</a>,
+        running Coq+SerAPI v8.19.0+0.19.3. Bubbles (<span
+          class="alectryon-bubble"
+        ></span
+        >) indicate interactive fragments: hover for details, tap to reveal
+        contents. Use <kbd>Ctrl+↑</kbd> <kbd>Ctrl+↓</kbd> to navigate,
+        <kbd>Ctrl+🖱️</kbd> to focus. On Mac, use <kbd>⌘</kbd> instead of
+        <kbd>Ctrl</kbd>.
+      </div>
+      <pre
+        class="alectryon-io highlight"
+      ><!-- Generator: Alectryon --><span class="alectryon-sentence"><input class="alectryon-toggle" id="DisjointSetUnionCode3-v-chk0" style="display: none" type="checkbox"><label class="alectryon-input" for="DisjointSetUnionCode3-v-chk0"><span class="kn">From</span> CoqCP <span class="kn">Require Import</span> DisjointSetUnionCode Options.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message">[Loading ML file ring_plugin.cmxs (<span class="nb">using</span> legacy method) ... <span class="bp">done</span>]</blockquote><blockquote class="alectryon-message">[Loading ML file zify_plugin.cmxs (<span class="nb">using</span> legacy method) ... <span class="bp">done</span>]</blockquote><blockquote class="alectryon-message">[Loading ML file micromega_plugin.cmxs (<span class="nb">using</span> legacy method) ... <span class="bp">done</span>]</blockquote><blockquote class="alectryon-message">[Loading ML file btauto_plugin.cmxs (<span class="nb">using</span> legacy method) ... <span class="bp">done</span>]</blockquote><blockquote class="alectryon-message">[Loading ML file ssrmatching_plugin.cmxs (<span class="nb">using</span> legacy method) ... <span class="bp">done</span>]</blockquote><blockquote class="alectryon-message">[Loading ML file ssreflect_plugin.cmxs (<span class="nb">using</span> legacy method) ... <span class="bp">done</span>]</blockquote></div></div></small><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">From</span> stdpp <span class="kn">Require Import</span> numbers list.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">
 </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="DisjointSetUnionCode3-v-chk1" style="display: none" type="checkbox"><label class="alectryon-input" for="DisjointSetUnionCode3-v-chk1"><span class="kn">Lemma</span> <span class="nf">maxScoreIsAttainable</span> : interact state (map (<span class="kr">fun</span> <span class="nv">x</span> =&gt; (<span class="mi">0</span>%Z, Z.of_nat x)) (seq <span class="mi">1</span> <span class="mi">99</span>)) = <span class="mi">5049</span>%Z.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><span class="goal-separator"><hr></span><div class="goal-conclusion">interact state
@@ -10,4 +45,7 @@
 </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="DisjointSetUnionCode3-v-chk2" style="display: none" type="checkbox"><label class="alectryon-input" for="DisjointSetUnionCode3-v-chk2"><span class="kn">Proof</span>.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><span class="goal-separator"><hr></span><div class="goal-conclusion">interact state
   (map (<span class="kr">λ</span> <span class="nv">_0</span> : nat, (<span class="mi">0</span>%Z, Z.of_nat _0)) (seq <span class="mi">1</span> <span class="mi">99</span>)) =
 <span class="mi">5049</span>%Z</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">reflexivity</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
-</span></span></pre></article></body></html>
+</span></span></pre>
+    </article>
+  </body>
+</html>
