@@ -1121,4 +1121,9 @@ Proof.
       rewrite frev1 frev2. tauto. }
     lia. }
   rewrite ma in ff.
+  unfold funcdef_0__storeresult.
+  rewrite !leftIdentity.
+  unfold shiftRight, andBits.
+  rewrite -!bindAssoc pushNumberGet2.
+  rewrite !leftIdentity.
 Admitted.
