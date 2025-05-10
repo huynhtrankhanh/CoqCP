@@ -41,4 +41,4 @@ response = client.responses.create(
 )
 
 # Print the response
-print(response)
+print(response.output[1].content[0].text)

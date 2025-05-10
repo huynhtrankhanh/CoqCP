@@ -1,4 +1,6 @@
 # stolen from https://github.com/github/gitignore/blob/main/Coq.gitignore
+.lia.cache
+.nia.cache
 .*.aux
 .*.d
 *.a
