@@ -150,7 +150,6 @@ var Alectryon
     }
     window.addEventListener('DOMContentLoaded', init)
   })(Alectryon.slideshow || (Alectryon.slideshow = {}))
-
   ;(function (styles) {
     var styleNames = ['centered', 'floating', 'windowed']
 
