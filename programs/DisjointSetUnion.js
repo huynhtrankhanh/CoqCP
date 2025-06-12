@@ -59,7 +59,7 @@ procedure('main', {}, () => {
       store('dsu', i, [coerceInt8(-1)])
     })
   }
-  call('unite', { u: retrieve(0), v: retrieve(0) })
+  call('unite', { u: retrieve(0), v: retrieve(1) })
   // gotta reset
   store('result', 0, [coerceInt8(0)])
 })
