@@ -158,7 +158,7 @@ contract GeneratedCode {
             }
         } else {
         }
-        procedure1(environment0, environment1, environment2, communicationGet(communication, uint64(0)), communicationGet(communication, uint64(0)), 0, communication);
+        procedure1(environment0, environment1, environment2, communicationGet(communication, uint64(0)), communicationGet(communication, uint64(1)), 0, communication);
         arraySet(environment2, uint64(0), Tuple0(uint8(uint64(0))));
     } }
 
