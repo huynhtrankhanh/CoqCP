@@ -20,7 +20,6 @@ We will prove two things for all strings \$a\$ and \$b\$:
 Before proceeding, here is an explanation of how \$a + b < b + a \leftrightarrow |b| \times a < |a| \times b\$ follows from the two facts above.
 
 - If \$a + b < b + a\$:
-
   - Prove \$a + b < b + a \rightarrow |b| \times a < |a| \times b\$
 
     This is one of the two facts we will prove.
@@ -30,7 +29,6 @@ Before proceeding, here is an explanation of how \$a + b < b + a \leftrightarrow
     We already have \$a + b < b + a\$. Great.
 
 - If \$a + b = b + a\$:
-
   - Prove \$a + b < b + a \rightarrow |b| \times a < |a| \times b\$
 
     As \$a + b < b + a\$ is false, the whole statement is true.
@@ -40,7 +38,6 @@ Before proceeding, here is an explanation of how \$a + b < b + a \leftrightarrow
     From \$a + b = b + a \rightarrow |b| \times a = |a| \times b\$, we have \$|b| \times a = |a| \times b\$. Therefore \$|b| \times a < |a| \times b\$ is false and thus the whole statement is true.
 
 - If \$b + a < a + b\$:
-
   - Prove \$a + b < b + a \rightarrow |b| \times a < |a| \times b\$
 
     As \$a + b < b + a\$ is false, the whole statement is true.
