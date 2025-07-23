@@ -1,6 +1,8 @@
 **You can't bluff a computer.**
 
 [📹 **Watch a video of a proof in this repository**](<./0000-5399%20(1).mkv>)
+[🗒️ **Read the thesis report**](./ITCSIU21011_HuynhTranKhanh.pdf)
+[💻 **Read the instructions on how to run the compiler**](./docs/InternalImperativeLanguage.md)
 
 This is a repository of formally verified competitive programming code. Formal verification is very important.
 
