@@ -1,6 +1,6 @@
 **You can't bluff a computer.**
 
-[📹 **Watch a video of a proof in this repository**](./0000-5399%20(1).mkv)
+[📹 **Watch a video of a proof in this repository**](<./0000-5399%20(1).mkv>)
 
 This is a repository of formally verified competitive programming code. Formal verification is very important.
 
