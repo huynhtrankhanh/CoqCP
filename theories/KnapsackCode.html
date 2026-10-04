@@ -1,80 +1,388 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<link href="coqdoc.css" rel="stylesheet" type="text/css" />
-<title></title>
-</head>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link href="coqdoc.css" rel="stylesheet" type="text/css" />
+    <title></title>
+  </head>
 
-<body>
+  <body>
+    <div id="page">
+      <div id="header"></div>
 
-<div id="page">
+      <div id="main">
+        <h1 class="libtitle">Library KnapsackCode</h1>
 
-<div id="header">
-</div>
+        <div class="code">
+          <span class="id" title="keyword">From</span>
+          <span class="id" title="var">CoqCP</span>
+          <span class="id" title="keyword">Require</span>
+          <span class="id" title="keyword">Import</span>
+          <span class="id" title="var">Options</span>
+          <span class="id" title="var">Imperative</span>
+          <span class="id" title="var">Knapsack</span>.<br />
+          <span class="id" title="keyword">From</span>
+          <span class="id" title="var">Generated</span>
+          <span class="id" title="keyword">Require</span>
+          <span class="id" title="keyword">Import</span>
+          <span class="id" title="var">Knapsack</span>.<br />
+          <span class="id" title="keyword">From</span>
+          <span class="id" title="var">stdpp</span>
+          <span class="id" title="keyword">Require</span>
+          <span class="id" title="keyword">Import</span>
+          <span class="id" title="var">numbers</span>
+          <span class="id" title="var">list</span>
+          <span class="id" title="var">strings</span>.<br />
+          <span class="id" title="keyword">Require</span>
+          <span class="id" title="keyword">Import</span>
+          <span class="id" title="var">Coq.Numbers.DecimalString</span>.<br />
+          <span class="id" title="keyword">Require</span>
+          <span class="id" title="keyword">Import</span>
+          <span class="id" title="var">Coq.Strings.Ascii</span>.<br />
 
-<div id="main">
+          <br />
+          <span class="id" title="keyword">Fixpoint</span>
+          <span class="id" title="var">stdinBytes</span> (<span
+            class="id"
+            title="var"
+            >text</span
+          >
+          : <span class="id" title="var">string</span>) :
+          <span class="id" title="var">list</span>
+          <span class="id" title="var">Z</span> :=<br />
+          &nbsp;&nbsp;<span class="id" title="keyword">match</span>
+          <span class="id" title="var">text</span>
+          <span class="id" title="keyword">with</span><br />
+          &nbsp;&nbsp;| <span class="id" title="var">EmptyString</span> ⇒ []<br />
+          &nbsp;&nbsp;| <span class="id" title="var">String</span>
+          <span class="id" title="var">character</span>
+          <span class="id" title="var">tail</span> ⇒
+          <span class="id" title="var">Z.of_nat</span> (<span
+            class="id"
+            title="var"
+            >nat_of_ascii</span
+          >
+          <span class="id" title="var">character</span>) ::
+          <span class="id" title="var">stdinBytes</span>
+          <span class="id" title="var">tail</span><br />
+          &nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br />
 
-<h1 class="libtitle">Library KnapsackCode</h1>
+          <br />
+          <span class="id" title="keyword">Fixpoint</span>
+          <span class="id" title="var">littleDigits</span> (<span
+            class="id"
+            title="var"
+            >fuel</span
+          >
+          : <span class="id" title="var">nat</span>) (<span
+            class="id"
+            title="var"
+            >value</span
+          >
+          : <span class="id" title="var">Z</span>) :
+          <span class="id" title="var">list</span>
+          <span class="id" title="var">Z</span> :=<br />
+          &nbsp;&nbsp;<span class="id" title="keyword">match</span>
+          <span class="id" title="var">fuel</span>
+          <span class="id" title="keyword">with</span><br />
+          &nbsp;&nbsp;| <span class="id" title="var">O</span> ⇒ []<br />
+          &nbsp;&nbsp;| <span class="id" title="var">S</span>
+          <span class="id" title="var">fuel</span> ⇒
+          <span class="id" title="keyword">if</span>
+          <span class="id" title="var">decide</span> (<span
+            class="id"
+            title="var"
+            >value</span
+          >
+          = 0)%<span class="id" title="var">Z</span>
+          <span class="id" title="keyword">then</span> []<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword"
+            >else</span
+          >
+          (<span class="id" title="var">value</span>
+          <span class="id" title="var">mod</span> 10 + 48)%<span
+            class="id"
+            title="var"
+            >Z</span
+          >
+          :: <span class="id" title="var">littleDigits</span>
+          <span class="id" title="var">fuel</span> (<span class="id" title="var"
+            >value</span
+          >
+          / 10)%<span class="id" title="var">Z</span><br />
+          &nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br />
+          <span class="id" title="keyword">Definition</span>
+          <span class="id" title="var">decimalBytes</span> (<span
+            class="id"
+            title="var"
+            >value</span
+          >
+          : <span class="id" title="var">nat</span>) :=<br />
+          &nbsp;&nbsp;<span class="id" title="keyword">if</span>
+          <span class="id" title="var">decide</span> (<span
+            class="id"
+            title="var"
+            >value</span
+          >
+          = 0)%<span class="id" title="var">nat</span>
+          <span class="id" title="keyword">then</span> [48%<span
+            class="id"
+            title="var"
+            >Z</span
+          >] <span class="id" title="keyword">else</span>
+          <span class="id" title="var">reverse</span> (<span
+            class="id"
+            title="var"
+            >littleDigits</span
+          >
+          20 (<span class="id" title="var">Z.of_nat</span>
+          <span class="id" title="var">value</span>)).<br />
 
-<div class="code">
-<span class="id" title="keyword">From</span> <span class="id" title="var">CoqCP</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <span class="id" title="var">Options</span> <span class="id" title="var">Imperative</span> <span class="id" title="var">Knapsack</span>.<br/>
-<span class="id" title="keyword">From</span> <span class="id" title="var">Generated</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <span class="id" title="var">Knapsack</span>.<br/>
-<span class="id" title="keyword">From</span> <span class="id" title="var">stdpp</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <span class="id" title="var">numbers</span> <span class="id" title="var">list</span> <span class="id" title="var">strings</span>.<br/>
-<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <span class="id" title="var">Coq.Numbers.DecimalString</span>.<br/>
-<span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <span class="id" title="var">Coq.Strings.Ascii</span>.<br/>
+          <br />
+          <span class="id" title="keyword">Definition</span>
+          <span class="id" title="var">generateData</span> (<span
+            class="id"
+            title="var"
+            >items</span
+          >
+          : <span class="id" title="var">list</span> (<span
+            class="id"
+            title="var"
+            >nat</span
+          >
+          × <span class="id" title="var">nat</span>)) (<span
+            class="id"
+            title="var"
+            >limit</span
+          >
+          : <span class="id" title="var">nat</span>) :
+          <span class="id" title="var">list</span>
+          <span class="id" title="var">Z</span> :=<br />
+          &nbsp;&nbsp;<span class="id" title="var">decimalBytes</span> (<span
+            class="id"
+            title="var"
+            >length</span
+          >
+          <span class="id" title="var">items</span>) ++ [32%<span
+            class="id"
+            title="var"
+            >Z</span
+          >] ++ <span class="id" title="var">decimalBytes</span>
+          <span class="id" title="var">limit</span> ++ [10%<span
+            class="id"
+            title="var"
+            >Z</span
+          >] ++<br />
+          &nbsp;&nbsp;<span class="id" title="var">concat</span> (<span
+            class="id"
+            title="var"
+            >map</span
+          >
+          (<span class="id" title="keyword">fun</span>
+          <span class="id" title="var">item</span> ⇒
+          <span class="id" title="var">decimalBytes</span> (<span
+            class="id"
+            title="var"
+            >fst</span
+          >
+          <span class="id" title="var">item</span>) ++ [32%<span
+            class="id"
+            title="var"
+            >Z</span
+          >] ++ <span class="id" title="var">decimalBytes</span> (<span
+            class="id"
+            title="var"
+            >snd</span
+          >
+          <span class="id" title="var">item</span>) ++ [10%<span
+            class="id"
+            title="var"
+            >Z</span
+          >]) <span class="id" title="var">items</span>).<br />
 
-<br/>
-<span class="id" title="keyword">Fixpoint</span> <span class="id" title="var">stdinBytes</span> (<span class="id" title="var">text</span> : <span class="id" title="var">string</span>) : <span class="id" title="var">list</span> <span class="id" title="var">Z</span> :=<br/>
-&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">text</span> <span class="id" title="keyword">with</span><br/>
-&nbsp;&nbsp;| <span class="id" title="var">EmptyString</span> ⇒ []<br/>
-&nbsp;&nbsp;| <span class="id" title="var">String</span> <span class="id" title="var">character</span> <span class="id" title="var">tail</span> ⇒ <span class="id" title="var">Z.of_nat</span> (<span class="id" title="var">nat_of_ascii</span> <span class="id" title="var">character</span>) :: <span class="id" title="var">stdinBytes</span> <span class="id" title="var">tail</span><br/>
-&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
+          <br />
+          <span class="id" title="keyword">Definition</span>
+          <span class="id" title="var">start</span>
+          <span class="id" title="var">items</span>
+          <span class="id" title="var">limit</span> :=
+          <span class="id" title="var">runProgram</span> (<span
+            class="id"
+            title="var"
+            >arrays</span
+          >
+          <span class="id" title="var">_</span>
+          <span class="id" title="var">environment2</span>)<br />
+          &nbsp;&nbsp;(<span class="id" title="var">funcdef_0__main</span>
+          (<span class="id" title="keyword">fun</span>
+          <span class="id" title="var">_</span> ⇒
+          <span class="id" title="var">false</span>) (<span
+            class="id"
+            title="keyword"
+            >fun</span
+          >
+          <span class="id" title="var">_</span> ⇒ 0%<span class="id" title="var"
+            >Z</span
+          >)) (<span class="id" title="var">generateData</span>
+          <span class="id" title="var">items</span>
+          <span class="id" title="var">limit</span>).<br />
 
-<br/>
-<span class="id" title="keyword">Fixpoint</span> <span class="id" title="var">littleDigits</span> (<span class="id" title="var">fuel</span> : <span class="id" title="var">nat</span>) (<span class="id" title="var">value</span> : <span class="id" title="var">Z</span>) : <span class="id" title="var">list</span> <span class="id" title="var">Z</span> :=<br/>
-&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">fuel</span> <span class="id" title="keyword">with</span><br/>
-&nbsp;&nbsp;| <span class="id" title="var">O</span> ⇒ []<br/>
-&nbsp;&nbsp;| <span class="id" title="var">S</span> <span class="id" title="var">fuel</span> ⇒ <span class="id" title="keyword">if</span> <span class="id" title="var">decide</span> (<span class="id" title="var">value</span> = 0)%<span class="id" title="var">Z</span> <span class="id" title="keyword">then</span> []<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="keyword">else</span> (<span class="id" title="var">value</span> <span class="id" title="var">mod</span> 10 + 48)%<span class="id" title="var">Z</span> :: <span class="id" title="var">littleDigits</span> <span class="id" title="var">fuel</span> (<span class="id" title="var">value</span> / 10)%<span class="id" title="var">Z</span><br/>
-&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
-<span class="id" title="keyword">Definition</span> <span class="id" title="var">decimalBytes</span> (<span class="id" title="var">value</span> : <span class="id" title="var">nat</span>) :=<br/>
-&nbsp;&nbsp;<span class="id" title="keyword">if</span> <span class="id" title="var">decide</span> (<span class="id" title="var">value</span> = 0)%<span class="id" title="var">nat</span> <span class="id" title="keyword">then</span> [48%<span class="id" title="var">Z</span>] <span class="id" title="keyword">else</span> <span class="id" title="var">reverse</span> (<span class="id" title="var">littleDigits</span> 20 (<span class="id" title="var">Z.of_nat</span> <span class="id" title="var">value</span>)).<br/>
+          <br />
+          <span class="id" title="keyword">Definition</span>
+          <span class="id" title="var">extractAnswer</span> (<span
+            class="id"
+            title="var"
+            >result</span
+          >
+          : <span class="id" title="var">option</span> ((<span
+            class="id"
+            title="keyword"
+            >∀</span
+          >
+          <span class="id" title="var">name</span>,
+          <span class="id" title="var">list</span> (<span class="id" title="var"
+            >arrayType</span
+          >
+          <span class="id" title="var">_</span>
+          <span class="id" title="var">environment2</span>
+          <span class="id" title="var">name</span>)) ×
+          <span class="id" title="var">list</span>
+          <span class="id" title="var">Z</span> ×
+          <span class="id" title="var">list</span>
+          <span class="id" title="var">Z</span>)) :
+          <span class="id" title="var">Z</span> :=<br />
+          &nbsp;&nbsp;<span class="id" title="keyword">match</span>
+          <span class="id" title="var">result</span>
+          <span class="id" title="keyword">with</span><br />
+          &nbsp;&nbsp;| <span class="id" title="var">None</span> ⇒ 0%<span
+            class="id"
+            title="var"
+            >Z</span
+          ><br />
+          &nbsp;&nbsp;| <span class="id" title="var">Some</span> (<span
+            class="id"
+            title="var"
+            >_</span
+          >, <span class="id" title="var">_</span>,
+          <span class="id" title="var">output</span>) ⇒
+          <span class="id" title="var">fold_left</span> (<span
+            class="id"
+            title="keyword"
+            >fun</span
+          >
+          <span class="id" title="var">value</span>
+          <span class="id" title="var">digit</span> ⇒ (10 ×
+          <span class="id" title="var">value</span> +
+          <span class="id" title="var">digit</span> - 48)%<span
+            class="id"
+            title="var"
+            >Z</span
+          >) (<span class="id" title="var">take</span> (<span
+            class="id"
+            title="var"
+            >length</span
+          >
+          <span class="id" title="var">output</span> - 1)
+          <span class="id" title="var">output</span>) 0%<span
+            class="id"
+            title="var"
+            >Z</span
+          ><br />
+          &nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br />
 
-<br/>
-<span class="id" title="keyword">Definition</span> <span class="id" title="var">generateData</span> (<span class="id" title="var">items</span> : <span class="id" title="var">list</span> (<span class="id" title="var">nat</span> × <span class="id" title="var">nat</span>)) (<span class="id" title="var">limit</span> : <span class="id" title="var">nat</span>) : <span class="id" title="var">list</span> <span class="id" title="var">Z</span> :=<br/>
-&nbsp;&nbsp;<span class="id" title="var">decimalBytes</span> (<span class="id" title="var">length</span> <span class="id" title="var">items</span>) ++ [32%<span class="id" title="var">Z</span>] ++ <span class="id" title="var">decimalBytes</span> <span class="id" title="var">limit</span> ++ [10%<span class="id" title="var">Z</span>] ++<br/>
-&nbsp;&nbsp;<span class="id" title="var">concat</span> (<span class="id" title="var">map</span> (<span class="id" title="keyword">fun</span> <span class="id" title="var">item</span> ⇒ <span class="id" title="var">decimalBytes</span> (<span class="id" title="var">fst</span> <span class="id" title="var">item</span>) ++ [32%<span class="id" title="var">Z</span>] ++ <span class="id" title="var">decimalBytes</span> (<span class="id" title="var">snd</span> <span class="id" title="var">item</span>) ++ [10%<span class="id" title="var">Z</span>]) <span class="id" title="var">items</span>).<br/>
-
-<br/>
-<span class="id" title="keyword">Definition</span> <span class="id" title="var">start</span> <span class="id" title="var">items</span> <span class="id" title="var">limit</span> := <span class="id" title="var">runProgram</span> (<span class="id" title="var">arrays</span> <span class="id" title="var">_</span> <span class="id" title="var">environment2</span>)<br/>
-&nbsp;&nbsp;(<span class="id" title="var">funcdef_0__main</span> (<span class="id" title="keyword">fun</span> <span class="id" title="var">_</span> ⇒ <span class="id" title="var">false</span>) (<span class="id" title="keyword">fun</span> <span class="id" title="var">_</span> ⇒ 0%<span class="id" title="var">Z</span>)) (<span class="id" title="var">generateData</span> <span class="id" title="var">items</span> <span class="id" title="var">limit</span>).<br/>
-
-<br/>
-<span class="id" title="keyword">Definition</span> <span class="id" title="var">extractAnswer</span> (<span class="id" title="var">result</span> : <span class="id" title="var">option</span> ((<span class="id" title="keyword">∀</span> <span class="id" title="var">name</span>, <span class="id" title="var">list</span> (<span class="id" title="var">arrayType</span> <span class="id" title="var">_</span> <span class="id" title="var">environment2</span> <span class="id" title="var">name</span>)) × <span class="id" title="var">list</span> <span class="id" title="var">Z</span> × <span class="id" title="var">list</span> <span class="id" title="var">Z</span>)) : <span class="id" title="var">Z</span> :=<br/>
-&nbsp;&nbsp;<span class="id" title="keyword">match</span> <span class="id" title="var">result</span> <span class="id" title="keyword">with</span><br/>
-&nbsp;&nbsp;| <span class="id" title="var">None</span> ⇒ 0%<span class="id" title="var">Z</span><br/>
-&nbsp;&nbsp;| <span class="id" title="var">Some</span> (<span class="id" title="var">_</span>, <span class="id" title="var">_</span>, <span class="id" title="var">output</span>) ⇒ <span class="id" title="var">fold_left</span> (<span class="id" title="keyword">fun</span> <span class="id" title="var">value</span> <span class="id" title="var">digit</span> ⇒ (10 × <span class="id" title="var">value</span> + <span class="id" title="var">digit</span> - 48)%<span class="id" title="var">Z</span>) (<span class="id" title="var">take</span> (<span class="id" title="var">length</span> <span class="id" title="var">output</span> - 1) <span class="id" title="var">output</span>) 0%<span class="id" title="var">Z</span><br/>
-&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
-
-<br/>
-<span class="id" title="keyword">Definition</span> <span class="id" title="var">knapsackArrays</span> (<span class="id" title="var">items</span> : <span class="id" title="var">list</span> (<span class="id" title="var">nat</span> × <span class="id" title="var">nat</span>)) (<span class="id" title="var">dp</span> : <span class="id" title="var">list</span> <span class="id" title="var">Z</span>) (<span class="id" title="var">message</span> : <span class="id" title="var">Z</span>)<br/>
-&nbsp;&nbsp;(<span class="id" title="var">input</span> <span class="id" title="var">printBuffer</span> : <span class="id" title="var">list</span> <span class="id" title="var">Z</span>) : <span class="id" title="keyword">∀</span> <span class="id" title="var">name</span>, <span class="id" title="var">list</span> (<span class="id" title="var">arrayType</span> <span class="id" title="var">_</span> <span class="id" title="var">environment2</span> <span class="id" title="var">name</span>) :=<br/>
-&nbsp;&nbsp;<span class="id" title="keyword">fun</span> <span class="id" title="var">name</span> ⇒ <span class="id" title="keyword">match</span> <span class="id" title="var">name</span> <span class="id" title="keyword">with</span><br/>
-&nbsp;&nbsp;| <span class="id" title="var">arraydef_0__dp</span> ⇒ <span class="id" title="var">dp</span><br/>
-&nbsp;&nbsp;| <span class="id" title="var">arraydef_0__weights</span> ⇒ <span class="id" title="var">map</span> (<span class="id" title="keyword">fun</span> <span class="id" title="var">item</span> ⇒ <span class="id" title="var">Z.of_nat</span> (<span class="id" title="var">fst</span> <span class="id" title="var">item</span>)) <span class="id" title="var">items</span><br/>
-&nbsp;&nbsp;| <span class="id" title="var">arraydef_0__values</span> ⇒ <span class="id" title="var">map</span> (<span class="id" title="keyword">fun</span> <span class="id" title="var">item</span> ⇒ <span class="id" title="var">Z.of_nat</span> (<span class="id" title="var">snd</span> <span class="id" title="var">item</span>)) <span class="id" title="var">items</span><br/>
-&nbsp;&nbsp;| <span class="id" title="var">arraydef_0__message</span> ⇒ [<span class="id" title="var">message</span>]<br/>
-&nbsp;&nbsp;| <span class="id" title="var">arraydef_0__n</span> ⇒ [<span class="id" title="var">Z.of_nat</span> (<span class="id" title="var">length</span> <span class="id" title="var">items</span>)]<br/>
-&nbsp;&nbsp;| <span class="id" title="var">arraydef_0__input</span> ⇒ <span class="id" title="var">input</span><br/>
-&nbsp;&nbsp;| <span class="id" title="var">arraydef_0__printBuffer</span> ⇒ <span class="id" title="var">printBuffer</span><br/>
-&nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br/>
-</div>
-<hr/>This page has been generated by <a href="http://coq.inria.fr/">coqdoc</a>
-</div>
-
-</div>
-
-</body>
+          <br />
+          <span class="id" title="keyword">Definition</span>
+          <span class="id" title="var">knapsackArrays</span> (<span
+            class="id"
+            title="var"
+            >items</span
+          >
+          : <span class="id" title="var">list</span> (<span
+            class="id"
+            title="var"
+            >nat</span
+          >
+          × <span class="id" title="var">nat</span>)) (<span
+            class="id"
+            title="var"
+            >dp</span
+          >
+          : <span class="id" title="var">list</span>
+          <span class="id" title="var">Z</span>) (<span class="id" title="var"
+            >message</span
+          >
+          : <span class="id" title="var">Z</span>)<br />
+          &nbsp;&nbsp;(<span class="id" title="var">input</span>
+          <span class="id" title="var">printBuffer</span> :
+          <span class="id" title="var">list</span>
+          <span class="id" title="var">Z</span>) :
+          <span class="id" title="keyword">∀</span>
+          <span class="id" title="var">name</span>,
+          <span class="id" title="var">list</span> (<span class="id" title="var"
+            >arrayType</span
+          >
+          <span class="id" title="var">_</span>
+          <span class="id" title="var">environment2</span>
+          <span class="id" title="var">name</span>) :=<br />
+          &nbsp;&nbsp;<span class="id" title="keyword">fun</span>
+          <span class="id" title="var">name</span> ⇒
+          <span class="id" title="keyword">match</span>
+          <span class="id" title="var">name</span>
+          <span class="id" title="keyword">with</span><br />
+          &nbsp;&nbsp;| <span class="id" title="var">arraydef_0__dp</span> ⇒
+          <span class="id" title="var">dp</span><br />
+          &nbsp;&nbsp;|
+          <span class="id" title="var">arraydef_0__weights</span> ⇒
+          <span class="id" title="var">map</span> (<span
+            class="id"
+            title="keyword"
+            >fun</span
+          >
+          <span class="id" title="var">item</span> ⇒
+          <span class="id" title="var">Z.of_nat</span> (<span
+            class="id"
+            title="var"
+            >fst</span
+          >
+          <span class="id" title="var">item</span>))
+          <span class="id" title="var">items</span><br />
+          &nbsp;&nbsp;| <span class="id" title="var">arraydef_0__values</span> ⇒
+          <span class="id" title="var">map</span> (<span
+            class="id"
+            title="keyword"
+            >fun</span
+          >
+          <span class="id" title="var">item</span> ⇒
+          <span class="id" title="var">Z.of_nat</span> (<span
+            class="id"
+            title="var"
+            >snd</span
+          >
+          <span class="id" title="var">item</span>))
+          <span class="id" title="var">items</span><br />
+          &nbsp;&nbsp;|
+          <span class="id" title="var">arraydef_0__message</span> ⇒ [<span
+            class="id"
+            title="var"
+            >message</span
+          >]<br />
+          &nbsp;&nbsp;| <span class="id" title="var">arraydef_0__n</span> ⇒
+          [<span class="id" title="var">Z.of_nat</span> (<span
+            class="id"
+            title="var"
+            >length</span
+          >
+          <span class="id" title="var">items</span>)]<br />
+          &nbsp;&nbsp;| <span class="id" title="var">arraydef_0__input</span> ⇒
+          <span class="id" title="var">input</span><br />
+          &nbsp;&nbsp;|
+          <span class="id" title="var">arraydef_0__printBuffer</span> ⇒
+          <span class="id" title="var">printBuffer</span><br />
+          &nbsp;&nbsp;<span class="id" title="keyword">end</span>.<br />
+        </div>
+        <hr />
+        This page has been generated by
+        <a href="http://coq.inria.fr/">coqdoc</a>
+      </div>
+    </div>
+  </body>
 </html>

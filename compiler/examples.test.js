@@ -18,42 +18,68 @@ const examples = [
   ['llmGeneratedCode/MaxElement', '4\n3 9 2 5\n', '9\n'],
 ]
 
-test.each(examples)('competitive example %s compiles and runs', (name, input, output) => {
-  const configPath = path.resolve(__dirname, '../programs', name + '.module.json')
-  const config = JSON.parse(readFileSync(configPath, 'utf8'))
-  expect(config.type).toBe('competitive')
-  expect(config.cppOutput.endsWith('.cpp')).toBe(true)
-  const modules = sortModules(config.inputs.map((filename) =>
-    new CoqCPASTTransformer(readFileSync(path.resolve(path.dirname(configPath), filename), 'utf8')).transform()
-  ))
-  expect(validateAST(modules)).toEqual([])
-  const directory = mkdtempSync(path.join(tmpdir(), 'coqcp-example-'))
-  try {
-    const source = path.join(directory, 'example.cpp')
-    const executable = path.join(directory, 'example')
-    writeFileSync(source, cppCodegen(modules))
-    execFileSync('g++', ['-std=c++20', '-O1', source, '-o', executable])
-    expect(execFileSync(executable, { input, encoding: 'utf8' })).toBe(output)
-    if (name === 'Knapsack' || name.endsWith('MaxElement') || name === 'BuyLowSellHigh') {
-      expect(execFileSync(executable, { input: name === 'Knapsack' ? '0 0\n' : '0\n', encoding: 'utf8' })).toBe('0\n')
+test.each(examples)(
+  'competitive example %s compiles and runs',
+  (name, input, output) => {
+    const configPath = path.resolve(
+      __dirname,
+      '../programs',
+      name + '.module.json'
+    )
+    const config = JSON.parse(readFileSync(configPath, 'utf8'))
+    expect(config.type).toBe('competitive')
+    expect(config.cppOutput.endsWith('.cpp')).toBe(true)
+    const modules = sortModules(
+      config.inputs.map((filename) =>
+        new CoqCPASTTransformer(
+          readFileSync(path.resolve(path.dirname(configPath), filename), 'utf8')
+        ).transform()
+      )
+    )
+    expect(validateAST(modules)).toEqual([])
+    const directory = mkdtempSync(path.join(tmpdir(), 'coqcp-example-'))
+    try {
+      const source = path.join(directory, 'example.cpp')
+      const executable = path.join(directory, 'example')
+      writeFileSync(source, cppCodegen(modules))
+      execFileSync('g++', ['-std=c++20', '-O1', source, '-o', executable])
+      expect(execFileSync(executable, { input, encoding: 'utf8' })).toBe(output)
+      if (
+        name === 'Knapsack' ||
+        name.endsWith('MaxElement') ||
+        name === 'BuyLowSellHigh'
+      ) {
+        expect(
+          execFileSync(executable, {
+            input: name === 'Knapsack' ? '0 0\n' : '0\n',
+            encoding: 'utf8',
+          })
+        ).toBe('0\n')
+      }
+      if (name.endsWith('BubbleSort')) {
+        expect(
+          execFileSync(executable, { input: '0\n', encoding: 'utf8' })
+        ).toBe('')
+      }
+    } finally {
+      rmSync(directory, { recursive: true, force: true })
     }
-    if (name.endsWith('BubbleSort')) {
-      expect(execFileSync(executable, { input: '0\n', encoding: 'utf8' })).toBe('')
-    }
-  } finally {
-    rmSync(directory, { recursive: true, force: true })
   }
-})
+)
 
 test('CLI rejects the removed blockchain option and configuration', () => {
   const cli = path.resolve(__dirname, 'dist/cli.js')
-  expect(spawnSync(process.execPath, [cli, '--blockchain'], { encoding: 'utf8' }).stderr)
-    .toContain("unknown option '--blockchain'")
+  expect(
+    spawnSync(process.execPath, [cli, '--blockchain'], { encoding: 'utf8' })
+      .stderr
+  ).toContain("unknown option '--blockchain'")
   const directory = mkdtempSync(path.join(tmpdir(), 'coqcp-old-config-'))
   try {
     const filename = path.join(directory, 'config.json')
     writeFileSync(filename, JSON.stringify({ type: 'blockchain', inputs: [] }))
-    const result = spawnSync(process.execPath, [cli, '?json', filename], { encoding: 'utf8' })
+    const result = spawnSync(process.execPath, [cli, '?json', filename], {
+      encoding: 'utf8',
+    })
     expect(result.status).toBe(1)
     expect(result.stdout).toContain('Unrecognized type')
   } finally {

@@ -57,11 +57,7 @@ function validateModules(
 }
 
 // Compile function
-function compile(
-  files: string[],
-  coqOutput: string,
-  cppOutput: string
-) {
+function compile(files: string[], coqOutput: string, cppOutput: string) {
   const { modules, errors: parseErrors } = parseFiles(files)
 
   if (parseErrors.length > 0) {

@@ -60,15 +60,19 @@ void flushSTDOUT() {
 
 export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
   const growingArrays = analyzeArrayGrowth(sortedModules)
-  const hasGrowth = [...growingArrays.values()].some((arrays) => arrays.size > 0)
-  const growthPreamble = hasGrowth ? `#include <vector>
+  const hasGrowth = [...growingArrays.values()].some(
+    (arrays) => arrays.size > 0
+  )
+  const growthPreamble = hasGrowth
+    ? `#include <vector>
 
 template<class T>
 void growArray(std::vector<T>& array, uint64_t minimumLength) {
   if (minimumLength > array.max_size()) std::abort();
   if (minimumLength > array.size()) array.resize(minimumLength);
 }
-` : ''
+`
+    : ''
   const crossModuleProcedureMap = new PairMap<string, string, Procedure>()
   const procedureNameMap = new PairMap<string, string, number>()
   const seenModules = new Map<string, CoqCPAST>()
@@ -91,10 +95,17 @@ void growArray(std::vector<T>& array, uint64_t minimumLength) {
 
       return [...environment.arrays].map(([name, description]) => {
         const { itemTypes } = description
-        const tuple = 'std::tuple<' + itemTypes.map((x) => (x === 'bool' ? x : 'u' + x + '_t')).join(', ') + '>'
-        return (growingArrays.get(module.moduleName)!.has(name)
-          ? 'std::vector<' + tuple + '>& '
-          : tuple + ' *') + 'environment_' + get(name)
+        const tuple =
+          'std::tuple<' +
+          itemTypes.map((x) => (x === 'bool' ? x : 'u' + x + '_t')).join(', ') +
+          '>'
+        return (
+          (growingArrays.get(module.moduleName)!.has(name)
+            ? 'std::vector<' + tuple + '>& '
+            : tuple + ' *') +
+          'environment_' +
+          get(name)
+        )
       })
     })()
 
@@ -117,7 +128,11 @@ void growArray(std::vector<T>& array, uint64_t minimumLength) {
             ...[...variables].map(([name, value], index) => {
               const { type } = value
               localNameMap.set(name, index)
-              return (type === 'bool' ? 'bool' : 'u' + type + '_t') + ' local_' + index
+              return (
+                (type === 'bool' ? 'bool' : 'u' + type + '_t') +
+                ' local_' +
+                index
+              )
             }),
           ].join(', ') +
           ') {\n' +
@@ -221,7 +236,13 @@ void growArray(std::vector<T>& array, uint64_t minimumLength) {
                   )
                 }
                 if (instruction.type === 'grow') {
-                  return adorn('growArray(environment_' + environmentNameMap.get(instruction.name) + ', ' + print(instruction.length) + ')')
+                  return adorn(
+                    'growArray(environment_' +
+                      environmentNameMap.get(instruction.name) +
+                      ', ' +
+                      print(instruction.length) +
+                      ')'
+                  )
                 }
                 if (instruction.type === 'retrieve') {
                   assert(typeof instruction.name === 'string')
@@ -602,9 +623,18 @@ void growArray(std::vector<T>& array, uint64_t minimumLength) {
     let i = 0
     let string = ''
     for (const [name, { itemTypes, length }] of arrays) {
-      const tuple = 'std::tuple<' + itemTypes.map((x) => (x === 'bool' ? x : 'u' + x + '_t')).join(', ') + '>'
+      const tuple =
+        'std::tuple<' +
+        itemTypes.map((x) => (x === 'bool' ? x : 'u' + x + '_t')).join(', ') +
+        '>'
       string += growingArrays.get('')!.has(name)
-        ? 'std::vector<' + tuple + '> environment_' + i + '(' + length.raw + ');\n'
+        ? 'std::vector<' +
+          tuple +
+          '> environment_' +
+          i +
+          '(' +
+          length.raw +
+          ');\n'
         : tuple + ' environment_' + i + '[' + length.raw + '];\n'
       i++
     }

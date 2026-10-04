@@ -1,10 +1,6 @@
 {
   "type": "competitive",
-  "inputs": [
-    "Knapsack.js",
-    "IO/ReadUnsignedInt64.js",
-    "IO/PrintInt64.js"
-  ],
+  "inputs": ["Knapsack.js", "IO/ReadUnsignedInt64.js", "IO/PrintInt64.js"],
   "coqOutput": "../generated-coq/Knapsack.v",
   "cppOutput": "../generated-cpp/Knapsack.cpp"
 }

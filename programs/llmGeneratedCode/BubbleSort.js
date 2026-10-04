@@ -23,7 +23,9 @@ procedure('main', { n: int64, temp: int64 }, () => {
     })
   })
   range(get('n'), (i) => {
-    call(PrintInt64, { buffer: 'printBuffer' }, 'unsigned', { num: retrieve('data', i)[0] })
-  writeChar(coerceInt8(10))
+    call(PrintInt64, { buffer: 'printBuffer' }, 'unsigned', {
+      num: retrieve('data', i)[0],
+    })
+    writeChar(coerceInt8(10))
   })
 })

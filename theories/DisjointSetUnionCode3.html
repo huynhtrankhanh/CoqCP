@@ -1,62 +1,246 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<link href="coqdoc.css" rel="stylesheet" type="text/css" />
-<title></title>
-</head>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link href="coqdoc.css" rel="stylesheet" type="text/css" />
+    <title></title>
+  </head>
 
-<body>
+  <body>
+    <div id="page">
+      <div id="header"></div>
 
-<div id="page">
+      <div id="main">
+        <h1 class="libtitle">Library DisjointSetUnionCode3</h1>
 
-<div id="header">
-</div>
+        <div class="code">
+          <span class="id" title="keyword">From</span>
+          <span class="id" title="var">CoqCP</span>
+          <span class="id" title="keyword">Require</span>
+          <span class="id" title="keyword">Import</span>
+          <span class="id" title="var">DisjointSetUnion</span>
+          <span class="id" title="var">DisjointSetUnionCode</span>
+          <span class="id" title="var">DisjointSetUnionCode2</span>
+          <span class="id" title="var">Options</span>.<br />
+          <span class="id" title="keyword">From</span>
+          <span class="id" title="var">stdpp</span>
+          <span class="id" title="keyword">Require</span>
+          <span class="id" title="keyword">Import</span>
+          <span class="id" title="var">numbers</span>
+          <span class="id" title="var">list</span>.<br />
 
-<div id="main">
+          <br />
+          <span class="id" title="keyword">Lemma</span>
+          <span class="id" title="var">maxScoreIsAttainable</span> :
+          <span class="id" title="var">modelScore</span> (<span
+            class="id"
+            title="var"
+            >map</span
+          >
+          (<span class="id" title="keyword">fun</span>
+          <span class="id" title="var">x</span> ⇒ (0%<span
+            class="id"
+            title="var"
+            >Z</span
+          >, <span class="id" title="var">Z.of_nat</span>
+          <span class="id" title="var">x</span>)) (<span class="id" title="var"
+            >seq</span
+          >
+          1 99)) = 5049%<span class="id" title="var">Z</span>.<br />
+          <span class="id" title="keyword">Proof</span>.
+          <span class="id" title="keyword">vm_compute</span>.
+          <span class="id" title="tactic">reflexivity</span>.
+          <span class="id" title="keyword">Qed</span>.<br />
 
-<h1 class="libtitle">Library DisjointSetUnionCode3</h1>
-
-<div class="code">
-<span class="id" title="keyword">From</span> <span class="id" title="var">CoqCP</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <span class="id" title="var">DisjointSetUnion</span> <span class="id" title="var">DisjointSetUnionCode</span> <span class="id" title="var">DisjointSetUnionCode2</span> <span class="id" title="var">Options</span>.<br/>
-<span class="id" title="keyword">From</span> <span class="id" title="var">stdpp</span> <span class="id" title="keyword">Require</span> <span class="id" title="keyword">Import</span> <span class="id" title="var">numbers</span> <span class="id" title="var">list</span>.<br/>
-
-<br/>
-<span class="id" title="keyword">Lemma</span> <span class="id" title="var">maxScoreIsAttainable</span> : <span class="id" title="var">modelScore</span> (<span class="id" title="var">map</span> (<span class="id" title="keyword">fun</span> <span class="id" title="var">x</span> ⇒ (0%<span class="id" title="var">Z</span>, <span class="id" title="var">Z.of_nat</span> <span class="id" title="var">x</span>)) (<span class="id" title="var">seq</span> 1 99)) = 5049%<span class="id" title="var">Z</span>.<br/>
-<span class="id" title="keyword">Proof</span>. <span class="id" title="keyword">vm_compute</span>. <span class="id" title="tactic">reflexivity</span>. <span class="id" title="keyword">Qed</span>.<br/>
-
-<br/>
-<span class="id" title="keyword">Lemma</span> <span class="id" title="var">maxScoreIsMax</span> (<span class="id" title="var">x</span> : <span class="id" title="var">list</span> (<span class="id" title="var">Z</span> × <span class="id" title="var">Z</span>)) (<span class="id" title="var">hN</span> : <span class="id" title="keyword">∀</span> <span class="id" title="var">a</span> <span class="id" title="var">b</span>, <span class="id" title="var">In</span> (<span class="id" title="var">a</span>, <span class="id" title="var">b</span>) <span class="id" title="var">x</span> → <span class="id" title="var">Z.le</span> 0 <span class="id" title="var">a</span> ∧ <span class="id" title="var">Z.lt</span> <span class="id" title="var">a</span> 256 ∧ <span class="id" title="var">Z.le</span> 0 <span class="id" title="var">b</span> ∧ <span class="id" title="var">Z.lt</span> <span class="id" title="var">b</span> 256) : (<span class="id" title="var">modelScore</span> <span class="id" title="var">x</span> ≤ 5049)%<span class="id" title="var">Z</span>.<br/>
-<span class="id" title="keyword">Proof</span>.<br/>
-&nbsp;&nbsp;<span class="id" title="tactic">unfold</span> <span class="id" title="var">modelScore</span>.<br/>
-&nbsp;&nbsp;<span class="id" title="var">remember</span> (<span class="id" title="var">dsuFromInteractions</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span>) <span class="id" title="keyword">as</span> <span class="id" title="var">nx</span> <span class="id" title="var">eqn</span>:<span class="id" title="var">xn</span>.<br/>
-&nbsp;&nbsp;<span class="id" title="tactic">pose</span> <span class="id" title="var">proof</span> <span class="id" title="var">maxScore3</span> <span class="id" title="var">nx</span> <span class="id" title="keyword">as</span> <span class="id" title="var">qk</span>.<br/>
-&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">md</span> : <span class="id" title="var">dsuLeafCount</span> <span class="id" title="var">nx</span> = 100%<span class="id" title="var">Z</span>).<br/>
-&nbsp;&nbsp;{ <span class="id" title="tactic">subst</span> <span class="id" title="var">nx</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">clear</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">remember</span> (<span class="id" title="tactic">repeat</span> <span class="id" title="var">_</span> <span class="id" title="var">_</span>) <span class="id" title="keyword">as</span> <span class="id" title="var">dsu</span> <span class="id" title="var">eqn</span>:<span class="id" title="var">hdsu</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> (<span class="id" title="keyword">ltac</span>:(<span class="id" title="tactic">subst</span> <span class="id" title="var">dsu</span>; <span class="id" title="var">easy</span>) : 100%<span class="id" title="var">Z</span> = <span class="id" title="var">dsuLeafCount</span> <span class="id" title="var">dsu</span>).<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span class="id" title="var">jh</span> : <span class="id" title="var">noIllegalIndices</span> (<span class="id" title="tactic">repeat</span> (<span class="id" title="var">Ancestor</span> <span class="id" title="var">Unit</span>) 100)).<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;{ <span class="id" title="tactic">intros</span> <span class="id" title="var">aa</span> <span class="id" title="var">jj</span> <span class="id" title="var">kk</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> <span class="id" title="var">nth_repeat</span> <span class="id" title="tactic">in</span> <span class="id" title="var">kk</span>. <span class="id" title="var">easy</span>. }<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> &lt;- <span class="id" title="var">hdsu</span> <span class="id" title="tactic">in</span> <span class="id" title="var">jh</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">clear</span> <span class="id" title="var">hdsu</span>. <span class="id" title="var">revert</span> <span class="id" title="var">dsu</span> <span class="id" title="var">jh</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">induction</span> <span class="id" title="var">x</span> <span class="id" title="keyword">as</span> [| [<span class="id" title="var">a</span> <span class="id" title="var">b</span>] <span class="id" title="var">tail</span> <span class="id" title="var">IH</span>]. { <span class="id" title="var">easy</span>. }<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">simpl</span>. <span class="id" title="tactic">intros</span> <span class="id" title="var">dsu</span> <span class="id" title="var">hj</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">case_decide</span> <span class="id" title="keyword">as</span> <span class="id" title="var">yu</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;- <span class="id" title="tactic">rewrite</span> <span class="id" title="var">IH</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" title="tactic">rewrite</span> <span class="id" title="var">unitePreservesLeafCount</span>. { <span class="id" title="tactic">reflexivity</span>. }<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assumption</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ <span class="id" title="tactic">apply</span> <span class="id" title="var">unitePreservesNoIllegalIndices</span>. <span class="id" title="tactic">exact</span> <span class="id" title="var">hj</span>.<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;- <span class="id" title="tactic">apply</span> <span class="id" title="var">IH</span>. <span class="id" title="tactic">tauto</span>. }<br/>
-&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> !<span class="id" title="var">md</span> <span class="id" title="tactic">in</span> <span class="id" title="var">qk</span>. <span class="id" title="tactic">simpl</span> <span class="id" title="tactic">in</span> <span class="id" title="var">qk</span>. <span class="id" title="var">lia</span>.<br/>
-<span class="id" title="keyword">Qed</span>.<br/>
-</div>
-<hr/>This page has been generated by <a href="http://coq.inria.fr/">coqdoc</a>
-</div>
-
-</div>
-
-</body>
+          <br />
+          <span class="id" title="keyword">Lemma</span>
+          <span class="id" title="var">maxScoreIsMax</span> (<span
+            class="id"
+            title="var"
+            >x</span
+          >
+          : <span class="id" title="var">list</span> (<span
+            class="id"
+            title="var"
+            >Z</span
+          >
+          × <span class="id" title="var">Z</span>)) (<span
+            class="id"
+            title="var"
+            >hN</span
+          >
+          : <span class="id" title="keyword">∀</span>
+          <span class="id" title="var">a</span>
+          <span class="id" title="var">b</span>,
+          <span class="id" title="var">In</span> (<span class="id" title="var"
+            >a</span
+          >, <span class="id" title="var">b</span>)
+          <span class="id" title="var">x</span> →
+          <span class="id" title="var">Z.le</span> 0
+          <span class="id" title="var">a</span> ∧
+          <span class="id" title="var">Z.lt</span>
+          <span class="id" title="var">a</span> 256 ∧
+          <span class="id" title="var">Z.le</span> 0
+          <span class="id" title="var">b</span> ∧
+          <span class="id" title="var">Z.lt</span>
+          <span class="id" title="var">b</span> 256) : (<span
+            class="id"
+            title="var"
+            >modelScore</span
+          >
+          <span class="id" title="var">x</span> ≤ 5049)%<span
+            class="id"
+            title="var"
+            >Z</span
+          >.<br />
+          <span class="id" title="keyword">Proof</span>.<br />
+          &nbsp;&nbsp;<span class="id" title="tactic">unfold</span>
+          <span class="id" title="var">modelScore</span>.<br />
+          &nbsp;&nbsp;<span class="id" title="var">remember</span> (<span
+            class="id"
+            title="var"
+            >dsuFromInteractions</span
+          >
+          <span class="id" title="var">_</span>
+          <span class="id" title="var">_</span>)
+          <span class="id" title="keyword">as</span>
+          <span class="id" title="var">nx</span>
+          <span class="id" title="var">eqn</span>:<span class="id" title="var"
+            >xn</span
+          >.<br />
+          &nbsp;&nbsp;<span class="id" title="tactic">pose</span>
+          <span class="id" title="var">proof</span>
+          <span class="id" title="var">maxScore3</span>
+          <span class="id" title="var">nx</span>
+          <span class="id" title="keyword">as</span>
+          <span class="id" title="var">qk</span>.<br />
+          &nbsp;&nbsp;<span class="id" title="tactic">assert</span> (<span
+            class="id"
+            title="var"
+            >md</span
+          >
+          : <span class="id" title="var">dsuLeafCount</span>
+          <span class="id" title="var">nx</span> = 100%<span
+            class="id"
+            title="var"
+            >Z</span
+          >).<br />
+          &nbsp;&nbsp;{ <span class="id" title="tactic">subst</span>
+          <span class="id" title="var">nx</span>.<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">clear</span
+          >.<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var">remember</span>
+          (<span class="id" title="tactic">repeat</span>
+          <span class="id" title="var">_</span>
+          <span class="id" title="var">_</span>)
+          <span class="id" title="keyword">as</span>
+          <span class="id" title="var">dsu</span>
+          <span class="id" title="var">eqn</span>:<span class="id" title="var"
+            >hdsu</span
+          >.<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span>
+          (<span class="id" title="keyword">ltac</span>:(<span
+            class="id"
+            title="tactic"
+            >subst</span
+          >
+          <span class="id" title="var">dsu</span>;
+          <span class="id" title="var">easy</span>) : 100%<span
+            class="id"
+            title="var"
+            >Z</span
+          >
+          = <span class="id" title="var">dsuLeafCount</span>
+          <span class="id" title="var">dsu</span>).<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">assert</span>
+          (<span class="id" title="var">jh</span> :
+          <span class="id" title="var">noIllegalIndices</span> (<span
+            class="id"
+            title="tactic"
+            >repeat</span
+          >
+          (<span class="id" title="var">Ancestor</span>
+          <span class="id" title="var">Unit</span>) 100)).<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;{
+          <span class="id" title="tactic">intros</span>
+          <span class="id" title="var">aa</span>
+          <span class="id" title="var">jj</span>
+          <span class="id" title="var">kk</span>.<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic"
+            >rewrite</span
+          >
+          <span class="id" title="var">nth_repeat</span>
+          <span class="id" title="tactic">in</span>
+          <span class="id" title="var">kk</span>.
+          <span class="id" title="var">easy</span>. }<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">rewrite</span>
+          &lt;- <span class="id" title="var">hdsu</span>
+          <span class="id" title="tactic">in</span>
+          <span class="id" title="var">jh</span>.<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">clear</span>
+          <span class="id" title="var">hdsu</span>.
+          <span class="id" title="var">revert</span>
+          <span class="id" title="var">dsu</span>
+          <span class="id" title="var">jh</span>.<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic"
+            >induction</span
+          >
+          <span class="id" title="var">x</span>
+          <span class="id" title="keyword">as</span> [| [<span
+            class="id"
+            title="var"
+            >a</span
+          >
+          <span class="id" title="var">b</span>]
+          <span class="id" title="var">tail</span>
+          <span class="id" title="var">IH</span>]. {
+          <span class="id" title="var">easy</span>. }<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="tactic">simpl</span>.
+          <span class="id" title="tactic">intros</span>
+          <span class="id" title="var">dsu</span>
+          <span class="id" title="var">hj</span>.<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;<span class="id" title="var"
+            >case_decide</span
+          >
+          <span class="id" title="keyword">as</span>
+          <span class="id" title="var">yu</span>.<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;-
+          <span class="id" title="tactic">rewrite</span>
+          <span class="id" title="var">IH</span>.<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+
+          <span class="id" title="tactic">rewrite</span>
+          <span class="id" title="var">unitePreservesLeafCount</span>. {
+          <span class="id" title="tactic">reflexivity</span>. }<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
+            class="id"
+            title="tactic"
+            >assumption</span
+          >.<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+
+          <span class="id" title="tactic">apply</span>
+          <span class="id" title="var">unitePreservesNoIllegalIndices</span>.
+          <span class="id" title="tactic">exact</span>
+          <span class="id" title="var">hj</span>.<br />
+          &nbsp;&nbsp;&nbsp;&nbsp;- <span class="id" title="tactic">apply</span>
+          <span class="id" title="var">IH</span>.
+          <span class="id" title="tactic">tauto</span>. }<br />
+          &nbsp;&nbsp;<span class="id" title="tactic">rewrite</span> !<span
+            class="id"
+            title="var"
+            >md</span
+          >
+          <span class="id" title="tactic">in</span>
+          <span class="id" title="var">qk</span>.
+          <span class="id" title="tactic">simpl</span>
+          <span class="id" title="tactic">in</span>
+          <span class="id" title="var">qk</span>.
+          <span class="id" title="var">lia</span>.<br />
+          <span class="id" title="keyword">Qed</span>.<br />
+        </div>
+        <hr />
+        This page has been generated by
+        <a href="http://coq.inria.fr/">coqdoc</a>
+      </div>
+    </div>
+  </body>
 </html>

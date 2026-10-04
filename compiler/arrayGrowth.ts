@@ -2,9 +2,18 @@ import { CoqCPAST, ValueType } from './parse'
 
 // Array mappings alias storage, so both ends must use the same representation.
 // Propagate growth through all mappings, including read-only helper modules.
-export const analyzeArrayGrowth = (modules: CoqCPAST[]): Map<string, Set<string>> => {
-  const growing = new Map(modules.map((module) => [module.moduleName, new Set<string>()]))
-  const mappings: { caller: string; local: string; callee: string; foreign: string }[] = []
+export const analyzeArrayGrowth = (
+  modules: CoqCPAST[]
+): Map<string, Set<string>> => {
+  const growing = new Map(
+    modules.map((module) => [module.moduleName, new Set<string>()])
+  )
+  const mappings: {
+    caller: string
+    local: string
+    callee: string
+    foreign: string
+  }[] = []
 
   const visit = (module: string, value: ValueType): void => {
     switch (value.type) {
@@ -14,7 +23,12 @@ export const analyzeArrayGrowth = (modules: CoqCPAST[]): Map<string, Set<string>
         break
       case 'cross module call':
         for (const [foreign, local] of value.arrayMapping) {
-          mappings.push({ caller: module, local, callee: value.module, foreign })
+          mappings.push({
+            caller: module,
+            local,
+            callee: value.module,
+            foreign,
+          })
         }
         value.presetVariables.forEach((argument) => visit(module, argument))
         break
@@ -71,7 +85,9 @@ export const analyzeArrayGrowth = (modules: CoqCPAST[]): Map<string, Set<string>
 
   for (const module of modules) {
     for (const procedure of module.procedures) {
-      procedure.body.forEach((instruction) => visit(module.moduleName, instruction))
+      procedure.body.forEach((instruction) =>
+        visit(module.moduleName, instruction)
+      )
     }
   }
   let changed = true
@@ -82,7 +98,8 @@ export const analyzeArrayGrowth = (modules: CoqCPAST[]): Map<string, Set<string>
       const calleeArrays = growing.get(callee)
       if (callerArrays === undefined || calleeArrays === undefined) continue
       if (callerArrays.has(local) || calleeArrays.has(foreign)) {
-        if (!callerArrays.has(local) || !calleeArrays.has(foreign)) changed = true
+        if (!callerArrays.has(local) || !calleeArrays.has(foreign))
+          changed = true
         callerArrays.add(local)
         calleeArrays.add(foreign)
       }

@@ -53,7 +53,6 @@ const isPure = (value: ValueType): boolean => {
       return false
     case 'grow':
       return false
-
   }
 }
 

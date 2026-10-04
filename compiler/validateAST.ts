@@ -14,8 +14,7 @@ export type ValidationError =
   | ((
       | {
           type:
-            | 'binary expression expects numeric'
-            | 'instruction expects numeric'
+            'binary expression expects numeric' | 'instruction expects numeric'
           actualType1: PrimitiveType | PrimitiveType[] | 'string'
           actualType2: PrimitiveType | PrimitiveType[] | 'string'
         }
@@ -73,8 +72,7 @@ export type ValidationError =
         }
       | {
           type:
-            | 'array shape mismatch'
-            | "array doesn't exist in procedure module"
+            'array shape mismatch' | "array doesn't exist in procedure module"
           procedureModuleArray: string
         }
       | {
@@ -89,24 +87,15 @@ export type ValidationError =
 export const isNumeric = (
   x: string | PrimitiveType[]
 ): x is 'int8' | 'int16' | 'int32' | 'int64' => {
-  return (
-    x === 'int8' ||
-    x === 'int16' ||
-    x === 'int32' ||
-    x === 'int64'
-  )
+  return x === 'int8' || x === 'int16' || x === 'int32' || x === 'int64'
 }
 
-export const sortAndValidateAST = (
-  modules: CoqCPAST[]
-): ValidationError[] => {
+export const sortAndValidateAST = (modules: CoqCPAST[]): ValidationError[] => {
   const sortedModules = sortModules(modules)
   return validateAST(sortedModules)
 }
 
-export const validateAST = (
-  sortedModules: CoqCPAST[]
-): ValidationError[] => {
+export const validateAST = (sortedModules: CoqCPAST[]): ValidationError[] => {
   // Check for duplicate modules
   {
     const errors: ValidationError[] = []
@@ -167,7 +156,10 @@ export const validateAST = (
           environment.arrays.delete(key)
           continue
         }
-        if (evaluated < 0n || (evaluated === 0n && !growingArrays.get(moduleName)!.has(key))) {
+        if (
+          evaluated < 0n ||
+          (evaluated === 0n && !growingArrays.get(moduleName)!.has(key))
+        ) {
           errors.push({
             type: "array length can't be less than 1",
             location: { ...array.length.location, moduleName },
@@ -188,11 +180,7 @@ export const validateAST = (
         continue
       }
       type Type =
-        | PrimitiveType
-        | 'string'
-        | 'statement'
-        | 'illegal'
-        | PrimitiveType[]
+        PrimitiveType | 'string' | 'statement' | 'illegal' | PrimitiveType[]
       let hasSurroundingRangeCommand = false
       const presentBinderType = new Map<string, 'int64' | 'int8'>()
       const dfs = (instruction: ValueType): Type => {
@@ -256,8 +244,7 @@ export const validateAST = (
                 const rightType = dfs(instruction.right)
                 if (
                   leftType === rightType &&
-                  (isNumeric(leftType) ||
-                    leftType === 'bool')
+                  (isNumeric(leftType) || leftType === 'bool')
                 )
                   return 'bool'
                 else {
@@ -715,15 +702,24 @@ export const validateAST = (
             const type = dfs(instruction.length)
             if (type === 'illegal') return 'illegal'
             if (type === 'statement') {
-              errors.push({ type: 'expression no statement', location: { ...instruction.length.location, moduleName } })
+              errors.push({
+                type: 'expression no statement',
+                location: { ...instruction.length.location, moduleName },
+              })
               return 'illegal'
             }
             if (type !== 'int64') {
-              errors.push({ type: 'instruction expects int64', location: { ...instruction.length.location, moduleName } })
+              errors.push({
+                type: 'instruction expects int64',
+                location: { ...instruction.length.location, moduleName },
+              })
               return 'illegal'
             }
             if (!environment?.arrays.has(instruction.name)) {
-              errors.push({ type: 'undefined array', location: { ...instruction.location, moduleName } })
+              errors.push({
+                type: 'undefined array',
+                location: { ...instruction.location, moduleName },
+              })
               return 'illegal'
             }
             return 'statement'
@@ -962,7 +958,6 @@ export const validateAST = (
             }
             return consumeNever(valueType)
           }
-
         }
       }
       procedure.body.forEach(dfs)

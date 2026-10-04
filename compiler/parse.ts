@@ -1,12 +1,7 @@
 import acorn, { ExtendNode } from 'acorn'
 import * as ESTree from 'estree'
 
-export type PrimitiveType =
-  | 'bool'
-  | 'int8'
-  | 'int16'
-  | 'int32'
-  | 'int64'
+export type PrimitiveType = 'bool' | 'int8' | 'int16' | 'int32' | 'int64'
 
 export interface ArrayDeclaration {
   itemTypes: PrimitiveType[]

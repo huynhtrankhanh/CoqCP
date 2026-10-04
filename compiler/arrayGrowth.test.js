@@ -21,7 +21,14 @@ const runCpp = (code, input = '') => {
     const source = path.join(directory, 'program.cpp')
     const executable = path.join(directory, 'program')
     writeFileSync(source, code)
-    execFileSync('g++', ['-std=c++20', '-O1', '-fsanitize=address,undefined', source, '-o', executable])
+    execFileSync('g++', [
+      '-std=c++20',
+      '-O1',
+      '-fsanitize=address,undefined',
+      source,
+      '-o',
+      executable,
+    ])
     return execFileSync(executable, { input, encoding: 'utf8' })
   } finally {
     rmSync(directory, { recursive: true, force: true })
@@ -29,7 +36,8 @@ const runCpp = (code, input = '') => {
 }
 
 test('growth preserves tuples, initializes new fields, never shrinks, and evaluates the size once', () => {
-  const { cpp, coq } = compile([`
+  const { cpp, coq } = compile([
+    `
     environment({ data: array([int8, bool], 1), fixed: array([int8], 2) })
     procedure('extend', {}, () => {
       if (true) { range(1, (i) => { grow('data', readChar() - 48) }) }
@@ -47,8 +55,11 @@ test('growth preserves tuples, initializes new fields, never shrinks, and evalua
       grow('data', 3)
       writeChar(retrieve('data', 2)[0])
       writeChar(coerceInt8(readChar()))
-    })`])
-  expect(cpp).toContain('std::vector<std::tuple<uint8_t, bool>> environment_0(1)')
+    })`,
+  ])
+  expect(cpp).toContain(
+    'std::vector<std::tuple<uint8_t, bool>> environment_0(1)'
+  )
   expect(cpp).toContain('std::tuple<uint8_t> environment_1[2]')
   expect(coq).toContain('grow arrayIndex0')
   expect(coq).toContain('size (0%Z, false)')
@@ -90,18 +101,23 @@ test('growth propagates through transitive mappings and aliases shared with read
 })
 
 test('fixed programs keep static storage and raw pointer parameters', () => {
-  const { cpp } = compile([`
+  const { cpp } = compile([
+    `
     environment({ data: array([int8], 2) })
     procedure('main', {}, () => { writeChar(retrieve('data', 0)[0]) })
-  `])
+  `,
+  ])
   expect(cpp).toContain('std::tuple<uint8_t> environment_0[2]')
   expect(cpp).toContain('std::tuple<uint8_t> *environment_0')
   expect(cpp).not.toContain('std::vector')
 })
 
-test.each(["grow()", "grow('a')", "grow(1, 2)", "grow('a', 2, 3)"])(
-  'rejects malformed growth: %s', (statement) => {
-    expect(() => parse(`procedure('main', {}, () => { ${statement} })`)).toThrow()
+test.each(['grow()', "grow('a')", 'grow(1, 2)', "grow('a', 2, 3)"])(
+  'rejects malformed growth: %s',
+  (statement) => {
+    expect(() =>
+      parse(`procedure('main', {}, () => { ${statement} })`)
+    ).toThrow()
   }
 )
 
@@ -112,14 +128,23 @@ test.each([
   ["grow('a', grow('a', 2))", 'expression no statement'],
   ["set('x', grow('a', 2))", 'expression no statement'],
 ])('validates growth types: %s', (statement, errorType) => {
-  const errors = validateAST([parse(`environment({ a: array([int8], 1) })
-    procedure('main', { x: int64 }, () => { ${statement} })`)])
+  const errors = validateAST([
+    parse(`environment({ a: array([int8], 1) })
+    procedure('main', { x: int64 }, () => { ${statement} })`),
+  ])
   expect(errors.some((error) => error.type === errorType)).toBe(true)
 })
 
 test.each([
-  'getSender()', 'getMoney()', 'communicationSize()', 'coerceInt256(0)',
-  'address()', "invoke(0, 0, 'a', 1)", 'donate(0, 0)', 'retrieve(0)', 'store(0, 1)',
+  'getSender()',
+  'getMoney()',
+  'communicationSize()',
+  'coerceInt256(0)',
+  'address()',
+  "invoke(0, 0, 'a', 1)",
+  'donate(0, 0)',
+  'retrieve(0)',
+  'store(0, 1)',
 ])('removes blockchain instruction: %s', (statement) => {
   expect(() => parse(`procedure('main', {}, () => { ${statement} })`)).toThrow()
 })
@@ -129,16 +154,17 @@ test.each(['address', 'int256'])('removes blockchain type %s', (type) => {
   expect(() => parse(`procedure('main', { x: ${type} }, () => {})`)).toThrow()
 })
 
-
 test('arrays that grow can start empty', () => {
-  const { cpp, coq } = compile([`
+  const { cpp, coq } = compile([
+    `
     environment({ data: array([int8], 0) })
     procedure('main', {}, () => {
       grow('data', 2)
       store('data', 1, [coerceInt8(88)])
       writeChar(retrieve('data', 1)[0])
     })
-  `])
+  `,
+  ])
   expect(cpp).toContain('std::vector<std::tuple<uint8_t>> environment_0(0)')
   expect(coq).toContain('repeat (0%Z) 0')
   expect(runCpp(cpp)).toBe('X')

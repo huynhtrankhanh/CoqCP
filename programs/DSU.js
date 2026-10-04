@@ -46,7 +46,6 @@ procedure('unite', { u: int8, v: int8, z: int8 }, () => {
         retrieve('dsu', coerceInt64(get('v')))[0],
     ])
     store('dsu', coerceInt64(get('u')), [get('v')])
-
   }
 })
 

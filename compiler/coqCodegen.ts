@@ -197,7 +197,8 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
           `#[export] Instance variableIndexEqualityDecidable${variableIndex} : EqDecision ${variableIndex} := ltac:(solve_decision).
 ` +
           'Definition ' +
-          sanitizeFunction(moduleName, functionName) + '_body' +
+          sanitizeFunction(moduleName, functionName) +
+          '_body' +
           ` : Action (WithLocalVariables ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex}) withLocalVariablesReturnValue unit := `
 
         // every element of body is an Action returning absolutely anything
@@ -465,7 +466,6 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                     )}))`,
                     type: variable.type,
                   }
-
                 }
                 assert(false)
               }
@@ -491,7 +491,6 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                     )}) ${expression})`,
                     type: 'statement',
                   }
-
                 }
                 assert(false)
               }
@@ -499,7 +498,12 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                 assert(environment !== null)
                 const declaration = environment.arrays.get(value.name)
                 assert(declaration !== undefined)
-                const zero = declaration.itemTypes.length === 0 ? 'tt' : declaration.itemTypes.map((type) => type === 'bool' ? 'false' : '0%Z').join(', ')
+                const zero =
+                  declaration.itemTypes.length === 0
+                    ? 'tt'
+                    : declaration.itemTypes
+                        .map((type) => (type === 'bool' ? 'false' : '0%Z'))
+                        .join(', ')
                 const { expression } = dfs(value.length)
                 return {
                   expression: `(${expression} >>= fun size => grow ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex} (${sanitizeArray(moduleName, value.name)}) size (${zero}))`,
@@ -630,9 +634,7 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                 let index = 0
                 for (const [name, value] of presetVariables.entries()) {
                   const { expression, type } = dfs(value)
-                  assert(
-                    isNumeric(type) || type === 'bool'
-                  )
+                  assert(isNumeric(type) || type === 'bool')
                   prepare += `${expression} >>= fun preset${index} => `
                   if (isNumeric(type)) {
                     numberMap = `(${numberMap} >>= fun x => Done _ _ _ (update x (${sanitizeVariable(
@@ -640,7 +642,6 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                       procedure,
                       name
                     )}) preset${index}))`
-
                   } else {
                     booleanMap = `(${booleanMap} >>= fun x => Done _ _ _ (update x (${sanitizeVariable(
                       moduleName,
@@ -744,9 +745,7 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                 let index = 0
                 for (const [name, value] of presetVariables.entries()) {
                   const { expression, type } = dfs(value)
-                  assert(
-                    isNumeric(type) || type === 'bool'
-                  )
+                  assert(isNumeric(type) || type === 'bool')
                   prepare += `${expression} >>= fun preset${index} => `
                   if (isNumeric(type)) {
                     numberMap = `(${numberMap} >>= fun x => Done _ _ _ (update x (${sanitizeVariable(
@@ -754,7 +753,6 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                       procedure,
                       name
                     )}) preset${index}))`
-
                   } else {
                     booleanMap = `(${booleanMap} >>= fun x => Done _ _ _ (update x (${sanitizeVariable(
                       foreignModule,
@@ -794,14 +792,17 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                   type: 'statement',
                 }
               }
-
             }
           }
           return dfs(statement).expression
         })
 
-        return header + joinStatements(statements, 0) + '.\n' +
+        return (
+          header +
+          joinStatements(statements, 0) +
+          '.\n' +
           `Definition ${sanitizeFunction(moduleName, functionName)} (bools : ${variableIndex} -> bool) (numbers : ${variableIndex} -> Z) : Action (WithArrays _ (arrayType _ environment${moduleIndex})) withArraysReturnValue unit := eliminateLocalVariables bools numbers ${sanitizeFunction(moduleName, functionName)}_body.\n`
+        )
 
         function joinStatements(statements: string[], nestLevel: number) {
           statements.push('Done _ _ _ tt')
