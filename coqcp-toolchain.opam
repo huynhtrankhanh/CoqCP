@@ -1,0 +1,13 @@
+opam-version: "2.0"
+synopsis: "The pinned Rocq toolchain for CoqCP"
+maintainer: "CoqCP contributors"
+authors: "CoqCP contributors"
+homepage: "https://github.com/huynhtrankhanh/CoqCP"
+bug-reports: "https://github.com/huynhtrankhanh/CoqCP/issues"
+license: "Unlicense"
+depends: [
+  "ocaml" {>= "4.14"}
+  "rocq-core" {= "9.3.0"}
+  "rocq-stdlib" {= "9.2.0"}
+  "rocq-stdpp" {= "1.13.0"}
+]

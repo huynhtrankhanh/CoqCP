@@ -1,7 +1,7 @@
 From CoqCP Require Import Options Imperative Execution Knapsack KnapsackCode KnapsackTable KnapsackExecution KnapsackIO KnapsackMain KnapsackPrinter DecimalDigits.
 From Generated Require Import Knapsack.
 From stdpp Require Import numbers list.
-From Coq Require Import Logic.FunctionalExtensionality.
+From Stdlib Require Import Logic.FunctionalExtensionality.
 Open Scope Z_scope.
 
 Lemma modify_loading_n count weights values dp inputValue newCount :

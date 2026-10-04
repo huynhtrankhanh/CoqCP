@@ -1,10 +1,10 @@
 From CoqCP Require Import Options.
 From stdpp Require Import strings.
-Import Coq.Lists.List.
-Require Import Coq.Logic.Eqdep_dec.
-Require Import ZArith.
-Require Import Coq.Strings.Ascii.
-Require Import Coq.Logic.FunctionalExtensionality.
+Import Stdlib.Lists.List.
+Require Import Stdlib.Logic.Eqdep_dec.
+From Stdlib Require Import ZArith.
+Require Import Stdlib.Strings.Ascii.
+Require Import Stdlib.Logic.FunctionalExtensionality.
 Open Scope Z_scope.
 
 Record Environment (arrayIndex : Type) := { arrayType: arrayIndex -> Type; arrays: forall (name : arrayIndex), list (arrayType name) }.
@@ -89,7 +89,7 @@ Lemma unfold_WriteChar c :
 Proof. reflexivity. Qed.
 
 (* Autorewrite database *)
-Create HintDb basicEffectReturnValue_unfold.
+Create Rewrite HintDb basicEffectReturnValue_unfold.
 
 Hint Rewrite unfold_Trap : basicEffectReturnValue_unfold.
 Hint Rewrite unfold_Flush : basicEffectReturnValue_unfold.
@@ -145,7 +145,7 @@ Lemma unfold_Grow arrayIndex arrayType name minimumLength zero :
 Proof. reflexivity. Qed.
 
 (* Autorewrite database *)
-Create HintDb withArraysReturnValue_unfold.
+Create Rewrite HintDb withArraysReturnValue_unfold.
 
 Hint Rewrite unfold_DoBasicEffect : withArraysReturnValue_unfold.
 Hint Rewrite unfold_Retrieve : withArraysReturnValue_unfold.
@@ -198,7 +198,7 @@ Lemma unfold_NumberLocalSet arrayIndex arrayType variableIndex d e :
 Proof. reflexivity. Qed.
 
 (* Autorewrite database *)
-Create HintDb withLocalVariablesReturnValue_unfold.
+Create Rewrite HintDb withLocalVariablesReturnValue_unfold.
 
 Hint Rewrite unfold_DoWithArrays : withLocalVariablesReturnValue_unfold.
 Hint Rewrite unfold_BooleanLocalGet : withLocalVariablesReturnValue_unfold.
@@ -211,7 +211,7 @@ Hint Rewrite unfold_NumberLocalSet : withLocalVariablesReturnValue_unfold.
 (* autorewrite with withLocalVariablesReturnValue_unfold. *)
 
 (* Combined autorewrite database *)
-Create HintDb combined_unfold.
+Create Rewrite HintDb combined_unfold.
 
 Hint Rewrite unfold_DoWithArrays : combined_unfold.
 Hint Rewrite unfold_BooleanLocalGet : combined_unfold.
@@ -390,7 +390,7 @@ Definition growList {A} (values : list A) (minimumLength : nat) (zero : A) :=
 
 Lemma growList_length {A} (values : list A) minimumLength zero :
   length (growList values minimumLength zero) = Nat.max (length values) minimumLength.
-Proof. unfold growList. rewrite app_length, repeat_length. lia. Qed.
+Proof. unfold growList. rewrite length_app, repeat_length. lia. Qed.
 
 Lemma growList_preserves {A} (values : list A) minimumLength zero :
   take (length values) (growList values minimumLength zero) = values.
@@ -672,7 +672,7 @@ Definition runProgram {arrayIndex arrayType} `{EqDecision arrayIndex}
   (code : Action (WithArrays arrayIndex arrayType) withArraysReturnValue unit)
   (input : list Z) := runIO (getNewArrays code values) input [].
 
-Create HintDb advance_program.
+Create Rewrite HintDb advance_program.
 Hint Rewrite runArrays_done runArrays_retrieve runArrays_store : advance_program.
 Hint Rewrite @pushDispatch @pushDispatch2 @pushBooleanGet @pushBooleanGet2
   @pushNumberGet @pushNumberGet2 @pushBooleanSet @pushBooleanSet2

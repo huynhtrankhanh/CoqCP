@@ -1,9 +1,9 @@
 From CoqCP Require Import Options Imperative DisjointSetUnion ListsEqual ExistsInRange SwapUpdate DisjointSetUnionCode.
 From Generated Require Import DisjointSetUnion.
 From stdpp Require Import numbers list.
-Require Import Coq.Logic.FunctionalExtensionality.
-Require Import Wellfounded.
-From Coq Require Import ssreflect ssrfun ssrbool.
+Require Import Stdlib.Logic.FunctionalExtensionality.
+From Stdlib Require Import Wellfounded.
+From Stdlib Require Import ssreflect ssrfun ssrbool.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -242,7 +242,7 @@ Proof.
   rewrite red. clear red.
   have red1 : noIllegalIndices
   (<[Z.to_nat a:=ReferTo (ancestor dsu (Z.to_nat 100) (Z.to_nat a))]> dsu).
-  { clear hs. intros a1 a2 a3. destruct (decide (a1 = Z.to_nat a)) as [hs | hs]. { rewrite -> nth_lookup, <- hs, list_lookup_insert in a3; [| lia]. rewrite (ltac:(simpl; reflexivity) : default _ (Some _) = _) in a3. rewrite length_insert. pose proof (ltac:(clear; intros a b h; injection h; easy) : forall a b, ReferTo a = ReferTo b -> a = b) _ _ a3 as a4. rewrite <- a4. apply ancestorLtLength; (assumption || lia). } rewrite length_insert. rewrite nth_lookup list_lookup_insert_ne in a3. { lia. } rewrite <- (nth_lookup _ _ (Ancestor Unit)) in a3. pose proof h1 _ _ a3. lia. }
+  { clear hs. intros a1 a2 a3. destruct (decide (a1 = Z.to_nat a)) as [hs | hs]. { rewrite -> nth_lookup, <- hs, list_lookup_insert_eq in a3; [| lia]. rewrite (ltac:(simpl; reflexivity) : default _ (Some _) = _) in a3. rewrite length_insert. pose proof (ltac:(clear; intros a b h; injection h; easy) : forall a b, ReferTo a = ReferTo b -> a = b) _ _ a3 as a4. rewrite <- a4. apply ancestorLtLength; (assumption || lia). } rewrite length_insert. rewrite nth_lookup list_lookup_insert_ne in a3. { lia. } rewrite <- (nth_lookup _ _ (Ancestor Unit)) in a3. pose proof h1 _ _ a3. lia. }
   have red2 : Z.to_nat
   (dsuLeafCount
      (<[Z.to_nat a:=ReferTo (ancestor dsu (Z.to_nat 100) (Z.to_nat a))]> dsu)) =

@@ -1,6 +1,6 @@
 From CoqCP Require Import Options Imperative.
 From stdpp Require Import numbers list.
-From Coq Require Import Logic.FunctionalExtensionality.
+From Stdlib Require Import Logic.FunctionalExtensionality.
 
 Section Execution.
 Context {I : Type} {T : I -> Type} `{EqDecision I}.

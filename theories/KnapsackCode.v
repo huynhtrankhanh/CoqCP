@@ -1,8 +1,8 @@
 From CoqCP Require Import Options Imperative Knapsack.
 From Generated Require Import Knapsack.
 From stdpp Require Import numbers list strings.
-Require Import Coq.Numbers.DecimalString.
-Require Import Coq.Strings.Ascii.
+Require Import Stdlib.Numbers.DecimalString.
+Require Import Stdlib.Strings.Ascii.
 
 Fixpoint stdinBytes (text : string) : list Z :=
   match text with

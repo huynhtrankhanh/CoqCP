@@ -17,12 +17,13 @@ import sys
 import tempfile
 import time
 
-from ci_policy import POLICY_FILE, trusted_axioms
+from ci_policy import POLICY_FILE, trusted_axioms, trusted_inductives
 
 REPO = Path(__file__).resolve().parents[2]
 TOOLS = Path(__file__).resolve().parent
 BIN = REPO / ".verification/bin"
-VERSION = "8.20.1"
+VERSION = "9.3.0"
+TOOLCHAIN = Path("/opt/rocq") / VERSION
 NAME = re.compile(r"[A-Za-z][A-Za-z0-9_]*\.v\Z")
 DEFAULT_LIMITS = dict(wall_seconds=120, cpu_seconds=60, memory_mib=2048,
                       work_mib=256, artifact_mib=64, log_mib=1)
@@ -54,12 +55,17 @@ def read_regular(path, limit):
 
 
 def command(program):
-    found = shutil.which(program)
+    if program in ["rocq", "ocamlfind"]:
+        fixed = TOOLCHAIN / "bin" / program
+        found = str(fixed) if fixed.is_file() else None
+    else:
+        found = shutil.which(program)
     if not found:
         raise Rejected(f"Required tool missing: {program}; see docs/AdversarialChecking.md")
     found = Path(found).resolve()
-    if not found.is_relative_to(Path("/usr")) or found.is_relative_to(Path("/usr/local")):
-        raise Rejected(f"This sandbox profile requires system tools under /usr: {program}")
+    if not (found.is_relative_to(TOOLCHAIN) or
+            (found.is_relative_to(Path("/usr")) and not found.is_relative_to(Path("/usr/local")))):
+        raise Rejected(f"Tools must be under /usr or the trusted toolchain {TOOLCHAIN}: {program}")
     return str(found)
 
 
@@ -69,10 +75,15 @@ def build():
         work = Path(temporary)
         shutil.copyfile(TOOLS / "spec_check.ml", work / "spec_check.ml")
         (work / "ci_policy.ml").write_text("let allowed_axioms = [" +
-            "; ".join(json.dumps(name) for name in trusted_axioms()) + "]\n")
+            "; ".join(json.dumps(name) for name in trusted_axioms()) + "]\n" +
+            "let indices_not_mattering = [" +
+            "; ".join(json.dumps(name) for name in trusted_inductives()) + "]\n")
+        build_env = dict(os.environ, PATH=str(TOOLCHAIN / "bin") + ":/usr/bin:/bin",
+                         OCAMLPATH=str(TOOLCHAIN / "lib"),
+                         OCAMLFIND_CONF=str(TOOLCHAIN / "lib/findlib.conf"))
         subprocess.run([command("ocamlfind"), "ocamlopt", "-rectypes", "-thread", "-linkpkg",
-                        "-package", "coq-core.checklib", "-o", str(work / "spec-check"),
-                        "ci_policy.ml", "spec_check.ml"], cwd=work, check=True)
+                        "-package", "rocq-runtime.checklib", "-o", str(work / "spec-check"),
+                        "ci_policy.ml", "spec_check.ml"], cwd=work, env=build_env, check=True)
         subprocess.run([command("gcc"), "-std=c11", "-Wall", "-Wextra", "-Werror", "-O2",
                         str(TOOLS / "sandbox_exec.c"), "-lseccomp", "-o",
                         str(work / "sandbox-exec")], check=True)
@@ -95,26 +106,34 @@ def ensure_built():
 
 
 def toolchain():
-    coqc, coqdep = command("coqc"), command("coqdep")
-    probe_env = {"PATH": "/usr/bin:/bin", "HOME": os.environ.get("HOME", "/tmp")}
-    output = subprocess.check_output([coqc, "-q", "--version"], env=probe_env).decode()
+    rocq = command("rocq")
+    if not Path(rocq).is_relative_to(TOOLCHAIN):
+        raise Rejected(f"Use the pinned Rocq installation under {TOOLCHAIN}")
+    probe_env = {"PATH": str(TOOLCHAIN / "bin") + ":/usr/bin:/bin", "HOME": "/tmp",
+                 "OCAMLPATH": str(TOOLCHAIN / "lib"),
+                 "OCAMLFIND_CONF": str(TOOLCHAIN / "lib/findlib.conf")}
+    output = subprocess.check_output([rocq, "--version"], env=probe_env).decode()
     if not re.search(r"version " + re.escape(VERSION) + r"\b", output):
-        raise Rejected(f"Supported Coq version is {VERSION}; installed: {output.strip()}")
-    coqlib = Path(subprocess.check_output([coqc, "-q", "-where"],
+        raise Rejected(f"Supported Rocq version is {VERSION}; installed: {output.strip()}")
+    coqlib = Path(subprocess.check_output([rocq, "compile", "-q", "-where"],
                      env=probe_env).decode().strip()).resolve()
-    if not coqlib.is_relative_to(Path("/usr/lib")):
-        raise Rejected("This sandbox profile requires Coq libraries under /usr/lib")
-    core = coqlib.parent / "coq-core"
-    files = [Path(coqc), Path(coqdep), BIN / "spec-check", BIN / "sandbox-exec",
+    if not coqlib.is_relative_to(TOOLCHAIN / "lib"):
+        raise Rejected("Rocq libraries must belong to the pinned toolchain")
+    files = [Path(rocq), BIN / "spec-check", BIN / "sandbox-exec",
              TOOLS / "worker.py", TOOLS / "check.py", TOOLS / "ci_policy.py", POLICY_FILE]
-    files += sorted(coqlib.rglob("*.vo")) + sorted(core.rglob("*.cmxs"))
-    if Path("/etc/ocamlfind.conf").exists():
-        files.append(Path("/etc/ocamlfind.conf"))
-    files += sorted(Path("/etc/ocamlfind.conf.d").glob("*"))
+    # Rocq 9.3 installs package libraries in rocq.d as well as legacy coqlib
+    # mirrors. Fingerprint both representations and their findlib metadata.
+    files += sorted((TOOLCHAIN / "lib").rglob("*.vo"))
+    files += sorted((TOOLCHAIN / "lib").rglob("*.cmxs"))
+    files += sorted((TOOLCHAIN / "lib").rglob("META"))
+    files += sorted((TOOLCHAIN / "lib").rglob("*.env"))
+    files += sorted(path for path in (TOOLCHAIN / "bin").iterdir() if path.is_file())
+    files += sorted(path for path in (TOOLCHAIN / "libexec").rglob("*") if path.is_file())
+    files += [TOOLCHAIN / "lib/findlib.conf"]
     state = hashlib.sha256()
-    for path in files:
+    for path in sorted(set(files)):
         state.update(encoded([str(path), digest(path)]))
-    return {"version": VERSION, "coqc": coqc, "coqdep": coqdep,
+    return {"version": VERSION, "rocq": rocq,
             "coqlib": str(coqlib), "fingerprint": state.hexdigest()}
 
 
@@ -129,15 +148,19 @@ class Sandbox:
         limits = self.limits
         args = [self.bwrap, "--unshare-all", "--unshare-user", "--die-with-parent", "--new-session",
                 "--disable-userns", "--assert-userns-disabled", "--cap-drop", "ALL",
-                "--clearenv", "--setenv", "PATH", "/usr/bin:/bin",
+                "--clearenv", "--setenv", "PATH", str(TOOLCHAIN / "bin") + ":/usr/bin:/bin",
                 "--setenv", "HOME", "/tmp", "--setenv", "TMPDIR", "/tmp",
                 "--setenv", "LANG", "C.UTF-8", "--setenv", "OCAMLRUNPARAM", "b=0"]
         for directory in ["/usr/bin", "/usr/lib", "/usr/share", "/usr/lib64"]:
             if Path(directory).exists():
                 args += ["--ro-bind", directory, directory]
-        for config in ["/etc/ocamlfind.conf", "/etc/ocamlfind.conf.d"]:
-            if Path(config).exists():
-                args += ["--ro-bind", config, config]
+        # Mount only the installed runtime, not opam state, downloads or logs.
+        for directory in ["bin", "lib", "libexec", "share"]:
+            path = TOOLCHAIN / directory
+            if path.exists():
+                args += ["--ro-bind", str(path), str(path)]
+        args += ["--setenv", "OCAMLPATH", str(TOOLCHAIN / "lib"),
+                 "--setenv", "OCAMLFIND_CONF", str(TOOLCHAIN / "lib/findlib.conf")]
         for target in ["bin", "lib", "lib64"]:
             args += ["--symlink", "usr/" + target, "/" + target]
         args += ["--proc", "/proc", "--dev", "/dev", "--size", str(16 * 1024**2),
@@ -206,7 +229,7 @@ def library_roots(bundle):
 
 def compile_sources(inputs, sources, namespace, bundle, runtime, sandbox):
     config = dict(sandbox.limits, sources=sources, namespace=namespace,
-                  coqc=runtime["coqc"], coqdep=runtime["coqdep"], roots=library_roots(bundle))
+                  rocq=runtime["rocq"], roots=library_roots(bundle))
     if namespace == "Submission":
         config["roots"].append(["/bundle/spec", "Trusted"])
     (inputs / "build.json").write_bytes(encoded(config))
@@ -229,7 +252,7 @@ def kernel_check(bundle, artifacts, runtime, sandbox, allowed, *, spec_only=Fals
         raise Rejected("Axiom policy exceeds the evaluator-owned CI trust set")
     args = ["/tool/spec-check"]
     coqlib = runtime["coqlib"]
-    roots = [[coqlib + "/theories", "Coq"], [coqlib + "/user-contrib", ""]]
+    roots = [[coqlib + "/theories", "Corelib"], [coqlib + "/user-contrib", ""]]
     roots += library_roots(bundle) + [["/bundle/spec", "Trusted"]]
     mounts = [(bundle, "/bundle")]
     if spec_only:
@@ -297,6 +320,7 @@ def prepare(spec, bundle, runtime, sandbox, allowed):
         policy = kernel_check(bundle, None, runtime, sandbox, allowed, spec_only=True)
         manifest = dict(format=1, toolchain=runtime, allowed_axioms=sorted(set(allowed)),
                         ci_trusted_axioms=trusted_axioms(),
+                        ci_indices_not_mattering=trusted_inductives(),
                         specification="Trusted.Spec.SOLUTION", implementation="Submission.Candidate.Implementation",
                         files=file_manifest(bundle), baseline=policy)
         manifest_bytes = encoded(manifest)
@@ -315,6 +339,7 @@ def validate_bundle(bundle, spec_id, runtime):
     if manifest["format"] != 1 or manifest["toolchain"] != runtime:
         raise Rejected("Toolchain changed since the specification was frozen; prepare a new bundle")
     if (manifest["ci_trusted_axioms"] != trusted_axioms()
+            or manifest["ci_indices_not_mattering"] != trusted_inductives()
             or not set(manifest["allowed_axioms"]).issubset(trusted_axioms())):
         raise Rejected("Frozen policy exceeds the evaluator-owned CI trust set")
     for path in bundle.rglob("*"):

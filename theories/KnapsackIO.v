@@ -1,7 +1,7 @@
 From CoqCP Require Import Options Imperative Execution KnapsackCode DecimalDigits.
 From Generated Require Import Knapsack.
 From stdpp Require Import numbers list.
-From Coq Require Import Logic.FunctionalExtensionality.
+From Stdlib Require Import Logic.FunctionalExtensionality.
 Open Scope Z_scope.
 
 Definition readerNums (value character : Z) : varsfuncdef_0_ReadUnsignedInt64_ -> Z :=
@@ -51,7 +51,7 @@ Proof. apply functional_extensionality. intro name. destruct name; reflexivity. 
 Lemma readerNums_value previous character value :
   update (readerNums previous character) vardef_0_ReadUnsignedInt64__result value = readerNums value character.
 Proof. apply functional_extensionality. intro name. destruct name; reflexivity. Qed.
-Create HintDb reader_steps.
+Create Rewrite HintDb reader_steps.
 #[local] Hint Rewrite readerNums_character readerNums_value @dropWithinLoopLiftToWithinLoop @dropWithinLoop_continue @dropWithinLoop_break @dropWithinLoop_1 : reader_steps.
 
 Lemma readerFirstStep b value character index continuation :

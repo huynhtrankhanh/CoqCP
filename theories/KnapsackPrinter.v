@@ -1,7 +1,7 @@
 From CoqCP Require Import Options Imperative Execution KnapsackCode KnapsackTable KnapsackExecution KnapsackIO KnapsackMain DecimalDigits.
 From Generated Require Import Knapsack.
 From stdpp Require Import numbers list.
-From Coq Require Import Logic.FunctionalExtensionality.
+From Stdlib Require Import Logic.FunctionalExtensionality.
 Open Scope Z_scope.
 
 Definition printerNums value count character : varsfuncdef_0_PrintInt64_unsigned -> Z :=
@@ -57,7 +57,7 @@ Proof. apply functional_extensionality. intro name. destruct name; reflexivity. 
 Lemma printerNums_count value old character count :
   update (printerNums value old character) vardef_0_PrintInt64_unsigned_i count = printerNums value count character.
 Proof. apply functional_extensionality. intro name. destruct name; reflexivity. Qed.
-Create HintDb printer_steps.
+Create Rewrite HintDb printer_steps.
 #[local] Hint Rewrite printerNums_character printerNums_value printerNums_count
   @dropWithinLoopLiftToWithinLoop @dropWithinLoop_break @dropWithinLoop_1 : printer_steps.
 Ltac normalize_printer := repeat progress (autorewrite with advance_program printer_steps; try rewrite <- !bindAssoc; cbn [bind printerNums]).

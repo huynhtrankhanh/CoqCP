@@ -74,7 +74,7 @@ Proof.
   induction n as [| n IH]; simpl in *.
   - now rewrite !app_nil_r.
   - pose proof lexLessAppend1 a _ _ IH as h1.
-    pose proof lexLessDiscard _ _ (a ++ multiply n a) (a ++ multiply n a) h ltac:(rewrite !app_length; lia) as h2.
+    pose proof lexLessDiscard _ _ (a ++ multiply n a) (a ++ multiply n a) h ltac:(rewrite !length_app; lia) as h2.
     rewrite <- !app_assoc in *.
     exact (lexLessTransitive _ _ _ h1 h2).
 Qed.
@@ -98,7 +98,7 @@ Lemma repeatB (a b : list nat) (n : nat) (h : lexLess (a ++ b) (b ++ a)) : lexLe
 Proof.
   induction n as [| n IH]; simpl in *.
   - now rewrite !app_nil_r.
-  - pose proof lexLessDiscard _ _ b b IH ltac:(rewrite !app_length; lia) as h1.
+  - pose proof lexLessDiscard _ _ b b IH ltac:(rewrite !length_app; lia) as h1.
     pose proof lexLessAppend1 (b ++ multiply n b) _ _ h as h2.
     rewrite <- !app_assoc in *.
     pose proof (lexLessTransitive _ _ _ h1 h2) as goal.
@@ -112,7 +112,7 @@ Lemma multiplyLength n l : length (multiply n l) = n * length l.
 Proof.
   induction n as [| n IH].
   - easy.
-  - simpl. rewrite app_length. lia.
+  - simpl. rewrite length_app. lia.
 Qed.
 
 Lemma lexLessSameLengthAppend (l1 l2 l3 l4 : list nat) (hLength : length l1 = length l2) (hDiff : l1 <> l2) (h : lexLess (l1 ++ l3) (l2 ++ l4)) : lexLess l1 l2.

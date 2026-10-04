@@ -14,9 +14,9 @@ The problemsetters even wrote [an incorrect proof](https://codeforces.com/blog/e
 
 This mistake could have been avoided entirely if the folks responsible for the round had used formal verification. I'm learning it. Will you join me?
 
-Dependencies: Only `coq-stdpp`.
+Toolchain: **Rocq 9.3.0**, **Rocq Stdlib 9.2.0**, and **stdpp 1.13.0**. Exact dependencies are recorded in [coqcp-toolchain.opam](coqcp-toolchain.opam). See [installation and proof-checking commands](docs/ProofCoverage.md).
 
-Note: Whenever you create a new file, remember to import `Options` with the `From CoqCP Require Import Options.` command. Coq will then error if you apply a tactic when multiple goals are visible.
+Note: Whenever you create a new file, remember to import `Options` with the `From CoqCP Require Import Options.` command. Rocq will then error if you apply a tactic when multiple goals are visible.
 
 Documentation:
 

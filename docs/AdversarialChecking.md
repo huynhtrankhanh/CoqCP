@@ -9,20 +9,25 @@ The candidate controls its program, proof scripts, helper source files, notation
 and compiler diagnostics. It does not control the specification, axiom policy,
 toolchain, build commands, kernel gate, or namespace mappings used for acceptance.
 
-This is implemented for **Coq 8.20.1 on Linux**. Coq is the name of the installed
-Rocq predecessor used by this repository. The internal module-checking API is
+This is implemented for **Rocq 9.3.0 on Linux**, with **Rocq Stdlib 9.2.0** and
+**stdpp 1.13.0**, pinned in [coqcp-toolchain.opam](../coqcp-toolchain.opam).
+The internal module-checking API is
 version-specific; another version requires an explicit port and regression run.
 There is no silent fallback to another version or to unsandboxed compilation.
 
 ## Installation
 
-On Ubuntu 26.04, the system packages provide the supported toolchain:
+On Ubuntu 26.04, install the pinned opam toolchain in `/opt/rocq/9.3.0`:
 
 ```sh
 sudo apt-get update
-sudo apt-get install python3 gcc ocaml-findlib coq coq-stdpp libcoq-core-ocaml-dev libseccomp-dev bubblewrap make
-coqc --version
-coq_makefile -f _CoqProject -o Makefile
+sudo apt-get install ca-certificates curl git python3 build-essential ocaml opam libgmp-dev pkg-config m4 rsync unzip libseccomp-dev bubblewrap
+sudo install -d -o "$(id -un)" -g "$(id -gn)" /opt/rocq
+bash tools/install-toolchain.sh
+export PATH=/opt/rocq/9.3.0/bin:$PATH
+rocq --version
+rocq makefile -f _CoqProject -o Makefile
+make clean
 make -j2
 python3 tools/adversarial/check.py build
 ```
@@ -35,8 +40,13 @@ Bubblewrap must support user, mount, PID, network, IPC, and UTS namespaces, and
 seccomp must be available. A host policy that prevents namespace creation causes
 the job to fail. An administrator must configure a suitable worker host; the
 checker never disables host protections automatically. This profile expects
-system tools under `/usr` and Coq libraries under `/usr/lib`, rather than a snap,
-an opam switch in a home directory, macOS, or Windows.
+system tools under `/usr` and the dedicated Rocq toolchain under
+`/opt/rocq/9.3.0`, rather than a snap, an opam switch in a home directory,
+macOS, or Windows. Only installed runtime directories from that switch are
+mounted; opam state, downloads, and build logs are excluded.
+
+Upgrading the toolchain invalidates existing frozen bundles. Rebuild the project
+and the gate, prepare each specification again, and record the new evaluator ID.
 
 ## Write the specification
 
@@ -107,8 +117,8 @@ python3 tools/adversarial/check.py prepare \
 
 The shared policy is [trusted_axioms.json](../verification/trusted_axioms.json).
 Its only current entry is
-`Coq.Logic.FunctionalExtensionality.functional_extensionality_dep`.
-Both the project `coqchk` CI job and the submission checker reject every axiom
+`Stdlib.Logic.FunctionalExtensionality.functional_extensionality_dep`.
+Both the project `rocq check` CI job and the submission checker reject every axiom
 outside this set. There is no option to supply an arbitrary name or regex.
 The kernel gate embeds the same fixed set at build time and also rejects
 unapproved names when invoked directly. Names refer to declarations in the
@@ -120,6 +130,15 @@ use their approved infrastructure revision; a candidate's policy file is not
 an authority. Allowed axioms remain logical assumptions, not proof obligations
 that the tool discharges. Reports list the axioms actually encountered, which
 may be a subset of the selected policy.
+
+Rocq 9.3 also reports inductives that rely on its default treatment of indices
+when generating universe constraints. The shared policy records the six existing
+declarations reported by project CI: `eq_true`, `eq`, `if_spec`, `eq_dep`, `null`,
+and `TCEq`, each under its fully qualified trusted library name. The kernel gate
+embeds this set too and rejects further declarations with that property.
+This records the behaviour of the pinned standard libraries, including ordinary
+equality. The `none` policy excludes axioms while retaining these base theory
+declarations. Changing this set also requires rebuilding and freezing new bundles.
 
 ## Submit a program and proof
 
@@ -142,8 +161,8 @@ End Implementation.
 ```
 
 Helper files are compiled under `Submission`, and can be required with names
-such as `Submission.Helper`. The build worker uses `coqdep` to order the submitted
-sources and invokes `coqc` directly. It never invokes a submitted Makefile,
+such as `Submission.Helper`. The build worker uses `rocq dep` to order the submitted
+sources and invokes `rocq compile` directly. It never invokes a submitted Makefile,
 `_CoqProject`, shell command, or package-install script.
 
 The AI can develop against a copy of the specification. The evaluator must keep
@@ -189,8 +208,8 @@ flowchart LR
 ```
 
 The kernel gate is [spec_check.ml](../tools/adversarial/spec_check.ml). It links
-`coq-core.checklib`, the same compiled-library loader and checker used by
-`coqchk`, plus Rocq's module subtyping implementation. It does not link the
+`rocq-runtime.checklib`, the same compiled-library loader and checker used by
+`rocq check`, plus Rocq's module subtyping implementation. It does not link the
 vernacular interpreter or load candidate ML plugins.
 
 In a fresh process, the gate:
@@ -200,7 +219,8 @@ In a fresh process, the gate:
    **every submitted helper library**, with empty `admit` and `norec` lists.
 3. Rechecks opaque proof bodies with VM and native conversion disabled.
 4. Audits global declarations and stored module/functor bodies for unapproved
-   axioms, disabled guard/positivity/universe checks, impredicative Set,
+   axioms, disabled guard/positivity/universe/elimination checks, inductives
+   outside the CI set for indices not mattering, impredicative Set,
    definitional UIP, and rewrite rules. Signature parameters are distinguished
    from implementation assumptions; sealed module bodies are examined too.
 5. Constructs the canonical module paths `Trusted.Spec.SOLUTION` and
@@ -236,7 +256,7 @@ Both compilation and independent checking run with:
 - separate user, PID, mount, network, IPC, and UTS namespaces;
 - all capabilities dropped, no new privileges, and further user namespaces
   disabled;
-- a cleared environment, isolated temporary home, and no Coq startup script;
+- a cleared environment, isolated temporary home, and no Rocq startup script;
 - read-only system runtime directories, narrowly selected OCamlfind
   configuration, specification bundles, tool binaries, and source/artifact inputs;
 - no host home directory, repository mount, credentials, or host network;
@@ -336,9 +356,12 @@ build chain that records the relationship to the accepted artifact hashes.
 
 Useful upstream references:
 
-- [Rocq module signatures and subtyping](https://rocq-prover.org/doc/v9.1/refman/language/core/modules.html)
-- [Compiled-library checker](https://rocq-prover.org/doc/v9.1/refman/practical-tools/coq-commands.html#compiled-libraries-checker-rocqchk)
-- [Coq 8.20.1 checker loader](https://github.com/rocq-prover/rocq/blob/V8.20.1/checker/check.ml)
-- [Coq 8.20.1 module subtyping interface](https://github.com/rocq-prover/rocq/blob/V8.20.1/kernel/subtyping.mli)
+- [Rocq module signatures and subtyping](https://rocq-prover.org/doc/V9.3.0/refman/language/core/modules.html)
+- [Compiled-library checker](https://rocq-prover.org/doc/V9.3.0/refman/practical-tools/coq-commands.html#compiled-libraries-checker-rocqchk)
+- [Rocq 9.3.0 checker loader](https://github.com/rocq-prover/rocq/blob/V9.3.0/checker/checkLibrary.ml)
+- [Rocq 9.3.0 module subtyping interface](https://github.com/rocq-prover/rocq/blob/V9.3.0/kernel/subtyping.mli)
+- [Rocq 9.3.0 release](https://github.com/rocq-prover/rocq/releases/tag/V9.3.0)
+- [Stdlib 9.2.0 release](https://github.com/rocq-prover/stdlib/releases/tag/V9.2.0)
+- [stdpp releases](https://gitlab.mpi-sws.org/iris/stdpp/-/tags)
 - [Bubblewrap documentation](https://github.com/containers/bubblewrap)
 - [libseccomp](https://github.com/seccomp/libseccomp)

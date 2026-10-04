@@ -1,5 +1,5 @@
 From CoqCP Require Import Options.
-Require Import Relations.
+From Stdlib Require Import Relations.
 From stdpp Require Import numbers.
 From stdpp Require Import list.
 From stdpp Require Import sorting.

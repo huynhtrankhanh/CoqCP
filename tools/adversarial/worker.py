@@ -24,15 +24,15 @@ def main():
     prefix = ["/tool/sandbox-exec", str(config["cpu_seconds"]),
               str(config["memory_mib"]), str(config["artifact_mib"])]
     # Sort only submitted sources. Mapping compiled-only trusted libraries
-    # here makes coqdep -sort try to recursively open their absent .v files.
-    order = subprocess.run(prefix + [config["coqdep"], "-sort", "-Q", "/inputs",
+    # here makes rocq dep -sort try to recursively open their absent .v files.
+    order = subprocess.run(prefix + [config["rocq"], "dep", "-sort", "-Q", "/inputs",
                                     config["namespace"], *sources],
                            stdout=subprocess.PIPE, stderr=sys.stderr, check=True).stdout.decode().split()
     if len(order) != len(sources) or set(order) != set(sources):
-        raise RuntimeError("coqdep returned an unexpected build order")
+        raise RuntimeError("rocq dep returned an unexpected build order")
     for source in order:
         output = "/work/" + Path(source).with_suffix(".vo").name
-        subprocess.run(prefix + [config["coqc"], "-q", "-native-compiler", "no",
+        subprocess.run(prefix + [config["rocq"], "compile", "-q", "-native-compiler", "no",
                                  "-async-proofs", "off", *flags, "-o", output, source],
                        stdout=sys.stderr, stderr=sys.stderr, check=True)
     artifacts = {}

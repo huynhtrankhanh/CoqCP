@@ -35,6 +35,7 @@ class ContextPolicyTests(unittest.TestCase):
 * Constants/Inductives relying on type-in-type: <none>
 * Constants/Inductives relying on unsafe (co)fixpoints: <none>
 * Inductives whose positivity is assumed: <none>
+* Inductives relying on indices not mattering: <none>
 """
 
     def test_no_axioms(self):
@@ -47,7 +48,7 @@ class ContextPolicyTests(unittest.TestCase):
 
     def test_untrusted_axiom(self):
         summary = self.SUMMARY.replace("* Axioms: <none>",
-                                      "* Axioms:\n  Coq.Logic.Classical_Prop.classic")
+                                      "* Axioms:\n  Stdlib.Logic.Classical_Prop.classic")
         with self.assertRaisesRegex(ValueError, "outside CI policy"):
             validate_context(summary)
 
@@ -237,7 +238,7 @@ End Conditional.
 
     def test_allowlist_requires_explicit_evaluator_policy(self):
         source = VALID.replace("Require Trusted.Spec.",
-                               "Require Trusted.Spec Coq.Logic.FunctionalExtensionality.")
+                               "Require Trusted.Spec Stdlib.Logic.FunctionalExtensionality.")
         self.evaluate(source, reason="Unapproved axiom")
         with tempfile.TemporaryDirectory(dir=self.root) as temporary:
             root = Path(temporary)
@@ -256,14 +257,14 @@ End Conditional.
     def test_arbitrary_axiom_name_is_never_approved(self):
         with self.assertRaisesRegex(gate.Rejected, "CI trust set"):
             gate.prepare(gate.REPO / "verification/specs/Increment.v", self.root / "forbidden-policy",
-                         self.runtime, self.sandbox, ["Coq.Logic.Classical_Prop.classic"])
+                         self.runtime, self.sandbox, ["Stdlib.Logic.Classical_Prop.classic"])
         with self.assertRaisesRegex(gate.Rejected, "CI trust set"):
             gate.kernel_check(self.bundle, None, self.runtime, self.sandbox,
                               ["Trusted.Spec.cheat"], spec_only=True)
 
     def test_standalone_gate_rejects_non_ci_policy(self):
         with self.assertRaisesRegex(gate.Rejected, "outside the compiled CI trust policy"):
-            self.sandbox.run(["/tool/spec-check", "--allow-axiom", "Coq.Logic.Classical_Prop.classic"], [])
+            self.sandbox.run(["/tool/spec-check", "--allow-axiom", "Stdlib.Logic.Classical_Prop.classic"], [])
 
     def test_toolchain_change_invalidates_bundle(self):
         runtime = dict(self.runtime, fingerprint="changed")

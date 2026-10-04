@@ -1,4 +1,4 @@
-name: Coq Axiom Check
+name: Rocq Axiom Check
 
 on:
   push:
@@ -7,6 +7,9 @@ on:
     paths:
       - '**.v'
       - '_CoqProject'
+      - 'coqcp-toolchain.opam'
+      - 'tools/install-toolchain.sh'
+      - '.github/actions/setup-rocq/**'
       - '.github/workflows/axioms.yml'
       - 'verification/trusted_axioms.json'
       - 'tools/adversarial/ci_policy.py'
@@ -18,22 +21,25 @@ on:
 jobs:
   coq-check:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
+    container:
+      image: ubuntu:26.04
+      options: --security-opt seccomp=unconfined --security-opt apparmor=unconfined
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
-    - name: Install coq-prover snap
-      run: |
-        sudo snap install coq-prover
+    - name: Install Rocq and stdpp
+      uses: ./.github/actions/setup-rocq
 
-    - name: Run coq_makefile
-      run: coq_makefile -f _CoqProject -o Makefile
+    - name: Generate the Rocq Makefile
+      run: rocq makefile -f _CoqProject -o Makefile
 
     - name: Run make
-      run: make
+      run: make -j2
 
-    - name: Run coqchk and compare result
+    - name: Check all compiled proofs against the CI axiom policy
       shell: bash
       run: |
         # The generated validate target checks every module in _CoqProject

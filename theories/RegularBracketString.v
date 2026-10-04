@@ -1,5 +1,5 @@
 From stdpp Require Import numbers list.
-Require Import Wellfounded.
+From Stdlib Require Import Wellfounded.
 From CoqCP Require Import Options ExistsInRange PrefixApp ListsEqual.
 
 Inductive Bracket :=
@@ -83,7 +83,7 @@ Qed.
 Lemma countClosePlusCountOpen (s : list Bracket) : countClose s + countOpen s = length s.
 Proof. rewrite Nat.add_comm. apply countOpenPlusCountClose. Qed.
 
-Create HintDb rewriteCount.
+Create Rewrite HintDb rewriteCount.
 #[global] Hint Rewrite countOpenEmpty : rewriteCount.
 #[global] Hint Rewrite countCloseEmpty : rewriteCount.
 #[global] Hint Rewrite countOpenConsOpen : rewriteCount.
@@ -173,7 +173,7 @@ Qed.
 Lemma isBalancedBoolAux_consBracketClose_balanceFactorSucc (s : list Bracket) (balanceFactor : nat) : isBalancedBoolAux (BracketClose :: s) (S balanceFactor) = isBalancedBoolAux s balanceFactor.
 Proof. easy. Qed.
 
-Create HintDb balanceFactorPredicates.
+Create Rewrite HintDb balanceFactorPredicates.
 #[global] Hint Rewrite isBalancedBoolAux_empty : balanceFactorPredicates.
 #[global] Hint Rewrite withInitialBalanceFactor_empty : balanceFactorPredicates.
 #[global] Hint Rewrite isBalancedBoolAux_consBracketOpen : balanceFactorPredicates.
@@ -308,7 +308,7 @@ Proof.
             + unfold drop. simpl.
               induction s as [| x s] using rev_ind.
               * simpl in hSingleton. lia.
-              * rewrite app_length. simpl. rewrite Nat.add_sub.
+              * rewrite length_app. simpl. rewrite Nat.add_sub.
                 rewrite (take_app s [x]).
                 destruct x.
                 { destruct h as [h h1]. autorewrite with rewriteCount in h.
@@ -328,7 +328,7 @@ Proof.
           destruct h as [h1 h2].
           autorewrite with rewriteCount in h1.
           assert (h3 : countOpen w = countClose w). { lia. }
-          rewrite hUnwrap, ?app_length in H1. simpl in H1.
+          rewrite hUnwrap, ?length_app in H1. simpl in H1.
           assert (h4 : forall prefix : list Bracket, prefix `prefix_of` w -> countOpen prefix >= countClose prefix).
           { intros prefix h.
             autorewrite with rewriteCount.
@@ -337,9 +337,9 @@ Proof.
             - rewrite hSplit. lia.
             - pose proof (H1 (length prefix)) as H0.
               assert (H2_sub : length prefix <= length w + 1 - 1).
-              { destruct h as [w1 h]. rewrite h, ?app_length. simpl. lia. }
+              { destruct h as [w1 h]. rewrite h, ?length_app. simpl. lia. }
               assert (H2_sub2 : length prefix <> length w).
-              { intro hContradiction. destruct h as [w1 h]. rewrite h in hContradiction. rewrite app_length in hContradiction.
+              { intro hContradiction. destruct h as [w1 h]. rewrite h in hContradiction. rewrite length_app in hContradiction.
                 assert (lengthZero : length w1 = 0). { lia. }
                 assert (w1Empty : w1 = []). { apply nil_length_inv. assumption. }
                 rewrite w1Empty in h. rewrite app_nil_r in h.
@@ -355,7 +355,7 @@ Proof.
               rewrite H5 in *.
               lia. }
           assert (H2 : balanceFactorBasedDefinition w). { split; assumption. }
-          assert (H3 : length w < length s). { rewrite hUnwrap, ?app_length. simpl. lia. }
+          assert (H3 : length w < length s). { rewrite hUnwrap, ?length_app. simpl. lia. }
           pose proof H w H3 H2 as H0.
           pose proof WrapBalanced _ H0 as H4.
           rewrite <- hUnwrap in H4. tauto.
@@ -377,9 +377,9 @@ Lemma isBalancedEvenLength (s : list Bracket) (h : isBalanced s) : (2 | length s
 Proof.
   induction h as [| s h IHh | s1 s2 h1 IHh1 h2 IHh2].
   - simpl. now exists 0.
-  - rewrite ?app_length. destruct IHh as [w h'].
+  - rewrite ?length_app. destruct IHh as [w h'].
     exists (S w). rewrite h'. simpl. lia.
-  - rewrite ?app_length. destruct IHh1 as [w1 h'1].
+  - rewrite ?length_app. destruct IHh1 as [w1 h'1].
     destruct IHh2 as [w2 h'2]. exists (w1 + w2).
     lia.
 Qed.

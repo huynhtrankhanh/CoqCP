@@ -1,6 +1,6 @@
 From CoqCP Require Import Options Imperative.
 From stdpp Require Import numbers list strings.
-Require Import Coq.Strings.Ascii.
+Require Import Stdlib.Strings.Ascii.
 Open Scope type_scope.
 Inductive arrayIndex0 :=
 | arraydef_0_PrintInt64_buffer.

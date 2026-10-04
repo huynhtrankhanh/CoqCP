@@ -152,7 +152,7 @@ Section helpers.
       right_len wb1 s1 /\
       right_len wb2 s2.
   Proof.
-    simpl; rewrite !app_length; simpl; rewrite Nat.add_succ_r; simpl; clear b.
+    simpl; rewrite !length_app; simpl; rewrite Nat.add_succ_r; simpl; clear b.
     induction withBlanks as [|[b'|] wb IHwb] in s1, s2 |- *; intros HL; simplify_eq/=. {
       destruct (IHwb s1 s2 HL) as (wb1 & wb2 & -> & ?); destruct_and!.
       by exists (Some b' :: wb1), wb2.
@@ -166,7 +166,7 @@ Section helpers.
     right_len w1 s1 ->
     right_len w2 s2 ->
     right_len (w1 ++ w2) (s1 ++ s2).
-  Proof. rewrite count_occ_app, app_length. lia. Qed.
+  Proof. rewrite count_occ_app, length_app. lia. Qed.
 
   Lemma fill_app w1 w2 s1 s2 :
     right_len w1 s1 ->
@@ -186,7 +186,7 @@ Lemma canAlwaysSwapCloseAndOpenInWitness (s1 s2 s3 : list Bracket) (withBlanks :
 Proof.
   unfold satisfactoryWitness in *. destruct hPrevious as [HO HB].
   split.
-  - rewrite HO, ?app_length. simpl. lia.
+  - rewrite HO, ?length_app. simpl. lia.
   - destruct (fill_split HO) as (wb1 & wb2' & -> & Hb1 & Hb2').
     destruct (fill_split Hb2') as (wb2 & wb3 & -> & Hb2 & Hb3); clear Hb2'.
     rewrite !fill_app in HB |- *; repeat apply right_len_app; simpl; try done.
@@ -340,7 +340,7 @@ Proof.
     { intros l1 l2 l3 a1 a2 h. destruct a1; destruct a2; try easy. apply canAlwaysSwapCloseAndOpenInWitness. }
     { split; [lia | assumption]. }
   - intro h. exists (getWitness withBlanks). split.
-    + unfold getWitness. rewrite app_length, ?repeat_length.
+    + unfold getWitness. rewrite length_app, ?repeat_length.
       assert (H : length withBlanks / 2 - count_occ optionBracketEqualityDecidable withBlanks (Some BracketOpen) + (length withBlanks / 2 - count_occ optionBracketEqualityDecidable withBlanks (Some BracketClose)) = 2 * (length withBlanks / 2) - (count_occ optionBracketEqualityDecidable withBlanks (Some BracketOpen) + count_occ optionBracketEqualityDecidable withBlanks (Some BracketClose))).
       { assert (H1 : length withBlanks / 2 >= count_occ optionBracketEqualityDecidable withBlanks (Some BracketOpen)).
         { unfold possibleToFillBool in h; case_bool_decide; try case_bool_decide; easy. }
@@ -367,7 +367,7 @@ Proof.
   case_bool_decide as hEven; try easy.
   repeat (case_bool_decide; try easy). simpl in h.
   rewrite <- isBalancedIffIsBalancedBool in h. intuition.
-  unfold getWitness. destruct hEven as [w h']. rewrite app_length, ?repeat_length.
+  unfold getWitness. destruct hEven as [w h']. rewrite length_app, ?repeat_length.
   pose proof addThreeTypes withBlanks.
   assert (hDiv : w * 2 / 2 = w). { now apply Nat.div_mul. } rewrite <- h' in hDiv. lia.
 Qed.

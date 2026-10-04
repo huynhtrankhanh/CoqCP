@@ -1,8 +1,8 @@
 From stdpp Require Import numbers list.
 From CoqCP Require Import Options Imperative Knapsack KnapsackCode ListsEqual.
 From Generated Require Import Knapsack.
-From Coq Require Import ssreflect ssrfun ssrbool.
-Require Import Coq.Logic.FunctionalExtensionality.
+From Stdlib Require Import ssreflect ssrfun ssrbool.
+Require Import Stdlib.Logic.FunctionalExtensionality.
 Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
@@ -19,7 +19,7 @@ Lemma lengthFill (items : list (nat * nat)) (maxLimit : nat) (top : nat) : lengt
 Proof.
   induction top as [| top IH].
   { easy. }
-  simpl. rewrite app_length IH. simpl. lia.
+  simpl. rewrite length_app IH. simpl. lia.
 Qed.
 
 Lemma retrievalFact (items : list (nat * nat)) (maxLimit : nat) (top : nat) (index limit : nat) (hLimit : (limit <= maxLimit)%nat) (hsave : (index * (maxLimit + 1) + limit < top)%nat) : nth ((index * (maxLimit + 1) + limit)%nat) (fill items maxLimit top) 0%nat = knapsack (drop ((length items - index)%nat) items) limit.

@@ -1,0 +1,16 @@
+name: Install pinned Rocq toolchain
+description: Install Rocq 9.3.0, Stdlib 9.2.0, and stdpp 1.13.0 in /opt/rocq
+runs:
+  using: composite
+  steps:
+    - name: Install build and sandbox dependencies
+      shell: bash
+      run: |
+        apt-get update
+        apt-get install -y --no-install-recommends ca-certificates curl git python3 build-essential ocaml opam libgmp-dev pkg-config m4 rsync unzip libseccomp-dev bubblewrap passwd util-linux
+        mkdir -p /opt/rocq
+    - name: Install the pinned proof dependencies
+      shell: bash
+      run: |
+        bash tools/install-toolchain.sh
+        echo /opt/rocq/9.3.0/bin >> "$GITHUB_PATH"

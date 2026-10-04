@@ -1,5 +1,13 @@
 {
   "format": 1,
-  "coq_version": "8.20.1",
-  "axioms": ["Coq.Logic.FunctionalExtensionality.functional_extensionality_dep"]
+  "rocq_version": "9.3.0",
+  "axioms": ["Stdlib.Logic.FunctionalExtensionality.functional_extensionality_dep"],
+  "indices_not_mattering": [
+    "Corelib.Init.Datatypes.eq_true",
+    "Corelib.Init.Logic.eq",
+    "Corelib.ssr.ssrbool.if_spec",
+    "Stdlib.Logic.EqdepFacts.eq_dep",
+    "Stdlib.btauto.Algebra.null",
+    "stdpp.base.TCEq"
+  ]
 }

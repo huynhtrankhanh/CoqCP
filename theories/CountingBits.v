@@ -1,6 +1,6 @@
-Require Import List.
-Require Import NArith.
-Require Import Lia.
+From Stdlib Require Import List.
+From Stdlib Require Import NArith.
+From Stdlib Require Import Lia.
 Import ListNotations.
 
 Fixpoint to_binary_positive (n : positive) := match n with

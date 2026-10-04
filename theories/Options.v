@@ -1,2 +1,2 @@
-Export Set Default Goal Selector "!".
-Export Set Mangle Names.
+#[export] Set Default Goal Selector "!".
+#[export] Set Mangle Names.

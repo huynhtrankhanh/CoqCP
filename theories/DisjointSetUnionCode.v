@@ -1,8 +1,8 @@
 From CoqCP Require Import Options Imperative DisjointSetUnion ListsEqual ExistsInRange SwapUpdate.
 From Generated Require Import DisjointSetUnion.
 From stdpp Require Import numbers list.
-Require Import Coq.Logic.FunctionalExtensionality.
-Require Import Wellfounded.
+Require Import Stdlib.Logic.FunctionalExtensionality.
+From Stdlib Require Import Wellfounded.
 
 Inductive Slot :=
 | ReferTo (x : nat)
@@ -387,7 +387,7 @@ Proof.
   assert (h1' : noIllegalIndices (<[x:=ReferTo (ancestor dsu (length dsu) x)]> dsu)).
   { intros a b c.
     destruct (decide (a = x)) as [h | h].
-    - rewrite h in c. rewrite nth_lookup, list_lookup_insert in c; [| lia]. simpl in c. rewrite length_insert. injection c. intro d. subst b. apply ancestorLtLength; assumption.
+    - rewrite h in c. rewrite nth_lookup, list_lookup_insert_eq in c; [| lia]. simpl in c. rewrite length_insert. injection c. intro d. subst b. apply ancestorLtLength; assumption.
     - rewrite nth_lookup, list_lookup_insert_ne in c; [| lia]. rewrite <- nth_lookup in c. rewrite length_insert. exact (h1 a b c). }
   pose proof validChainAncestorLength (<[x:=ReferTo (ancestor dsu (length dsu) x)]> dsu) (take (S i) chain ++ drop t chain) h1' as step.
   assert (step1 : nth 0 (take (S i) chain ++ drop t chain) 0 = u).
@@ -402,14 +402,14 @@ Proof.
       + rewrite !app_nth1; [| rewrite length_take; lia | rewrite length_take; lia]. rewrite <- !nthTake; try lia. pose proof list_lookup_insert_ne dsu x (nth a chain 0) (ReferTo (ancestor dsu (length dsu) x)). pose proof validChainPairwiseDifferent dsu chain h1 h0 a i ltac:(lia) ltac:(lia) ltac:(lia) as step2. rewrite he in step2. pose proof list_lookup_insert_ne dsu x ((nth a chain 0)) (ReferTo (ancestor dsu (length dsu) x)) ltac:(lia) as step3. pose proof (ltac:(clear; intros a b h; subst b; easy) : forall a b, a = b -> default (Ancestor Unit) a = default (Ancestor Unit) b) _ _ step3 as step4. rewrite <- !nth_lookup in step4. rewrite step4. apply g. lia.
       + subst a. rewrite app_nth1; try (rewrite length_take; lia). rewrite app_nth2; try (rewrite length_take; lia). rewrite length_take. rewrite (ltac:(lia) : S i - S i `min` length chain = 0). rewrite <- !nthTake; try lia.
         pose proof lookup_drop chain t 0 as step2. rewrite (ltac:(lia) : t + 0 = t) in step2. pose proof nth_lookup chain t 0 as step3. rewrite <- step2 in step3.
-        pose proof nth_lookup (drop t chain) 0 0 as step4. rewrite <- step3 in step4. rewrite step4. rewrite he. rewrite nth_lookup. rewrite list_lookup_insert.
+        pose proof nth_lookup (drop t chain) 0 0 as step4. rewrite <- step3 in step4. rewrite step4. rewrite he. rewrite nth_lookup. rewrite list_lookup_insert_eq.
         * rewrite (ltac:(easy) : forall a b, default a (Some b) = b). rewrite hT. reflexivity.
         * lia.
       + rewrite !app_nth2; try (rewrite length_take; lia). rewrite length_take; try lia. rewrite (ltac:(lia) : S i `min` length chain = S i). rewrite !nth_lookup. rewrite !lookup_drop. rewrite (ltac:(lia) : t + (S a - S i) = S (t + (a - S i))). rewrite list_lookup_insert_ne; rewrite <- !nth_lookup.
-        * apply g. rewrite app_length, length_take, length_drop, (ltac:(lia) : S i `min` length chain = S i) in b. lia.
+        * apply g. rewrite length_app, length_take, length_drop, (ltac:(lia) : S i `min` length chain = S i) in b. lia.
         * rewrite <- he. apply (validChainPairwiseDifferent dsu); try (assumption || lia).
-          rewrite app_length, length_take, length_drop, (ltac:(lia) : S i `min` length chain = S i) in b. lia.
-    - destruct h0 as [[e [f g]] [b c]]. exists b. rewrite app_length. rewrite app_nth2; [| rewrite length_take, length_drop, (ltac:(lia) : S i `min` length chain = S i); lia]. rewrite (ltac:(lia) : length (take (S i) chain) + length (drop t chain) - 1 - length (take (S i) chain) = length (drop t chain) - 1). rewrite (nth_lookup (drop t chain)), length_drop, lookup_drop, <- nth_lookup, (ltac:(lia) : t + (length chain - t - 1) = length chain - 1), nth_lookup, list_lookup_insert_ne; [now rewrite <- nth_lookup |]. intro gg. rewrite <- gg in c. rewrite c in h5. easy. }
+          rewrite length_app, length_take, length_drop, (ltac:(lia) : S i `min` length chain = S i) in b. lia.
+    - destruct h0 as [[e [f g]] [b c]]. exists b. rewrite length_app. rewrite app_nth2; [| rewrite length_take, length_drop, (ltac:(lia) : S i `min` length chain = S i); lia]. rewrite (ltac:(lia) : length (take (S i) chain) + length (drop t chain) - 1 - length (take (S i) chain) = length (drop t chain) - 1). rewrite (nth_lookup (drop t chain)), length_drop, lookup_drop, <- nth_lookup, (ltac:(lia) : t + (length chain - t - 1) = length chain - 1), nth_lookup, list_lookup_insert_ne; [now rewrite <- nth_lookup |]. intro gg. rewrite <- gg in c. rewrite c in h5. easy. }
       exact (step step2 u step1).
 Qed.
 
@@ -440,7 +440,7 @@ Proof.
     { subst s. rewrite <- hc in h5. destruct step3 as [[e [f g]] [b c]]. rewrite c in h5. exfalso. exact h5. }
     pose proof ancestorOfVertexInAncestorChain dsu (ancestorChain dsu (length dsu) u) u x h1 h2 h3 h4 h5 step3 ltac:(destruct (length dsu); simpl; destruct (nth u dsu (Ancestor Unit)); simpl; try lia) s hc hb as step6.
     pose proof step4 step6 step5 ltac:(lia) as step7.
-    rewrite <- (ancestorEqLastAncestorChain (<[x:=ReferTo (ancestor dsu (length dsu) x)]> dsu)). rewrite length_insert in step7. rewrite <- step7, app_length, app_nth2, length_drop, length_take, (ltac:(lia) : (S s `min` length (ancestorChain dsu (length dsu) u) = S s)); [| rewrite length_drop; lia]. rewrite (ltac:(lia) : S s + (length (ancestorChain dsu (length dsu) u) - (length (ancestorChain dsu (length dsu) u) - 1)) - 1 - S s = 0), nth_lookup, lookup_drop, Nat.add_0_r, <- nth_lookup, ancestorEqLastAncestorChain. reflexivity.
+    rewrite <- (ancestorEqLastAncestorChain (<[x:=ReferTo (ancestor dsu (length dsu) x)]> dsu)). rewrite length_insert in step7. rewrite <- step7, length_app, app_nth2, length_drop, length_take, (ltac:(lia) : (S s `min` length (ancestorChain dsu (length dsu) u) = S s)); [| rewrite length_drop; lia]. rewrite (ltac:(lia) : S s + (length (ancestorChain dsu (length dsu) u) - (length (ancestorChain dsu (length dsu) u) - 1)) - 1 - S s = 0), nth_lookup, lookup_drop, Nat.add_0_r, <- nth_lookup, ancestorEqLastAncestorChain. reflexivity.
   - unfold notExistsInRangeLogic in hs. assert (hd : forall i, i < length (ancestorChain dsu (length dsu) u) -> nth i (ancestorChain dsu (length dsu) u) 0 <> x).
     { intros a b. pose proof hs a b as c. case_bool_decide; [exfalso; exact (c ltac:(easy)) | assumption]. }
     rewrite <- (ancestorEqLastAncestorChain dsu (length dsu) u) in step2. pose proof ancestorChainInsertNotPresent dsu (length dsu) u x h1 h2 h3 h4 h5 hd as step3. rewrite <- ancestorEqLastAncestorChain, <- ancestorEqLastAncestorChain, <- !step3. reflexivity.
@@ -479,11 +479,11 @@ Proof.
   pose proof h1 a _ he as hE.
   epose proof IH (<[a:=ReferTo b]> dsu) _ e b c ltac:(rewrite length_insert; exact hE) ltac:(rewrite length_insert; exact hB) ltac:(rewrite length_insert; exact hC) as hf.
   destruct (decide (c = a)) as [hs | hs].
-  - subst c. rewrite (ltac:(rewrite nth_lookup, list_lookup_insert; easy) : nth a (<[a:=ReferTo b]> dsu) (Ancestor Unit) = ReferTo b) in hf. right. destruct hf; assumption.
+  - subst c. rewrite (ltac:(rewrite nth_lookup, list_lookup_insert_eq; easy) : nth a (<[a:=ReferTo b]> dsu) (Ancestor Unit) = ReferTo b) in hf. right. destruct hf; assumption.
   - rewrite (ltac:(rewrite !nth_lookup, list_lookup_insert_ne; try lia; reflexivity) : nth c (<[a:=ReferTo b]> dsu) (Ancestor Unit) = nth c dsu (Ancestor Unit)) in hf. exact hf.
   Unshelve.
   intros i j hi. rewrite length_insert. destruct (decide (i = a)) as [hs | hs].
-  + subst i. rewrite (ltac:(rewrite nth_lookup, list_lookup_insert; easy) : nth a (<[a:=ReferTo b]> dsu) (Ancestor Unit) = ReferTo b) in hi. injection hi. lia.
+  + subst i. rewrite (ltac:(rewrite nth_lookup, list_lookup_insert_eq; easy) : nth a (<[a:=ReferTo b]> dsu) (Ancestor Unit) = ReferTo b) in hi. injection hi. lia.
   + rewrite (ltac:(rewrite !nth_lookup, list_lookup_insert_ne; try lia; reflexivity) : nth i (<[a:=ReferTo b]> dsu) (Ancestor Unit) = nth i dsu (Ancestor Unit)) in hi.
     assert (hi1 : i < length dsu).
     { destruct (decide (length dsu <= i)) as [ht | ht]; [| lia]. rewrite nth_overflow in hi; [| exact ht]. easy. }
@@ -602,7 +602,7 @@ Proof.
   - simpl. intros i j hi. remember (nth u dsu (Ancestor Unit)) as e eqn:he. symmetry in he. destruct e as [e | e].
     + assert (h : noIllegalIndices (<[u:=ReferTo v]> dsu)).
       { intros a b c. destruct (decide (a = u)) as [ha | ha].
-        - rewrite ha, nth_lookup, list_lookup_insert, (ltac:(intros; easy) : forall a, default _ (Some a) = a) in c; [| exact hU]. injection c. intro d. subst v. rewrite length_insert. exact hV.
+        - rewrite ha, nth_lookup, list_lookup_insert_eq, (ltac:(intros; easy) : forall a, default _ (Some a) = a) in c; [| exact hU]. injection c. intro d. subst v. rewrite length_insert. exact hV.
         - rewrite length_insert. rewrite nth_lookup, list_lookup_insert_ne in c; [| lia]. rewrite <- (nth_lookup _ _ (Ancestor Unit)) in c. exact (h1 _ _ c). }
       exact (IH (<[u:=ReferTo v]> dsu) ltac:(rewrite length_insert; exact hV) h e ltac:(rewrite length_insert; exact (h1 _ _ he)) i _ hi).
     + pose proof h1 i j hi. assumption.
@@ -611,7 +611,7 @@ Qed.
 Lemma pathCompressPreservesWithoutCycles (dsu : list Slot) (h : withoutCyclesN dsu (length dsu)) (h1 : noIllegalIndices dsu) (n u : nat) (hU : u < length dsu) : withoutCyclesN (pathCompress dsu n u (ancestor dsu (length dsu) u)) (length dsu).
 Proof.
   induction n as [| n IH] in u, dsu, h, hU, h1 |- *. { simpl. assumption. }
-  simpl. remember (nth u dsu (Ancestor Unit)) as x eqn:hX. destruct x as [x | x]; [| easy]. pose proof (fun t => IH (<[u:=ReferTo (ancestor dsu (length dsu) u)]> dsu) t ltac:(intros v1 v2; destruct (decide (v1 = u)) as [h2 | h2]; [destruct (decide (length dsu <= u)); [rewrite list_insert_ge; [| lia]; intro h3; rewrite h2 in h3; rewrite <- hX in h3; injection h3; intro h4; subst x; subst u; exact (h1 v1 v2 ltac:(symmetry in hX; exact hX)) | pose proof list_lookup_insert dsu u (ReferTo (ancestor dsu (length dsu) u)) ltac:(lia) as step; pose proof nth_lookup_Some _ _ (Ancestor Unit) _ step as step2; subst u; rewrite step2; pose proof ancestorLtLength dsu h1 (length dsu) v1 ltac:(lia) as step3]; intro h3; injection h3; intro h4; rewrite length_insert | pose proof list_lookup_insert_ne dsu u v1 (ReferTo (ancestor dsu (length dsu) u)) ltac:(lia) as step; pose proof nth_lookup dsu v1 (Ancestor Unit) as step1; pose proof (nth_lookup (<[u:=ReferTo (ancestor dsu (length dsu) u)]> dsu) v1 (Ancestor Unit)) as step2; rewrite step in step2; rewrite <- step1 in step2; rewrite step2; intro step3; rewrite length_insert; exact (h1 v1 v2 step3)]; lia) x ltac:(rewrite length_insert; exact (h1 u x ltac:(symmetry; assumption)))) as step. rewrite !length_insert in step.
+  simpl. remember (nth u dsu (Ancestor Unit)) as x eqn:hX. destruct x as [x | x]; [| easy]. pose proof (fun t => IH (<[u:=ReferTo (ancestor dsu (length dsu) u)]> dsu) t ltac:(intros v1 v2; destruct (decide (v1 = u)) as [h2 | h2]; [destruct (decide (length dsu <= u)); [rewrite list_insert_ge; [| lia]; intro h3; rewrite h2 in h3; rewrite <- hX in h3; injection h3; intro h4; subst x; subst u; exact (h1 v1 v2 ltac:(symmetry in hX; exact hX)) | pose proof list_lookup_insert_eq dsu u (ReferTo (ancestor dsu (length dsu) u)) ltac:(lia) as step; pose proof nth_lookup_Some _ _ (Ancestor Unit) _ step as step2; subst u; rewrite step2; pose proof ancestorLtLength dsu h1 (length dsu) v1 ltac:(lia) as step3]; intro h3; injection h3; intro h4; rewrite length_insert | pose proof list_lookup_insert_ne dsu u v1 (ReferTo (ancestor dsu (length dsu) u)) ltac:(lia) as step; pose proof nth_lookup dsu v1 (Ancestor Unit) as step1; pose proof (nth_lookup (<[u:=ReferTo (ancestor dsu (length dsu) u)]> dsu) v1 (Ancestor Unit)) as step2; rewrite step in step2; rewrite <- step1 in step2; rewrite step2; intro step3; rewrite length_insert; exact (h1 v1 v2 step3)]; lia) x ltac:(rewrite length_insert; exact (h1 u x ltac:(symmetry; assumption)))) as step. rewrite !length_insert in step.
   assert (step1 : u < length dsu -> x < length dsu -> ancestor (<[u:=ReferTo (ancestor dsu (length dsu) u)]> dsu) (length dsu) x = ancestor dsu (length dsu) x).
   { revert h h1 hX. clear. intros h1 h2 h3 h4 h5. rewrite <- ancestorInsert; try (assumption || reflexivity). rewrite <- h3. easy. } rewrite step1 in step; try assumption; pose proof h1 u x ltac:(symmetry in hX; exact hX) as hX1; [| exact hX1].
   remember (nth x dsu (Ancestor Unit)) as s eqn:hS.
@@ -905,7 +905,7 @@ with
 | arraydef_0_DSU_result =>
     [0%Z]
 end
-end)). { apply functional_extensionality_dep. intro x. destruct x; simpl; easy. } rewrite <- hh. clear hh. rewrite !(ltac:(cbv; reflexivity) : (coerceInt (coerceInt (Z.opp 1) 64) 8) = 255%Z) in previous. rewrite previous. rewrite insert_take_drop; [| lia]. rewrite (ltac:(lia) : Z.to_nat (100 - Z.of_nat n - 1) = 100 - S n). rewrite (ltac:(intros; listsEqual) : forall a b c, a ++ b :: c = (a ++ [b]) ++ c). pose proof take_app_length (take (100 - S n) l ++ [255%Z]) (drop (S (100 - S n)) l) as step. rewrite app_length in step. rewrite (ltac:(easy) : length [255%Z] = 1) in step. rewrite length_take in step. rewrite (ltac:(lia) : (100 - S n) `min` length l = 100 - S n) in step. rewrite (ltac:(lia) : 100 - S n + 1 = 100 - n) in step. rewrite step. clear step. rewrite (ltac:(intros; listsEqual) : forall a b c, (a ++ [b]) ++ c = a ++ (b :: c)). rewrite (ltac:(easy) : _ :: repeat _ _ = repeat 255%Z (S n)). case_decide as hIf; [reflexivity |]. pose proof (ltac:(lia) : @length (arrayType arrayIndex2 environment2 arraydef_0_DSU_dsu) l <= 100 - S n) as step. simpl in step. rewrite hL in step. lia.
+end)). { apply functional_extensionality_dep. intro x. destruct x; simpl; easy. } rewrite <- hh. clear hh. rewrite !(ltac:(cbv; reflexivity) : (coerceInt (coerceInt (Z.opp 1) 64) 8) = 255%Z) in previous. rewrite previous. rewrite insert_take_drop; [| lia]. rewrite (ltac:(lia) : Z.to_nat (100 - Z.of_nat n - 1) = 100 - S n). rewrite (ltac:(intros; listsEqual) : forall a b c, a ++ b :: c = (a ++ [b]) ++ c). pose proof take_app_length (take (100 - S n) l ++ [255%Z]) (drop (S (100 - S n)) l) as step. rewrite length_app in step. rewrite (ltac:(easy) : length [255%Z] = 1) in step. rewrite length_take in step. rewrite (ltac:(lia) : (100 - S n) `min` length l = 100 - S n) in step. rewrite (ltac:(lia) : 100 - S n + 1 = 100 - n) in step. rewrite step. clear step. rewrite (ltac:(intros; listsEqual) : forall a b c, (a ++ [b]) ++ c = a ++ (b :: c)). rewrite (ltac:(easy) : _ :: repeat _ _ = repeat 255%Z (S n)). case_decide as hIf; [reflexivity |]. pose proof (ltac:(lia) : @length (arrayType arrayIndex2 environment2 arraydef_0_DSU_dsu) l <= 100 - S n) as step. simpl in step. rewrite hL in step. lia.
 Qed.
 
 Lemma runAncestor1 (dsu : list Slot) (hL : length dsu = 100) (hM : Z.to_nat (dsuLeafCount dsu) = length dsu) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (whatever2 a : Z) (hLe1 : Z.le 0 a) (hLt1 : Z.lt a 100) continuation continuation2 whatever n (hN : n <= 100) : runArrays arrayIndex2 arrayIndexEqualityDecidable2 (arrayType arrayIndex2 environment2) (λ _0 : arrayIndex2,
@@ -1226,7 +1226,7 @@ Proof.
     assert (cr : length dsu = length f).
     { rewrite hf, !pathCompressPreservesLength. reflexivity. }
     destruct (ltac:(lia) : x < y \/ y < x) as [jj | jj].
-    + rewrite insert_take_drop, drop_insert_gt; try rewrite ?length_insert; try lia.
+    + rewrite insert_take_drop, drop_insert_lt; try rewrite ?length_insert; try lia.
       rewrite insert_take_drop, take_app, take_take, length_take, (ltac:(lia) : y `min` x = x), (ltac:(lia) : x `min` length f = x), (ltac:(easy) : Ancestor (Unite m n) :: drop (S x) f = [Ancestor (Unite m n)] ++ drop (S x) f), take_app; try lia. simpl.
       assert (stp : take (y - x) [Ancestor (Unite m n)] = [Ancestor (Unite m n)]).
       { rewrite (ltac:(lia) : y - x = S (y - x - 1)). simpl. rewrite take_nil. reflexivity. }
@@ -1234,7 +1234,7 @@ Proof.
       rewrite (ListDecomposition.listDecomposition f x y jj ltac:(lia) (Ancestor Unit)) at 4. unfold dsuLeafCount.
       rewrite !map_app, !list_sum_app, take_drop_commute, (ltac:(lia) : S x + (y - x - 1) = y). rewrite !pathCompressPreservesLength in yb, zb.
       rewrite <- hf in yb, zb. rewrite <- yb, <- zb. simpl. rewrite (ltac:(lia) : y + 1 = S y). lia.
-    + rewrite insert_take_drop, drop_insert_le; try rewrite ?length_insert; try lia.
+    + rewrite insert_take_drop, drop_insert_ge; try rewrite ?length_insert; try lia.
       rewrite insert_take_drop, take_app, take_take, length_take, (ltac:(lia) : y `min` x = y), (ltac:(lia) : x `min` length f = x), (ltac:(easy) : Ancestor (Unite m n) :: drop (S x) f = [Ancestor (Unite m n)] ++ drop (S x) f), take_app; try lia. simpl.
       assert (stp : take (y - x) [Ancestor (Unite m n)] = []).
       { rewrite (ltac:(lia) : y - x = 0). simpl. reflexivity. }
@@ -1266,7 +1266,7 @@ Proof.
     assert (cr : length dsu = length f).
     { rewrite hf, !pathCompressPreservesLength. reflexivity. }
     destruct (ltac:(lia) : x < y \/ y < x) as [jj | jj].
-    + rewrite insert_take_drop, drop_insert_le; try rewrite ?length_insert; try lia.
+    + rewrite insert_take_drop, drop_insert_ge; try rewrite ?length_insert; try lia.
       rewrite insert_take_drop, take_app, take_take, length_take, (ltac:(lia) : x `min` y = x), (ltac:(lia) : y `min` length f = y), (ltac:(easy) : Ancestor (Unite n m) :: drop (S y) f = [Ancestor (Unite n m)] ++ drop (S y) f), take_app; try lia. simpl.
       assert (stp : take (x - y) [Ancestor (Unite n m)] = []).
       { rewrite (ltac:(lia) : x - y = 0). easy. }
@@ -1281,7 +1281,7 @@ Proof.
         exact (nil_length_inv _ mt). }
       rewrite ms. simpl.
       lia.
-    + rewrite insert_take_drop, drop_insert_gt; try rewrite ?length_insert; try lia.
+    + rewrite insert_take_drop, drop_insert_lt; try rewrite ?length_insert; try lia.
       rewrite insert_take_drop, take_app, take_take, length_take, (ltac:(lia) : x `min` y = y), (ltac:(lia) : y `min` length f = y), (ltac:(easy) : Ancestor (Unite n m) :: drop (S y) f = [Ancestor (Unite n m)] ++ drop (S y) f), take_app; try lia. simpl.
       assert (stp : take (x - y) [Ancestor (Unite n m)] = [Ancestor (Unite n m)]).
       { rewrite (ltac:(lia) : x - y = S (x - y - 1)). simpl. rewrite take_nil. reflexivity. }
@@ -1348,24 +1348,24 @@ Proof.
   - intros g j i. destruct (decide (g = ancestor (pathCompress dsu (length dsu) a (ancestor dsu (length dsu) a))
        (length
           (pathCompress dsu (length dsu) a (ancestor dsu (length dsu) a))) b)) as [hs | hs].
-    { rewrite <- hs, nth_lookup, list_lookup_insert in i.
+    { rewrite <- hs, nth_lookup, list_lookup_insert_eq in i.
       - simpl in i. rewrite !length_insert, !pathCompressPreservesLength. injection i. intro ht. rewrite <- ht. apply ancestorLtLength; (assumption || lia).
       - rewrite length_insert, hs, pathCompressPreservesLength, pathCompressPreservesLength. apply ancestorLtLength. { apply pathCompressPreservesNoIllegalIndices; try (assumption || lia). apply ancestorLtLength; try (assumption || lia). }
         rewrite pathCompressPreservesLength. lia. }
     rewrite nth_lookup, list_lookup_insert_ne in i; [| lia].
     destruct (decide (g = ancestor dsu (length dsu) a)) as [ht | ht].
-    { rewrite ht, list_lookup_insert in i. { easy. } rewrite !pathCompressPreservesLength. apply ancestorLtLength; (assumption || lia). }
+    { rewrite ht, list_lookup_insert_eq in i. { easy. } rewrite !pathCompressPreservesLength. apply ancestorLtLength; (assumption || lia). }
     rewrite list_lookup_insert_ne, <- nth_lookup in i; [| lia].
     rewrite !length_insert. exact (gameover _ _ i).
   - intros g j i. destruct (decide (g = ancestor dsu (length dsu) a)) as [hs | hs].
-    { rewrite <- hs, nth_lookup, list_lookup_insert in i.
+    { rewrite <- hs, nth_lookup, list_lookup_insert_eq in i.
       - simpl in i. rewrite !length_insert, pathCompressPreservesLength. injection i. intro ht. rewrite <- ht, <- hs. apply ancestorLtLength; try rewrite pathCompressPreservesLength; try (assumption || lia). apply pathCompressPreservesNoIllegalIndices; try (assumption || lia). rewrite hs. apply ancestorLtLength; (assumption || lia).
       - rewrite !length_insert, !pathCompressPreservesLength, hs. apply ancestorLtLength; (assumption || lia). }
     rewrite nth_lookup, list_lookup_insert_ne in i; [| lia].
     destruct (decide (g = ancestor (pathCompress dsu (length dsu) a (ancestor dsu (length dsu) a))
        (length
           (pathCompress dsu (length dsu) a (ancestor dsu (length dsu) a))) b)) as [ht | ht].
-    { rewrite ht, list_lookup_insert in i. { easy. } rewrite !pathCompressPreservesLength. pose proof ancestorLtLength (pathCompress dsu (length dsu) a (ancestor dsu (length dsu) a)) as t. rewrite !pathCompressPreservesLength in t. apply t; [| lia]. apply pathCompressPreservesNoIllegalIndices; try (assumption || lia). apply ancestorLtLength; (assumption || lia). }
+    { rewrite ht, list_lookup_insert_eq in i. { easy. } rewrite !pathCompressPreservesLength. pose proof ancestorLtLength (pathCompress dsu (length dsu) a (ancestor dsu (length dsu) a)) as t. rewrite !pathCompressPreservesLength in t. apply t; [| lia]. apply pathCompressPreservesNoIllegalIndices; try (assumption || lia). apply ancestorLtLength; (assumption || lia). }
     rewrite list_lookup_insert_ne, <- nth_lookup in i; [| lia].
     rewrite !length_insert. exact (gameover _ _ i).
 Qed.
@@ -1379,7 +1379,7 @@ Proof.
     rewrite !length_insert.
     destruct (Nat.eq_dec yy a) as [ww | ww].
     - rewrite ww in hh.
-      rewrite nth_lookup, list_lookup_insert in hh.
+      rewrite nth_lookup, list_lookup_insert_eq in hh.
       + simpl in hh.
         injection hh.
         intro als.
@@ -1389,9 +1389,9 @@ Proof.
     - rewrite nth_lookup in hh.
       destruct (Nat.eq_dec yy b) as [ii | ii].
       + subst yy.
-        rewrite (list_lookup_insert_ne _ _ _ _ (ltac:(lia) : a ≠ b)), list_lookup_insert in hh.
+        rewrite (list_lookup_insert_ne _ _ _ _ (ltac:(lia) : a ≠ b)), list_lookup_insert_eq in hh.
         * simpl in hh. easy.
-        * rewrite list_lookup_insert in hh.
+        * rewrite list_lookup_insert_eq in hh.
           { simpl in hh. easy. }
           { lia. }
       + rewrite (list_lookup_insert_ne _ _ _ _ (Nat.neq_sym _ _ ww)), (list_lookup_insert_ne _ _ _ _ (Nat.neq_sym _ _ ii)), <- nth_lookup in hh.
@@ -1405,12 +1405,12 @@ Proof.
       - intro ga.
         assert (ayw : length (ancestorChain dsu (length dsu) i ++ [b]) = length ([] : list nat)).
         { rewrite ga. reflexivity. }
-        rewrite app_length in ayw. simpl in ayw. lia.
+        rewrite length_app in ayw. simpl in ayw. lia.
       - rewrite !length_insert, nth_lookup, lookup_app_l.
         + rewrite <- nth_lookup. exact g2.
         + pose proof (ltac:(lia) : 0 < length (ancestorChain dsu (length dsu) i) \/ length (ancestorChain dsu (length dsu) i) = 0) as [ds | ds]. { exact ds. }
           pose proof nil_length_inv _ ds. tauto.
-      - intros ja k. rewrite app_length in k. simpl in k.
+      - intros ja k. rewrite length_app in k. simpl in k.
         pose proof (ltac:(lia) : S ja < length (ancestorChain dsu (length dsu) i) \/ S ja = length (ancestorChain dsu (length dsu) i)) as [u | u].
         + rewrite !nth_lookup, lookup_app_l, lookup_app_l, <- !nth_lookup; [| lia | lia].
           pose proof g3 ja ltac:(lia) as g4.
@@ -1428,14 +1428,14 @@ Proof.
           rewrite hs in gh.
           assert (spt : nth ja (ancestorChain dsu (length dsu) i ++ [b]) 0 = a).
           { rewrite nth_lookup, lookup_app_l, (ltac:(lia) : ja = length (ancestorChain dsu (length dsu) i) - 1), <- nth_lookup. { exact gh. } lia. }
-          rewrite spt, nth_lookup, list_lookup_insert. { easy. } rewrite length_insert. exact ha.
+          rewrite spt, nth_lookup, list_lookup_insert_eq. { easy. } rewrite length_insert. exact ha.
       - exists (Unite t2 t1).
         assert (ajk : nth (length (ancestorChain dsu (length dsu) i ++ [b]) - 1) (ancestorChain dsu (length dsu) i ++ [b]) 0 = b).
-        { rewrite app_length. simpl. rewrite Nat.add_sub, nth_lookup, lookup_app_r, Nat.sub_diag. { easy. } lia. }
-        rewrite ajk, nth_lookup, list_lookup_insert_ne, list_lookup_insert; (easy || lia). }
+        { rewrite length_app. simpl. rewrite Nat.add_sub, nth_lookup, lookup_app_r, Nat.sub_diag. { easy. } lia. }
+        rewrite ajk, nth_lookup, list_lookup_insert_ne, list_lookup_insert_eq; (easy || lia). }
     pose proof validChainAncestorLength (<[a:=ReferTo b]> (<[b:=Ancestor (Unite t2 t1)]> dsu)) (ancestorChain dsu (length dsu) i ++ [b]) als ya i ltac:(rewrite nth_lookup, lookup_app_l; [destruct (length dsu) as [| g]; [simpl; easy |]; simpl; destruct (nth i dsu (Ancestor Unit)) as [jk | jk]; easy | apply zeroLtLengthAncestorChain]) as ua. rewrite !length_insert in ua.
     pose proof ancestorEqLastAncestorChain (<[a:=ReferTo b]> (<[b:=Ancestor (Unite t2 t1)]> dsu)) (length dsu) i as ra.
-    rewrite <- !ua, nth_lookup, lookup_app_r, app_length, (ltac:(easy) : length [b] = 1), Nat.add_sub, Nat.sub_diag in ra; [| rewrite app_length; simpl; lia]. symmetry in ra. rewrite (ltac:(easy) : default 0 ([b] !! 0) = b) in ra. rewrite !length_insert, ra, nth_lookup, list_lookup_insert_ne, list_lookup_insert; (easy || lia). }
+    rewrite <- !ua, nth_lookup, lookup_app_r, length_app, (ltac:(easy) : length [b] = 1), Nat.add_sub, Nat.sub_diag in ra; [| rewrite length_app; simpl; lia]. symmetry in ra. rewrite (ltac:(easy) : default 0 ([b] !! 0) = b) in ra. rewrite !length_insert, ra, nth_lookup, list_lookup_insert_ne, list_lookup_insert_eq; (easy || lia). }
   destruct (Nat.eq_dec (ancestor dsu (length dsu) i) b) as [ht | ht].
   { assert (ter: validChainToAncestor (<[a:=ReferTo b]> (<[b:=Ancestor (Unite t2 t1)]> dsu)) (ancestorChain dsu (length dsu) i)).
     { pose proof validChainAncestorChain dsu (length dsu) i ltac:(assumption) ltac:(assumption) as [g1 [g2 g3]].
@@ -1450,9 +1450,9 @@ Proof.
         { intro w. rewrite w, h4 in su. easy. }
         rewrite !nth_lookup, !list_lookup_insert_ne, <- !nth_lookup, su; [easy | |]; rewrite <- nth_lookup; lia.
       - exists (Unite t2 t1).
-        rewrite ancestorEqLastAncestorChain, ht, !nth_lookup, list_lookup_insert_ne, list_lookup_insert; [easy | |]; lia. }
+        rewrite ancestorEqLastAncestorChain, ht, !nth_lookup, list_lookup_insert_ne, list_lookup_insert_eq; [easy | |]; lia. }
     pose proof validChainAncestorLength (<[a:=ReferTo b]> (<[b:=Ancestor (Unite t2 t1)]> dsu)) (ancestorChain dsu (length dsu) i) als ter i ltac:(destruct (length dsu); simpl; destruct (nth i dsu (Ancestor Unit)); simpl; try lia) as nn.
-    rewrite <- ancestorEqLastAncestorChain, <- nn, ancestorEqLastAncestorChain, ht, !nth_lookup, list_lookup_insert_ne, list_lookup_insert; (easy || lia). }
+    rewrite <- ancestorEqLastAncestorChain, <- nn, ancestorEqLastAncestorChain, ht, !nth_lookup, list_lookup_insert_ne, list_lookup_insert_eq; (easy || lia). }
   assert (ter : validChainToAncestor (<[a:=ReferTo b]> (<[b:=Ancestor (Unite t2 t1)]> dsu)) (ancestorChain dsu (length dsu) i)).
   { pose proof validChainAncestorChain dsu (length dsu) i ltac:(assumption) ltac:(assumption) as [g1 [g2 g3]].
     repeat split.

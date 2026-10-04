@@ -8,6 +8,9 @@ on:
       - 'tools/adversarial/**'
       - 'verification/trusted_axioms.json'
       - '_CoqProject'
+      - 'coqcp-toolchain.opam'
+      - 'tools/install-toolchain.sh'
+      - '.github/actions/setup-rocq/**'
       - '.github/workflows/adversarial.yml'
   pull_request:
     branches: [main]
@@ -18,7 +21,7 @@ permissions:
 jobs:
   acceptance-and-containment:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 45
     # The outer container permits namespace creation; every submitted compiler
     # and proof checker runs inside the inner Bubblewrap/seccomp sandbox.
     container:
@@ -26,17 +29,15 @@ jobs:
       options: --security-opt seccomp=unconfined --security-opt apparmor=unconfined
     steps:
       - uses: actions/checkout@v4
-      - name: Install the Coq 8.20.1 toolchain and sandbox dependencies
-        run: |
-          apt-get update
-          apt-get install -y --no-install-recommends python3 gcc ocaml-findlib coq coq-stdpp libcoq-core-ocaml-dev libseccomp-dev bubblewrap make passwd util-linux
+      - name: Install Rocq and stdpp
+        uses: ./.github/actions/setup-rocq
       - name: Build trusted project libraries
         run: |
-          coq_makefile -f _CoqProject -o Makefile
+          rocq makefile -f _CoqProject -o Makefile
           make -j2
       - name: Create an unprivileged evaluator user
         run: |
-          useradd --uid 1000 --create-home proofchecker
+          useradd --uid 10001 --create-home proofchecker
           chown -R proofchecker:proofchecker .
       - name: Run adversarial acceptance and sandbox regressions
         run: runuser -u proofchecker -- python3 -m unittest discover -s tools/adversarial/tests -v

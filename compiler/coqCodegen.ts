@@ -111,7 +111,7 @@ export const coqCodegen = (sortedModules: CoqCPAST[]): string => {
   ): string => 'vars' + sanitizeFunction(moduleName, functionName)
 
   let code =
-    'From CoqCP Require Import Options Imperative.\nFrom stdpp Require Import numbers list strings.\nRequire Import Coq.Strings.Ascii.\nOpen Scope type_scope.\n'
+    'From CoqCP Require Import Options Imperative.\nFrom stdpp Require Import numbers list strings.\nRequire Import Stdlib.Strings.Ascii.\nOpen Scope type_scope.\n'
 
   for (const [moduleIndex, module] of sortedModules.entries()) {
     const { environment, procedures, moduleName } = module

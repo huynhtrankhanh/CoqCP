@@ -1,6 +1,6 @@
 From CoqCP Require Import Options ListsEqual.
 From stdpp Require Import numbers list.
-Require Import Wellfounded.
+From Stdlib Require Import Wellfounded.
 
 Inductive Tree :=
 | Unit
@@ -82,7 +82,7 @@ Proof.
   - destruct head.
     + clear h. rewrite !app_assoc. remember (a ++ tail) as x eqn:hX. remember (b ++ tail) as y eqn:hY.
       assert (hLength2 : length x = length y).
-      { subst x. subst y. rewrite !app_length. lia. }
+      { subst x. subst y. rewrite !length_app. lia. }
       clear hLength hX hY a b tail. rename IH into h.
       rewrite !listToNatTruePowerOfTwo. rewrite hLength2. lia.
     + rewrite !app_assoc, !listToNatFalse. assumption.
@@ -138,7 +138,7 @@ Lemma leafCountToLengthEncode (a : Tree) : length (encodeToList a) = 2 * leafCou
 Proof.
   induction a as [| a IHa b IHb].
   - simpl. lia.
-  - simpl. rewrite !app_length. simpl. pose proof oneLeqLeafCount a. pose proof oneLeqLeafCount b. lia.
+  - simpl. rewrite !length_app. simpl. pose proof oneLeqLeafCount a. pose proof oneLeqLeafCount b. lia.
 Qed.
 
 Lemma encodeToNatSubtermLeq2 (a b c : Tree) (h : encodeToNat a <= encodeToNat c) (hLeafCount : leafCount a = leafCount c) : encodeToNat (Unite b a) <= encodeToNat (Unite b c).

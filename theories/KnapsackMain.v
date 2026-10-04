@@ -1,9 +1,9 @@
 From CoqCP Require Import Options Imperative Execution KnapsackCode KnapsackTable KnapsackExecution KnapsackIO DecimalDigits.
 From Generated Require Import Knapsack.
 From stdpp Require Import numbers list.
-From Coq Require Import Logic.FunctionalExtensionality.
+From Stdlib Require Import Logic.FunctionalExtensionality.
 Open Scope Z_scope.
-Create HintDb main_maps.
+Create Rewrite HintDb main_maps.
 #[local] Hint Rewrite @dropWithinLoopLiftToWithinLoop @dropWithinLoop_1 @eliminateLift : main_maps.
 #[local] Hint Rewrite @lookupSame @lookupDifferent using discriminate : main_maps.
 

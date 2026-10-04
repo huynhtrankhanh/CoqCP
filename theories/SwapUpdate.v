@@ -100,7 +100,7 @@ Proof.
   assert (hCases : i = j \/ i <> j). { lia. }
   destruct hCases as [h | h].
   - rewrite h. reflexivity.
-  - rewrite list_insert_commute; try lia. reflexivity.
+  - rewrite list_insert_insert_ne; try lia. reflexivity.
 Qed.
 
 Lemma swapTwice' {A : Type} (l : list A) (default : A) (i j : nat) (hIJ : i < j) (hJ : j < length l) : swap (swap l i j default) i j default = l.
