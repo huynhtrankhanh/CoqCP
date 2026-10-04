@@ -23,9 +23,12 @@ With Coq 8.20.1 and stdpp 1.11.0 installed:
 ```sh
 coq_makefile -f _CoqProject -o Makefile
 make -j2
-coqchk -silent -R theories CoqCP -R generated-coq Generated CoqCP.KnapsackCode2 CoqCP.ArrayGrowth CoqCP.DisjointSetUnionCode3
+make validate
 ```
 
 The project maps `theories/` to `CoqCP`, `generated-coq/` to `Generated`, and `programs/llmGeneratedCode/` to `GeneratedExamples`.
+`make validate` runs `coqchk` on every module listed in `_CoqProject` with those load paths and prints the assumption summary. CI uses the same target and allows only the axioms in [trusted_axioms.json](../verification/trusted_axioms.json), currently functional extensionality, with no unsafe definitions. The adversarial checker uses this same policy.
+
+For untrusted AI-generated submissions, use the separate [adversarial checking infrastructure](AdversarialChecking.md). It freezes an evaluator-owned `Spec.v`, compiles source-only submissions in a Bubblewrap/seccomp sandbox, independently checks every submitted library, and checks the submitted module against the frozen signature. It includes mathematical knapsack and complete input/output contracts for the existing proofs.
 
 The checked-in HTML pages for the migrated imperative runtime and generated-program proofs were refreshed with `coqdoc` from the current sources.

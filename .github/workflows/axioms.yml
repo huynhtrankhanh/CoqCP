@@ -6,6 +6,11 @@ on:
       - main
     paths:
       - '**.v'
+      - '_CoqProject'
+      - '.github/workflows/axioms.yml'
+      - 'verification/trusted_axioms.json'
+      - 'tools/adversarial/ci_policy.py'
+      - 'tools/adversarial/context_policy.py'
   pull_request:
     branches:
       - main
@@ -29,30 +34,12 @@ jobs:
       run: make
 
     - name: Run coqchk and compare result
+      shell: bash
       run: |
-        s=$( /snap/coq-prover/current/coq-platform/bin/coqchk -silent --output-context -R theories/ CoqCP -R generated-coq/ Generated $(ls **/*.vo | awk -F'/' '{split($NF, a, "."); print "CoqCP."a[1]}') 2>&1 )
-        expected=$(cat << 'EOF'
-        CONTEXT SUMMARY
-        ===============
-        * Theory: Set is predicative
-        * Axioms:
-            Coq.Logic.FunctionalExtensionality.functional_extensionality_dep
-        * Constants/Inductives relying on type-in-type: <none>
-        * Constants/Inductives relying on unsafe (co)fixpoints: <none>
-        * Inductives whose positivity is assumed: <none>
-        EOF
-        )
-        
-        normalize() {
-          echo "$1" | sed '/^[[:space:]]*$/d'
-        }
-
-        echo "NORMALIZED ACTUAL"
-        echo "$(normalize "$s")"
-        echo "NORMALIZED EXPECTED"
-        echo "$(normalize "$expected")"
-
-        if [ "$(normalize "$s")" != "$(normalize "$expected")" ]; then
-          echo "Error: Context summary does not match the expected result."
+        # The generated validate target checks every module in _CoqProject
+        # using its declared load paths, including Generated and GeneratedExamples.
+        if ! s=$(make --no-print-directory --silent validate COQCHKFLAGS='-silent --output-context' 2>&1); then
+          printf '%s\n' "$s"
           exit 1
         fi
+        printf '%s\n' "$s" | python3 tools/adversarial/context_policy.py

@@ -22,6 +22,7 @@ Documentation:
 
 - [Internal imperative language](docs/InternalImperativeLanguage.md)
 - [Proof coverage and verification commands](docs/ProofCoverage.md)
+- [Adversarial checking of AI-generated programs and proofs](docs/AdversarialChecking.md)
 
 <hr>
 

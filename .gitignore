@@ -44,3 +44,7 @@ Makefile.conf
 node_modules
 dist
 .vscode
+
+# Frozen adversarial-checking bundles, tools, and result artifacts
+.verification/
+__pycache__/
