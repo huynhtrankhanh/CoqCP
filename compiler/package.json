@@ -17,5 +17,10 @@
   },
   "devDependencies": {
     "@babel/preset-typescript": "^7.22.5"
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "jest --runInBand"
   }
 }

@@ -1,4 +1,3 @@
-import acorn from 'acorn'
 import fs from 'fs'
 import path from 'path'
 import chokidar from 'chokidar'
@@ -9,7 +8,6 @@ import { validateAST } from './validateAST'
 import { sortModules } from './dependencyGraph'
 import { coqCodegen } from './coqCodegen'
 import { cppCodegen } from './cppCodegen'
-import { solidityCodegen } from './solidityCodegen'
 // Utility function to parse files
 function parseFiles(files: string[]): {
   modules: CoqCPAST[]
@@ -39,11 +37,10 @@ function parseFiles(files: string[]): {
 function validateModules(
   modules: CoqCPAST[],
   modulePathMap: Map<CoqCPAST, string>,
-  moduleNameToPath: Map<string, string>,
-  blockchain: boolean
+  moduleNameToPath: Map<string, string>
 ): string[] {
   const errors: string[] = []
-  const validationErrors = validateAST(modules, blockchain)
+  const validationErrors = validateAST(modules)
 
   validationErrors.forEach((error) => {
     const filePath =
@@ -63,8 +60,7 @@ function validateModules(
 function compile(
   files: string[],
   coqOutput: string,
-  cppOutput: string,
-  blockchain: boolean
+  cppOutput: string
 ) {
   const { modules, errors: parseErrors } = parseFiles(files)
 
@@ -84,8 +80,7 @@ function compile(
   const validationErrors = validateModules(
     sortedModules,
     modulePathMap,
-    moduleNameToPath,
-    blockchain
+    moduleNameToPath
   )
 
   if (validationErrors.length > 0) {
@@ -97,13 +92,8 @@ function compile(
   const coqCode = coqCodegen(sortedModules)
   fs.writeFileSync(coqOutput, coqCode, 'utf-8')
 
-  if (blockchain) {
-    const solidityCode = solidityCodegen(sortedModules)
-    fs.writeFileSync(cppOutput, solidityCode, 'utf-8')
-  } else {
-    const cppCode = cppCodegen(sortedModules)
-    fs.writeFileSync(cppOutput, cppCode, 'utf-8')
-  }
+  const cppCode = cppCodegen(sortedModules)
+  fs.writeFileSync(cppOutput, cppCode, 'utf-8')
   console.log(chalk.green('Compilation successful!'))
 }
 
@@ -111,13 +101,12 @@ function compile(
 function watchAndCompile(
   files: string[],
   coqOutput: string,
-  cppOutput: string,
-  blockchain: boolean
+  cppOutput: string
 ) {
-  compile(files, coqOutput, cppOutput, blockchain)
+  compile(files, coqOutput, cppOutput)
   chokidar.watch(files).on('change', () => {
     console.log(chalk.blue('File change detected. Recompiling...'))
-    compile(files, coqOutput, cppOutput, blockchain)
+    compile(files, coqOutput, cppOutput)
   })
 }
 
@@ -133,39 +122,7 @@ function main() {
     const folderPath = path.dirname(filename)
     const content = JSON.parse(fs.readFileSync(filename, { encoding: 'utf8' }))
     const { type } = content
-    if (type === 'blockchain') {
-      const { inputs, solidityOutput, coqOutput } = content
-      if (!Array.isArray(inputs)) {
-        console.log('inputs must be an array')
-        process.exit(1)
-        return
-      }
-      const newInputs: string[] = []
-      for (const input of inputs) {
-        if (typeof input !== 'string') {
-          console.log(JSON.stringify(input) + " isn't a string")
-          process.exit(1)
-          return
-        }
-        newInputs.push(input)
-      }
-      if (typeof coqOutput !== 'string') {
-        console.log('coqOutput must be a string')
-        process.exit(1)
-        return
-      }
-      if (typeof solidityOutput !== 'string') {
-        console.log('solidityOutput must be a string')
-        process.exit(1)
-        return
-      }
-      compile(
-        newInputs.map((x) => path.join(folderPath, x)),
-        path.join(folderPath, coqOutput),
-        path.join(folderPath, solidityOutput),
-        true
-      )
-    } else if (type === 'competitive') {
+    if (type === 'competitive') {
       const { inputs, cppOutput, coqOutput } = content
       if (!Array.isArray(inputs)) {
         console.log('inputs must be an array')
@@ -194,8 +151,7 @@ function main() {
       compile(
         newInputs.map((x) => path.join(folderPath, x)),
         path.join(folderPath, coqOutput),
-        path.join(folderPath, cppOutput),
-        false
+        path.join(folderPath, cppOutput)
       )
     } else {
       console.log('Unrecognized type')
@@ -215,12 +171,11 @@ function main() {
     )
     .arguments('<coqOutput> <cppOutput> <inputFiles...>')
     .option('-w, --watch', 'Enable watch mode')
-    .option('-b, --blockchain', 'Enable blockchain mode')
     .action((coqOutput, cppOutput, inputFiles, options) => {
       if (options.watch) {
-        watchAndCompile(inputFiles, coqOutput, cppOutput, options.blockchain)
+        watchAndCompile(inputFiles, coqOutput, cppOutput)
       } else {
-        compile(inputFiles, coqOutput, cppOutput, options.blockchain)
+        compile(inputFiles, coqOutput, cppOutput)
       }
     })
 

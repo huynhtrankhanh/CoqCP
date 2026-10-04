@@ -1,6 +1,10 @@
 {
-  "type": "blockchain",
-  "inputs": ["BuyLowSellHigh.js"],
-  "solidityOutput": "../generated-solidity/BuyLowSellHigh.sol",
-  "coqOutput": "../generated-coq/BuyLowSellHigh.v"
+  "type": "competitive",
+  "inputs": [
+    "BuyLowSellHigh.js",
+    "IO/ReadUnsignedInt64.js",
+    "IO/PrintInt64.js"
+  ],
+  "coqOutput": "../generated-coq/BuyLowSellHigh.v",
+  "cppOutput": "../generated-cpp/BuyLowSellHigh.cpp"
 }

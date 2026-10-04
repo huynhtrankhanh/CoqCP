@@ -1,6 +1,10 @@
 {
-  "type": "blockchain",
-  "inputs": ["BubbleSort.js"],
-  "solidityOutput": "BubbleSort.sol",
-  "coqOutput": "BubbleSort.v"
+  "type": "competitive",
+  "inputs": [
+    "BubbleSort.js",
+    "../IO/ReadUnsignedInt64.js",
+    "../IO/PrintInt64.js"
+  ],
+  "coqOutput": "BubbleSort.v",
+  "cppOutput": "BubbleSort.cpp"
 }

@@ -15,7 +15,7 @@ using std::get;
  */
 
 inline uint64_t readChar() { // like getchar()
-  static char buf[1 << 16];
+  static unsigned char buf[1 << 16];
   static size_t bc, be;
   if (bc >= be) {
     buf[0] = 0, bc = 0;

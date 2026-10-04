@@ -1,6 +1,6 @@
 import { consumeNever } from './consumeNever'
 import { findCycle } from './findCycle'
-import { CoqCPAST, ValueType, Location, COMMUNICATION } from './parse'
+import { CoqCPAST, ValueType, Location } from './parse'
 import { topologicalSort } from './topologicalSort'
 import { ValidationError } from './validateAST'
 
@@ -29,11 +29,7 @@ export const findDependencies = ({ procedures }: CoqCPAST) => {
         break
       case 'store':
         findDependencies(valueType.index)
-        if (valueType.name === COMMUNICATION) {
-          findDependencies(valueType.value)
-        } else {
-          valueType.tuple.forEach((value) => findDependencies(value))
-        }
+        valueType.tuple.forEach((value) => findDependencies(value))
         break
       case 'retrieve':
         findDependencies(valueType.index)
@@ -68,7 +64,6 @@ export const findDependencies = ({ procedures }: CoqCPAST) => {
       case 'coerceInt16':
       case 'coerceInt32':
       case 'coerceInt64':
-      case 'coerceInt256':
         findDependencies(valueType.value)
         break
       case 'call':
@@ -81,28 +76,13 @@ export const findDependencies = ({ procedures }: CoqCPAST) => {
         })
         valueType.presetVariables.forEach((value) => findDependencies(value))
         break
-      case 'invoke': {
-        findDependencies(valueType.address)
-        findDependencies(valueType.communicationSize)
-        findDependencies(valueType.money)
+      case 'grow':
+        findDependencies(valueType.length)
         break
-      }
-      case 'donate': {
-        findDependencies(valueType.address)
-        findDependencies(valueType.money)
-        break
-      }
-      case 'construct address': {
-        valueType.bytes.forEach((x) => findDependencies(x))
-        break
-      }
       case 'break':
       case 'continue':
       case 'flush':
       case 'readChar':
-      case 'communication area size':
-      case 'get sender':
-      case 'get money':
         // These instructions do not introduce dependencies
         break
       default:

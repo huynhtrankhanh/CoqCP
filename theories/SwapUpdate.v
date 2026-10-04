@@ -60,7 +60,7 @@ Qed.
 
 Lemma swapPreservesLength {A : Type} (l : list A) (default : A) (i j : nat) : length (swap l i j default) = length l.
 Proof.
-  unfold swap. rewrite ?insert_length. reflexivity.
+  unfold swap. rewrite ?length_insert. reflexivity.
 Qed.
 
 Lemma updateSelf {A : Type} (l : list A) (default : A) (i : nat) : <[i := nth i l default]> l = l.
@@ -106,21 +106,21 @@ Qed.
 Lemma swapTwice' {A : Type} (l : list A) (default : A) (i j : nat) (hIJ : i < j) (hJ : j < length l) : swap (swap l i j default) i j default = l.
 Proof.
   rewrite (listDecomposition l i j ltac:(lia) ltac:(lia) default).
-  assert (takeLength : i = length (take i l)). { rewrite take_length. lia. }
+  assert (takeLength : i = length (take i l)). { rewrite length_take. lia. }
   assert (hRewrite : forall x y, swap (take i l ++ [x] ++ drop (S i) (take j l) ++ [y] ++ drop (j + 1) l) i j default = swap (take i l ++ [x] ++ drop (S i) (take j l) ++ [y] ++ drop (j + 1) l) (length (take i l)) j default). { intros. rewrite <- ?takeLength. easy. }
   rewrite hRewrite. clear hRewrite takeLength.
   assert (takeLength : j = length (take i l) + length (drop (S i) (take j l)) + 1).
-  { rewrite take_length, drop_length, take_length.
+  { rewrite length_take, length_drop, length_take.
     assert (subtask1 : i `min` length l = i). { lia. }
     assert (subtask2 : j `min` length l = j). { lia. }
     rewrite subtask1, subtask2. lia. }
   assert (hRewrite : forall x y, swap (take i l ++ [x] ++ drop (S i) (take j l) ++ [y] ++ drop (j + 1) l) (length (take i l)) j default = swap (take i l ++ [x] ++ drop (S i) (take j l) ++ [y] ++ drop (j + 1) l) (length (take i l)) (length (take i l) + length (drop (S i) (take j l)) + 1) default). { rewrite <- ?takeLength. easy. }
   rewrite hRewrite, swapApp. clear hRewrite takeLength.
-  assert (takeLength : i = length (take i l)). { rewrite take_length. lia. }
+  assert (takeLength : i = length (take i l)). { rewrite length_take. lia. }
   assert (hRewrite : forall x y, swap (take i l ++ [x] ++ drop (S i) (take j l) ++ [y] ++ drop (j + 1) l) i j default = swap (take i l ++ [x] ++ drop (S i) (take j l) ++ [y] ++ drop (j + 1) l) (length (take i l)) j default). { intros. rewrite <- ?takeLength. easy. }
   rewrite hRewrite. clear hRewrite takeLength.
   assert (takeLength : j = length (take i l) + length (drop (S i) (take j l)) + 1).
-  { rewrite take_length, drop_length, take_length.
+  { rewrite length_take, length_drop, length_take.
     assert (subtask1 : i `min` length l = i). { lia. }
     assert (subtask2 : j `min` length l = j). { lia. }
     rewrite subtask1, subtask2. lia. }
@@ -147,11 +147,11 @@ Qed.
 Lemma swapDecomposition {A : Type} (l : list A) (default : A) (i j : nat) (hLt : i < j) (hJ : j < length l) : swap l i j default = take i l ++ [nth j l default] ++ drop (S i) (take j l) ++ [nth i l default] ++ drop (j + 1) l.
 Proof.
   rewrite (listDecomposition l i j ltac:(lia) ltac:(lia) default).
-  assert (takeLength : i = length (take i l)). { rewrite take_length. lia. }
+  assert (takeLength : i = length (take i l)). { rewrite length_take. lia. }
   assert (hRewrite : swap (take i l ++ [nth i l default] ++ drop (S i) (take j l) ++ [nth j l default] ++ drop (j + 1) l) i j default = swap (take i l ++ [nth i l default] ++ drop (S i) (take j l) ++ [nth j l default] ++ drop (j + 1) l) (length (take i l)) j default). { rewrite <- ?takeLength. easy. }
   rewrite hRewrite. clear hRewrite takeLength.
   assert (takeLength : j = length (take i l) + length (drop (S i) (take j l)) + 1).
-  { rewrite take_length, drop_length, take_length.
+  { rewrite length_take, length_drop, length_take.
     assert (subtask1 : i `min` length l = i). { lia. }
     assert (subtask2 : j `min` length l = j). { lia. }
     rewrite subtask1, subtask2. lia. }
@@ -162,18 +162,18 @@ Qed.
 
 Lemma nthSwap' {A : Type} (l : list A) (default : A) (i j : nat) (hWlog : i < j) (hJ : j < length l) : nth i (swap l i j default) default = nth j l default.
   rewrite (listDecomposition l i j ltac:(lia) ltac:(lia) default).
-  assert (takeLength : i = length (take i l)). { rewrite take_length. lia. }
+  assert (takeLength : i = length (take i l)). { rewrite length_take. lia. }
   assert (hRewrite : swap (take i l ++ [nth i l default] ++ drop (S i) (take j l) ++ [nth j l default] ++ drop (j + 1) l) i j default = swap (take i l ++ [nth i l default] ++ drop (S i) (take j l) ++ [nth j l default] ++ drop (j + 1) l) (length (take i l)) j default). { rewrite <- ?takeLength. easy. }
   rewrite hRewrite. clear hRewrite takeLength.
   assert (takeLength : j = length (take i l) + length (drop (S i) (take j l)) + 1).
-  { rewrite take_length, drop_length, take_length.
+  { rewrite length_take, length_drop, length_take.
     assert (subtask1 : i `min` length l = i). { lia. }
     assert (subtask2 : j `min` length l = j). { lia. }
     rewrite subtask1, subtask2. lia. }
   assert (hRewrite : swap (take i l ++ [nth i l default] ++ drop (S i) (take j l) ++ [nth j l default] ++ drop (j + 1) l) (length (take i l)) j default = swap (take i l ++ [nth i l default] ++ drop (S i) (take j l) ++ [nth j l default] ++ drop (j + 1) l) (length (take i l)) (length (take i l) + length (drop (S i) (take j l)) + 1) default). { rewrite <- ?takeLength. easy. }
   rewrite hRewrite, swapApp. clear hRewrite takeLength.
   pose proof nthAppZero (take i l) as H.
-  rewrite take_length in H.
+  rewrite length_take in H.
   assert (hEqI : i `min` length l = i). { lia. }
   rewrite hEqI in H.
   rewrite H. simpl.
@@ -189,11 +189,11 @@ Lemma nthSwap' {A : Type} (l : list A) (default : A) (i j : nat) (hWlog : i < j)
     { rewrite subtask2. apply nthConsDrop.
       - intro h.
         assert (hTakeJ : length (take j l) = j).
-        { rewrite take_length. lia. }
+        { rewrite length_take. lia. }
         assert (hContradiction : j = 0).
         { rewrite <- hTakeJ, h. easy. }
         lia.
-      - rewrite take_length. lia. }
+      - rewrite length_take. lia. }
     rewrite hNthCons, take_drop. reflexivity. }
     assert (hRebracketing : forall a c e : list A, forall b d : A, a ++ b :: c ++ d :: e = (a ++ b :: c) ++ d :: e).
     { intros. listsEqual. }
@@ -233,7 +233,7 @@ Qed.
 
 Lemma nthSwapExcept {A : Type} (l : list A) (default : A) (i j uninvolved : nat) (hI : i < length l) (hJ : j < length l) (hUninvolvedI : uninvolved <> i) (hUninvolvedJ : uninvolved <> j) : nth uninvolved (swap l i j default) default = nth uninvolved l default.
 Proof.
-  unfold swap. rewrite ?nthUpdateExcept; rewrite ?insert_length; try lia; reflexivity.
+  unfold swap. rewrite ?nthUpdateExcept; rewrite ?length_insert; try lia; reflexivity.
 Qed.
 
 Lemma nthSwapExceptVariant {A : Type} (l : list A) (default : A) (i j uninvolved : nat) (hI : i < length l) (hJ : j < length l) (hUninvolvedI : uninvolved <> i) (hUninvolvedJ : uninvolved <> j) : nth uninvolved (swap l j i default) default = nth uninvolved l default.

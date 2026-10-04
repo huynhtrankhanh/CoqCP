@@ -1,0 +1,10 @@
+{
+  "type": "competitive",
+  "inputs": [
+    "MajorityElement.js",
+    "IO/ReadUnsignedInt64.js",
+    "IO/PrintInt64.js"
+  ],
+  "cppOutput": "../generated-cpp/MajorityElement.cpp",
+  "coqOutput": "../generated-coq/MajorityElement.v"
+}

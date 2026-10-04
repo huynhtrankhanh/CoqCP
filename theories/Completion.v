@@ -220,7 +220,7 @@ Proof.
   pose proof getKthBlankUpperBound _ _ hReasonable as hUpperBound.
   pose proof updateAppZero (take (getKthBlank withBlanks k) withBlanks) ([nth (getKthBlank withBlanks k) withBlanks None] ++ drop (S (getKthBlank withBlanks k)) withBlanks) (Some value) as H.
   rewrite <- (listDecompositionSingle withBlanks (getKthBlank withBlanks k) hUpperBound None) in *.
-  rewrite take_length in H.
+  rewrite length_take in H.
   assert (hMin : getKthBlank withBlanks k `min` length withBlanks = getKthBlank withBlanks k). { lia. }
   rewrite hMin in *. rewrite H.
   simpl.
@@ -236,7 +236,7 @@ Qed.
 Lemma fillInOneBlank (withBlanks : list (option A)) (k : nat) (hReasonable : k < count_occ decide withBlanks None) (value : A) (answers : list A) (h : length answers + 1 = count_occ decide withBlanks None) : fill withBlanks (take k answers ++ [value] ++ drop k answers) = fill (<[getKthBlank withBlanks k := Some value]> withBlanks) answers.
 Proof.
   destruct (fillSplit value (take k answers) (drop k answers) withBlanks k) as [H1 [H2 H3]].
-  { rewrite take_length. lia. }
+  { rewrite length_take. lia. }
   { now apply fillInOneBlank_h1Parameter. }
   pose proof fillApp (take (getKthBlank withBlanks k) withBlanks) ([None] ++ (drop (S (getKthBlank withBlanks k)) withBlanks)) (take k answers) ([value] ++ drop k answers) H2 ltac:(rewrite !app_length, !count_occ_app; simpl; destruct (decide _ _); (lia || done)) as step1.
   rewrite <- H1 in step1.
@@ -245,10 +245,10 @@ Proof.
   pose proof getKthBlankUpperBound _ _ hReasonable as hUpperBound.
   pose proof updateAppZero (take (getKthBlank withBlanks k) withBlanks) ([nth (getKthBlank withBlanks k) withBlanks None] ++ drop (S (getKthBlank withBlanks k)) withBlanks) (Some value) as H.
   rewrite <- (listDecompositionSingle withBlanks (getKthBlank withBlanks k) hUpperBound None) in *.
-  rewrite take_length in H.
+  rewrite length_take in H.
   assert (hMin : getKthBlank withBlanks k `min` length withBlanks = getKthBlank withBlanks k). { lia. }
   rewrite hMin in *. rewrite H. simpl.
-  pose proof fillApp (take (getKthBlank withBlanks k) withBlanks) (Some value :: drop (S (getKthBlank withBlanks k)) withBlanks) (take k answers) (drop k answers) ltac:(rewrite take_length, takeKthBlankCountOcc; simpl in *; lia) ltac:(simpl; now destruct (decide _ _)) as hPartial.
+  pose proof fillApp (take (getKthBlank withBlanks k) withBlanks) (Some value :: drop (S (getKthBlank withBlanks k)) withBlanks) (take k answers) (drop k answers) ltac:(rewrite length_take, takeKthBlankCountOcc; simpl in *; lia) ltac:(simpl; now destruct (decide _ _)) as hPartial.
   rewrite take_drop in hPartial.
   rewrite hPartial. simpl. reflexivity.
 Qed.

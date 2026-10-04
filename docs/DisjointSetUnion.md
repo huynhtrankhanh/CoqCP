@@ -1,6 +1,10 @@
 # Disjoint set union
 
-**Problem statement:** Given the smart contract [`DisjointSetUnion.js`](../programs/DisjointSetUnion.js), find a way to get the most money from the contract.
+**Problem statement:** The competitive program [`DisjointSetUnion.js`](../programs/DisjointSetUnion.js) reads a number of queries, then pairs of vertices in `0..99`. After each union it prints the size of the resulting component.
+
+The generated DSU library has proofs for ancestor lookup, path compression, and union. `competitiveMergeRefinesModel` connects a generated union operation to the mathematical DSU state. The parser and component-size printing frontend are covered by executable examples, rather than an end-to-end DSU theorem.
+
+The tree proofs below also study the cumulative merge score: each successful merge contributes the combined component size. For 100 singleton components, the maximum score is 5049, attained by repeatedly adding a singleton to the same component. `modelScore`, `maxScoreIsAttainable`, and `maxScoreIsMax` formalize this combinatorial result.
 
 Proof strategy: we model actions as a tree.
 

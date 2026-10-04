@@ -1,0 +1,58 @@
+module(DSU)
+environment({
+  dsu: array([int8], 100),
+  hasBeenInitialized: array([int8], 1),
+  result: array([int8], 1),
+})
+
+procedure('ancestor', { vertex: int8, work: int8 }, () => {
+  set('work', get('vertex'))
+  range(100, (_) => {
+    if (sLess(retrieve('dsu', coerceInt64(get('work')))[0], coerceInt8(0))) {
+      ;('break')
+    }
+    set('work', retrieve('dsu', coerceInt64(get('work')))[0])
+  })
+  store('result', 0, [get('work')])
+  set('work', get('vertex'))
+  range(100, (_) => {
+    if (sLess(retrieve('dsu', coerceInt64(get('work')))[0], coerceInt8(0))) {
+      ;('break')
+    }
+    set('vertex', retrieve('dsu', coerceInt64(get('work')))[0])
+    store('dsu', coerceInt64(get('work')), [retrieve('result', 0)[0]])
+    set('work', get('vertex'))
+  })
+})
+
+procedure('unite', { u: int8, v: int8, z: int8 }, () => {
+  call('ancestor', { vertex: get('u') })
+  set('u', retrieve('result', 0)[0])
+  call('ancestor', { vertex: get('v') })
+  set('v', retrieve('result', 0)[0])
+  if (get('u') != get('v')) {
+    if (
+      sLess(
+        retrieve('dsu', coerceInt64(get('u')))[0],
+        retrieve('dsu', coerceInt64(get('v')))[0]
+      )
+    ) {
+      set('z', get('u'))
+      set('u', get('v'))
+      set('v', get('z'))
+    }
+    store('dsu', coerceInt64(get('v')), [
+      retrieve('dsu', coerceInt64(get('u')))[0] +
+        retrieve('dsu', coerceInt64(get('v')))[0],
+    ])
+    store('dsu', coerceInt64(get('u')), [get('v')])
+
+  }
+})
+
+// Input: q, followed by q pairs of vertices (0..99). Output: component size after each union.
+procedure('initialize', {}, () => {
+  range(100, (i) => {
+    store('dsu', i, [coerceInt8(-1)])
+  })
+})

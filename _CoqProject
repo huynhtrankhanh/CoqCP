@@ -31,7 +31,24 @@ theories/DisjointSetUnionCode2.v
 theories/DisjointSetUnionCode3.v
 theories/Knapsack.v
 theories/KnapsackCode.v
+theories/Execution.v
+theories/KnapsackTable.v
+theories/KnapsackExecution.v
+theories/DecimalDigits.v
+theories/KnapsackIO.v
+theories/KnapsackMain.v
+theories/KnapsackPrinter.v
+theories/KnapsackEndToEnd.v
 theories/KnapsackCode2.v
 -R generated-coq/ Generated
 generated-coq/DisjointSetUnion.v
 generated-coq/Knapsack.v
+
+theories/ArrayGrowth.v
+generated-coq/BuyLowSellHigh.v
+generated-coq/MajorityElement.v
+generated-coq/SimpleProgram.v
+generated-coq/FenwickTree.v
+-R programs/llmGeneratedCode/ GeneratedExamples
+programs/llmGeneratedCode/BubbleSort.v
+programs/llmGeneratedCode/MaxElement.v

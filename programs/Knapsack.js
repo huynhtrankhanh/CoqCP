@@ -1,100 +1,60 @@
+// Input: n capacity, followed by n pairs of weight and value. Output: maximum value.
 environment({
-  dp: array([int64], 1000000),
+  dp: array([int64], 0),
+  weights: array([int32], 0),
+  values: array([int32], 0),
   message: array([int32], 1),
   n: array([int64], 1),
+  input: array([int64], 1),
+  printBuffer: array([int8], 20),
 })
 
 procedure('get weight', { index: int64 }, () => {
-  store('message', 0, [
-    coerceInt32(retrieve(4 * get('index'))) * coerceInt32(1 << 24) +
-      coerceInt32(retrieve(4 * get('index') + 1)) * coerceInt32(1 << 16) +
-      coerceInt32(retrieve(4 * get('index') + 2)) * coerceInt32(1 << 8) +
-      coerceInt32(retrieve(4 * get('index') + 3)),
-  ])
+  store('message', 0, [retrieve('weights', get('index'))[0]])
 })
 
 procedure('get value', { index: int64 }, () => {
-  store('message', 0, [
-    coerceInt32(retrieve(4 * retrieve('n', 0)[0] + 4 * get('index'))) *
-      coerceInt32(1 << 24) +
-      coerceInt32(retrieve(4 * retrieve('n', 0)[0] + 4 * get('index') + 1)) *
-        coerceInt32(1 << 16) +
-      coerceInt32(retrieve(4 * retrieve('n', 0)[0] + 4 * get('index') + 2)) *
-        coerceInt32(1 << 8) +
-      coerceInt32(retrieve(4 * retrieve('n', 0)[0] + 4 * get('index') + 3)),
-  ])
+  store('message', 0, [retrieve('values', get('index'))[0]])
 })
 
-procedure('store result', { x: int64 }, () => {
-  store(0, coerceInt8(get('x') >> 56))
-  store(1, coerceInt8((get('x') >> 48) & 255))
-  store(2, coerceInt8((get('x') >> 40) & 255))
-  store(3, coerceInt8((get('x') >> 32) & 255))
-  store(4, coerceInt8((get('x') >> 24) & 255))
-  store(5, coerceInt8((get('x') >> 16) & 255))
-  store(6, coerceInt8((get('x') >> 8) & 255))
-  store(7, coerceInt8(get('x') & 255))
-})
-
-procedure('get limit', {}, () => {
-  store('message', 0, [
-    coerceInt32(retrieve(8 * retrieve('n', 0)[0])) * coerceInt32(1 << 24) +
-      coerceInt32(retrieve(8 * retrieve('n', 0)[0] + 1)) *
-        coerceInt32(1 << 16) +
-      coerceInt32(retrieve(8 * retrieve('n', 0)[0] + 2)) * coerceInt32(1 << 8) +
-      coerceInt32(retrieve(8 * retrieve('n', 0)[0] + 3)),
-  ])
-})
-
-procedure('main', { limit: int64, weight: int64, value: int64 }, () => {
-  store('n', 0, [divide(communicationSize() - 4, 8)])
-  call('get limit', {})
-  set('limit', coerceInt64(retrieve('message', 0)[0]))
-  store('message', 0, [coerceInt32(0)])
-  range(retrieve('n', 0)[0] + 1, (i) => {
-    if (i == 0) {
-      ;('continue')
+// Each cell reads only the previous row, then writes one entry of the next row.
+procedure('cell', { row: int64, cap: int64, limit: int64, weight: int64, value: int64, best: int64, withItem: int64 }, () => {
+  set('weight', coerceInt64(retrieve('weights', get('row'))[0]))
+  set('value', coerceInt64(retrieve('values', get('row'))[0]))
+  set('best', retrieve('dp', get('row') * (get('limit') + 1) + get('cap'))[0])
+  if (!less(get('cap'), get('weight'))) {
+    set('withItem', retrieve('dp', get('row') * (get('limit') + 1) + (get('cap') - get('weight')))[0] + get('value'))
+    if (less(get('best'), get('withItem'))) {
+      set('best', get('withItem'))
     }
+  }
+  store('dp', (get('row') + 1) * (get('limit') + 1) + get('cap'), [get('best')])
+})
+
+procedure('solve', { limit: int64 }, () => {
+  range(retrieve('n', 0)[0], (row) => {
     range(get('limit') + 1, (cap) => {
-      call('get weight', { index: i - 1 })
-      set('weight', coerceInt64(retrieve('message', 0)[0]))
-      call('get value', { index: i - 1 })
-      set('value', coerceInt64(retrieve('message', 0)[0]))
-      if (less(cap, get('weight'))) {
-        store('dp', i * (get('limit') + 1) + cap, [
-          retrieve('dp', (i - 1) * (get('limit') + 1) + cap)[0],
-        ])
-      } else {
-        if (
-          less(
-            retrieve('dp', (i - 1) * (get('limit') + 1) + cap)[0],
-            retrieve(
-              'dp',
-              (i - 1) * (get('limit') + 1) + (cap - get('weight'))
-            )[0] + get('value')
-          )
-        ) {
-          store('dp', i * (get('limit') + 1) + cap, [
-            retrieve(
-              'dp',
-              (i - 1) * (get('limit') + 1) + (cap - get('weight'))
-            )[0] + get('value'),
-          ])
-        } else {
-          store('dp', i * (get('limit') + 1) + cap, [
-            retrieve('dp', (i - 1) * (get('limit') + 1) + cap)[0],
-          ])
-        }
-      }
-      set('weight', 0)
-      set('value', 0)
+      call('cell', { row: row, cap: cap, limit: get('limit') })
     })
-    store('message', 0, [coerceInt32(0)])
   })
-  call('store result', {
-    x: retrieve(
-      'dp',
-      retrieve('n', 0)[0] * (get('limit') + 1) + get('limit')
-    )[0],
+})
+
+procedure('main', { count: int64, limit: int64 }, () => {
+  call(ReadUnsignedInt64, { resultArray: 'input' }, '', {})
+  set('count', retrieve('input', 0)[0])
+  store('n', 0, [get('count')])
+  call(ReadUnsignedInt64, { resultArray: 'input' }, '', {})
+  set('limit', retrieve('input', 0)[0])
+  grow('weights', get('count'))
+  grow('values', get('count'))
+  grow('dp', (get('count') + 1) * (get('limit') + 1))
+  range(get('count'), (i) => {
+    call(ReadUnsignedInt64, { resultArray: 'input' }, '', {})
+    store('weights', i, [coerceInt32(retrieve('input', 0)[0])])
+    call(ReadUnsignedInt64, { resultArray: 'input' }, '', {})
+    store('values', i, [coerceInt32(retrieve('input', 0)[0])])
   })
+  call('solve', { limit: get('limit') })
+  call(PrintInt64, { buffer: 'printBuffer' }, 'unsigned', { num: retrieve('dp', get('count') * (get('limit') + 1) + get('limit'))[0] })
+  writeChar(coerceInt8(10))
 })

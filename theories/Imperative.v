@@ -59,14 +59,7 @@ Inductive BasicEffect :=
 | Trap
 | Flush
 | ReadChar
-| WriteChar (value : Z)
-| Donate (money : Z) (address : list Z)
-| Invoke (money : Z) (address : list Z) (array : list Z)
-| GetSender
-| GetMoney
-| GetCommunicationSize
-| ReadByte (index : Z)
-| SetByte (index value : Z).
+| WriteChar (value : Z).
 
 #[export] Instance basicEffectEqualityDecidable : EqDecision BasicEffect := ltac:(solve_decision).
 
@@ -76,13 +69,6 @@ Definition basicEffectReturnValue (effect : BasicEffect): Type :=
   | Flush => unit
   | ReadChar => Z
   | WriteChar _ => unit
-  | Donate _ _ => unit
-  | Invoke _ _ _ => list Z
-  | GetSender => list Z
-  | GetMoney => Z
-  | GetCommunicationSize => Z
-  | ReadByte _ => Z
-  | SetByte _ _ => unit
   end.
 
 (* Unfold lemmas for each constructor *)
@@ -102,34 +88,6 @@ Lemma unfold_WriteChar c :
   basicEffectReturnValue (WriteChar c) = unit.
 Proof. reflexivity. Qed.
 
-Lemma unfold_Donate a b :
-  basicEffectReturnValue (Donate a b) = unit.
-Proof. reflexivity. Qed.
-
-Lemma unfold_Invoke a b c :
-  basicEffectReturnValue (Invoke a b c) = list Z.
-Proof. reflexivity. Qed.
-
-Lemma unfold_GetSender :
-  basicEffectReturnValue GetSender = list Z.
-Proof. reflexivity. Qed.
-
-Lemma unfold_GetMoney :
-  basicEffectReturnValue GetMoney = Z.
-Proof. reflexivity. Qed.
-
-Lemma unfold_GetCommunicationSize :
-  basicEffectReturnValue GetCommunicationSize = Z.
-Proof. reflexivity. Qed.
-
-Lemma unfold_ReadByte b :
-  basicEffectReturnValue (ReadByte b) = Z.
-Proof. reflexivity. Qed.
-
-Lemma unfold_SetByte a b :
-  basicEffectReturnValue (SetByte a b) = unit.
-Proof. reflexivity. Qed.
-
 (* Autorewrite database *)
 Create HintDb basicEffectReturnValue_unfold.
 
@@ -137,27 +95,23 @@ Hint Rewrite unfold_Trap : basicEffectReturnValue_unfold.
 Hint Rewrite unfold_Flush : basicEffectReturnValue_unfold.
 Hint Rewrite unfold_ReadChar : basicEffectReturnValue_unfold.
 Hint Rewrite unfold_WriteChar : basicEffectReturnValue_unfold.
-Hint Rewrite unfold_Donate : basicEffectReturnValue_unfold.
-Hint Rewrite unfold_Invoke : basicEffectReturnValue_unfold.
-Hint Rewrite unfold_GetSender : basicEffectReturnValue_unfold.
-Hint Rewrite unfold_GetMoney : basicEffectReturnValue_unfold.
-Hint Rewrite unfold_GetCommunicationSize : basicEffectReturnValue_unfold.
-Hint Rewrite unfold_ReadByte : basicEffectReturnValue_unfold.
-Hint Rewrite unfold_SetByte : basicEffectReturnValue_unfold.
 
 Inductive WithArrays (arrayIndex : Type) (arrayType : arrayIndex -> Type) :=
 | DoBasicEffect (effect : BasicEffect)
 | Retrieve (arrayName : arrayIndex) (index : Z)
-| Store (arrayName : arrayIndex) (index : Z) (value : arrayType arrayName).
+| Store (arrayName : arrayIndex) (index : Z) (value : arrayType arrayName)
+| Grow (arrayName : arrayIndex) (minimumLength : Z) (zero : arrayType arrayName).
 
 #[export] Instance withArraysEqualityDecidable {arrayIndex : Type} {arrayType : arrayIndex -> Type} (hIndexEq : EqDecision arrayIndex) (hArrayType : forall name, EqDecision (arrayType name)) : EqDecision (WithArrays arrayIndex arrayType).
 Proof.
   intros a b.
-  destruct a as [e | a i | a i v]; destruct b as [e1 | a1 i1 | a1 i1 v1]; try ((left; easy) || (right; easy)).
+  destruct a as [e | a i | a i v | a i v]; destruct b as [e1 | a1 i1 | a1 i1 v1 | a1 i1 v1]; try ((left; easy) || (right; easy)).
   - destruct (decide (e = e1)) as [h | h]; try subst e1.
     { now left. } { right; intro x; now inversion x. }
   - destruct (decide (a = a1)) as [h | h]; try subst a1; destruct (decide (i = i1)) as [h1 | h1]; try subst i1; try now left.
     all: right; intro x; now inversion x.
+  - destruct (decide (a = a1)) as [h | h]; try subst a1; destruct (decide (i = i1)) as [h1 | h1]; try subst i1; try (right; intro x; now inversion x).
+    destruct (hArrayType a v v1) as [h | h]; try (subst v1; now left). right. intro x. inversion x as [x1]. apply inj_pair2_eq_dec in x1; try easy.
   - destruct (decide (a = a1)) as [h | h]; try subst a1; destruct (decide (i = i1)) as [h1 | h1]; try subst i1; try (right; intro x; now inversion x).
     destruct (hArrayType a v v1) as [h | h]; try (subst v1; now left). right. intro x. inversion x as [x1]. apply inj_pair2_eq_dec in x1; try easy.
 Qed.
@@ -167,6 +121,7 @@ Definition withArraysReturnValue {arrayIndex} {arrayType : arrayIndex -> Type} (
   | DoBasicEffect _ _ effect => basicEffectReturnValue effect
   | Retrieve _ _ arrayName _ => arrayType arrayName
   | Store _ _ _ _ _ => unit
+  | Grow _ _ _ _ _ => unit
   end.
 
 (* Unfold lemmas for each constructor *)
@@ -185,11 +140,16 @@ Lemma unfold_Store arrayIndex arrayType c d e :
   unit.
 Proof. reflexivity. Qed.
 
+Lemma unfold_Grow arrayIndex arrayType name minimumLength zero :
+  @withArraysReturnValue arrayIndex arrayType (Grow _ _ name minimumLength zero) = unit.
+Proof. reflexivity. Qed.
+
 (* Autorewrite database *)
 Create HintDb withArraysReturnValue_unfold.
 
 Hint Rewrite unfold_DoBasicEffect : withArraysReturnValue_unfold.
 Hint Rewrite unfold_Retrieve : withArraysReturnValue_unfold.
+Hint Rewrite unfold_Grow : withArraysReturnValue_unfold.
 Hint Rewrite unfold_Store :
  withArraysReturnValue_unfold.
 
@@ -198,9 +158,7 @@ Inductive WithLocalVariables (arrayIndex : Type) (arrayType : arrayIndex -> Type
 | BooleanLocalGet (name : variableIndex)
 | BooleanLocalSet (name : variableIndex) (value : bool)
 | NumberLocalGet (name : variableIndex)
-| NumberLocalSet (name : variableIndex) (value : Z)
-| AddressLocalGet (name : variableIndex)
-| AddressLocalSet (name : variableIndex) (value : list Z).
+| NumberLocalSet (name : variableIndex) (value : Z).
 
 #[export] Instance withLocalVariablesEqualityDecidable {arrayIndex arrayType variableIndex} (hArrayIndex : EqDecision arrayIndex) (hArrayType : forall name, EqDecision (arrayType name)) (hVariableIndex : EqDecision variableIndex) : EqDecision (WithLocalVariables arrayIndex arrayType variableIndex) := ltac:(solve_decision).
 
@@ -211,8 +169,6 @@ Definition withLocalVariablesReturnValue {arrayIndex arrayType variableIndex} (e
   | BooleanLocalSet _ _ _ _ _ => unit
   | NumberLocalGet _ _ _ _ => Z
   | NumberLocalSet _ _ _ _ _ => unit
-  | AddressLocalGet _ _ _ _ => list Z
-  | AddressLocalSet _ _ _ _ _ => unit
   end.
 
 (* Unfold lemmas for each constructor *)
@@ -241,16 +197,6 @@ Lemma unfold_NumberLocalSet arrayIndex arrayType variableIndex d e :
   unit.
 Proof. reflexivity. Qed.
 
-Lemma unfold_AddressLocalGet arrayIndex arrayType variableIndex d :
-  @withLocalVariablesReturnValue arrayIndex arrayType variableIndex (AddressLocalGet _ _ _ d) =
-  list Z.
-Proof. reflexivity. Qed.
-
-Lemma unfold_AddressLocalSet arrayIndex arrayType variableIndex d e :
-  @withLocalVariablesReturnValue arrayIndex arrayType variableIndex (AddressLocalSet _ _ _ d e) =
-  unit.
-Proof. reflexivity. Qed.
-
 (* Autorewrite database *)
 Create HintDb withLocalVariablesReturnValue_unfold.
 
@@ -259,8 +205,6 @@ Hint Rewrite unfold_BooleanLocalGet : withLocalVariablesReturnValue_unfold.
 Hint Rewrite unfold_BooleanLocalSet : withLocalVariablesReturnValue_unfold.
 Hint Rewrite unfold_NumberLocalGet : withLocalVariablesReturnValue_unfold.
 Hint Rewrite unfold_NumberLocalSet : withLocalVariablesReturnValue_unfold.
-Hint Rewrite unfold_AddressLocalGet : withLocalVariablesReturnValue_unfold.
-Hint Rewrite unfold_AddressLocalSet : withLocalVariablesReturnValue_unfold.
 
 (* To automatically rewrite using these lemmas, you can use: *)
 
@@ -274,8 +218,6 @@ Hint Rewrite unfold_BooleanLocalGet : combined_unfold.
 Hint Rewrite unfold_BooleanLocalSet : combined_unfold.
 Hint Rewrite unfold_NumberLocalGet : combined_unfold.
 Hint Rewrite unfold_NumberLocalSet : combined_unfold.
-Hint Rewrite unfold_AddressLocalGet : combined_unfold.
-Hint Rewrite unfold_AddressLocalSet : combined_unfold.
 
 Hint Rewrite unfold_DoBasicEffect : combined_unfold.
 Hint Rewrite unfold_Retrieve : combined_unfold.
@@ -285,13 +227,6 @@ Hint Rewrite unfold_Trap : combined_unfold.
 Hint Rewrite unfold_Flush : combined_unfold.
 Hint Rewrite unfold_ReadChar : combined_unfold.
 Hint Rewrite unfold_WriteChar : combined_unfold.
-Hint Rewrite unfold_Donate : combined_unfold.
-Hint Rewrite unfold_Invoke : combined_unfold.
-Hint Rewrite unfold_GetSender : combined_unfold.
-Hint Rewrite unfold_GetMoney : combined_unfold.
-Hint Rewrite unfold_GetCommunicationSize : combined_unfold.
-Hint Rewrite unfold_ReadByte : combined_unfold.
-Hint Rewrite unfold_SetByte : combined_unfold.
 
 (* To automatically rewrite using all the lemmas, use: *)
 (* autorewrite with combined_unfold. *)
@@ -382,64 +317,50 @@ Proof.
   rewrite s in r. exfalso. exact (hDiff r).
 Qed.
 
-Lemma eliminateLocalVariables {arrayIndex arrayType variableIndex} `{EqDecision variableIndex} (bools : variableIndex -> bool) (numbers : variableIndex -> Z) (addresses : variableIndex -> list Z) (action : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue unit) : Action (WithArrays arrayIndex arrayType) withArraysReturnValue unit.
+Lemma eliminateLocalVariables {arrayIndex arrayType variableIndex} `{EqDecision variableIndex} (bools : variableIndex -> bool) (numbers : variableIndex -> Z) (action : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue unit) : Action (WithArrays arrayIndex arrayType) withArraysReturnValue unit.
 Proof.
-  induction action as [x | effect continuation IH] in bools, numbers, addresses |- *;
+  induction action as [x | effect continuation IH] in bools, numbers |- *;
   [exact (Done _ _ _ x) |].
-  destruct effect as [effect | name | name value | name | name value | name | name value].
+  destruct effect as [effect | name | name value | name | name value].
   - apply (Dispatch (WithArrays arrayIndex arrayType) withArraysReturnValue unit effect).
-    simpl in IH, continuation. intro value. exact (IH value bools numbers addresses).
-  - simpl in IH, continuation. exact (IH (bools name) bools numbers addresses).
-  - simpl in IH, continuation. exact (IH tt (update bools name value) numbers addresses).
-  - simpl in IH, continuation. exact (IH (numbers name) bools numbers addresses).
-  - simpl in IH, continuation. exact (IH tt bools (update numbers name value) addresses).
-  - simpl in IH, continuation. exact (IH (addresses name) bools numbers addresses).
-  - simpl in IH, continuation. exact (IH tt bools numbers (update addresses name value)).
+    simpl in IH, continuation. intro value. exact (IH value bools numbers ).
+  - simpl in IH, continuation. exact (IH (bools name) bools numbers ).
+  - simpl in IH, continuation. exact (IH tt (update bools name value) numbers ).
+  - simpl in IH, continuation. exact (IH (numbers name) bools numbers ).
+  - simpl in IH, continuation. exact (IH tt bools (update numbers name value) ).
 Defined.
 
-Lemma pushDispatch {arrayIndex arrayType variableIndex} `{EqDecision variableIndex} (bools : variableIndex -> bool) (numbers : variableIndex -> Z) (addresses : variableIndex -> list Z) effect continuation : eliminateLocalVariables bools numbers addresses (Dispatch _ _ _ (DoWithArrays arrayIndex arrayType _ effect) continuation) = Dispatch _ _ _ effect (fun x => eliminateLocalVariables bools numbers addresses (continuation x)).
+Lemma pushDispatch {arrayIndex arrayType variableIndex} `{EqDecision variableIndex} (bools : variableIndex -> bool) (numbers : variableIndex -> Z) effect continuation : eliminateLocalVariables bools numbers (Dispatch _ _ _ (DoWithArrays arrayIndex arrayType _ effect) continuation) = Dispatch _ _ _ effect (fun x => eliminateLocalVariables bools numbers (continuation x)).
 Proof. easy. Qed.
 
-Lemma pushDispatch2 {arrayIndex arrayType variableIndex} `{EqDecision variableIndex} (bools : variableIndex -> bool) (numbers : variableIndex -> Z) (addresses : variableIndex -> list Z) effect continuation : eliminateLocalVariables bools numbers addresses ((Dispatch _ _ _ (DoWithArrays arrayIndex arrayType _ effect) (fun x => Done _ _ _ x)) >>= continuation) = Dispatch _ _ _ effect (fun x => eliminateLocalVariables bools numbers addresses (continuation x)).
+Lemma pushDispatch2 {arrayIndex arrayType variableIndex} `{EqDecision variableIndex} (bools : variableIndex -> bool) (numbers : variableIndex -> Z) effect continuation : eliminateLocalVariables bools numbers ((Dispatch _ _ _ (DoWithArrays arrayIndex arrayType _ effect) (fun x => Done _ _ _ x)) >>= continuation) = Dispatch _ _ _ effect (fun x => eliminateLocalVariables bools numbers (continuation x)).
 Proof. easy. Qed.
 
-Lemma pushDispatch3 {arrayIndex arrayType variableIndex} `{EqDecision variableIndex} (bools : variableIndex -> bool) (numbers : variableIndex -> Z) (addresses : variableIndex -> list Z) effect continuation : eliminateLocalVariables bools numbers addresses ((Dispatch _ _ _ (DoWithArrays arrayIndex arrayType _ effect) (fun x => dropWithinLoop (Done _ _ _ tt))) >>= continuation) = Dispatch _ _ _ effect (fun x => eliminateLocalVariables bools numbers addresses (continuation KeepGoing)).
+Lemma pushDispatch3 {arrayIndex arrayType variableIndex} `{EqDecision variableIndex} (bools : variableIndex -> bool) (numbers : variableIndex -> Z) effect continuation : eliminateLocalVariables bools numbers ((Dispatch _ _ _ (DoWithArrays arrayIndex arrayType _ effect) (fun x => dropWithinLoop (Done _ _ _ tt))) >>= continuation) = Dispatch _ _ _ effect (fun x => eliminateLocalVariables bools numbers (continuation KeepGoing)).
 Proof. easy. Qed.
 
-Lemma pushBooleanGet {arrayIndex arrayType variableIndex} `{EqDecision variableIndex} (bools : variableIndex -> bool) (numbers : variableIndex -> Z) (addresses : variableIndex -> list Z) name continuation : eliminateLocalVariables bools numbers addresses (Dispatch _ _ _ (BooleanLocalGet arrayIndex arrayType _ name) continuation) = eliminateLocalVariables bools numbers addresses (continuation (bools name)).
+Lemma pushBooleanGet {arrayIndex arrayType variableIndex} `{EqDecision variableIndex} (bools : variableIndex -> bool) (numbers : variableIndex -> Z) name continuation : eliminateLocalVariables bools numbers (Dispatch _ _ _ (BooleanLocalGet arrayIndex arrayType _ name) continuation) = eliminateLocalVariables bools numbers (continuation (bools name)).
 Proof. easy. Qed.
 
-Lemma pushBooleanGet2 {arrayIndex arrayType variableIndex} `{EqDecision variableIndex} (bools : variableIndex -> bool) (numbers : variableIndex -> Z) (addresses : variableIndex -> list Z) name continuation : eliminateLocalVariables bools numbers addresses ((Dispatch _ _ _ (BooleanLocalGet arrayIndex arrayType _ name) (fun x => Done _ _ _ x)) >>= continuation) = eliminateLocalVariables bools numbers addresses (continuation (bools name)).
+Lemma pushBooleanGet2 {arrayIndex arrayType variableIndex} `{EqDecision variableIndex} (bools : variableIndex -> bool) (numbers : variableIndex -> Z) name continuation : eliminateLocalVariables bools numbers ((Dispatch _ _ _ (BooleanLocalGet arrayIndex arrayType _ name) (fun x => Done _ _ _ x)) >>= continuation) = eliminateLocalVariables bools numbers (continuation (bools name)).
 Proof. easy. Qed.
 
-Lemma pushNumberGet {arrayIndex arrayType variableIndex} `{EqDecision variableIndex} (bools : variableIndex -> bool) (numbers : variableIndex -> Z) (addresses : variableIndex -> list Z) name continuation : eliminateLocalVariables bools numbers addresses (Dispatch _ _ _ (NumberLocalGet arrayIndex arrayType _ name) continuation) = eliminateLocalVariables bools numbers addresses (continuation (numbers name)).
+Lemma pushNumberGet {arrayIndex arrayType variableIndex} `{EqDecision variableIndex} (bools : variableIndex -> bool) (numbers : variableIndex -> Z) name continuation : eliminateLocalVariables bools numbers (Dispatch _ _ _ (NumberLocalGet arrayIndex arrayType _ name) continuation) = eliminateLocalVariables bools numbers (continuation (numbers name)).
 Proof. easy. Qed.
 
-Lemma pushNumberGet2 {arrayIndex arrayType variableIndex} `{EqDecision variableIndex} (bools : variableIndex -> bool) (numbers : variableIndex -> Z) (addresses : variableIndex -> list Z) name continuation : eliminateLocalVariables bools numbers addresses ((Dispatch _ _ _ (NumberLocalGet arrayIndex arrayType _ name) (fun x => Done _ _ _ x)) >>= continuation) = eliminateLocalVariables bools numbers addresses (continuation (numbers name)).
+Lemma pushNumberGet2 {arrayIndex arrayType variableIndex} `{EqDecision variableIndex} (bools : variableIndex -> bool) (numbers : variableIndex -> Z) name continuation : eliminateLocalVariables bools numbers ((Dispatch _ _ _ (NumberLocalGet arrayIndex arrayType _ name) (fun x => Done _ _ _ x)) >>= continuation) = eliminateLocalVariables bools numbers (continuation (numbers name)).
 Proof. easy. Qed.
 
-Lemma pushAddressGet {arrayIndex arrayType variableIndex} `{EqDecision variableIndex} (bools : variableIndex -> bool) (numbers : variableIndex -> Z) (addresses : variableIndex -> list Z) name continuation : eliminateLocalVariables bools numbers addresses (Dispatch _ _ _ (AddressLocalGet arrayIndex arrayType _ name) continuation) = eliminateLocalVariables bools numbers addresses (continuation (addresses name)).
+Lemma pushBooleanSet {arrayIndex arrayType variableIndex} `{EqDecision variableIndex} (bools : variableIndex -> bool) (numbers : variableIndex -> Z) name value continuation : eliminateLocalVariables bools numbers (Dispatch _ _ _ (BooleanLocalSet arrayIndex arrayType _ name value) continuation) = eliminateLocalVariables (update bools name value) numbers (continuation tt).
 Proof. easy. Qed.
 
-Lemma pushAddressGet2 {arrayIndex arrayType variableIndex} `{EqDecision variableIndex} (bools : variableIndex -> bool) (numbers : variableIndex -> Z) (addresses : variableIndex -> list Z) name continuation : eliminateLocalVariables bools numbers addresses ((Dispatch _ _ _ (AddressLocalGet arrayIndex arrayType _ name) (fun x => Done _ _ _ x)) >>= continuation) = eliminateLocalVariables bools numbers addresses (continuation (addresses name)).
+Lemma pushBooleanSet2 {arrayIndex arrayType variableIndex} `{EqDecision variableIndex} (bools : variableIndex -> bool) (numbers : variableIndex -> Z) name value continuation : eliminateLocalVariables bools numbers ((Dispatch _ _ _ (BooleanLocalSet arrayIndex arrayType _ name value) (fun x => Done _ _ _ x)) >>= continuation) = eliminateLocalVariables (update bools name value) numbers (continuation tt).
 Proof. easy. Qed.
 
-Lemma pushBooleanSet {arrayIndex arrayType variableIndex} `{EqDecision variableIndex} (bools : variableIndex -> bool) (numbers : variableIndex -> Z) (addresses : variableIndex -> list Z) name value continuation : eliminateLocalVariables bools numbers addresses (Dispatch _ _ _ (BooleanLocalSet arrayIndex arrayType _ name value) continuation) = eliminateLocalVariables (update bools name value) numbers addresses (continuation tt).
+Lemma pushNumberSet {arrayIndex arrayType variableIndex} `{EqDecision variableIndex} (bools : variableIndex -> bool) (numbers : variableIndex -> Z) name value continuation : eliminateLocalVariables bools numbers (Dispatch _ _ _ (NumberLocalSet arrayIndex arrayType _ name value) continuation) = eliminateLocalVariables bools (update numbers name value) (continuation tt).
 Proof. easy. Qed.
 
-Lemma pushBooleanSet2 {arrayIndex arrayType variableIndex} `{EqDecision variableIndex} (bools : variableIndex -> bool) (numbers : variableIndex -> Z) (addresses : variableIndex -> list Z) name value continuation : eliminateLocalVariables bools numbers addresses ((Dispatch _ _ _ (BooleanLocalSet arrayIndex arrayType _ name value) (fun x => Done _ _ _ x)) >>= continuation) = eliminateLocalVariables (update bools name value) numbers addresses (continuation tt).
-Proof. easy. Qed.
-
-Lemma pushNumberSet {arrayIndex arrayType variableIndex} `{EqDecision variableIndex} (bools : variableIndex -> bool) (numbers : variableIndex -> Z) (addresses : variableIndex -> list Z) name value continuation : eliminateLocalVariables bools numbers addresses (Dispatch _ _ _ (NumberLocalSet arrayIndex arrayType _ name value) continuation) = eliminateLocalVariables bools (update numbers name value) addresses (continuation tt).
-Proof. easy. Qed.
-
-Lemma pushNumberSet2 {arrayIndex arrayType variableIndex} `{EqDecision variableIndex} (bools : variableIndex -> bool) (numbers : variableIndex -> Z) (addresses : variableIndex -> list Z) name value continuation : eliminateLocalVariables bools numbers addresses ((Dispatch _ _ _ (NumberLocalSet arrayIndex arrayType _ name value) (fun x => Done _ _ _ x)) >>= continuation) = eliminateLocalVariables bools (update numbers name value) addresses (continuation tt).
-Proof. easy. Qed.
-
-Lemma pushAddressSet {arrayIndex arrayType variableIndex} `{EqDecision variableIndex} (bools : variableIndex -> bool) (numbers : variableIndex -> Z) (addresses : variableIndex -> list Z) name value continuation : eliminateLocalVariables bools numbers addresses (Dispatch _ _ _ (AddressLocalSet arrayIndex arrayType _ name value) continuation) = eliminateLocalVariables bools numbers (update addresses name value) (continuation tt).
-Proof. easy. Qed.
-
-Lemma pushAddressSet2 {arrayIndex arrayType variableIndex} `{EqDecision variableIndex} (bools : variableIndex -> bool) (numbers : variableIndex -> Z) (addresses : variableIndex -> list Z) name value continuation : eliminateLocalVariables bools numbers addresses ((Dispatch _ _ _ (AddressLocalSet arrayIndex arrayType _ name value) (fun x => Done _ _ _ x)) >>= continuation) = eliminateLocalVariables bools numbers (update addresses name value) (continuation tt).
+Lemma pushNumberSet2 {arrayIndex arrayType variableIndex} `{EqDecision variableIndex} (bools : variableIndex -> bool) (numbers : variableIndex -> Z) name value continuation : eliminateLocalVariables bools numbers ((Dispatch _ _ _ (NumberLocalSet arrayIndex arrayType _ name value) (fun x => Done _ _ _ x)) >>= continuation) = eliminateLocalVariables bools (update numbers name value) (continuation tt).
 Proof. easy. Qed.
 
 Definition readChar arrayIndex arrayType variableIndex := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue Z (DoWithArrays _ _ _ (DoBasicEffect _ _ ReadChar)) (fun x => Done _ _ Z x).
@@ -450,27 +371,9 @@ Definition flush arrayIndex arrayType variableIndex := Dispatch (WithLocalVariab
 
 Definition trap arrayIndex arrayType variableIndex returnType := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue returnType (DoWithArrays _ _ _ (DoBasicEffect _ _ Trap)) (fun x => False_rect _ x).
 
-Definition readByte arrayIndex arrayType variableIndex index := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue _ (DoWithArrays _ _ _ (DoBasicEffect _ _ (ReadByte index))) (fun x => Done _ _ _ x).
-
-Definition setByte arrayIndex arrayType variableIndex index value := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue _ (DoWithArrays _ _ _ (DoBasicEffect _ _ (SetByte index value))) (fun x => Done _ _ _ x).
-
-Definition getSender arrayIndex arrayType variableIndex := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue _ (DoWithArrays _ _ _ (DoBasicEffect _ _ GetSender)) (fun x => Done _ _ _ x).
-
-Definition getMoney arrayIndex arrayType variableIndex := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue _ (DoWithArrays _ _ _ (DoBasicEffect _ _ GetMoney)) (fun x => Done _ _ _ x).
-
-Definition getCommunicationSize arrayIndex arrayType variableIndex := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue _ (DoWithArrays _ _ _ (DoBasicEffect _ _ GetCommunicationSize)) (fun x => Done _ _ _ x).
-
-Definition donate arrayIndex arrayType variableIndex money address := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue _ (DoWithArrays _ _ _ (DoBasicEffect _ _ (Donate money address))) (fun x => Done _ _ _ x).
-
-Definition invoke arrayIndex arrayType variableIndex money address array := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue _ (DoWithArrays _ _ _ (DoBasicEffect _ _ (Invoke money address array))) (fun x => Done _ _ _ x).
-
 Definition booleanLocalSet arrayIndex arrayType variableIndex name value := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue _ (BooleanLocalSet _ _ _ name value) (fun x => Done _ _ _ x).
 
 Definition booleanLocalGet arrayIndex arrayType variableIndex name := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue _ (BooleanLocalGet _ _ _ name) (fun x => Done _ _ _ x).
-
-Definition addressLocalSet arrayIndex arrayType variableIndex name value := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue _ (AddressLocalSet _ _ _ name value) (fun x => Done _ _ _ x).
-
-Definition addressLocalGet arrayIndex arrayType variableIndex name := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue _ (AddressLocalGet _ _ _ name) (fun x => Done _ _ _ x).
 
 Definition numberLocalSet arrayIndex arrayType variableIndex name value := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue _ (NumberLocalSet _ _ _ name value) (fun x => Done _ _ _ x).
 
@@ -479,6 +382,23 @@ Definition numberLocalGet arrayIndex arrayType variableIndex name := Dispatch (W
 Definition retrieve arrayIndex arrayType variableIndex name index := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue _ (DoWithArrays _ _ _ (Retrieve arrayIndex arrayType name index)) (fun x => Done _ _ _ x).
 
 Definition store arrayIndex arrayType variableIndex name index (value : arrayType name) := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue _ (DoWithArrays _ _ _ (Store _ _ name index value)) (fun x => Done _ _ _ x).
+
+Definition grow arrayIndex arrayType variableIndex name minimumLength (zero : arrayType name) := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue _ (DoWithArrays _ _ _ (Grow _ _ name minimumLength zero)) (fun x => Done _ _ _ x).
+
+Definition growList {A} (values : list A) (minimumLength : nat) (zero : A) :=
+  values ++ repeat zero (minimumLength - length values).
+
+Lemma growList_length {A} (values : list A) minimumLength zero :
+  length (growList values minimumLength zero) = Nat.max (length values) minimumLength.
+Proof. unfold growList. rewrite app_length, repeat_length. lia. Qed.
+
+Lemma growList_preserves {A} (values : list A) minimumLength zero :
+  take (length values) (growList values minimumLength zero) = values.
+Proof. unfold growList. apply take_app_length. Qed.
+
+Lemma growList_no_shrink {A} (values : list A) minimumLength zero (h : (minimumLength <= length values)%nat) :
+  growList values minimumLength zero = values.
+Proof. unfold growList. rewrite (proj2 (Nat.sub_0_le _ _) h). simpl. apply app_nil_r. Qed.
 
 Definition continue arrayIndex arrayType variableIndex := Dispatch (WithinLoop arrayIndex arrayType variableIndex) withinLoopReturnValue () (DoContinue _ _ _) (fun x => Done _ _ _ tt).
 
@@ -548,21 +468,19 @@ Fixpoint liftToWithLocalVariables {arrayIndex arrayType variableIndex r} (x : Ac
   | Dispatch _ _ _ effect continuation => Dispatch _ _ _ (DoWithArrays _ _ _ effect) (fun x => liftToWithLocalVariables (continuation x))
   end.
 
-Lemma eliminateLift {arrayIndex arrayType variableIndex returnType} `{EqDecision variableIndex} (bools : variableIndex -> bool) (numbers : variableIndex -> Z) (addresses : variableIndex -> list Z) (action : Action (WithArrays arrayIndex arrayType) withArraysReturnValue returnType) continuation : eliminateLocalVariables bools numbers addresses (liftToWithLocalVariables action >>= continuation) = action >>= fun x => eliminateLocalVariables bools numbers addresses (continuation x).
+Lemma eliminateLift {arrayIndex arrayType variableIndex returnType} `{EqDecision variableIndex} (bools : variableIndex -> bool) (numbers : variableIndex -> Z) (action : Action (WithArrays arrayIndex arrayType) withArraysReturnValue returnType) continuation : eliminateLocalVariables bools numbers (liftToWithLocalVariables action >>= continuation) = action >>= fun x => eliminateLocalVariables bools numbers (continuation x).
 Proof.
   induction action as [a | a b IH]. { easy. }
   change (Dispatch (WithArrays arrayIndex arrayType) withArraysReturnValue
   () a
   (λ _1 : withArraysReturnValue a,
-  eliminateLocalVariables bools numbers addresses
-  (liftToWithLocalVariables (b _1) >>= continuation)) =
+  eliminateLocalVariables bools numbers (liftToWithLocalVariables (b _1) >>= continuation)) =
 Dispatch (WithArrays arrayIndex arrayType) withArraysReturnValue
   () a
   (λ _1 : withArraysReturnValue a,
   b _1 >>=
 λ _2 : returnType,
-  eliminateLocalVariables bools numbers addresses
-  (continuation _2))). rewrite (functional_extensionality_dep _ _ IH). reflexivity.
+  eliminateLocalVariables bools numbers (continuation _2))). rewrite (functional_extensionality_dep _ _ IH). reflexivity.
 Qed.
 
 Fixpoint liftToWithinLoop {arrayIndex arrayType variableIndex r} (x : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue r) : Action (WithinLoop arrayIndex arrayType variableIndex) withinLoopReturnValue r :=
@@ -631,30 +549,50 @@ Fixpoint applyArray {arrayIndex} {arrayType : arrayIndex -> Type} {variableIndex
   | head :: tail => store _ _ _ arrayName startIndex head >>= fun x => applyArray arrayName tail (startIndex + 1)
   end.
 
-Definition invokeWithArrays {arrayIndex} {arrayType : arrayIndex -> Type} {variableIndex} (money : Z) (address : list Z) (arrayName : arrayIndex) (length : Z) (hEq : arrayType arrayName = Z) : Action (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue () := getArray arrayName (Z.to_nat length) >>= fun array => invoke arrayIndex arrayType variableIndex money address ltac:(rewrite hEq in *; exact array) >>= fun array => applyArray arrayName ltac:(rewrite hEq in *; exact array) 0.
+Definition modifyArray {arrayIndex} `{EqDecision arrayIndex} {arrayType : arrayIndex -> Type} (values : forall name, list (arrayType name)) (name : arrayIndex) index (value : arrayType name) :=
+  fun currentName => match decide (currentName = name) with
+  | left h => eq_rect_r (fun name => list (arrayType name)) (<[index:=value]>(values name)) h
+  | right _ => values currentName
+  end.
 
-Lemma getNewArrays {arrayIndex arrayType} `{EqDecision arrayIndex} (x : Action (WithArrays arrayIndex arrayType) withArraysReturnValue ()) (arrays : forall x, list (arrayType x)) : (Action BasicEffect basicEffectReturnValue (forall x, list (arrayType x))).
-Proof.
-  induction x as [x | effect continuation IH] in arrays |- *.
-  - exact (Done _ _ _ arrays).
-  - destruct effect as [effect | arrayName index | arrayName index value].
-    + exact (Dispatch _ _ _ effect (fun x => (IH ltac:(simpl in *; exact x) arrays))).
-    + destruct (decide (Nat.lt (Z.to_nat index) (length (arrays arrayName)))) as [H | H].
-      * exact (IH ltac:(simpl in *; exact (nth_lt (arrays arrayName) (Z.to_nat index) H)) arrays).
-      * exact (Dispatch _ _ _ Trap (fun _ => Done _ _ _ arrays)).
-    + destruct (decide (Nat.lt (Z.to_nat index) (length (arrays arrayName)))) as [H | H].
-      * exact (IH tt (fun name => ltac:(destruct (decide (name = arrayName)) as [H' |]; [subst arrayName; exact (<[(Z.to_nat index):=value]>(arrays name)) | exact (arrays name)]))).
-      * exact (Dispatch _ _ _ Trap (fun _ => Done _ _ _ arrays)).
-Defined.
+
+Definition growArrays {arrayIndex} `{EqDecision arrayIndex} {arrayType : arrayIndex -> Type}
+  (values : forall name, list (arrayType name)) (name : arrayIndex) minimumLength (zero : arrayType name) :=
+  fun currentName => match decide (currentName = name) with
+  | left h => ltac:(subst name; exact (growList (values currentName) minimumLength zero))
+  | right _ => values currentName
+  end.
+
+Fixpoint getNewArrays {arrayIndex arrayType} `{EqDecision arrayIndex}
+  (code : Action (WithArrays arrayIndex arrayType) withArraysReturnValue unit)
+  (values : forall name, list (arrayType name)) : Action BasicEffect basicEffectReturnValue (forall name, list (arrayType name)) :=
+  match code with
+  | Done _ _ _ _ => Done _ _ _ values
+  | Dispatch _ _ _ (DoBasicEffect _ _ effect) next =>
+      Dispatch _ _ _ effect (fun x => getNewArrays (next x) values)
+  | Dispatch _ _ _ (Retrieve _ _ name index) next =>
+      match decide (Nat.lt (Z.to_nat index) (length (values name))) with
+      | left h => getNewArrays (next (nth_lt (values name) (Z.to_nat index) h)) values
+      | right _ => Dispatch _ _ _ Trap (fun _ => Done _ _ _ values)
+      end
+  | Dispatch _ _ _ (Store _ _ name index value) next =>
+      match decide (Nat.lt (Z.to_nat index) (length (values name))) with
+      | left _ => getNewArrays (next tt) (modifyArray values name (Z.to_nat index) value)
+      | right _ => Dispatch _ _ _ Trap (fun _ => Done _ _ _ values)
+      end
+  | Dispatch _ _ _ (Grow _ _ name minimumLength zero) next =>
+      getNewArrays (next tt) (growArrays values name (Z.to_nat minimumLength) zero)
+  end.
+
 
 Lemma withArraysReturnValueDoBasicEffectArrayType arrayIndex1 arrayIndex2 arrayType1 arrayType2 (effect : BasicEffect) : withArraysReturnValue (DoBasicEffect arrayIndex1 arrayType1 effect) = withArraysReturnValue (DoBasicEffect arrayIndex2 arrayType2 effect).
-Proof. auto. Qed.
+Proof. reflexivity. Defined.
 
-Lemma translateArrays {arrayIndex1 arrayIndex2 arrayType} (x : Action (WithArrays arrayIndex1 arrayType) withArraysReturnValue ()) (destinationArrayType : arrayIndex2 -> Type) (mapping : arrayIndex1 -> arrayIndex2) (hCongruent : forall x, arrayType x = destinationArrayType (mapping x)) : Action (WithArrays arrayIndex2 destinationArrayType) withArraysReturnValue ().
+Lemma translateArrays {arrayIndex1 arrayIndex2 arrayType R} (x : Action (WithArrays arrayIndex1 arrayType) withArraysReturnValue R) (destinationArrayType : arrayIndex2 -> Type) (mapping : arrayIndex1 -> arrayIndex2) (hCongruent : forall x, arrayType x = destinationArrayType (mapping x)) : Action (WithArrays arrayIndex2 destinationArrayType) withArraysReturnValue R.
 Proof.
   induction x as [x | effect continuation IH].
-  - exact (Done _ _ _ tt).
-  - destruct effect as [effect | arrayName index | arrayName index value].
+  - exact (Done _ _ _ x).
+  - destruct effect as [effect | arrayName index | arrayName index value | arrayName minimumLength zero].
     + rewrite (withArraysReturnValueDoBasicEffectArrayType arrayIndex1 arrayIndex2 arrayType destinationArrayType) in IH. exact (Dispatch _ _ _ (DoBasicEffect _ destinationArrayType effect) IH).
     + assert (h : withArraysReturnValue (Retrieve arrayIndex1 arrayType arrayName index) = withArraysReturnValue (Retrieve arrayIndex2 destinationArrayType (mapping arrayName) index)). { simpl; auto. }
       rewrite h in IH.
@@ -662,263 +600,95 @@ Proof.
     + assert (h : withArraysReturnValue (Store arrayIndex1 arrayType arrayName index value) = withArraysReturnValue (Store _ destinationArrayType (mapping arrayName) index ltac:(rewrite <- hCongruent; exact value))). { simpl; auto. }
       rewrite h in IH.
       exact (Dispatch _ _ _ (Store _ destinationArrayType (mapping arrayName) index ltac:(rewrite <- hCongruent; exact value)) IH).
+    + assert (h : withArraysReturnValue (Grow arrayIndex1 arrayType arrayName minimumLength zero) = withArraysReturnValue (Grow _ destinationArrayType (mapping arrayName) minimumLength ltac:(rewrite <- hCongruent; exact zero))). { reflexivity. }
+      rewrite h in IH.
+      exact (Dispatch _ _ _ (Grow _ destinationArrayType (mapping arrayName) minimumLength ltac:(rewrite <- hCongruent; exact zero)) IH).
 Defined.
 
-Lemma modifyArray {arrayIndex} `{EqDecision arrayIndex} {arrayType : arrayIndex -> Type} (arrays : forall x, list (arrayType x)) (toBeModified : arrayIndex) (index : nat) (value : arrayType toBeModified) : forall x, list (arrayType x).
-Proof.
-  intro arrayName.
-  destruct (decide (arrayName = toBeModified)) as [H | H].
-  - rewrite <- H in value.
-    exact (<[index:=value]>(arrays arrayName)).
-  - exact (arrays arrayName).
-Defined.
+
 
 Lemma getAllCharacters {arrayIndex arrayType} (x : Action (WithArrays arrayIndex arrayType) withArraysReturnValue ()) (captured : list Z) : Action (WithArrays arrayIndex arrayType) withArraysReturnValue (list Z).
 Proof.
   induction x as [x | effect continuation IH] in captured |- *.
   - exact (Done _ _ _ captured).
-  - destruct effect as [effect | arrayName index | arrayName index value].
-    + destruct effect as [| | | x | | | | | | |].
+  - destruct effect as [effect | arrayName index | arrayName index value | arrayName minimumLength zero].
+    + destruct effect as [| | | x].
       * exact (Dispatch _ _ _ (DoBasicEffect _ _ Trap) (fun returnValue => IH returnValue captured)).
       * exact (Dispatch _ _ _ (DoBasicEffect _ _ Flush) (fun returnValue => IH returnValue captured)).
       * exact (Dispatch _ _ _ (DoBasicEffect _ _ ReadChar) (fun returnValue => IH returnValue captured)).
       * exact (Dispatch _ _ _ (DoBasicEffect _ _ (WriteChar x)) (fun returnValue => IH returnValue (captured ++ [x]))).
-      * exact (Dispatch _ _ _ (DoBasicEffect _ _ Trap) (fun returnValue => Done _ _ _ captured)).
-      * exact (Dispatch _ _ _ (DoBasicEffect _ _ Trap) (fun returnValue => Done _ _ _ captured)).
-      * exact (Dispatch _ _ _ (DoBasicEffect _ _ Trap) (fun returnValue => Done _ _ _ captured)).
-      * exact (Dispatch _ _ _ (DoBasicEffect _ _ Trap) (fun returnValue => Done _ _ _ captured)).
-      * exact (Dispatch _ _ _ (DoBasicEffect _ _ Trap) (fun returnValue => Done _ _ _ captured)).
-      * exact (Dispatch _ _ _ (DoBasicEffect _ _ Trap) (fun returnValue => Done _ _ _ captured)).
-      * exact (Dispatch _ _ _ (DoBasicEffect _ _ Trap) (fun returnValue => Done _ _ _ captured)).
     + exact (Dispatch _ _ _ (Retrieve _ arrayType arrayName index) (fun x => IH x captured)).
     + exact (Dispatch _ _ _ (Store _ arrayType arrayName index value) (fun x => IH x captured)).
+    + exact (Dispatch _ _ _ (Grow _ arrayType arrayName minimumLength zero) (fun x => IH x captured)).
 Defined.
 
-Inductive BlockchainAccount :=
-| ExternallyOwned (money : Z)
-| BlockchainContract (arrayIndex : Type) (arrayIndexEqualityDecidable : EqDecision arrayIndex) (arrayType : arrayIndex -> Type) (arrays : forall (name : arrayIndex), list (arrayType name)) (money : Z) (code : Action (WithArrays arrayIndex arrayType) withArraysReturnValue ()).
 
-Definition BlockchainState := list Z -> BlockchainAccount.
+(* Competitive execution consumes stdin bytes, collects stdout, and returns the
+   final arrays. Array-only proofs can use runArrays to leave I/O abstract. *)
+Definition runArrays arrayIndex (indexEquality : EqDecision arrayIndex) arrayType
+  (values : forall name, list (arrayType name))
+  (code : Action (WithArrays arrayIndex arrayType) withArraysReturnValue unit) :=
+  @getNewArrays arrayIndex arrayType indexEquality code values.
 
-Definition getBalance (x : BlockchainAccount) : Z :=
-  match x with
-  | ExternallyOwned money => money
-  | BlockchainContract _ _ _ _ balance _ => balance
+Lemma runArrays_done arrayIndex indexEquality arrayType values :
+  runArrays arrayIndex indexEquality arrayType values (Done _ _ _ tt) = Done _ _ _ values.
+Proof. reflexivity. Qed.
+
+Lemma runArrays_retrieve arrayIndex indexEquality arrayType values name index continuation :
+  runArrays arrayIndex indexEquality arrayType values (Dispatch _ _ _ (Retrieve _ _ name index) continuation) =
+  match decide (Nat.lt (Z.to_nat index) (length (values name))) with
+  | left h => runArrays arrayIndex indexEquality arrayType values (continuation (nth_lt (values name) (Z.to_nat index) h))
+  | right _ => Dispatch _ _ _ Trap (fun _ => Done _ _ _ values)
   end.
+Proof. reflexivity. Qed.
 
-Definition updateBalance (x : BlockchainAccount) (newBalance : Z) : BlockchainAccount :=
-  match x with
-  | ExternallyOwned _ => ExternallyOwned newBalance
-  | BlockchainContract a b c d _ e => BlockchainContract a b c d newBalance e
+Lemma runArrays_store arrayIndex indexEquality arrayType values name index value continuation :
+  runArrays arrayIndex indexEquality arrayType values (Dispatch _ _ _ (Store _ _ name index value) continuation) =
+  match decide (Nat.lt (Z.to_nat index) (length (values name))) with
+  | left h => runArrays arrayIndex indexEquality arrayType (fun currentName => match decide (currentName = name) with
+    | left h => eq_rect_r (fun name => list (arrayType name)) (<[Z.to_nat index:=value]>(values name)) h
+    | right _ => values currentName
+    end) (continuation tt)
+  | right _ => Dispatch _ _ _ Trap (fun _ => Done _ _ _ values)
   end.
+Proof. reflexivity. Qed.
 
-Definition transferMoney (state : BlockchainState) (sender target : list Z) (money : Z) :=
-  let intermediateState := update state sender (updateBalance (state sender) (getBalance (state sender) - money)) in
-  update intermediateState target (updateBalance (state target) (getBalance (state target) + money)).
-
-(* this assumes the money has already been transferred before the contract gets invoked *)
-(* so initially this function doesn't deduct the balance of the sender and credit the balance of the target *)
-(* revertTo: state before the money transfer and the subsequent contract invocation, state: current state *)
-Fixpoint invokeContractAux (sender target : list Z) (money : Z) (revertTo state : BlockchainState) (communication : list Z) (fuel : nat) (arrayIndex : Type) (arrayIndexEqualityDecidable : EqDecision arrayIndex) (arrayType : arrayIndex -> Type) (arrays : forall (name : arrayIndex), list (arrayType name)) (originalCode code : Action (WithArrays arrayIndex arrayType) withArraysReturnValue ()): option (list Z * BlockchainState) :=
-  match fuel with
-  | O => None
-  | S fuel => (fix inner (code : Action (WithArrays arrayIndex arrayType) withArraysReturnValue ()) (communication : list Z) (arrays : forall (name : arrayIndex), list (arrayType name)) (state : BlockchainState) :=
-    match code with
-    | Done _ _ _ _ => Some (communication, update state target (BlockchainContract arrayIndex _ arrayType arrays (getBalance (state target)) originalCode))
-    | Dispatch _ _ _ (Retrieve _ _ arrayName index) continuation =>
-      match decide (Nat.lt (Z.to_nat index) (length (arrays arrayName))) with
-      | left h => inner (continuation (nth_lt (arrays arrayName) (Z.to_nat index) h)) communication arrays state
-      | right _ => Some ([], revertTo)
+Fixpoint runIO {R} (code : Action BasicEffect basicEffectReturnValue R)
+  (input output : list Z) : option (R * list Z * list Z) :=
+  match code with
+  | Done _ _ _ value => Some (value, input, output)
+  | Dispatch _ _ _ Trap _ => None
+  | Dispatch _ _ _ Flush next => runIO (next tt) input output
+  | Dispatch _ _ _ ReadChar next =>
+      match input with
+      | [] => runIO (next (2^64 - 1)) [] output
+      | head :: tail => runIO (next head) tail output
       end
-    | Dispatch _ _ _ (Store _ _ arrayName index value) continuation =>
-      match decide (Nat.lt (Z.to_nat index) (length (arrays arrayName))) with
-      | left h => inner (continuation tt) communication (fun currentName =>
-        match decide (currentName = arrayName) with
-        | left h => ltac:(rewrite h; exact (<[Z.to_nat index := value]> (arrays arrayName)))
-        | right _ => arrays currentName
-        end) state
-      | right _ => Some ([], revertTo)
-      end
-      | Dispatch _ _ _ (DoBasicEffect _ _ Trap) continuation => Some ([], revertTo)
-      | Dispatch _ _ _ (DoBasicEffect _ _ Flush) continuation => Some ([], revertTo)
-      | Dispatch _ _ _ (DoBasicEffect _ _ ReadChar) continuation => Some ([], revertTo)
-      | Dispatch _ _ _ (DoBasicEffect _ _ (WriteChar _)) continuation => Some ([], revertTo)
-      | Dispatch _ _ _ (DoBasicEffect _ _ (Donate money address)) continuation =>
-        if decide (money <= getBalance (state target) /\ 0 <= money /\ money < 2^256) then
-          inner (continuation tt) communication arrays (transferMoney state target address money)
-        else Some ([], revertTo)
-      | Dispatch _ _ _ (DoBasicEffect _ _ (Invoke money address passedArray)) continuation =>
-        if decide (money <= getBalance (state target) /\ 0 <= money /\ money < 2^256) then
-          let alteredState := update state target (BlockchainContract arrayIndex _ arrayType arrays (getBalance (state target)) originalCode) in
-          match (state address) with
-          | ExternallyOwned _ => inner (continuation []) communication arrays (transferMoney alteredState target address money)
-          | BlockchainContract arrayIndex arrayIndexEqualityDecidable arrayType arrays2 balance code => match invokeContractAux target address money alteredState (transferMoney alteredState target address money) passedArray fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays2 code code with
-            | None => None
-            | Some (newArray, newState) => inner (continuation newArray) communication arrays newState
-            end
-          end
-        else Some ([], revertTo)
-      | Dispatch _ _ _ (DoBasicEffect _ _ GetSender) continuation => inner (continuation sender) communication arrays state
-      | Dispatch _ _ _ (DoBasicEffect _ _ GetMoney) continuation => inner (continuation money) communication arrays state
-      | Dispatch _ _ _ (DoBasicEffect _ _ GetCommunicationSize) continuation => inner (continuation (Z.of_nat (length communication))) communication arrays state
-      | Dispatch _ _ _ (DoBasicEffect _ _ (ReadByte index)) continuation =>
-        if decide (Nat.lt (Z.to_nat index) (length communication)) then
-          inner (continuation (nth (Z.to_nat index) communication 0)) communication arrays state
-        else Some ([], revertTo)
-      | Dispatch _ _ _ (DoBasicEffect _ _ (SetByte index value)) continuation =>
-        if decide (Nat.lt (Z.to_nat index) (length communication)) then
-          inner (continuation tt) (<[Z.to_nat index := value]> communication) arrays state
-        else Some ([], revertTo)
-      end) code communication arrays state
-    end.
-
-Definition invokeContract (sender target : list Z) (money : Z) (revertTo state : BlockchainState) (communication : list Z) (fuel : nat) :=
-  match state target with
-  | ExternallyOwned _ => Some ([], state)
-  | BlockchainContract arrayIndex arrayIndexEqualityDecidable arrayType arrays balance code => invokeContractAux sender target money revertTo state communication fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays code code
+  | Dispatch _ _ _ (WriteChar value) next => runIO (next tt) input (output ++ [value])
   end.
 
-Lemma unfoldInvoke_0 : 
-  forall sender target money revertTo state communication arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode code,
-    invokeContractAux sender target money revertTo state communication 0 arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode code = None.
-Proof. easy. Qed.
-
-Lemma unfoldInvoke_S_Done : 
-  forall sender target money revertTo state communication fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays returnValue originalCode,
-    invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode (Done _ _ _ returnValue) =
-      Some (communication, update state target (BlockchainContract arrayIndex _ arrayType arrays (getBalance (state target)) originalCode)).
-Proof. easy. Qed.
-
-Lemma unfoldInvoke_S_Retrieve : 
-  forall sender target money revertTo state communication fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode arrayName index continuation,
-    invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode (Dispatch _ _ _ (Retrieve _ _ arrayName index) continuation) =
-      match decide (Nat.lt (Z.to_nat index) (length (arrays arrayName))) with
-      | left h => invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode (continuation (nth_lt (arrays arrayName) (Z.to_nat index) h))
-      | right _ => Some ([], revertTo)
-      end.
-Proof. easy. Qed.
-
-Lemma unfoldInvoke_S_Store : 
-  forall sender target money revertTo state communication fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode arrayName index value continuation,
-    invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode (Dispatch _ _ _ (Store _ _ arrayName index value) continuation) =
-      match decide (Nat.lt (Z.to_nat index) (length (arrays arrayName))) with
-      | left h =>
-          invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType 
-            (fun currentName => match decide (currentName = arrayName) with
-              | left h => ltac:(rewrite h; exact (<[Z.to_nat index := value]> (arrays arrayName)))
-              | right _ => arrays currentName
-              end)
-            originalCode (continuation tt)
-      | right _ => Some ([], revertTo)
-      end.
-Proof. easy. Qed.
-
-Lemma unfoldInvoke_S_Trap : 
-  forall sender target money revertTo state communication fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode continuation,
-    invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode (Dispatch _ _ _ (DoBasicEffect _ _ Trap) continuation) = 
-      Some ([], revertTo).
-Proof. easy. Qed.
-
-Lemma unfoldInvoke_S_Flush : 
-  forall sender target money revertTo state communication fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode continuation,
-    invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode (Dispatch _ _ _ (DoBasicEffect _ _ Flush) continuation) = 
-      Some ([], revertTo).
-Proof. easy. Qed.
-
-Lemma unfoldInvoke_S_ReadChar : 
-  forall sender target money revertTo state communication fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode continuation,
-    invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode (Dispatch _ _ _ (DoBasicEffect _ _ ReadChar) continuation) = 
-      Some ([], revertTo).
-Proof. easy. Qed.
-
-Lemma unfoldInvoke_S_WriteChar : 
-  forall sender target money revertTo state communication fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode value continuation,
-    invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode (Dispatch _ _ _ (DoBasicEffect _ _ (WriteChar value)) continuation) = 
-      Some ([], revertTo).
-Proof. easy. Qed.
-
-Lemma unfoldInvoke_S_Donate : 
-  forall sender target money revertTo state communication fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode donationMoney address continuation,
-    invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode (Dispatch _ _ _ (DoBasicEffect _ _ (Donate donationMoney address)) continuation) = 
-      if decide (donationMoney <= getBalance (state target) /\ 0 <= donationMoney /\ donationMoney < 2^256) then
-        invokeContractAux sender target money revertTo (transferMoney state target address donationMoney) communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode (continuation tt)
-      else Some ([], revertTo).
-Proof. easy. Qed.
-
-Lemma unfoldInvoke_S_Invoke : 
-  forall sender target money revertTo state communication fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode invokeMoney address passedArray continuation,
-    invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode (Dispatch _ _ _ (DoBasicEffect _ _ (Invoke invokeMoney address passedArray)) continuation) = 
-      if decide (invokeMoney <= getBalance (state target) /\ 0 <= invokeMoney /\ invokeMoney < 2^256) then
-        let alteredState := update state target (BlockchainContract arrayIndex _ arrayType arrays (getBalance (state target)) originalCode) in
-        match (state address) with
-        | ExternallyOwned _ => invokeContractAux sender target money revertTo (transferMoney alteredState target address invokeMoney) communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode (continuation [])
-        | BlockchainContract arrayIndex2 arrayIndexEqualityDecidable2 arrayType2 arrays2 _ code =>
-          match invokeContractAux target address invokeMoney alteredState (transferMoney alteredState target address invokeMoney) passedArray fuel arrayIndex2 arrayIndexEqualityDecidable2 arrayType2 arrays2 code code with
-          | None => None
-          | Some (newArray, newState) => invokeContractAux sender target money revertTo newState communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode (continuation newArray)
-          end
-        end
-      else Some ([], revertTo).
-Proof. easy. Qed.
-
-Lemma unfoldInvoke_S_GetSender : 
-  forall sender target money revertTo state communication fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode continuation,
-    invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode (Dispatch _ _ _ (DoBasicEffect _ _ GetSender) continuation) = invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode (continuation sender).
-Proof. easy. Qed.
-
-Lemma unfoldInvoke_S_GetMoney : 
-  forall sender target money revertTo state communication fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode continuation,
-    invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode (Dispatch _ _ _ (DoBasicEffect _ _ GetMoney) continuation) = invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode (continuation money).
-Proof. easy. Qed.
-
-Lemma unfoldInvoke_S_GetCommunicationSize : 
-  forall sender target money revertTo state communication fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode continuation,
-    invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode (Dispatch _ _ _ (DoBasicEffect _ _ GetCommunicationSize) continuation) = invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode (continuation (Z.of_nat (length communication))).
-Proof. easy. Qed.
-
-Lemma unfoldInvoke_S_ReadByte : 
-  forall sender target money revertTo state communication fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode index continuation,
-    invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode (Dispatch _ _ _ (DoBasicEffect _ _ (ReadByte index)) continuation) =
-    if decide (Nat.lt (Z.to_nat index) (length communication)) then
-    invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode (continuation (nth (Z.to_nat index) communication 0))
-    else Some ([], revertTo).
-Proof. easy. Qed.
-
-Lemma unfoldInvoke_S_SetByte : 
-  forall sender target money revertTo state communication fuel arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode index value continuation,
-    invokeContractAux sender target money revertTo state communication (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode (Dispatch _ _ _ (DoBasicEffect _ _ (SetByte index value)) continuation) =
-    if decide (Nat.lt (Z.to_nat index) (length communication)) then
-    invokeContractAux sender target money revertTo state (<[Z.to_nat index := value]> communication) (S fuel) arrayIndex arrayIndexEqualityDecidable arrayType arrays originalCode (continuation tt)
-    else Some ([], revertTo).
-Proof. easy. Qed.
+Definition runProgram {arrayIndex arrayType} `{EqDecision arrayIndex}
+  (values : forall name, list (arrayType name))
+  (code : Action (WithArrays arrayIndex arrayType) withArraysReturnValue unit)
+  (input : list Z) := runIO (getNewArrays code values) input [].
 
 Create HintDb advance_program.
-Hint Rewrite unfoldInvoke_0 : advance_program.
-Hint Rewrite unfoldInvoke_S_Done : advance_program.
-Hint Rewrite unfoldInvoke_S_Retrieve : advance_program.
-Hint Rewrite unfoldInvoke_S_Store : advance_program.
-Hint Rewrite unfoldInvoke_S_Trap : advance_program.
-Hint Rewrite unfoldInvoke_S_Flush : advance_program.
-Hint Rewrite unfoldInvoke_S_ReadChar : advance_program.
-Hint Rewrite unfoldInvoke_S_WriteChar : advance_program.
-Hint Rewrite unfoldInvoke_S_Donate : advance_program.
-Hint Rewrite unfoldInvoke_S_Invoke : advance_program.
-Hint Rewrite unfoldInvoke_S_GetSender : advance_program.
-Hint Rewrite unfoldInvoke_S_GetMoney : advance_program.
-Hint Rewrite unfoldInvoke_S_GetCommunicationSize : advance_program.
-Hint Rewrite unfoldInvoke_S_ReadByte : advance_program.
-Hint Rewrite unfoldInvoke_S_SetByte : advance_program.
-Hint Rewrite @pushDispatch : advance_program.
-Hint Rewrite @pushDispatch2 : advance_program.
-Hint Rewrite @pushBooleanGet : advance_program.
-Hint Rewrite @pushBooleanGet2 : advance_program.
-Hint Rewrite @pushNumberGet : advance_program.
-Hint Rewrite @pushNumberGet2 : advance_program.
-Hint Rewrite @pushAddressGet : advance_program.
-Hint Rewrite @pushAddressGet2 : advance_program.
-Hint Rewrite @pushBooleanSet : advance_program.
-Hint Rewrite @pushBooleanSet2 : advance_program.
-Hint Rewrite @pushNumberSet : advance_program.
-Hint Rewrite @pushNumberSet2 : advance_program.
-Hint Rewrite @pushAddressSet : advance_program.
-Hint Rewrite @pushAddressSet2 : advance_program.
+Hint Rewrite runArrays_done runArrays_retrieve runArrays_store : advance_program.
+Hint Rewrite @pushDispatch @pushDispatch2 @pushBooleanGet @pushBooleanGet2
+  @pushNumberGet @pushNumberGet2 @pushBooleanSet @pushBooleanSet2
+  @pushNumberSet @pushNumberSet2 : advance_program.
+
+Lemma runArrays_grow arrayIndex indexEquality arrayType values name minimumLength zero continuation :
+  runArrays arrayIndex indexEquality arrayType values (Dispatch _ _ _ (Grow _ _ name minimumLength zero) continuation) =
+  runArrays arrayIndex indexEquality arrayType (growArrays values name (Z.to_nat minimumLength) zero) (continuation tt).
+Proof. reflexivity. Qed.
+
+Lemma growArrays_same {arrayIndex} `{EqDecision arrayIndex} {arrayType : arrayIndex -> Type}
+  values (name : arrayIndex) minimumLength (zero : arrayType name) :
+  growArrays values name minimumLength zero name = growList (values name) minimumLength zero.
+Proof. unfold growArrays. destruct (decide (name = name)) as [h | h]; [| easy]. rewrite (UIP_dec (fun x y : arrayIndex => decide (x = y)) h eq_refl). reflexivity. Qed.
+
+Lemma growArrays_other {arrayIndex} `{EqDecision arrayIndex} {arrayType : arrayIndex -> Type}
+  values (name other : arrayIndex) minimumLength (zero : arrayType name) (h : other <> name) :
+  growArrays values name minimumLength zero other = values other.
+Proof. unfold growArrays. case_decide; easy. Qed.

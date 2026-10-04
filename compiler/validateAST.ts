@@ -1,3 +1,4 @@
+import { analyzeArrayGrowth } from './arrayGrowth'
 import { PairMap } from './PairMap'
 import { consumeNever } from './consumeNever'
 import { sortModules, validateCyclicDependencies } from './dependencyGraph'
@@ -7,7 +8,6 @@ import {
   PrimitiveType,
   CoqCPAST,
   Location,
-  COMMUNICATION,
 } from './parse'
 
 export type ValidationError =
@@ -51,14 +51,8 @@ export type ValidationError =
           type:
             | 'instruction expects int8'
             | 'instruction expects int64'
-            | 'instruction expects address'
-            | 'instruction expects int256'
             | 'instruction expects tuple'
-            | 'instruction expects address or tuple'
         }
-      | { type: 'instruction expects [int8] array' }
-      | { type: 'instruction only available in blockchain environment' }
-      | { type: 'instruction not available in blockchain environment' }
       | { type: 'undefined array' }
       | { type: 'index out of bounds' }
       | {
@@ -66,7 +60,6 @@ export type ValidationError =
             | 'unary operator expects numeric'
             | "unary operator can't operate on tuples"
             | "unary operator can't operate on strings"
-            | "unary operator can't operate on addresses"
             | 'unary operator expects boolean'
         }
       | { type: "array length can't be less than 1" }
@@ -95,27 +88,24 @@ export type ValidationError =
 
 export const isNumeric = (
   x: string | PrimitiveType[]
-): x is 'int8' | 'int16' | 'int32' | 'int64' | 'int256' => {
+): x is 'int8' | 'int16' | 'int32' | 'int64' => {
   return (
     x === 'int8' ||
     x === 'int16' ||
     x === 'int32' ||
-    x === 'int64' ||
-    x === 'int256'
+    x === 'int64'
   )
 }
 
 export const sortAndValidateAST = (
-  modules: CoqCPAST[],
-  blockchain: boolean
+  modules: CoqCPAST[]
 ): ValidationError[] => {
   const sortedModules = sortModules(modules)
-  return validateAST(sortedModules, blockchain)
+  return validateAST(sortedModules)
 }
 
 export const validateAST = (
-  sortedModules: CoqCPAST[],
-  blockchain: boolean
+  sortedModules: CoqCPAST[]
 ): ValidationError[] => {
   // Check for duplicate modules
   {
@@ -148,6 +138,7 @@ export const validateAST = (
   const cyclicDependencyCheck = validateCyclicDependencies(sortedModules)
   if (cyclicDependencyCheck.length) return cyclicDependencyCheck
 
+  const growingArrays = analyzeArrayGrowth(sortedModules)
   const crossModuleProcedureMap = new PairMap<string, string, Procedure>()
   const seenModules = new Map<string, CoqCPAST>()
 
@@ -176,7 +167,7 @@ export const validateAST = (
           environment.arrays.delete(key)
           continue
         }
-        if (evaluated < 1n) {
+        if (evaluated < 0n || (evaluated === 0n && !growingArrays.get(moduleName)!.has(key))) {
           errors.push({
             type: "array length can't be less than 1",
             location: { ...array.length.location, moduleName },
@@ -266,8 +257,7 @@ export const validateAST = (
                 if (
                   leftType === rightType &&
                   (isNumeric(leftType) ||
-                    leftType === 'bool' ||
-                    leftType === 'address')
+                    leftType === 'bool')
                 )
                   return 'bool'
                 else {
@@ -508,7 +498,6 @@ export const validateAST = (
 
             return 'statement'
           }
-          case 'coerceInt256':
           case 'coerceInt16':
           case 'coerceInt32':
           case 'coerceInt64':
@@ -528,9 +517,7 @@ export const validateAST = (
                 ? 'int32'
                 : instruction.type === 'coerceInt64'
                   ? 'int64'
-                  : instruction.type === 'coerceInt256'
-                    ? 'int256'
-                    : 'int8'
+                  : 'int8'
           }
           case 'condition': {
             const { alternate, body, condition, location } = instruction
@@ -615,13 +602,6 @@ export const validateAST = (
               return 'bool'
           }
           case 'flush': {
-            if (blockchain) {
-              errors.push({
-                type: 'instruction not available in blockchain environment',
-                location: { ...instruction.location, moduleName },
-              })
-              return 'illegal'
-            }
             return 'statement'
           }
           case 'get': {
@@ -710,23 +690,9 @@ export const validateAST = (
             return result
           }
           case 'readChar': {
-            if (blockchain) {
-              errors.push({
-                type: 'instruction not available in blockchain environment',
-                location: { ...instruction.location, moduleName },
-              })
-              return 'illegal'
-            }
             return 'int64'
           }
           case 'writeChar': {
-            if (blockchain) {
-              errors.push({
-                type: 'instruction not available in blockchain environment',
-                location: { ...instruction.location, moduleName },
-              })
-              return 'illegal'
-            }
             const type = dfs(instruction.value)
             if (type === 'illegal') return 'illegal'
             if (type === 'statement') {
@@ -741,6 +707,23 @@ export const validateAST = (
                 type: 'instruction expects int8',
                 location: { ...instruction.location, moduleName },
               })
+              return 'illegal'
+            }
+            return 'statement'
+          }
+          case 'grow': {
+            const type = dfs(instruction.length)
+            if (type === 'illegal') return 'illegal'
+            if (type === 'statement') {
+              errors.push({ type: 'expression no statement', location: { ...instruction.length.location, moduleName } })
+              return 'illegal'
+            }
+            if (type !== 'int64') {
+              errors.push({ type: 'instruction expects int64', location: { ...instruction.length.location, moduleName } })
+              return 'illegal'
+            }
+            if (!environment?.arrays.has(instruction.name)) {
+              errors.push({ type: 'undefined array', location: { ...instruction.location, moduleName } })
               return 'illegal'
             }
             return 'statement'
@@ -762,16 +745,6 @@ export const validateAST = (
                 location: { ...instruction.location, moduleName },
               })
               return 'illegal'
-            }
-            if (name === COMMUNICATION) {
-              if (!blockchain) {
-                errors.push({
-                  type: 'instruction only available in blockchain environment',
-                  location: { ...instruction.location, moduleName },
-                })
-                return 'illegal'
-              }
-              return 'int8'
             }
             const array = environment?.arrays.get(name)
             if (array === undefined) {
@@ -833,33 +806,6 @@ export const validateAST = (
                 location: { ...instruction.location, moduleName },
               })
               invalid = true
-            }
-            if (name === COMMUNICATION) {
-              if (!blockchain) {
-                errors.push({
-                  type: 'instruction only available in blockchain environment',
-                  location: { ...instruction.location, moduleName },
-                })
-                return 'illegal'
-              }
-              if (invalid) return 'illegal'
-              const valueType = dfs(instruction.value)
-              if (valueType === 'illegal') return 'illegal'
-              if (valueType === 'statement') {
-                errors.push({
-                  type: 'expression no statement',
-                  location: { ...instruction.value.location, moduleName },
-                })
-                return 'illegal'
-              }
-              if (valueType !== 'int8') {
-                errors.push({
-                  type: 'instruction expects int8',
-                  location: { ...instruction.value.location, moduleName },
-                })
-                return 'illegal'
-              }
-              return 'statement'
             }
             const { tuple } = instruction
             const actualType = tuple.map(dfs)
@@ -953,22 +899,8 @@ export const validateAST = (
               return returnedType
             }
 
-            if (type === 'address' && blockchain) {
-              const indexType = dfs(index)
-              if (indexType === 'illegal') return 'illegal'
-              if (indexType !== 'int64') {
-                errors.push({
-                  type: 'instruction expects int64',
-                  location: { ...index.location, moduleName },
-                })
-              }
-              return 'int8'
-            }
-
             errors.push({
-              type: blockchain
-                ? 'instruction expects address or tuple'
-                : 'instruction expects tuple',
+              type: 'instruction expects tuple',
               location: { ...instruction.location, moduleName },
             })
             return 'illegal'
@@ -1013,13 +945,6 @@ export const validateAST = (
               })
               return 'illegal'
             }
-            if (valueType === 'address') {
-              errors.push({
-                type: "unary operator can't operate on addresses",
-                location: { ...instruction.location, moduleName },
-              })
-              return 'illegal'
-            }
             if (valueType === 'bool') {
               switch (operator) {
                 case 'bitwise not':
@@ -1037,149 +962,7 @@ export const validateAST = (
             }
             return consumeNever(valueType)
           }
-          case 'get sender': {
-            if (!blockchain) {
-              errors.push({
-                type: 'instruction only available in blockchain environment',
-                location: { ...instruction.location, moduleName },
-              })
-              return 'illegal'
-            }
-            return 'address'
-          }
-          case 'communication area size': {
-            if (!blockchain) {
-              errors.push({
-                type: 'instruction only available in blockchain environment',
-                location: { ...instruction.location, moduleName },
-              })
-              return 'illegal'
-            }
-            return 'int64'
-          }
-          case 'get money': {
-            if (!blockchain) {
-              errors.push({
-                type: 'instruction only available in blockchain environment',
-                location: { ...instruction.location, moduleName },
-              })
-              return 'illegal'
-            }
-            return 'int256'
-          }
-          case 'construct address': {
-            if (!blockchain) {
-              errors.push({
-                type: 'instruction only available in blockchain environment',
-                location: { ...instruction.location, moduleName },
-              })
-              return 'illegal'
-            }
-            let invalid = false
-            for (const byte of instruction.bytes) {
-              const type = dfs(byte)
-              if (type === 'illegal') invalid = true
-              else if (type !== 'int8') {
-                invalid = true
-                errors.push({
-                  type: 'instruction expects int8',
-                  location: { ...byte.location, moduleName },
-                })
-              }
-            }
-            if (invalid) return 'illegal'
-            return 'address'
-          }
-          case 'donate': {
-            if (!blockchain) {
-              errors.push({
-                type: 'instruction only available in blockchain environment',
-                location: { ...instruction.location, moduleName },
-              })
-              return 'illegal'
-            }
-            let invalid = false
-            const { money, address } = instruction
-            const moneyType = dfs(money)
-            const addressType = dfs(address)
-            if (moneyType === 'illegal') invalid = true
-            else if (moneyType !== 'int256') {
-              invalid = true
-              errors.push({
-                type: 'instruction expects int256',
-                location: { ...money.location, moduleName },
-              })
-            }
-            if (addressType === 'illegal') invalid = true
-            else if (addressType !== 'address') {
-              invalid = true
-              errors.push({
-                type: 'instruction expects address',
-                location: { ...address.location, moduleName },
-              })
-            }
-            if (invalid) return 'illegal'
-            return 'statement'
-          }
-          case 'invoke': {
-            if (!blockchain) {
-              errors.push({
-                type: 'instruction only available in blockchain environment',
-                location: { ...instruction.location, moduleName },
-              })
-              return 'illegal'
-            }
-            let invalid = false
-            const { money, address, array, communicationSize } = instruction
-            const moneyType = dfs(money)
-            const addressType = dfs(address)
-            const communicationSizeType = dfs(communicationSize)
-            if (moneyType === 'illegal') invalid = true
-            else if (moneyType !== 'int256') {
-              invalid = true
-              errors.push({
-                type: 'instruction expects int256',
-                location: { ...money.location, moduleName },
-              })
-            }
-            if (addressType === 'illegal') invalid = true
-            else if (addressType !== 'address') {
-              invalid = true
-              errors.push({
-                type: 'instruction expects address',
-                location: { ...address.location, moduleName },
-              })
-            }
-            if (communicationSizeType === 'illegal') invalid = true
-            else if (communicationSizeType !== 'int64') {
-              invalid = true
-              errors.push({
-                type: 'instruction expects int64',
-                location: { ...communicationSize.location, moduleName },
-              })
-            }
-            const environmentArray = environment?.arrays.get(array)
-            if (environmentArray === undefined) {
-              invalid = true
-              errors.push({
-                type: 'undefined array',
-                location: { ...instruction.location, moduleName },
-              })
-            } else {
-              if (
-                environmentArray.itemTypes.length !== 1 ||
-                environmentArray.itemTypes[0] !== 'int8'
-              ) {
-                invalid = true
-                errors.push({
-                  type: 'instruction expects [int8] array',
-                  location: { ...instruction.location, moduleName },
-                })
-              }
-            }
-            if (invalid) return 'illegal'
-            return 'statement'
-          }
+
         }
       }
       procedure.body.forEach(dfs)

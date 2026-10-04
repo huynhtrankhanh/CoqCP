@@ -4,28 +4,6 @@ From stdpp Require Import numbers list.
 Require Import Coq.Logic.FunctionalExtensionality.
 Require Import Wellfounded.
 
-Definition state : BlockchainState := fun address =>
-  if decide (address = repeat (0%Z) 20) then
-    BlockchainContract arrayIndex0 _ (arrayType _ environment0) (arrays _ environment0) 100000%Z (funcdef_0__main (fun x => false) (fun x => 0%Z) (fun x => repeat 0%Z 20))
-  else ExternallyOwned 0%Z.
-
-Definition stateAfterInteractions arrays money : BlockchainState := fun address =>
-  if decide (address = repeat (0%Z) 20) then
-    BlockchainContract arrayIndex0 _ (arrayType _ environment0) arrays (100000%Z - money) (funcdef_0__main (fun x => false) (fun x => 0%Z) (fun x => repeat 0%Z 20))
-  else if decide (address = repeat (1%Z) 20) then ExternallyOwned money else ExternallyOwned 0%Z.
-
-Fixpoint interact (state : BlockchainState) (interactions : list (Z * Z)) :=
-  match interactions with
-  | [] => getBalance (state (repeat 1%Z 20))
-  | (a, b) :: tail =>
-    match invokeContract (repeat 1%Z 20) (repeat 0%Z 20) 0%Z state state [a; b] 1 with
-    | Some (_, changedState) => interact changedState tail
-    | None => 0%Z
-    end
-  end.
-
-Definition optimalInteractions (x : list (Z * Z)) := forall x', Z.le (interact state x') (interact state x).
-
 Inductive Slot :=
 | ReferTo (x : nat)
 | Ancestor (x : Tree).
@@ -333,7 +311,7 @@ Proof.
   pose proof zeroLtLengthAncestorChain dsu (length dsu - 1) v as hA.
   rewrite ((ltac:(lia) : forall a, 0 < a -> a = S (a - 1)) _ hA) in *. simpl. remember (nth
     (nth (length (ancestorChain dsu (length dsu - 1) v) - 1)
-       (ancestorChain dsu (length dsu - 1) v) 0) dsu 
+       (ancestorChain dsu (length dsu - 1) v) 0) dsu
     (Ancestor Unit)) as e eqn:he. destruct e as [e | e]. { easy. }
   symmetry in he.
   rewrite (fun i => validChainAncestorLength dsu (ancestorChain dsu (length dsu - 1) v) h i v ltac:(apply firstAncestorChain)). { reflexivity. }
@@ -409,42 +387,42 @@ Proof.
   assert (h1' : noIllegalIndices (<[x:=ReferTo (ancestor dsu (length dsu) x)]> dsu)).
   { intros a b c.
     destruct (decide (a = x)) as [h | h].
-    - rewrite h in c. rewrite nth_lookup, list_lookup_insert in c; [| lia]. simpl in c. rewrite insert_length. injection c. intro d. subst b. apply ancestorLtLength; assumption.
-    - rewrite nth_lookup, list_lookup_insert_ne in c; [| lia]. rewrite <- nth_lookup in c. rewrite insert_length. exact (h1 a b c). }
+    - rewrite h in c. rewrite nth_lookup, list_lookup_insert in c; [| lia]. simpl in c. rewrite length_insert. injection c. intro d. subst b. apply ancestorLtLength; assumption.
+    - rewrite nth_lookup, list_lookup_insert_ne in c; [| lia]. rewrite <- nth_lookup in c. rewrite length_insert. exact (h1 a b c). }
   pose proof validChainAncestorLength (<[x:=ReferTo (ancestor dsu (length dsu) x)]> dsu) (take (S i) chain ++ drop t chain) h1' as step.
   assert (step1 : nth 0 (take (S i) chain ++ drop t chain) 0 = u).
-  { rewrite app_nth1; [| rewrite take_length; lia]. destruct chain as [| head tail].
+  { rewrite app_nth1; [| rewrite length_take; lia]. destruct chain as [| head tail].
     - cbv in h0. easy.
     - simpl in *. subst head. reflexivity. }
   assert (step2 : validChainToAncestor (<[x:=ReferTo (ancestor dsu (length dsu) x)]> dsu) (take (S i) chain ++ drop t chain)).
   { repeat split.
     - destruct chain as [| head tail]. { cbv in h0. easy. } easy.
-    - destruct chain as [| head tail]. { cbv in h0. easy. } simpl in he. rewrite app_nth1; [| rewrite take_length; lia]. simpl. simpl in hV. subst head. rewrite insert_length. assumption.
+    - destruct chain as [| head tail]. { cbv in h0. easy. } simpl in he. rewrite app_nth1; [| rewrite length_take; lia]. simpl. simpl in hV. subst head. rewrite length_insert. assumption.
     - intros a b. pose proof h0 as [[e [f g]] [l k]]. destruct (ltac:(lia) : a < i \/ a = i \/ i < a) as [hs | [hs | hs]].
-      + rewrite !app_nth1; [| rewrite take_length; lia | rewrite take_length; lia]. rewrite <- !nthTake; try lia. pose proof list_lookup_insert_ne dsu x (nth a chain 0) (ReferTo (ancestor dsu (length dsu) x)). pose proof validChainPairwiseDifferent dsu chain h1 h0 a i ltac:(lia) ltac:(lia) ltac:(lia) as step2. rewrite he in step2. pose proof list_lookup_insert_ne dsu x ((nth a chain 0)) (ReferTo (ancestor dsu (length dsu) x)) ltac:(lia) as step3. pose proof (ltac:(clear; intros a b h; subst b; easy) : forall a b, a = b -> default (Ancestor Unit) a = default (Ancestor Unit) b) _ _ step3 as step4. rewrite <- !nth_lookup in step4. rewrite step4. apply g. lia.
-      + subst a. rewrite app_nth1; try (rewrite take_length; lia). rewrite app_nth2; try (rewrite take_length; lia). rewrite take_length. rewrite (ltac:(lia) : S i - S i `min` length chain = 0). rewrite <- !nthTake; try lia.
+      + rewrite !app_nth1; [| rewrite length_take; lia | rewrite length_take; lia]. rewrite <- !nthTake; try lia. pose proof list_lookup_insert_ne dsu x (nth a chain 0) (ReferTo (ancestor dsu (length dsu) x)). pose proof validChainPairwiseDifferent dsu chain h1 h0 a i ltac:(lia) ltac:(lia) ltac:(lia) as step2. rewrite he in step2. pose proof list_lookup_insert_ne dsu x ((nth a chain 0)) (ReferTo (ancestor dsu (length dsu) x)) ltac:(lia) as step3. pose proof (ltac:(clear; intros a b h; subst b; easy) : forall a b, a = b -> default (Ancestor Unit) a = default (Ancestor Unit) b) _ _ step3 as step4. rewrite <- !nth_lookup in step4. rewrite step4. apply g. lia.
+      + subst a. rewrite app_nth1; try (rewrite length_take; lia). rewrite app_nth2; try (rewrite length_take; lia). rewrite length_take. rewrite (ltac:(lia) : S i - S i `min` length chain = 0). rewrite <- !nthTake; try lia.
         pose proof lookup_drop chain t 0 as step2. rewrite (ltac:(lia) : t + 0 = t) in step2. pose proof nth_lookup chain t 0 as step3. rewrite <- step2 in step3.
         pose proof nth_lookup (drop t chain) 0 0 as step4. rewrite <- step3 in step4. rewrite step4. rewrite he. rewrite nth_lookup. rewrite list_lookup_insert.
         * rewrite (ltac:(easy) : forall a b, default a (Some b) = b). rewrite hT. reflexivity.
         * lia.
-      + rewrite !app_nth2; try (rewrite take_length; lia). rewrite take_length; try lia. rewrite (ltac:(lia) : S i `min` length chain = S i). rewrite !nth_lookup. rewrite !lookup_drop. rewrite (ltac:(lia) : t + (S a - S i) = S (t + (a - S i))). rewrite list_lookup_insert_ne; rewrite <- !nth_lookup.
-        * apply g. rewrite app_length, take_length, drop_length, (ltac:(lia) : S i `min` length chain = S i) in b. lia.
+      + rewrite !app_nth2; try (rewrite length_take; lia). rewrite length_take; try lia. rewrite (ltac:(lia) : S i `min` length chain = S i). rewrite !nth_lookup. rewrite !lookup_drop. rewrite (ltac:(lia) : t + (S a - S i) = S (t + (a - S i))). rewrite list_lookup_insert_ne; rewrite <- !nth_lookup.
+        * apply g. rewrite app_length, length_take, length_drop, (ltac:(lia) : S i `min` length chain = S i) in b. lia.
         * rewrite <- he. apply (validChainPairwiseDifferent dsu); try (assumption || lia).
-          rewrite app_length, take_length, drop_length, (ltac:(lia) : S i `min` length chain = S i) in b. lia.
-    - destruct h0 as [[e [f g]] [b c]]. exists b. rewrite app_length. rewrite app_nth2; [| rewrite take_length, drop_length, (ltac:(lia) : S i `min` length chain = S i); lia]. rewrite (ltac:(lia) : length (take (S i) chain) + length (drop t chain) - 1 - length (take (S i) chain) = length (drop t chain) - 1). rewrite (nth_lookup (drop t chain)), drop_length, lookup_drop, <- nth_lookup, (ltac:(lia) : t + (length chain - t - 1) = length chain - 1), nth_lookup, list_lookup_insert_ne; [now rewrite <- nth_lookup |]. intro gg. rewrite <- gg in c. rewrite c in h5. easy. }
+          rewrite app_length, length_take, length_drop, (ltac:(lia) : S i `min` length chain = S i) in b. lia.
+    - destruct h0 as [[e [f g]] [b c]]. exists b. rewrite app_length. rewrite app_nth2; [| rewrite length_take, length_drop, (ltac:(lia) : S i `min` length chain = S i); lia]. rewrite (ltac:(lia) : length (take (S i) chain) + length (drop t chain) - 1 - length (take (S i) chain) = length (drop t chain) - 1). rewrite (nth_lookup (drop t chain)), length_drop, lookup_drop, <- nth_lookup, (ltac:(lia) : t + (length chain - t - 1) = length chain - 1), nth_lookup, list_lookup_insert_ne; [now rewrite <- nth_lookup |]. intro gg. rewrite <- gg in c. rewrite c in h5. easy. }
       exact (step step2 u step1).
 Qed.
 
 Lemma ancestorOfVertexInAncestorChain (dsu : list Slot) chain (u x : nat) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (h3 : u < length dsu) (h4 : x < length dsu) (h5 : match nth x dsu (Ancestor Unit) with | ReferTo _ => true | Ancestor _ => false end) (h6 : validChainToAncestor dsu chain) (h7 : nth 0 chain 0 = u) (s : nat) (h8 : nth s chain 0 = x) (h9 : s < length chain) : ancestor dsu (length dsu) u = ancestor dsu (length dsu) x.
 Proof.
   rewrite <- !ancestorEqLastAncestorChain, <- (validChainAncestorLength dsu chain h1 h6 _ h7), <- (validChainAncestorLength dsu (drop s chain) h1).
-  - rewrite !nth_lookup, lookup_drop, drop_length, <- !nth_lookup, (ltac:(lia) : s + (length chain - s - 1) = length chain - 1). reflexivity.
+  - rewrite !nth_lookup, lookup_drop, length_drop, <- !nth_lookup, (ltac:(lia) : s + (length chain - s - 1) = length chain - 1). reflexivity.
   - repeat split.
-    + intro h. pose proof (ltac:(rewrite h; reflexivity) : length (drop s chain) = length []) as step1. rewrite drop_length in step1. simpl in step1. lia.
+    + intro h. pose proof (ltac:(rewrite h; reflexivity) : length (drop s chain) = length []) as step1. rewrite length_drop in step1. simpl in step1. lia.
     + rewrite nth_lookup, lookup_drop, Nat.add_0_r, <- nth_lookup, h8. exact h4.
-    + intros g i. rewrite drop_length in i. repeat rewrite (nth_lookup (drop _ _)), lookup_drop. rewrite <- !nth_lookup, (ltac:(lia) : s + S g = S (s + g)).
+    + intros g i. rewrite length_drop in i. repeat rewrite (nth_lookup (drop _ _)), lookup_drop. rewrite <- !nth_lookup, (ltac:(lia) : s + S g = S (s + g)).
       destruct h6 as [[e [f j]] [b c]]. apply j. lia.
-    + repeat rewrite (nth_lookup (drop _ _)), lookup_drop. rewrite <- !nth_lookup, drop_length, (ltac:(lia) : s + (length chain - s - 1) = length chain - 1). destruct h6 as [_ c]. exact c.
+    + repeat rewrite (nth_lookup (drop _ _)), lookup_drop. rewrite <- !nth_lookup, length_drop, (ltac:(lia) : s + (length chain - s - 1) = length chain - 1). destruct h6 as [_ c]. exact c.
   - rewrite nth_lookup, lookup_drop, Nat.add_0_r, <- nth_lookup. exact h8.
 Qed.
 
@@ -462,7 +440,7 @@ Proof.
     { subst s. rewrite <- hc in h5. destruct step3 as [[e [f g]] [b c]]. rewrite c in h5. exfalso. exact h5. }
     pose proof ancestorOfVertexInAncestorChain dsu (ancestorChain dsu (length dsu) u) u x h1 h2 h3 h4 h5 step3 ltac:(destruct (length dsu); simpl; destruct (nth u dsu (Ancestor Unit)); simpl; try lia) s hc hb as step6.
     pose proof step4 step6 step5 ltac:(lia) as step7.
-    rewrite <- (ancestorEqLastAncestorChain (<[x:=ReferTo (ancestor dsu (length dsu) x)]> dsu)). rewrite insert_length in step7. rewrite <- step7, app_length, app_nth2, drop_length, take_length, (ltac:(lia) : (S s `min` length (ancestorChain dsu (length dsu) u) = S s)); [| rewrite drop_length; lia]. rewrite (ltac:(lia) : S s + (length (ancestorChain dsu (length dsu) u) - (length (ancestorChain dsu (length dsu) u) - 1)) - 1 - S s = 0), nth_lookup, lookup_drop, Nat.add_0_r, <- nth_lookup, ancestorEqLastAncestorChain. reflexivity.
+    rewrite <- (ancestorEqLastAncestorChain (<[x:=ReferTo (ancestor dsu (length dsu) x)]> dsu)). rewrite length_insert in step7. rewrite <- step7, app_length, app_nth2, length_drop, length_take, (ltac:(lia) : (S s `min` length (ancestorChain dsu (length dsu) u) = S s)); [| rewrite length_drop; lia]. rewrite (ltac:(lia) : S s + (length (ancestorChain dsu (length dsu) u) - (length (ancestorChain dsu (length dsu) u) - 1)) - 1 - S s = 0), nth_lookup, lookup_drop, Nat.add_0_r, <- nth_lookup, ancestorEqLastAncestorChain. reflexivity.
   - unfold notExistsInRangeLogic in hs. assert (hd : forall i, i < length (ancestorChain dsu (length dsu) u) -> nth i (ancestorChain dsu (length dsu) u) 0 <> x).
     { intros a b. pose proof hs a b as c. case_bool_decide; [exfalso; exact (c ltac:(easy)) | assumption]. }
     rewrite <- (ancestorEqLastAncestorChain dsu (length dsu) u) in step2. pose proof ancestorChainInsertNotPresent dsu (length dsu) u x h1 h2 h3 h4 h5 hd as step3. rewrite <- ancestorEqLastAncestorChain, <- ancestorEqLastAncestorChain, <- !step3. reflexivity.
@@ -499,12 +477,12 @@ Proof.
   simpl. remember (nth a dsu (Ancestor Unit)) as e eqn:he. symmetry in he.
   destruct e as [e | e]; [| left; reflexivity].
   pose proof h1 a _ he as hE.
-  epose proof IH (<[a:=ReferTo b]> dsu) _ e b c ltac:(rewrite insert_length; exact hE) ltac:(rewrite insert_length; exact hB) ltac:(rewrite insert_length; exact hC) as hf.
+  epose proof IH (<[a:=ReferTo b]> dsu) _ e b c ltac:(rewrite length_insert; exact hE) ltac:(rewrite length_insert; exact hB) ltac:(rewrite length_insert; exact hC) as hf.
   destruct (decide (c = a)) as [hs | hs].
   - subst c. rewrite (ltac:(rewrite nth_lookup, list_lookup_insert; easy) : nth a (<[a:=ReferTo b]> dsu) (Ancestor Unit) = ReferTo b) in hf. right. destruct hf; assumption.
   - rewrite (ltac:(rewrite !nth_lookup, list_lookup_insert_ne; try lia; reflexivity) : nth c (<[a:=ReferTo b]> dsu) (Ancestor Unit) = nth c dsu (Ancestor Unit)) in hf. exact hf.
   Unshelve.
-  intros i j hi. rewrite insert_length. destruct (decide (i = a)) as [hs | hs].
+  intros i j hi. rewrite length_insert. destruct (decide (i = a)) as [hs | hs].
   + subst i. rewrite (ltac:(rewrite nth_lookup, list_lookup_insert; easy) : nth a (<[a:=ReferTo b]> dsu) (Ancestor Unit) = ReferTo b) in hi. injection hi. lia.
   + rewrite (ltac:(rewrite !nth_lookup, list_lookup_insert_ne; try lia; reflexivity) : nth i (<[a:=ReferTo b]> dsu) (Ancestor Unit) = nth i dsu (Ancestor Unit)) in hi.
     assert (hi1 : i < length dsu).
@@ -528,7 +506,7 @@ Definition performMerge (dsu : list Slot) (tree1 tree2 : Tree) (u v : nat) :=
 
 Lemma performMergeScore' (dsu : list Slot) (tree1 tree2 : Tree) (u v : nat) (hUV : u < v) (hL : v < length dsu) (hU : nth u dsu (Ancestor Unit) = Ancestor tree1) (hV : nth v dsu (Ancestor Unit) = Ancestor tree2) : (dsuScore (performMerge dsu tree1 tree2 u v) = dsuScore dsu + Z.of_nat (leafCount tree1) + Z.of_nat (leafCount tree2))%Z.
 Proof.
-  unfold performMerge. rewrite (insert_take_drop dsu); [| exact hL]. rewrite insert_app_l; [| rewrite take_length; lia]. rewrite insert_take_drop, take_take; [| rewrite take_length; lia]. rewrite (ltac:(lia) : u `min` v = u).
+  unfold performMerge. rewrite (insert_take_drop dsu); [| exact hL]. rewrite insert_app_l; [| rewrite length_take; lia]. rewrite insert_take_drop, take_take; [| rewrite length_take; lia]. rewrite (ltac:(lia) : u `min` v = u).
   pose proof ListDecomposition.listDecomposition dsu u v hUV hL (Ancestor Unit) as a. rewrite a at 4. rewrite hU, hV, ((ltac:(intros; easy) : forall a b, a :: b = [a] ++ b) (ReferTo _)), ((ltac:(intros; easy) : forall a b, a :: b = [a] ++ b) (Ancestor _)), <- !app_assoc.
   unfold dsuScore. rewrite !map_app, !list_sum_app. simpl. rewrite (ltac:(easy) : _ + 1 = S _), !Nat.add_0_r. lia.
 Qed.
@@ -537,8 +515,8 @@ Lemma performMergeScore'' (dsu : list Slot) (tree1 tree2 : Tree) (u v : nat) (hU
 Proof.
   unfold performMerge. rewrite (insert_take_drop dsu); [| ltac:(lia)].
   assert (h : forall a (b : list Slot), <[u:=a]> b =  <[length (take v dsu) + (u - v):=a]> b).
-  { intros a b. rewrite take_length, (ltac:(lia) : v `min` length dsu + (u - v) = u). reflexivity. } rewrite h.
-  rewrite insert_app_r, ((ltac:(intros; easy) : forall a b, a :: b = [a] ++ b) (Ancestor _)), (ltac:(simpl; lia) : u - v = length [Ancestor (Unite tree2 tree1)] + (u - v - 1)), insert_app_r. rewrite insert_take_drop, drop_drop; [| rewrite drop_length; lia]. rewrite (ltac:(lia) : S v + S (u - v - 1) = u + 1), (ltac:(easy) : ReferTo v :: drop (u + 1) dsu = [ReferTo v] ++ drop (u + 1) dsu). unfold dsuScore.
+  { intros a b. rewrite length_take, (ltac:(lia) : v `min` length dsu + (u - v) = u). reflexivity. } rewrite h.
+  rewrite insert_app_r, ((ltac:(intros; easy) : forall a b, a :: b = [a] ++ b) (Ancestor _)), (ltac:(simpl; lia) : u - v = length [Ancestor (Unite tree2 tree1)] + (u - v - 1)), insert_app_r. rewrite insert_take_drop, drop_drop; [| rewrite length_drop; lia]. rewrite (ltac:(lia) : S v + S (u - v - 1) = u + 1), (ltac:(easy) : ReferTo v :: drop (u + 1) dsu = [ReferTo v] ++ drop (u + 1) dsu). unfold dsuScore.
   pose proof ListDecomposition.listDecomposition dsu v u hUV hL (Ancestor Unit) as a. rewrite a at 4. rewrite take_drop_commute, (ltac:(lia) : S v + (u - v - 1) = u), !map_app, !list_sum_app, hU, hV. simpl. lia.
 Qed.
 
@@ -575,7 +553,7 @@ Fixpoint dsuFromInteractions (dsu : list Slot) (interactions : list (nat * nat))
 Lemma pathCompressPreservesLength (dsu : list Slot) (n a b : nat) : length (pathCompress dsu n a b) = length dsu.
 Proof.
   induction n as [| n IH] in dsu, a |- *; [easy |].
-  simpl. destruct (nth a dsu (Ancestor Unit)) as [x | x]; [| easy]. rewrite IH. apply insert_length.
+  simpl. destruct (nth a dsu (Ancestor Unit)) as [x | x]; [| easy]. rewrite IH. apply length_insert.
 Qed.
 
 Lemma pathCompressPreservesScore (dsu : list Slot) (n a b : nat) : dsuScore (pathCompress dsu n a b) = dsuScore dsu.
@@ -624,22 +602,22 @@ Proof.
   - simpl. intros i j hi. remember (nth u dsu (Ancestor Unit)) as e eqn:he. symmetry in he. destruct e as [e | e].
     + assert (h : noIllegalIndices (<[u:=ReferTo v]> dsu)).
       { intros a b c. destruct (decide (a = u)) as [ha | ha].
-        - rewrite ha, nth_lookup, list_lookup_insert, (ltac:(intros; easy) : forall a, default _ (Some a) = a) in c; [| exact hU]. injection c. intro d. subst v. rewrite insert_length. exact hV.
-        - rewrite insert_length. rewrite nth_lookup, list_lookup_insert_ne in c; [| lia]. rewrite <- (nth_lookup _ _ (Ancestor Unit)) in c. exact (h1 _ _ c). }
-      exact (IH (<[u:=ReferTo v]> dsu) ltac:(rewrite insert_length; exact hV) h e ltac:(rewrite insert_length; exact (h1 _ _ he)) i _ hi).
+        - rewrite ha, nth_lookup, list_lookup_insert, (ltac:(intros; easy) : forall a, default _ (Some a) = a) in c; [| exact hU]. injection c. intro d. subst v. rewrite length_insert. exact hV.
+        - rewrite length_insert. rewrite nth_lookup, list_lookup_insert_ne in c; [| lia]. rewrite <- (nth_lookup _ _ (Ancestor Unit)) in c. exact (h1 _ _ c). }
+      exact (IH (<[u:=ReferTo v]> dsu) ltac:(rewrite length_insert; exact hV) h e ltac:(rewrite length_insert; exact (h1 _ _ he)) i _ hi).
     + pose proof h1 i j hi. assumption.
 Qed.
 
 Lemma pathCompressPreservesWithoutCycles (dsu : list Slot) (h : withoutCyclesN dsu (length dsu)) (h1 : noIllegalIndices dsu) (n u : nat) (hU : u < length dsu) : withoutCyclesN (pathCompress dsu n u (ancestor dsu (length dsu) u)) (length dsu).
 Proof.
   induction n as [| n IH] in u, dsu, h, hU, h1 |- *. { simpl. assumption. }
-  simpl. remember (nth u dsu (Ancestor Unit)) as x eqn:hX. destruct x as [x | x]; [| easy]. pose proof (fun t => IH (<[u:=ReferTo (ancestor dsu (length dsu) u)]> dsu) t ltac:(intros v1 v2; destruct (decide (v1 = u)) as [h2 | h2]; [destruct (decide (length dsu <= u)); [rewrite list_insert_ge; [| lia]; intro h3; rewrite h2 in h3; rewrite <- hX in h3; injection h3; intro h4; subst x; subst u; exact (h1 v1 v2 ltac:(symmetry in hX; exact hX)) | pose proof list_lookup_insert dsu u (ReferTo (ancestor dsu (length dsu) u)) ltac:(lia) as step; pose proof nth_lookup_Some _ _ (Ancestor Unit) _ step as step2; subst u; rewrite step2; pose proof ancestorLtLength dsu h1 (length dsu) v1 ltac:(lia) as step3]; intro h3; injection h3; intro h4; rewrite insert_length | pose proof list_lookup_insert_ne dsu u v1 (ReferTo (ancestor dsu (length dsu) u)) ltac:(lia) as step; pose proof nth_lookup dsu v1 (Ancestor Unit) as step1; pose proof (nth_lookup (<[u:=ReferTo (ancestor dsu (length dsu) u)]> dsu) v1 (Ancestor Unit)) as step2; rewrite step in step2; rewrite <- step1 in step2; rewrite step2; intro step3; rewrite insert_length; exact (h1 v1 v2 step3)]; lia) x ltac:(rewrite insert_length; exact (h1 u x ltac:(symmetry; assumption)))) as step. rewrite !insert_length in step.
+  simpl. remember (nth u dsu (Ancestor Unit)) as x eqn:hX. destruct x as [x | x]; [| easy]. pose proof (fun t => IH (<[u:=ReferTo (ancestor dsu (length dsu) u)]> dsu) t ltac:(intros v1 v2; destruct (decide (v1 = u)) as [h2 | h2]; [destruct (decide (length dsu <= u)); [rewrite list_insert_ge; [| lia]; intro h3; rewrite h2 in h3; rewrite <- hX in h3; injection h3; intro h4; subst x; subst u; exact (h1 v1 v2 ltac:(symmetry in hX; exact hX)) | pose proof list_lookup_insert dsu u (ReferTo (ancestor dsu (length dsu) u)) ltac:(lia) as step; pose proof nth_lookup_Some _ _ (Ancestor Unit) _ step as step2; subst u; rewrite step2; pose proof ancestorLtLength dsu h1 (length dsu) v1 ltac:(lia) as step3]; intro h3; injection h3; intro h4; rewrite length_insert | pose proof list_lookup_insert_ne dsu u v1 (ReferTo (ancestor dsu (length dsu) u)) ltac:(lia) as step; pose proof nth_lookup dsu v1 (Ancestor Unit) as step1; pose proof (nth_lookup (<[u:=ReferTo (ancestor dsu (length dsu) u)]> dsu) v1 (Ancestor Unit)) as step2; rewrite step in step2; rewrite <- step1 in step2; rewrite step2; intro step3; rewrite length_insert; exact (h1 v1 v2 step3)]; lia) x ltac:(rewrite length_insert; exact (h1 u x ltac:(symmetry; assumption)))) as step. rewrite !length_insert in step.
   assert (step1 : u < length dsu -> x < length dsu -> ancestor (<[u:=ReferTo (ancestor dsu (length dsu) u)]> dsu) (length dsu) x = ancestor dsu (length dsu) x).
   { revert h h1 hX. clear. intros h1 h2 h3 h4 h5. rewrite <- ancestorInsert; try (assumption || reflexivity). rewrite <- h3. easy. } rewrite step1 in step; try assumption; pose proof h1 u x ltac:(symmetry in hX; exact hX) as hX1; [| exact hX1].
   remember (nth x dsu (Ancestor Unit)) as s eqn:hS.
   symmetry in hS. destruct s as [s | s].
   - pose proof ancestorOfVertexInAncestorChain dsu (ancestorChain dsu (length dsu) u) u x h1 h hU hX1 ltac:(now rewrite hS) ltac:(split; [apply validChainAncestorChain; assumption | rewrite ancestorEqLastAncestorChain; pose proof h u hU; destruct (nth (ancestor dsu (length dsu) u)) as [| tree]; [easy | now exists tree]]) ltac:(destruct (length dsu); simpl; destruct (nth u dsu (Ancestor Unit)); simpl; try lia) 1 as step2. rewrite <- step2 in step.
-    + apply step. intros i hi. rewrite insert_length, <- ancestorInsert; try assumption; [| now rewrite <- hX].
+    + apply step. intros i hi. rewrite length_insert, <- ancestorInsert; try assumption; [| now rewrite <- hX].
       destruct (decide (ancestor dsu (length dsu) i = u)) as [hA | hA].
       * pose proof h i hi as hj. rewrite hA, <- hX in hj. exfalso. exact hj.
       * rewrite nth_lookup, list_lookup_insert_ne; [| lia]. rewrite <- nth_lookup. apply h. assumption.
@@ -662,7 +640,7 @@ Proof.
     { destruct n. { easy. } simpl. destruct (decide (u = x)) as [hd | hd].
       - subst u. rewrite hS in hX. easy.
       - rewrite nth_lookup, list_lookup_insert_ne, <- nth_lookup, hS. { reflexivity. } assumption. }
-    rewrite hh. clear hh. intros i hh. rewrite <- hg, insert_length, <- ancestorInsert; try assumption; [| now rewrite <- hX].
+    rewrite hh. clear hh. intros i hh. rewrite <- hg, length_insert, <- ancestorInsert; try assumption; [| now rewrite <- hX].
     destruct (decide (ancestor dsu (length dsu) i = u)) as [hs | hs].
     + pose proof h i hh as step2. rewrite hs, <- hX in step2. exfalso. exact step2.
     + rewrite nth_lookup, list_lookup_insert_ne, <- nth_lookup; [| lia]. pose proof h i hh as step2. exact step2.
@@ -677,7 +655,7 @@ Proof.
   remember (nth c dsu (Ancestor Unit)) as x eqn:hx. destruct x as [x | x]; symmetry in hx; [| reflexivity].
   assert (stepC : match nth c dsu (Ancestor Unit) with | ReferTo _ => true | Ancestor _ => false end). { rewrite hx. easy. }
   pose proof h1 c _ hx as stepX.
-  pose proof (fun g1 g2 g3 g4 g5 => IH (<[c:=ReferTo (ancestor dsu (length dsu) a)]> dsu) g1 g2 g3 g4 x g5) as step. rewrite insert_length, <- hSameRoot, <- !ancestorInsert, !hSameRoot in step; try (assumption || lia).
+  pose proof (fun g1 g2 g3 g4 g5 => IH (<[c:=ReferTo (ancestor dsu (length dsu) a)]> dsu) g1 g2 g3 g4 x g5) as step. rewrite length_insert, <- hSameRoot, <- !ancestorInsert, !hSameRoot in step; try (assumption || lia).
   pose proof pathCompressPreservesNoIllegalIndices _ h1 1 c (ancestor dsu (length dsu) a) hC ltac:(apply ancestorLtLength; assumption) as stepN. simpl in stepN. rewrite hx in stepN.
   pose proof pathCompressPreservesWithoutCycles _ h2 h1 1 c hC as stepW. simpl in stepW. rewrite hx, hSameRoot in stepW.
   pose proof ancestorReferTo dsu c x hC h1 h2 hx as stepD. rewrite hSameRoot in stepD. symmetry in stepD.
@@ -686,245 +664,225 @@ Qed.
 
 Definition modelScore (interactions : list (Z * Z)) := dsuScore (dsuFromInteractions (repeat (Ancestor Unit) 100) (map (fun (x : Z * Z) => let (a, b) := x in (Z.to_nat a, Z.to_nat b)) interactions)).
 
-Definition getBalanceInvoke (state : BlockchainState) (communication : list Z) :=
-  match invokeContract (repeat 1%Z 20) (repeat 0%Z 20) 0 state state communication 1 with
-  | Some (a, b) => getBalance (b (repeat 1%Z 20))
-  | None => 0%Z
-  end.
-
-Lemma initializeArray a b n nextCommands (h : n <= 100) (l : list Z) (hL : length l = 100) : invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0
-  state state [a; b] 1 arrayIndex0
-  arrayIndexEqualityDecidable0
-  (arrayType arrayIndex0 environment0) (λ _0 : arrayIndex0,
+Lemma initializeArray n nextCommands (h : n <= 100) (l : list Z) (hL : length l = 100) : runArrays arrayIndex2 arrayIndexEqualityDecidable2 (arrayType arrayIndex2 environment2) (λ _0 : arrayIndex2,
   match
   _0 as _1
 return
   (list
   (arrayType
-  arrayIndex0
-  environment0
+  arrayIndex2
+  environment2
   _1))
 with
-| arraydef_0__dsu => l
-| arraydef_0__hasBeenInitialized =>
+| arraydef_0_DSU_dsu => l
+| arraydef_0_DSU_hasBeenInitialized =>
     [1%Z]
-| arraydef_0__result =>
+| arraydef_0_DSU_result =>
     [0%Z]
-end)
-  (funcdef_0__main (λ _ : varsfuncdef_0__main, false)
-  (λ _ : varsfuncdef_0__main, 0%Z)
-  (λ _ : varsfuncdef_0__main, repeat 0%Z 20))
-  (eliminateLocalVariables
-  (λ _ : varsfuncdef_0__main, false)
-  (λ _ : varsfuncdef_0__main, 0%Z)
-  (λ _ : varsfuncdef_0__main, repeat 0%Z 20)
+end) (eliminateLocalVariables
+  (λ _ : varsfuncdef_0_DSU_initialize, false)
+  (λ _ : varsfuncdef_0_DSU_initialize, 0%Z)
+
   (loop n
   (λ _0 : nat,
   dropWithinLoop
   (liftToWithinLoop
   (Done
-  (WithLocalVariables arrayIndex0
-  (arrayType arrayIndex0
-  environment0)
-  varsfuncdef_0__main)
+  (WithLocalVariables arrayIndex2
+  (arrayType arrayIndex2
+  environment2)
+  varsfuncdef_0_DSU_initialize)
   withLocalVariablesReturnValue Z
   (100%Z - Z.of_nat _0 - 1)%Z >>=
 λ _1 : Z,
   Done
-  (WithLocalVariables arrayIndex0
-  (arrayType arrayIndex0
-  environment0)
-  varsfuncdef_0__main)
+  (WithLocalVariables arrayIndex2
+  (arrayType arrayIndex2
+  environment2)
+  varsfuncdef_0_DSU_initialize)
   withLocalVariablesReturnValue Z
   (coerceInt (coerceInt (- (1)) 64)
   8) >>=
 λ _2 : Z,
   Dispatch
-  (WithLocalVariables arrayIndex0
-  (arrayType arrayIndex0
-  environment0)
-  varsfuncdef_0__main)
+  (WithLocalVariables arrayIndex2
+  (arrayType arrayIndex2
+  environment2)
+  varsfuncdef_0_DSU_initialize)
   withLocalVariablesReturnValue
   (withLocalVariablesReturnValue
-  (DoWithArrays arrayIndex0
-  (arrayType arrayIndex0
-  environment0)
-  varsfuncdef_0__main
-  (Store arrayIndex0
-  (arrayType arrayIndex0
-  environment0)
-  arraydef_0__dsu _1
+  (DoWithArrays arrayIndex2
+  (arrayType arrayIndex2
+  environment2)
+  varsfuncdef_0_DSU_initialize
+  (Store arrayIndex2
+  (arrayType arrayIndex2
+  environment2)
+  arraydef_0_DSU_dsu _1
   _2)))
-  (DoWithArrays arrayIndex0
-  (arrayType arrayIndex0
-  environment0)
-  varsfuncdef_0__main
-  (Store arrayIndex0
-  (arrayType arrayIndex0
-  environment0)
-  arraydef_0__dsu _1
+  (DoWithArrays arrayIndex2
+  (arrayType arrayIndex2
+  environment2)
+  varsfuncdef_0_DSU_initialize
+  (Store arrayIndex2
+  (arrayType arrayIndex2
+  environment2)
+  arraydef_0_DSU_dsu _1
   _2))
   (λ _3 : withLocalVariablesReturnValue
   (DoWithArrays
-  arrayIndex0
+  arrayIndex2
   (arrayType
-  arrayIndex0
-  environment0)
-  varsfuncdef_0__main
-  (Store arrayIndex0
+  arrayIndex2
+  environment2)
+  varsfuncdef_0_DSU_initialize
+  (Store arrayIndex2
   (arrayType
-  arrayIndex0
-  environment0)
-  arraydef_0__dsu
+  arrayIndex2
+  environment2)
+  arraydef_0_DSU_dsu
   _1
   _2)),
   Done
   (WithLocalVariables
-  arrayIndex0
-  (arrayType arrayIndex0
-  environment0)
-  varsfuncdef_0__main)
+  arrayIndex2
+  (arrayType arrayIndex2
+  environment2)
+  varsfuncdef_0_DSU_initialize)
   withLocalVariablesReturnValue
   (withLocalVariablesReturnValue
   (DoWithArrays
-  arrayIndex0
+  arrayIndex2
   (arrayType
-  arrayIndex0
-  environment0)
-  varsfuncdef_0__main
-  (Store arrayIndex0
+  arrayIndex2
+  environment2)
+  varsfuncdef_0_DSU_initialize
+  (Store arrayIndex2
   (arrayType
-  arrayIndex0
-  environment0)
-  arraydef_0__dsu _1
+  arrayIndex2
+  environment2)
+  arraydef_0_DSU_dsu _1
   _2)))
   _3)) >>=
 λ _ : (),
   Done
-  (WithinLoop arrayIndex0
-  (arrayType arrayIndex0
-  environment0)
-  varsfuncdef_0__main)
+  (WithinLoop arrayIndex2
+  (arrayType arrayIndex2
+  environment2)
+  varsfuncdef_0_DSU_initialize)
   withinLoopReturnValue ()
-  ())) >>= (fun _ => nextCommands))) = invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0
-  state state [a; b] 1 arrayIndex0
-  arrayIndexEqualityDecidable0
-  (arrayType arrayIndex0 environment0) (λ _0 : arrayIndex0,
+  ())) >>= (fun _ => nextCommands))) = runArrays arrayIndex2 arrayIndexEqualityDecidable2 (arrayType arrayIndex2 environment2) (λ _0 : arrayIndex2,
   match
   _0 as _1
 return
   (list
   (arrayType
-  arrayIndex0
-  environment0
+  arrayIndex2
+  environment2
   _1))
 with
-| arraydef_0__dsu =>
+| arraydef_0_DSU_dsu =>
     take (100 - n) l ++ repeat 255%Z n
-| arraydef_0__hasBeenInitialized =>
+| arraydef_0_DSU_hasBeenInitialized =>
     [1%Z]
-| arraydef_0__result =>
+| arraydef_0_DSU_result =>
     [0%Z]
-end)
-  (funcdef_0__main (λ _ : varsfuncdef_0__main, false)
-  (λ _ : varsfuncdef_0__main, 0%Z)
-  (λ _ : varsfuncdef_0__main, repeat 0%Z 20))
-  (eliminateLocalVariables
-  (λ _ : varsfuncdef_0__main, false)
-  (λ _ : varsfuncdef_0__main, 0%Z)
-  (λ _ : varsfuncdef_0__main, repeat 0%Z 20) nextCommands).
+end) (eliminateLocalVariables
+  (λ _ : varsfuncdef_0_DSU_initialize, false)
+  (λ _ : varsfuncdef_0_DSU_initialize, 0%Z)
+   nextCommands).
 Proof.
   induction n as [| n IH] in l, hL, h |- *.
   - unfold loop. rewrite leftIdentity. rewrite (ltac:(easy) : repeat _ 0 = []). rewrite app_nil_r. rewrite (ltac:(lia) : 100 - 0 = 100). rewrite <- hL, firstn_all. reflexivity.
-  - rewrite loop_S. rewrite !(ltac:(easy) : (coerceInt (coerceInt (- (1)) 64) 8) = 255%Z). rewrite !leftIdentity. unfold liftToWithinLoop at 1. rewrite <- !bindAssoc. pose proof dropWithinLoop_2' _ _ _ (DoWithArrays arrayIndex0 (arrayType arrayIndex0 environment0) varsfuncdef_0__main (Store arrayIndex0 (arrayType arrayIndex0 environment0) arraydef_0__dsu (100 - Z.of_nat n - 1) 255%Z)) as step. assert (h1 : (λ _1 : withinLoopReturnValue
-  (DoWithLocalVariables arrayIndex0
-  (arrayType arrayIndex0 environment0)
-  varsfuncdef_0__main
-  (DoWithArrays arrayIndex0
-  (arrayType arrayIndex0 environment0)
-  varsfuncdef_0__main
-  (Store arrayIndex0
-  (arrayType arrayIndex0 environment0)
-  arraydef_0__dsu
+  - rewrite loop_S. rewrite !(ltac:(easy) : (coerceInt (coerceInt (- (1)) 64) 8) = 255%Z). rewrite !leftIdentity. unfold liftToWithinLoop at 1. rewrite <- !bindAssoc. pose proof dropWithinLoop_2' _ _ _ (DoWithArrays arrayIndex2 (arrayType arrayIndex2 environment2) varsfuncdef_0_DSU_initialize (Store arrayIndex2 (arrayType arrayIndex2 environment2) arraydef_0_DSU_dsu (100 - Z.of_nat n - 1) 255%Z)) as step. assert (h1 : (λ _1 : withinLoopReturnValue
+  (DoWithLocalVariables arrayIndex2
+  (arrayType arrayIndex2 environment2)
+  varsfuncdef_0_DSU_initialize
+  (DoWithArrays arrayIndex2
+  (arrayType arrayIndex2 environment2)
+  varsfuncdef_0_DSU_initialize
+  (Store arrayIndex2
+  (arrayType arrayIndex2 environment2)
+  arraydef_0_DSU_dsu
   (100 - Z.of_nat n - 1)
   255%Z))),
   Done
-  (WithinLoop arrayIndex0
-  (arrayType arrayIndex0 environment0)
-  varsfuncdef_0__main)
+  (WithinLoop arrayIndex2
+  (arrayType arrayIndex2 environment2)
+  varsfuncdef_0_DSU_initialize)
   withinLoopReturnValue
   (withinLoopReturnValue
-  (DoWithLocalVariables arrayIndex0
-  (arrayType arrayIndex0 environment0)
-  varsfuncdef_0__main
-  (DoWithArrays arrayIndex0
-  (arrayType arrayIndex0 environment0)
-  varsfuncdef_0__main
-  (Store arrayIndex0
-  (arrayType arrayIndex0 environment0)
-  arraydef_0__dsu
+  (DoWithLocalVariables arrayIndex2
+  (arrayType arrayIndex2 environment2)
+  varsfuncdef_0_DSU_initialize
+  (DoWithArrays arrayIndex2
+  (arrayType arrayIndex2 environment2)
+  varsfuncdef_0_DSU_initialize
+  (Store arrayIndex2
+  (arrayType arrayIndex2 environment2)
+  arraydef_0_DSU_dsu
   (100 - Z.of_nat n - 1) 255%Z))))
   _1) =  (λ _1 : unit,
   Done
-  (WithinLoop arrayIndex0
-  (arrayType arrayIndex0 environment0)
-  varsfuncdef_0__main)
+  (WithinLoop arrayIndex2
+  (arrayType arrayIndex2 environment2)
+  varsfuncdef_0_DSU_initialize)
   withinLoopReturnValue
   (withinLoopReturnValue
-  (DoWithLocalVariables arrayIndex0
-  (arrayType arrayIndex0 environment0)
-  varsfuncdef_0__main
-  (DoWithArrays arrayIndex0
-  (arrayType arrayIndex0 environment0)
-  varsfuncdef_0__main
-  (Store arrayIndex0
-  (arrayType arrayIndex0 environment0)
-  arraydef_0__dsu
+  (DoWithLocalVariables arrayIndex2
+  (arrayType arrayIndex2 environment2)
+  varsfuncdef_0_DSU_initialize
+  (DoWithArrays arrayIndex2
+  (arrayType arrayIndex2 environment2)
+  varsfuncdef_0_DSU_initialize
+  (Store arrayIndex2
+  (arrayType arrayIndex2 environment2)
+  arraydef_0_DSU_dsu
   (100 - Z.of_nat n - 1) 255%Z))))
-  _1) ). { apply functional_extensionality_dep. intro x. reflexivity. } rewrite h1 in step. clear h1. rewrite step. clear step. pose proof pushDispatch3 (λ _ : varsfuncdef_0__main, false) (λ _ : varsfuncdef_0__main, 0%Z) (λ _ : varsfuncdef_0__main, repeat 0%Z 20) (Store arrayIndex0 (arrayType arrayIndex0
-  environment0)
-  arraydef_0__dsu (100 - Z.of_nat n - 1)
+  _1) ). { apply functional_extensionality_dep. intro x. reflexivity. } rewrite h1 in step. clear h1. rewrite step. clear step. pose proof pushDispatch3 (λ _ : varsfuncdef_0_DSU_initialize, false) (λ _ : varsfuncdef_0_DSU_initialize, 0%Z)  (Store arrayIndex2 (arrayType arrayIndex2
+  environment2)
+  arraydef_0_DSU_dsu (100 - Z.of_nat n - 1)
   255%Z) as well. rewrite well. clear well. autorewrite with advance_program.
-  pose proof IH ltac:(lia) (<[Z.to_nat (100 - Z.of_nat n - 1):=255%Z]> l) ltac:(now rewrite insert_length) as previous. clear IH.
+  pose proof IH ltac:(lia) (<[Z.to_nat (100 - Z.of_nat n - 1):=255%Z]> l) ltac:(now rewrite length_insert) as previous. clear IH.
 
-  assert (hh : (λ _0 : arrayIndex0,
+  assert (hh : (λ _0 : arrayIndex2,
   match
   _0 as _1
 return
   (list
   (arrayType
-  arrayIndex0
-  environment0
+  arrayIndex2
+  environment2
   _1))
 with
-| arraydef_0__dsu =>
+| arraydef_0_DSU_dsu =>
     <[Z.to_nat
   (100 -
 Z.of_nat n -
 1):=255%Z]>
   l
-| arraydef_0__hasBeenInitialized =>
+| arraydef_0_DSU_hasBeenInitialized =>
     [1%Z]
-| arraydef_0__result =>
+| arraydef_0_DSU_result =>
     [0%Z]
-end) = (λ _0 : arrayIndex0,
+end) = (λ _0 : arrayIndex2,
   match
   decide
-  (_0 = arraydef_0__dsu)
+  (_0 = arraydef_0_DSU_dsu)
 with
 | left _1 =>
-  @eq_rect_r arrayIndex0 arraydef_0__dsu
-  (fun _2 : arrayIndex0 =>
-list (arrayType arrayIndex0 environment0 _2))
+  @eq_rect_r arrayIndex2 arraydef_0_DSU_dsu
+  (fun _2 : arrayIndex2 =>
+list (arrayType arrayIndex2 environment2 _2))
   (@insert nat
-  (arrayType arrayIndex0 environment0
-  arraydef_0__dsu)
+  (arrayType arrayIndex2 environment2
+  arraydef_0_DSU_dsu)
   (list
-  (arrayType arrayIndex0 environment0
-  arraydef_0__dsu))
+  (arrayType arrayIndex2 environment2
+  arraydef_0_DSU_dsu))
   (@list_insert
-  (arrayType arrayIndex0 environment0
-  arraydef_0__dsu))
+  (arrayType arrayIndex2 environment2
+  arraydef_0_DSU_dsu))
   (Z.to_nat (Z.sub (Z.sub 100 (Z.of_nat n)) 1))
   255%Z
   l)
@@ -936,233 +894,219 @@ list (arrayType arrayIndex0 environment0 _2))
 return
   (list
   (arrayType
-  arrayIndex0
-  environment0
+  arrayIndex2
+  environment2
   _2))
 with
-| arraydef_0__dsu =>
+| arraydef_0_DSU_dsu =>
     l
-| arraydef_0__hasBeenInitialized =>
+| arraydef_0_DSU_hasBeenInitialized =>
     [1%Z]
-| arraydef_0__result =>
+| arraydef_0_DSU_result =>
     [0%Z]
 end
-end)). { apply functional_extensionality_dep. intro x. destruct x; simpl; easy. } rewrite <- hh. clear hh. rewrite !(ltac:(cbv; reflexivity) : (coerceInt (coerceInt (Z.opp 1) 64) 8) = 255%Z) in previous. rewrite previous. rewrite insert_take_drop; [| lia]. rewrite (ltac:(lia) : Z.to_nat (100 - Z.of_nat n - 1) = 100 - S n). rewrite (ltac:(intros; listsEqual) : forall a b c, a ++ b :: c = (a ++ [b]) ++ c). pose proof take_app_length (take (100 - S n) l ++ [255%Z]) (drop (S (100 - S n)) l) as step. rewrite app_length in step. rewrite (ltac:(easy) : length [255%Z] = 1) in step. rewrite take_length in step. rewrite (ltac:(lia) : (100 - S n) `min` length l = 100 - S n) in step. rewrite (ltac:(lia) : 100 - S n + 1 = 100 - n) in step. rewrite step. clear step. rewrite (ltac:(intros; listsEqual) : forall a b c, (a ++ [b]) ++ c = a ++ (b :: c)). rewrite (ltac:(easy) : _ :: repeat _ _ = repeat 255%Z (S n)). case_decide as hIf; [reflexivity |]. pose proof (ltac:(lia) : @length (arrayType arrayIndex0 environment0 arraydef_0__dsu) l <= 100 - S n) as step. simpl in step. rewrite hL in step. lia.
+end)). { apply functional_extensionality_dep. intro x. destruct x; simpl; easy. } rewrite <- hh. clear hh. rewrite !(ltac:(cbv; reflexivity) : (coerceInt (coerceInt (Z.opp 1) 64) 8) = 255%Z) in previous. rewrite previous. rewrite insert_take_drop; [| lia]. rewrite (ltac:(lia) : Z.to_nat (100 - Z.of_nat n - 1) = 100 - S n). rewrite (ltac:(intros; listsEqual) : forall a b c, a ++ b :: c = (a ++ [b]) ++ c). pose proof take_app_length (take (100 - S n) l ++ [255%Z]) (drop (S (100 - S n)) l) as step. rewrite app_length in step. rewrite (ltac:(easy) : length [255%Z] = 1) in step. rewrite length_take in step. rewrite (ltac:(lia) : (100 - S n) `min` length l = 100 - S n) in step. rewrite (ltac:(lia) : 100 - S n + 1 = 100 - n) in step. rewrite step. clear step. rewrite (ltac:(intros; listsEqual) : forall a b c, (a ++ [b]) ++ c = a ++ (b :: c)). rewrite (ltac:(easy) : _ :: repeat _ _ = repeat 255%Z (S n)). case_decide as hIf; [reflexivity |]. pose proof (ltac:(lia) : @length (arrayType arrayIndex2 environment2 arraydef_0_DSU_dsu) l <= 100 - S n) as step. simpl in step. rewrite hL in step. lia.
 Qed.
 
-Lemma runAncestor1 (dsu : list Slot) state1 state2 (hL : length dsu = 100) (hM : Z.to_nat (dsuLeafCount dsu) = length dsu) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (whatever2 a : Z) (hLe1 : Z.le 0 a) (hLt1 : Z.lt a 100) (communication : list Z) continuation continuation2 whatever n (hN : n <= 100) : invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0 state1 state2
-  communication 1 arrayIndex0 arrayIndexEqualityDecidable0
-  (arrayType arrayIndex0 environment0) (λ _0 : arrayIndex0,
+Lemma runAncestor1 (dsu : list Slot) (hL : length dsu = 100) (hM : Z.to_nat (dsuLeafCount dsu) = length dsu) (h1 : noIllegalIndices dsu) (h2 : withoutCyclesN dsu (length dsu)) (whatever2 a : Z) (hLe1 : Z.le 0 a) (hLt1 : Z.lt a 100) continuation continuation2 whatever n (hN : n <= 100) : runArrays arrayIndex2 arrayIndexEqualityDecidable2 (arrayType arrayIndex2 environment2) (λ _0 : arrayIndex2,
   match
   _0 as _1
 return
   (list
   (arrayType
-  arrayIndex0
-  environment0
+  arrayIndex2
+  environment2
   _1))
 with
-| arraydef_0__dsu =>
+| arraydef_0_DSU_dsu =>
     convertToArray dsu
-| arraydef_0__hasBeenInitialized =>
+| arraydef_0_DSU_hasBeenInitialized =>
     [1%Z]
-| arraydef_0__result =>
+| arraydef_0_DSU_result =>
     [whatever]
-end)
-  (funcdef_0__main (λ _ : varsfuncdef_0__main, false)
-  (λ _ : varsfuncdef_0__main, 0%Z)
-  (λ _ : varsfuncdef_0__main, repeat 0%Z 20))
-  (eliminateLocalVariables
-  (λ _ : varsfuncdef_0__ancestor, false) (λ _0 : varsfuncdef_0__ancestor,
+end) (eliminateLocalVariables
+  (λ _ : varsfuncdef_0_DSU_ancestor, false) (λ _0 : varsfuncdef_0_DSU_ancestor,
   match _0
 with
-| vardef_0__ancestor_vertex =>
+| vardef_0_DSU_ancestor_vertex =>
     whatever2
-| vardef_0__ancestor_work =>
+| vardef_0_DSU_ancestor_work =>
     a
 end)
-  (λ _ : varsfuncdef_0__ancestor, repeat 0%Z 20)
+
   (loop n
   (λ _ : nat,
   dropWithinLoop
   (liftToWithinLoop
-  (numberLocalGet arrayIndex0
-  (arrayType arrayIndex0 environment0)
-  varsfuncdef_0__ancestor
-  vardef_0__ancestor_work >>=
+  (numberLocalGet arrayIndex2
+  (arrayType arrayIndex2 environment2)
+  varsfuncdef_0_DSU_ancestor
+  vardef_0_DSU_ancestor_work >>=
 λ _0 : withLocalVariablesReturnValue
-  (NumberLocalGet arrayIndex0
-  (arrayType arrayIndex0 environment0)
-  varsfuncdef_0__ancestor
-  vardef_0__ancestor_work),
+  (NumberLocalGet arrayIndex2
+  (arrayType arrayIndex2 environment2)
+  varsfuncdef_0_DSU_ancestor
+  vardef_0_DSU_ancestor_work),
   Done
-  (WithLocalVariables arrayIndex0
-  (arrayType arrayIndex0 environment0)
-  varsfuncdef_0__ancestor)
+  (WithLocalVariables arrayIndex2
+  (arrayType arrayIndex2 environment2)
+  varsfuncdef_0_DSU_ancestor)
   withLocalVariablesReturnValue Z
   (coerceInt _0 64) >>=
 λ _1 : Z,
-  retrieve arrayIndex0
-  (arrayType arrayIndex0 environment0)
-  varsfuncdef_0__ancestor arraydef_0__dsu
+  retrieve arrayIndex2
+  (arrayType arrayIndex2 environment2)
+  varsfuncdef_0_DSU_ancestor arraydef_0_DSU_dsu
   _1 >>=
-λ _2 : arrayType arrayIndex0 environment0
-  arraydef_0__dsu,
+λ _2 : arrayType arrayIndex2 environment2
+  arraydef_0_DSU_dsu,
   Done
-  (WithLocalVariables arrayIndex0
-  (arrayType arrayIndex0 environment0)
-  varsfuncdef_0__ancestor)
+  (WithLocalVariables arrayIndex2
+  (arrayType arrayIndex2 environment2)
+  varsfuncdef_0_DSU_ancestor)
   withLocalVariablesReturnValue Z
   (coerceInt 0 8) >>=
 λ _3 : Z,
   Done
-  (WithLocalVariables arrayIndex0
-  (arrayType arrayIndex0
-  environment0)
-  varsfuncdef_0__ancestor)
+  (WithLocalVariables arrayIndex2
+  (arrayType arrayIndex2
+  environment2)
+  varsfuncdef_0_DSU_ancestor)
   withLocalVariablesReturnValue bool
   (bool_decide
   (toSigned _2 8 < toSigned _3 8)%Z)) >>=
 λ _0 : bool,
   (if _0
 then
- break arrayIndex0
-  (arrayType arrayIndex0 environment0)
-  varsfuncdef_0__ancestor >>=
+ break arrayIndex2
+  (arrayType arrayIndex2 environment2)
+  varsfuncdef_0_DSU_ancestor >>=
 λ _ : (),
   Done
-  (WithinLoop arrayIndex0
-  (arrayType arrayIndex0 environment0)
-  varsfuncdef_0__ancestor)
+  (WithinLoop arrayIndex2
+  (arrayType arrayIndex2 environment2)
+  varsfuncdef_0_DSU_ancestor)
   withinLoopReturnValue ()
   ()
 else
  Done
-  (WithinLoop arrayIndex0
-  (arrayType arrayIndex0 environment0)
-  varsfuncdef_0__ancestor)
+  (WithinLoop arrayIndex2
+  (arrayType arrayIndex2 environment2)
+  varsfuncdef_0_DSU_ancestor)
   withinLoopReturnValue ()
   ()) >>=
 λ _ : (),
   liftToWithinLoop
-  (numberLocalGet arrayIndex0
-  (arrayType arrayIndex0 environment0)
-  varsfuncdef_0__ancestor
-  vardef_0__ancestor_work >>=
+  (numberLocalGet arrayIndex2
+  (arrayType arrayIndex2 environment2)
+  varsfuncdef_0_DSU_ancestor
+  vardef_0_DSU_ancestor_work >>=
 λ _1 : withLocalVariablesReturnValue
-  (NumberLocalGet arrayIndex0
-  (arrayType arrayIndex0
-  environment0)
-  varsfuncdef_0__ancestor
-  vardef_0__ancestor_work),
+  (NumberLocalGet arrayIndex2
+  (arrayType arrayIndex2
+  environment2)
+  varsfuncdef_0_DSU_ancestor
+  vardef_0_DSU_ancestor_work),
   Done
-  (WithLocalVariables arrayIndex0
-  (arrayType arrayIndex0 environment0)
-  varsfuncdef_0__ancestor)
+  (WithLocalVariables arrayIndex2
+  (arrayType arrayIndex2 environment2)
+  varsfuncdef_0_DSU_ancestor)
   withLocalVariablesReturnValue Z
   (coerceInt _1 64) >>=
 λ _2 : Z,
-  retrieve arrayIndex0
-  (arrayType arrayIndex0 environment0)
-  varsfuncdef_0__ancestor
-  arraydef_0__dsu _2 >>=
-λ _3 : arrayType arrayIndex0
-  environment0 arraydef_0__dsu,
-  numberLocalSet arrayIndex0
-  (arrayType arrayIndex0 environment0)
-  varsfuncdef_0__ancestor
-  vardef_0__ancestor_work
+  retrieve arrayIndex2
+  (arrayType arrayIndex2 environment2)
+  varsfuncdef_0_DSU_ancestor
+  arraydef_0_DSU_dsu _2 >>=
+λ _3 : arrayType arrayIndex2
+  environment2 arraydef_0_DSU_dsu,
+  numberLocalSet arrayIndex2
+  (arrayType arrayIndex2 environment2)
+  varsfuncdef_0_DSU_ancestor
+  vardef_0_DSU_ancestor_work
   _3) >>=
 λ _ : (),
   Done
-  (WithinLoop arrayIndex0
-  (arrayType arrayIndex0 environment0)
-  varsfuncdef_0__ancestor)
+  (WithinLoop arrayIndex2
+  (arrayType arrayIndex2 environment2)
+  varsfuncdef_0_DSU_ancestor)
   withinLoopReturnValue ()
-  ())) >>= continuation) >>= continuation2) = invokeContractAux (repeat 1%Z 20) (repeat 0%Z 20) 0 state1 state2
-  communication 1 arrayIndex0 arrayIndexEqualityDecidable0
-  (arrayType arrayIndex0 environment0) (λ _0 : arrayIndex0,
+  ())) >>= continuation) >>= continuation2) = runArrays arrayIndex2 arrayIndexEqualityDecidable2 (arrayType arrayIndex2 environment2) (λ _0 : arrayIndex2,
   match
   _0 as _1
 return
   (list
   (arrayType
-  arrayIndex0
-  environment0
+  arrayIndex2
+  environment2
   _1))
 with
-| arraydef_0__dsu =>
+| arraydef_0_DSU_dsu =>
     convertToArray dsu
-| arraydef_0__hasBeenInitialized =>
+| arraydef_0_DSU_hasBeenInitialized =>
     [1%Z]
-| arraydef_0__result =>
+| arraydef_0_DSU_result =>
     [whatever]
-end)
-  (funcdef_0__main (λ _ : varsfuncdef_0__main, false)
-  (λ _ : varsfuncdef_0__main, 0%Z)
-  (λ _ : varsfuncdef_0__main, repeat 0%Z 20))
-  (eliminateLocalVariables
-  (λ _ : varsfuncdef_0__ancestor, false) (λ _0 : varsfuncdef_0__ancestor,
+end) (eliminateLocalVariables
+  (λ _ : varsfuncdef_0_DSU_ancestor, false) (λ _0 : varsfuncdef_0_DSU_ancestor,
   match _0
 with
-| vardef_0__ancestor_vertex =>
+| vardef_0_DSU_ancestor_vertex =>
     whatever2
-| vardef_0__ancestor_work =>
+| vardef_0_DSU_ancestor_work =>
     Z.of_nat (ancestor dsu n (Z.to_nat a))
 end)
-  (λ _ : varsfuncdef_0__ancestor, repeat 0%Z 20) (continuation tt) >>= continuation2).
+   (continuation tt) >>= continuation2).
 Proof.
   revert a hLt1 hLe1. induction n as [| n IH]; intros a hLt1 hLe1.
   - rewrite (ltac:(simpl; reflexivity) : loop 0 _ = _), (ltac:(simpl; reflexivity) : ancestor dsu 0 _ = _), Z2Nat.id, leftIdentity; [reflexivity | lia].
-  - rewrite (ltac:(simpl; reflexivity) : loop (S _) _ = _). unfold numberLocalGet at 1. rewrite <- !bindAssoc, liftToWithinLoopBind, <- !bindAssoc, dropWithinLoopLiftToWithinLoop, <- !bindAssoc. pose proof @pushNumberGet2 arrayIndex0 (arrayType arrayIndex0 environment0) varsfuncdef_0__ancestor _ (λ _ : varsfuncdef_0__ancestor, false) (λ _1 : varsfuncdef_0__ancestor,
+  - rewrite (ltac:(simpl; reflexivity) : loop (S _) _ = _). unfold numberLocalGet at 1. rewrite <- !bindAssoc, liftToWithinLoopBind, <- !bindAssoc, dropWithinLoopLiftToWithinLoop, <- !bindAssoc. pose proof @pushNumberGet2 arrayIndex2 (arrayType arrayIndex2 environment2) varsfuncdef_0_DSU_ancestor _ (λ _ : varsfuncdef_0_DSU_ancestor, false) (λ _1 : varsfuncdef_0_DSU_ancestor,
   match
   _1
 with
-| vardef_0__ancestor_vertex =>
+| vardef_0_DSU_ancestor_vertex =>
     whatever2
-| vardef_0__ancestor_work =>
+| vardef_0_DSU_ancestor_work =>
     a
-end) (λ _ : varsfuncdef_0__ancestor,
-  repeat
-  0%Z 20) as step. rewrite step. clear step.
+end)  as step. rewrite step. clear step.
   assert (step : coerceInt a 64 = a).
   { revert hLe1 hLt1. clear. intros h1 h2. unfold coerceInt. rewrite Z.mod_small. { reflexivity. } lia. }
   rewrite step, !leftIdentity, liftToWithinLoopBind, <- !bindAssoc, dropWithinLoopLiftToWithinLoop. unfold retrieve at 1.
-  pose proof pushDispatch2 (λ _ : varsfuncdef_0__ancestor, false)
-  (λ _0 : varsfuncdef_0__ancestor,
+  pose proof pushDispatch2 (λ _ : varsfuncdef_0_DSU_ancestor, false)
+  (λ _0 : varsfuncdef_0_DSU_ancestor,
      match _0 with
-     | vardef_0__ancestor_vertex => whatever2
-     | vardef_0__ancestor_work => a
-     end) (λ _ : varsfuncdef_0__ancestor, repeat 0%Z 20) (Retrieve arrayIndex0 (arrayType arrayIndex0 environment0)
-     arraydef_0__dsu a) as step2. rewrite <- !bindAssoc, step2. clear step2.
+     | vardef_0_DSU_ancestor_vertex => whatever2
+     | vardef_0_DSU_ancestor_work => a
+     end)  (Retrieve arrayIndex2 (arrayType arrayIndex2 environment2)
+     arraydef_0_DSU_dsu a) as step2. rewrite <- !bindAssoc, step2. clear step2.
   rewrite (ltac:(simpl; reflexivity) : forall effect continuation f, bind (Dispatch _ _ _ effect continuation) f = _). autorewrite with advance_program.
   case_decide as hs; [| rewrite lengthConvert in hs; lia].
   rewrite !leftIdentity, (ltac:(easy) : toSigned (coerceInt 0%Z 8) 8 = 0%Z).
-  rewrite (ltac:(easy) : @nth_lt (arrayType arrayIndex0 environment0 arraydef_0__dsu) (convertToArray dsu) (Z.to_nat a) hs = @nth_lt Z (convertToArray dsu) (Z.to_nat a) hs), (nth_lt_default (convertToArray dsu) (Z.to_nat a) hs 0%Z), nthConvert; [| lia].
+  rewrite (ltac:(easy) : @nth_lt (arrayType arrayIndex2 environment2 arraydef_0_DSU_dsu) (convertToArray dsu) (Z.to_nat a) hs = @nth_lt Z (convertToArray dsu) (Z.to_nat a) hs), (nth_lt_default (convertToArray dsu) (Z.to_nat a) hs 0%Z), nthConvert; [| lia].
   remember (nth (Z.to_nat a) dsu (Ancestor Unit)) as g eqn:hg. symmetry in hg.
   destruct g as [g | g]; clear hs.
   + case_bool_decide as hs. { unfold toSigned in hs. pose proof h1 (Z.to_nat a) g hg. case_decide; [| lia]. lia. } rewrite (ltac:(easy) : liftToWithinLoop
   (Done
-     (WithLocalVariables arrayIndex0 (arrayType arrayIndex0 environment0)
-        varsfuncdef_0__ancestor) withLocalVariablesReturnValue bool false) = Done _ _ bool false), !leftIdentity.
-    rewrite liftToWithinLoopBind, <- !bindAssoc, dropWithinLoopLiftToWithinLoop. unfold numberLocalGet at 1. rewrite <- !bindAssoc, pushNumberGet2, !step, !leftIdentity, liftToWithinLoopBind, <- !bindAssoc, dropWithinLoopLiftToWithinLoop. unfold retrieve at 1. rewrite <- !bindAssoc, pushDispatch2. rewrite (ltac:(simpl; reflexivity) : forall effect continuation f, bind (Dispatch _ _ _ effect continuation) f = _). autorewrite with advance_program. clear hs. case_decide as hs; [| rewrite lengthConvert in hs; lia]. rewrite liftToWithinLoopBind, <- !bindAssoc, dropWithinLoopLiftToWithinLoop, <- !bindAssoc. unfold numberLocalSet at 1. pose proof (@pushNumberSet2 arrayIndex0 (arrayType arrayIndex0 environment0) varsfuncdef_0__ancestor _ (λ _ : varsfuncdef_0__ancestor, false)
-    (λ _0 : varsfuncdef_0__ancestor,
+     (WithLocalVariables arrayIndex2 (arrayType arrayIndex2 environment2)
+        varsfuncdef_0_DSU_ancestor) withLocalVariablesReturnValue bool false) = Done _ _ bool false), !leftIdentity.
+    rewrite liftToWithinLoopBind, <- !bindAssoc, dropWithinLoopLiftToWithinLoop. unfold numberLocalGet at 1. rewrite <- !bindAssoc, pushNumberGet2, !step, !leftIdentity, liftToWithinLoopBind, <- !bindAssoc, dropWithinLoopLiftToWithinLoop. unfold retrieve at 1. rewrite <- !bindAssoc, pushDispatch2. rewrite (ltac:(simpl; reflexivity) : forall effect continuation f, bind (Dispatch _ _ _ effect continuation) f = _). autorewrite with advance_program. clear hs. case_decide as hs; [| rewrite lengthConvert in hs; lia]. rewrite liftToWithinLoopBind, <- !bindAssoc, dropWithinLoopLiftToWithinLoop, <- !bindAssoc. unfold numberLocalSet at 1. pose proof (@pushNumberSet2 arrayIndex2 (arrayType arrayIndex2 environment2) varsfuncdef_0_DSU_ancestor _ (λ _ : varsfuncdef_0_DSU_ancestor, false)
+    (λ _0 : varsfuncdef_0_DSU_ancestor,
        match _0 with
-       | vardef_0__ancestor_vertex => whatever2
-       | vardef_0__ancestor_work => a
-       end) (λ _ : varsfuncdef_0__ancestor, repeat 0%Z 20) vardef_0__ancestor_work) (nth_lt (convertToArray dsu) (Z.to_nat a) hs) as step3. rewrite step3. clear step3.
+       | vardef_0_DSU_ancestor_vertex => whatever2
+       | vardef_0_DSU_ancestor_work => a
+       end)  vardef_0_DSU_ancestor_work) (nth_lt (convertToArray dsu) (Z.to_nat a) hs) as step3. rewrite step3. clear step3.
     rewrite (ltac:(cbv; reflexivity) : dropWithinLoop
     (Done
-       (WithinLoop arrayIndex0 (arrayType arrayIndex0 environment0)
-          varsfuncdef_0__ancestor) withinLoopReturnValue () ())  = _), !leftIdentity.
+       (WithinLoop arrayIndex2 (arrayType arrayIndex2 environment2)
+          varsfuncdef_0_DSU_ancestor) withinLoopReturnValue () ())  = _), !leftIdentity.
     assert (step3 : nth_lt (convertToArray dsu) (Z.to_nat a) hs = Z.of_nat g).
     { rewrite (nth_lt_default _ _ _ 0%Z), nthConvert; [| lia]. rewrite hg. reflexivity. } rewrite step3. clear step3.
     assert (step3 : (update
-    (λ _0 : varsfuncdef_0__ancestor,
+    (λ _0 : varsfuncdef_0_DSU_ancestor,
        match _0 with
-       | vardef_0__ancestor_vertex => whatever2
-       | vardef_0__ancestor_work => a
-       end) vardef_0__ancestor_work (Z.of_nat g)) = fun x => match x with | vardef_0__ancestor_vertex => whatever2 | vardef_0__ancestor_work => Z.of_nat g end). { unfold update. apply functional_extensionality_dep. intro aa. destruct aa; easy. } rewrite step3. clear step3.
+       | vardef_0_DSU_ancestor_vertex => whatever2
+       | vardef_0_DSU_ancestor_work => a
+       end) vardef_0_DSU_ancestor_work (Z.of_nat g)) = fun x => match x with | vardef_0_DSU_ancestor_vertex => whatever2 | vardef_0_DSU_ancestor_work => Z.of_nat g end). { unfold update. apply functional_extensionality_dep. intro aa. destruct aa; easy. } rewrite step3. clear step3.
     pose proof IH ltac:(lia) (Z.of_nat g) ltac:(pose proof h1 (Z.to_nat a) _ hg as ls; lia) ltac:(lia) as step3. rewrite !liftToWithinLoopBind, <- !bindAssoc in step3. rewrite step3, Nat2Z.id.
     clear step3. assert (step3 : ancestor dsu (S n) (Z.to_nat a) = ancestor dsu n g). { simpl. rewrite hg. reflexivity. } rewrite step3. reflexivity.
   + case_bool_decide as hs.
@@ -1255,8 +1199,8 @@ Lemma unitePreservesLength (dsu : list Slot) (a b : nat) : length (unite dsu a b
 Proof.
   unfold unite. case_decide as h1. { reflexivity. } case_decide as h2. { reflexivity. } case_decide as h3. { rewrite !pathCompressPreservesLength. reflexivity. }
   destruct (nth _ _ _) as [m | m]. { rewrite !pathCompressPreservesLength. reflexivity. } destruct (nth _ _ _) as [n | n]. { rewrite !pathCompressPreservesLength. reflexivity. } case_decide as h4.
-  - unfold performMerge. rewrite !insert_length, !pathCompressPreservesLength. reflexivity.
-  - unfold performMerge. rewrite !insert_length, !pathCompressPreservesLength. reflexivity.
+  - unfold performMerge. rewrite !length_insert, !pathCompressPreservesLength. reflexivity.
+  - unfold performMerge. rewrite !length_insert, !pathCompressPreservesLength. reflexivity.
 Qed.
 
 Lemma unitePreservesLeafCount (dsu : list Slot) (hN : noIllegalIndices dsu) (a b : nat) : dsuLeafCount (unite dsu a b) = dsuLeafCount dsu.
@@ -1282,19 +1226,19 @@ Proof.
     assert (cr : length dsu = length f).
     { rewrite hf, !pathCompressPreservesLength. reflexivity. }
     destruct (ltac:(lia) : x < y \/ y < x) as [jj | jj].
-    + rewrite insert_take_drop, drop_insert_gt; try rewrite ?insert_length; try lia.
-      rewrite insert_take_drop, take_app, take_take, take_length, (ltac:(lia) : y `min` x = x), (ltac:(lia) : x `min` length f = x), (ltac:(easy) : Ancestor (Unite m n) :: drop (S x) f = [Ancestor (Unite m n)] ++ drop (S x) f), take_app; try lia. simpl.
+    + rewrite insert_take_drop, drop_insert_gt; try rewrite ?length_insert; try lia.
+      rewrite insert_take_drop, take_app, take_take, length_take, (ltac:(lia) : y `min` x = x), (ltac:(lia) : x `min` length f = x), (ltac:(easy) : Ancestor (Unite m n) :: drop (S x) f = [Ancestor (Unite m n)] ++ drop (S x) f), take_app; try lia. simpl.
       assert (stp : take (y - x) [Ancestor (Unite m n)] = [Ancestor (Unite m n)]).
       { rewrite (ltac:(lia) : y - x = S (y - x - 1)). simpl. rewrite take_nil. reflexivity. }
       rewrite stp, (ltac:(easy) : ReferTo x :: drop (S y) f = [ReferTo x] ++ drop (S y) f).
       rewrite (ListDecomposition.listDecomposition f x y jj ltac:(lia) (Ancestor Unit)) at 4. unfold dsuLeafCount.
       rewrite !map_app, !list_sum_app, take_drop_commute, (ltac:(lia) : S x + (y - x - 1) = y). rewrite !pathCompressPreservesLength in yb, zb.
       rewrite <- hf in yb, zb. rewrite <- yb, <- zb. simpl. rewrite (ltac:(lia) : y + 1 = S y). lia.
-    + rewrite insert_take_drop, drop_insert_le; try rewrite ?insert_length; try lia.
-      rewrite insert_take_drop, take_app, take_take, take_length, (ltac:(lia) : y `min` x = y), (ltac:(lia) : x `min` length f = x), (ltac:(easy) : Ancestor (Unite m n) :: drop (S x) f = [Ancestor (Unite m n)] ++ drop (S x) f), take_app; try lia. simpl.
+    + rewrite insert_take_drop, drop_insert_le; try rewrite ?length_insert; try lia.
+      rewrite insert_take_drop, take_app, take_take, length_take, (ltac:(lia) : y `min` x = y), (ltac:(lia) : x `min` length f = x), (ltac:(easy) : Ancestor (Unite m n) :: drop (S x) f = [Ancestor (Unite m n)] ++ drop (S x) f), take_app; try lia. simpl.
       assert (stp : take (y - x) [Ancestor (Unite m n)] = []).
       { rewrite (ltac:(lia) : y - x = 0). simpl. reflexivity. }
-      rewrite stp, !app_nil_l, insert_take_drop, drop_drop, !take_drop_commute, (ltac:(lia) : S y + S (x - S y) = S x), (ltac:(lia) : S x + (y - x - 1) = S x), (ltac:(lia) : S y + (x - S y) = x); [| rewrite drop_length; lia].
+      rewrite stp, !app_nil_l, insert_take_drop, drop_drop, !take_drop_commute, (ltac:(lia) : S y + S (x - S y) = S x), (ltac:(lia) : S x + (y - x - 1) = S x), (ltac:(lia) : S y + (x - S y) = x); [| rewrite length_drop; lia].
       rewrite (ltac:(intros; simpl; easy) : forall a b, a :: b = [a] ++ b), ((ltac:(intros; simpl; easy) : forall a b, a :: b = [a] ++ b) (Ancestor (Unite m n)) (drop (S x) f)).
       rewrite (ListDecomposition.listDecomposition f y x jj ltac:(lia) (Ancestor Unit)) at 5. unfold dsuLeafCount.
       rewrite !map_app, !list_sum_app. rewrite !pathCompressPreservesLength in yb, zb.
@@ -1302,7 +1246,7 @@ Proof.
       simpl. rewrite (ltac:(lia) : x + 1 = S x).
       assert (ms : drop (S x) (take (S x) f) = []).
       { assert (mt : length (drop (S x) (take (S x) f)) = 0).
-        { rewrite drop_length, take_length. lia. }
+        { rewrite length_drop, length_take. lia. }
         exact (nil_length_inv _ mt). }
       rewrite ms. simpl.
       lia.
@@ -1322,23 +1266,23 @@ Proof.
     assert (cr : length dsu = length f).
     { rewrite hf, !pathCompressPreservesLength. reflexivity. }
     destruct (ltac:(lia) : x < y \/ y < x) as [jj | jj].
-    + rewrite insert_take_drop, drop_insert_le; try rewrite ?insert_length; try lia.
-      rewrite insert_take_drop, take_app, take_take, take_length, (ltac:(lia) : x `min` y = x), (ltac:(lia) : y `min` length f = y), (ltac:(easy) : Ancestor (Unite n m) :: drop (S y) f = [Ancestor (Unite n m)] ++ drop (S y) f), take_app; try lia. simpl.
+    + rewrite insert_take_drop, drop_insert_le; try rewrite ?length_insert; try lia.
+      rewrite insert_take_drop, take_app, take_take, length_take, (ltac:(lia) : x `min` y = x), (ltac:(lia) : y `min` length f = y), (ltac:(easy) : Ancestor (Unite n m) :: drop (S y) f = [Ancestor (Unite n m)] ++ drop (S y) f), take_app; try lia. simpl.
       assert (stp : take (x - y) [Ancestor (Unite n m)] = []).
       { rewrite (ltac:(lia) : x - y = 0). easy. }
-      rewrite stp, !app_nil_l, insert_take_drop, drop_drop, !take_drop_commute, (ltac:(lia) : S x + S (y - S x) = S y), (ltac:(lia) : S x + (y - S x) = y), (ltac:(lia) : S y + (x - y - 1) = S y); [| rewrite drop_length; lia].
+      rewrite stp, !app_nil_l, insert_take_drop, drop_drop, !take_drop_commute, (ltac:(lia) : S x + S (y - S x) = S y), (ltac:(lia) : S x + (y - S x) = y), (ltac:(lia) : S y + (x - y - 1) = S y); [| rewrite length_drop; lia].
       rewrite (ltac:(intros; simpl; easy) : forall a b, a :: b = [a] ++ b), ((ltac:(intros; simpl; easy) : forall a b, a :: b = [a] ++ b) (Ancestor (Unite n m))).
       rewrite (ListDecomposition.listDecomposition f x y jj ltac:(lia) (Ancestor Unit)) at 5. unfold dsuLeafCount.
       rewrite !map_app, !list_sum_app. rewrite !pathCompressPreservesLength in yb, zb.
       rewrite <- hf in yb, zb. rewrite <- yb, <- zb. simpl. rewrite (ltac:(lia) : y + 1 = S y).
       assert (ms : drop (S y) (take (S y) f) = []).
       { assert (mt : length (drop (S y) (take (S y) f)) = 0).
-        { rewrite drop_length, take_length. lia. }
+        { rewrite length_drop, length_take. lia. }
         exact (nil_length_inv _ mt). }
       rewrite ms. simpl.
       lia.
-    + rewrite insert_take_drop, drop_insert_gt; try rewrite ?insert_length; try lia.
-      rewrite insert_take_drop, take_app, take_take, take_length, (ltac:(lia) : x `min` y = y), (ltac:(lia) : y `min` length f = y), (ltac:(easy) : Ancestor (Unite n m) :: drop (S y) f = [Ancestor (Unite n m)] ++ drop (S y) f), take_app; try lia. simpl.
+    + rewrite insert_take_drop, drop_insert_gt; try rewrite ?length_insert; try lia.
+      rewrite insert_take_drop, take_app, take_take, length_take, (ltac:(lia) : x `min` y = y), (ltac:(lia) : y `min` length f = y), (ltac:(easy) : Ancestor (Unite n m) :: drop (S y) f = [Ancestor (Unite n m)] ++ drop (S y) f), take_app; try lia. simpl.
       assert (stp : take (x - y) [Ancestor (Unite n m)] = [Ancestor (Unite n m)]).
       { rewrite (ltac:(lia) : x - y = S (x - y - 1)). simpl. rewrite take_nil. reflexivity. }
       rewrite stp, !take_drop_commute, (ltac:(lia) : S y + (x - y - 1) = x).
@@ -1349,7 +1293,7 @@ Proof.
       simpl. rewrite (ltac:(lia) : x + 1 = S x).
       assert (ms : drop (S x) (take (S x) f) = []).
       { assert (mt : length (drop (S x) (take (S x) f)) = 0).
-        { rewrite drop_length, take_length. lia. }
+        { rewrite length_drop, length_take. lia. }
         exact (nil_length_inv _ mt). }
       lia.
 Qed.
@@ -1405,25 +1349,25 @@ Proof.
        (length
           (pathCompress dsu (length dsu) a (ancestor dsu (length dsu) a))) b)) as [hs | hs].
     { rewrite <- hs, nth_lookup, list_lookup_insert in i.
-      - simpl in i. rewrite !insert_length, !pathCompressPreservesLength. injection i. intro ht. rewrite <- ht. apply ancestorLtLength; (assumption || lia).
-      - rewrite insert_length, hs, pathCompressPreservesLength, pathCompressPreservesLength. apply ancestorLtLength. { apply pathCompressPreservesNoIllegalIndices; try (assumption || lia). apply ancestorLtLength; try (assumption || lia). }
+      - simpl in i. rewrite !length_insert, !pathCompressPreservesLength. injection i. intro ht. rewrite <- ht. apply ancestorLtLength; (assumption || lia).
+      - rewrite length_insert, hs, pathCompressPreservesLength, pathCompressPreservesLength. apply ancestorLtLength. { apply pathCompressPreservesNoIllegalIndices; try (assumption || lia). apply ancestorLtLength; try (assumption || lia). }
         rewrite pathCompressPreservesLength. lia. }
     rewrite nth_lookup, list_lookup_insert_ne in i; [| lia].
     destruct (decide (g = ancestor dsu (length dsu) a)) as [ht | ht].
     { rewrite ht, list_lookup_insert in i. { easy. } rewrite !pathCompressPreservesLength. apply ancestorLtLength; (assumption || lia). }
     rewrite list_lookup_insert_ne, <- nth_lookup in i; [| lia].
-    rewrite !insert_length. exact (gameover _ _ i).
+    rewrite !length_insert. exact (gameover _ _ i).
   - intros g j i. destruct (decide (g = ancestor dsu (length dsu) a)) as [hs | hs].
     { rewrite <- hs, nth_lookup, list_lookup_insert in i.
-      - simpl in i. rewrite !insert_length, pathCompressPreservesLength. injection i. intro ht. rewrite <- ht, <- hs. apply ancestorLtLength; try rewrite pathCompressPreservesLength; try (assumption || lia). apply pathCompressPreservesNoIllegalIndices; try (assumption || lia). rewrite hs. apply ancestorLtLength; (assumption || lia).
-      - rewrite !insert_length, !pathCompressPreservesLength, hs. apply ancestorLtLength; (assumption || lia). }
+      - simpl in i. rewrite !length_insert, pathCompressPreservesLength. injection i. intro ht. rewrite <- ht, <- hs. apply ancestorLtLength; try rewrite pathCompressPreservesLength; try (assumption || lia). apply pathCompressPreservesNoIllegalIndices; try (assumption || lia). rewrite hs. apply ancestorLtLength; (assumption || lia).
+      - rewrite !length_insert, !pathCompressPreservesLength, hs. apply ancestorLtLength; (assumption || lia). }
     rewrite nth_lookup, list_lookup_insert_ne in i; [| lia].
     destruct (decide (g = ancestor (pathCompress dsu (length dsu) a (ancestor dsu (length dsu) a))
        (length
           (pathCompress dsu (length dsu) a (ancestor dsu (length dsu) a))) b)) as [ht | ht].
     { rewrite ht, list_lookup_insert in i. { easy. } rewrite !pathCompressPreservesLength. pose proof ancestorLtLength (pathCompress dsu (length dsu) a (ancestor dsu (length dsu) a)) as t. rewrite !pathCompressPreservesLength in t. apply t; [| lia]. apply pathCompressPreservesNoIllegalIndices; try (assumption || lia). apply ancestorLtLength; (assumption || lia). }
     rewrite list_lookup_insert_ne, <- nth_lookup in i; [| lia].
-    rewrite !insert_length. exact (gameover _ _ i).
+    rewrite !length_insert. exact (gameover _ _ i).
 Qed.
 
 Lemma performMergePreservesWithoutCycles (dsu : list Slot) (a b : nat) (ha : a < length dsu) (hb : b < length dsu) (hD : a <> b) t1 t2 (h : noIllegalIndices dsu) (h1 : withoutCyclesN dsu (length dsu)) t3 (h3 : nth a dsu (Ancestor Unit) = Ancestor t3) t4 (h4 : nth b dsu (Ancestor Unit) = Ancestor t4) : withoutCyclesN (performMerge dsu t1 t2 a b) (length dsu).
@@ -1432,7 +1376,7 @@ Proof.
   intros i j.
   assert (als : noIllegalIndices (<[a:=ReferTo b]> (<[b:=Ancestor (Unite t2 t1)]> dsu))).
   { intros yy rr hh.
-    rewrite !insert_length.
+    rewrite !length_insert.
     destruct (Nat.eq_dec yy a) as [ww | ww].
     - rewrite ww in hh.
       rewrite nth_lookup, list_lookup_insert in hh.
@@ -1441,7 +1385,7 @@ Proof.
         intro als.
         subst b.
         pose proof ancestorLtLength dsu ltac:(assumption) (length dsu) i ltac:(lia). lia.
-      + rewrite insert_length. lia.
+      + rewrite length_insert. lia.
     - rewrite nth_lookup in hh.
       destruct (Nat.eq_dec yy b) as [ii | ii].
       + subst yy.
@@ -1462,7 +1406,7 @@ Proof.
         assert (ayw : length (ancestorChain dsu (length dsu) i ++ [b]) = length ([] : list nat)).
         { rewrite ga. reflexivity. }
         rewrite app_length in ayw. simpl in ayw. lia.
-      - rewrite !insert_length, nth_lookup, lookup_app_l.
+      - rewrite !length_insert, nth_lookup, lookup_app_l.
         + rewrite <- nth_lookup. exact g2.
         + pose proof (ltac:(lia) : 0 < length (ancestorChain dsu (length dsu) i) \/ length (ancestorChain dsu (length dsu) i) = 0) as [ds | ds]. { exact ds. }
           pose proof nil_length_inv _ ds. tauto.
@@ -1484,20 +1428,20 @@ Proof.
           rewrite hs in gh.
           assert (spt : nth ja (ancestorChain dsu (length dsu) i ++ [b]) 0 = a).
           { rewrite nth_lookup, lookup_app_l, (ltac:(lia) : ja = length (ancestorChain dsu (length dsu) i) - 1), <- nth_lookup. { exact gh. } lia. }
-          rewrite spt, nth_lookup, list_lookup_insert. { easy. } rewrite insert_length. exact ha.
+          rewrite spt, nth_lookup, list_lookup_insert. { easy. } rewrite length_insert. exact ha.
       - exists (Unite t2 t1).
         assert (ajk : nth (length (ancestorChain dsu (length dsu) i ++ [b]) - 1) (ancestorChain dsu (length dsu) i ++ [b]) 0 = b).
         { rewrite app_length. simpl. rewrite Nat.add_sub, nth_lookup, lookup_app_r, Nat.sub_diag. { easy. } lia. }
         rewrite ajk, nth_lookup, list_lookup_insert_ne, list_lookup_insert; (easy || lia). }
-    pose proof validChainAncestorLength (<[a:=ReferTo b]> (<[b:=Ancestor (Unite t2 t1)]> dsu)) (ancestorChain dsu (length dsu) i ++ [b]) als ya i ltac:(rewrite nth_lookup, lookup_app_l; [destruct (length dsu) as [| g]; [simpl; easy |]; simpl; destruct (nth i dsu (Ancestor Unit)) as [jk | jk]; easy | apply zeroLtLengthAncestorChain]) as ua. rewrite !insert_length in ua.
+    pose proof validChainAncestorLength (<[a:=ReferTo b]> (<[b:=Ancestor (Unite t2 t1)]> dsu)) (ancestorChain dsu (length dsu) i ++ [b]) als ya i ltac:(rewrite nth_lookup, lookup_app_l; [destruct (length dsu) as [| g]; [simpl; easy |]; simpl; destruct (nth i dsu (Ancestor Unit)) as [jk | jk]; easy | apply zeroLtLengthAncestorChain]) as ua. rewrite !length_insert in ua.
     pose proof ancestorEqLastAncestorChain (<[a:=ReferTo b]> (<[b:=Ancestor (Unite t2 t1)]> dsu)) (length dsu) i as ra.
-    rewrite <- !ua, nth_lookup, lookup_app_r, app_length, (ltac:(easy) : length [b] = 1), Nat.add_sub, Nat.sub_diag in ra; [| rewrite app_length; simpl; lia]. symmetry in ra. rewrite (ltac:(easy) : default 0 ([b] !! 0) = b) in ra. rewrite !insert_length, ra, nth_lookup, list_lookup_insert_ne, list_lookup_insert; (easy || lia). }
+    rewrite <- !ua, nth_lookup, lookup_app_r, app_length, (ltac:(easy) : length [b] = 1), Nat.add_sub, Nat.sub_diag in ra; [| rewrite app_length; simpl; lia]. symmetry in ra. rewrite (ltac:(easy) : default 0 ([b] !! 0) = b) in ra. rewrite !length_insert, ra, nth_lookup, list_lookup_insert_ne, list_lookup_insert; (easy || lia). }
   destruct (Nat.eq_dec (ancestor dsu (length dsu) i) b) as [ht | ht].
   { assert (ter: validChainToAncestor (<[a:=ReferTo b]> (<[b:=Ancestor (Unite t2 t1)]> dsu)) (ancestorChain dsu (length dsu) i)).
     { pose proof validChainAncestorChain dsu (length dsu) i ltac:(assumption) ltac:(assumption) as [g1 [g2 g3]].
       repeat split.
       - destruct (length dsu) as [| g]. { simpl. easy. } simpl. destruct (nth i dsu (Ancestor Unit)) as [jk | jk]; easy.
-      - rewrite !insert_length. assumption.
+      - rewrite !length_insert. assumption.
       - intros y u.
         pose proof g3 y u as su.
         assert (n1 : nth y (ancestorChain dsu (length dsu) i) 0 <> a).
@@ -1513,7 +1457,7 @@ Proof.
   { pose proof validChainAncestorChain dsu (length dsu) i ltac:(assumption) ltac:(assumption) as [g1 [g2 g3]].
     repeat split.
     - destruct (length dsu); try easy; simpl; destruct (nth i _ _); easy.
-    - rewrite !insert_length. assumption.
+    - rewrite !length_insert. assumption.
     - intros y u.
       pose proof g3 y u as us.
       assert (n1 : nth y (ancestorChain dsu (length dsu) i) 0 <> a).

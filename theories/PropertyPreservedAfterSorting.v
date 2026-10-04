@@ -17,11 +17,11 @@ Proof.
   - pose proof proj1 (lessThanOrEqual comparator (nth i l default) (nth j l default)) H as H2. destruct H2 as [H2 | H2].
     + unfold swap. rewrite <- H2, updateSelf, H2, updateSelf. assumption.
     + rewrite (listDecomposition l i j ltac:(lia) ltac:(lia) default).
-      assert (takeLength : i = length (take i l)). { rewrite take_length. lia. }
+      assert (takeLength : i = length (take i l)). { rewrite length_take. lia. }
       assert (hRewrite : swap (take i l ++ [nth i l default] ++ drop (S i) (take j l) ++ [nth j l default] ++ drop (j + 1) l) i j default = swap (take i l ++ [nth i l default] ++ drop (S i) (take j l) ++ [nth j l default] ++ drop (j + 1) l) (length (take i l)) j default). { rewrite <- ?takeLength. easy. }
       rewrite hRewrite. clear hRewrite takeLength.
       assert (takeLength : j = length (take i l) + length (drop (S i) (take j l)) + 1).
-      { rewrite take_length, drop_length, take_length.
+      { rewrite length_take, length_drop, length_take.
         assert (subtask1 : i `min` length l = i). { lia. }
         assert (subtask2 : j `min` length l = j). { lia. }
         rewrite subtask1, subtask2. lia. }

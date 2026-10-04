@@ -1,6 +1,6 @@
 import { PairMap } from './PairMap'
 import { assert } from './assert'
-import { COMMUNICATION, CoqCPAST, PrimitiveType, ValueType } from './parse'
+import { CoqCPAST, PrimitiveType, ValueType } from './parse'
 import { isNumeric } from './validateAST'
 
 const getCoqString = (text: string): string => {
@@ -197,8 +197,8 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
           `#[export] Instance variableIndexEqualityDecidable${variableIndex} : EqDecision ${variableIndex} := ltac:(solve_decision).
 ` +
           'Definition ' +
-          sanitizeFunction(moduleName, functionName) +
-          ` (bools : ${variableIndex} -> bool) (numbers : ${variableIndex} -> Z) (addresses : ${variableIndex} -> list Z): Action (WithArrays _ (arrayType _ environment${moduleIndex})) withArraysReturnValue unit := eliminateLocalVariables bools numbers addresses `
+          sanitizeFunction(moduleName, functionName) + '_body' +
+          ` : Action (WithLocalVariables ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex}) withLocalVariablesReturnValue unit := `
 
         // every element of body is an Action returning absolutely anything
         const statements = body.map((statement) => {
@@ -232,8 +232,8 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
               | PrimitiveType[]
           } => {
             const getBitWidth = (
-              type: 'int8' | 'int16' | 'int32' | 'int64' | 'int256'
-            ): 8 | 16 | 32 | 64 | 256 => {
+              type: 'int8' | 'int16' | 'int32' | 'int64'
+            ): 8 | 16 | 32 | 64 => {
               switch (type) {
                 case 'int8':
                   return 8
@@ -243,8 +243,6 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                   return 32
                 case 'int64':
                   return 64
-                case 'int256':
-                  return 256
               }
             }
 
@@ -253,7 +251,7 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                 'Done _ _ _ (' +
                 value.map((_, i) => 'tuple_element_' + i).join(', ') +
                 ')'
-              for (const [index, element] of value.entries()) {
+              for (const [index, element] of [...value.entries()].reverse()) {
                 tuple = `(${
                   dfs(element).expression
                 } >>= fun tuple_element_${index} => ${tuple})`
@@ -370,15 +368,14 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                 assert(isNumeric(leftType))
                 const bitWidth = getBitWidth(leftType)
                 return {
-                  expression: `(divInt${bitWidth}Signed ${leftExpression} ${rightExpression})`,
+                  expression: `(divIntSigned ${bitWidth} ${leftExpression} ${rightExpression})`,
                   type: leftType,
                 }
               }
               case 'coerceInt8':
               case 'coerceInt16':
               case 'coerceInt32':
-              case 'coerceInt64':
-              case 'coerceInt256': {
+              case 'coerceInt64': {
                 const integralType = (() => {
                   switch (value.type) {
                     case 'coerceInt8':
@@ -389,8 +386,6 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                       return 'int32'
                     case 'coerceInt64':
                       return 'int64'
-                    case 'coerceInt256':
-                      return 'int256'
                   }
                 })()
                 const bitWidth = (() => {
@@ -403,8 +398,6 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                       return 32
                     case 'coerceInt64':
                       return 64
-                    case 'coerceInt256':
-                      return 256
                   }
                 })()
                 const { type, expression } = dfs(value.value)
@@ -441,7 +434,7 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
               case 'readChar': {
                 return {
                   expression: `(readChar ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex})`,
-                  type: 'int8',
+                  type: 'int64',
                 }
               }
               case 'writeChar': {
@@ -472,15 +465,7 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                     )}))`,
                     type: variable.type,
                   }
-                } else if (variable.type === 'address') {
-                  return {
-                    expression: `(addressLocalGet ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex} (${sanitizeVariable(
-                      moduleName,
-                      functionName,
-                      value.name
-                    )}))`,
-                    type: variable.type,
-                  }
+
                 }
                 assert(false)
               }
@@ -506,26 +491,22 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                     )}) ${expression})`,
                     type: 'statement',
                   }
-                } else if (variable.type === 'address') {
-                  return {
-                    expression: `(addressLocalSet ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex} (${sanitizeVariable(
-                      moduleName,
-                      functionName,
-                      value.name
-                    )}) ${expression})`,
-                    type: 'statement',
-                  }
+
                 }
                 assert(false)
               }
-              case 'retrieve': {
-                if (value.name === COMMUNICATION) {
-                  const { expression: indexExpression } = dfs(value.index)
-                  return {
-                    expression: `(${indexExpression} >>= fun x => readByte ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex} x)`,
-                    type: 'int8',
-                  }
+              case 'grow': {
+                assert(environment !== null)
+                const declaration = environment.arrays.get(value.name)
+                assert(declaration !== undefined)
+                const zero = declaration.itemTypes.length === 0 ? 'tt' : declaration.itemTypes.map((type) => type === 'bool' ? 'false' : '0%Z').join(', ')
+                const { expression } = dfs(value.length)
+                return {
+                  expression: `(${expression} >>= fun size => grow ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex} (${sanitizeArray(moduleName, value.name)}) size (${zero}))`,
+                  type: 'statement',
                 }
+              }
+              case 'retrieve': {
                 assert(environment !== null)
                 const declaration = environment.arrays.get(value.name)
                 assert(declaration !== undefined)
@@ -539,14 +520,6 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                 }
               }
               case 'store': {
-                if (value.name === COMMUNICATION) {
-                  const { expression: indexExpression } = dfs(value.index)
-                  const { expression: valueExpression } = dfs(value.value)
-                  return {
-                    expression: `(${indexExpression} >>= fun x => ${valueExpression} >>= fun y => setByte ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex} x y)`,
-                    type: 'statement',
-                  }
-                }
                 const { expression: indexExpression } = dfs(value.index)
                 let tuple = getTuple(value.tuple)
                 return {
@@ -632,13 +605,6 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
               }
               case 'subscript': {
                 const { expression, type } = dfs(value.value)
-                if (type === 'address') {
-                  const { expression: indexExpression } = dfs(value.index)
-                  return {
-                    expression: `(${expression} >>= fun address => ${indexExpression} >>= fun index => nthTrap address index)`,
-                    type: 'int8',
-                  }
-                }
                 assert(Array.isArray(type))
                 const length = type.length
                 assert(value.index.type === 'literal')
@@ -649,9 +615,9 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                 let finalExpression = 'element_tuple'
                 for (let i = 0; i < reverseIndex; i++)
                   finalExpression = 'fst (' + finalExpression + ')'
-                finalExpression = `(snd (${finalExpression}))`
+                if (index > 0) finalExpression = `(snd (${finalExpression}))`
                 return {
-                  expression: `(${expression} >>= (fun element_tuple => Done _ _ _ ${finalExpression})`,
+                  expression: `(${expression} >>= (fun element_tuple => Done _ _ _ ${finalExpression}))`,
                   type: type[index],
                 }
               }
@@ -659,14 +625,13 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                 const { presetVariables, procedure } = value
                 let numberMap = '(Done _ _ _ (fun x => 0%Z))'
                 let booleanMap = '(Done _ _ _ (fun x => false))'
-                let addressMap = '(Done _ _ _ (fun x => repeat 0%Z 20))'
 
                 let prepare = ''
                 let index = 0
                 for (const [name, value] of presetVariables.entries()) {
                   const { expression, type } = dfs(value)
                   assert(
-                    isNumeric(type) || type === 'bool' || type === 'address'
+                    isNumeric(type) || type === 'bool'
                   )
                   prepare += `${expression} >>= fun preset${index} => `
                   if (isNumeric(type)) {
@@ -675,12 +640,7 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                       procedure,
                       name
                     )}) preset${index}))`
-                  } else if (type === 'address') {
-                    addressMap = `(${addressMap} >>= fun x => Done _ _ _ (update x (${sanitizeVariable(
-                      moduleName,
-                      procedure,
-                      name
-                    )}) preset${index}))`
+
                   } else {
                     booleanMap = `(${booleanMap} >>= fun x => Done _ _ _ (update x (${sanitizeVariable(
                       moduleName,
@@ -691,10 +651,10 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                   index++
                 }
                 return {
-                  expression: `(${prepare}${numberMap} >>= fun x => ${booleanMap} >>= fun y => ${addressMap} >>= fun z => liftToWithLocalVariables (${sanitizeFunction(
+                  expression: `(${prepare}${numberMap} >>= fun x => ${booleanMap} >>= fun y => liftToWithLocalVariables (${sanitizeFunction(
                     moduleName,
                     procedure
-                  )} y x z))`,
+                  )} y x))`,
                   type: 'statement',
                 }
               }
@@ -750,7 +710,7 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                 nestLevel--
 
                 if (previousBinderValue === undefined)
-                  localBinderMap.delete(functionName)
+                  localBinderMap.delete(loopVariable)
                 else localBinderMap.set(loopVariable, previousBinderValue)
                 binderCounter--
 
@@ -779,14 +739,13 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                 } = value
                 let numberMap = '(Done _ _ _ (fun x => 0%Z))'
                 let booleanMap = '(Done _ _ _ (fun x => false))'
-                let addressMap = '(Done _ _ _ (fun x => repeat 0%Z 20))'
 
                 let prepare = ''
                 let index = 0
                 for (const [name, value] of presetVariables.entries()) {
                   const { expression, type } = dfs(value)
                   assert(
-                    isNumeric(type) || type === 'bool' || type === 'address'
+                    isNumeric(type) || type === 'bool'
                   )
                   prepare += `${expression} >>= fun preset${index} => `
                   if (isNumeric(type)) {
@@ -795,12 +754,7 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                       procedure,
                       name
                     )}) preset${index}))`
-                  } else if (type === 'address') {
-                    addressMap = `(${addressMap} >>= fun x => Done _ _ _ (update x (${sanitizeVariable(
-                      foreignModule,
-                      procedure,
-                      name
-                    )}) preset${index}))`
+
                   } else {
                     booleanMap = `(${booleanMap} >>= fun x => Done _ _ _ (update x (${sanitizeVariable(
                       foreignModule,
@@ -833,70 +787,21 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                   return { arrayMappingText, congruence }
                 })()
                 return {
-                  expression: `(${prepare}${numberMap} >>= fun x => ${booleanMap} >>= fun y => ${addressMap} >>= fun z => liftToWithLocalVariables (translateArrays (${sanitizeFunction(
+                  expression: `(${prepare}${numberMap} >>= fun x => ${booleanMap} >>= fun y => liftToWithLocalVariables (translateArrays (${sanitizeFunction(
                     foreignModule,
                     procedure
-                  )} y x z) (arrayType _ environment${moduleIndex}) ${arrayMappingText} ${congruence}))`,
+                  )} y x) (arrayType _ environment${moduleIndex}) ${arrayMappingText} ${congruence}))`,
                   type: 'statement',
                 }
               }
-              case 'communication area size': {
-                return {
-                  expression: `(getCommunicationSize _ _ _)`,
-                  type: 'int64',
-                }
-              }
-              case 'get money': {
-                return { expression: '(getMoney _ _ _)', type: 'int256' }
-              }
-              case 'get sender': {
-                return { expression: `(getSender _ _ _)`, type: 'address' }
-              }
-              case 'donate': {
-                const { address, money } = value
-                const { expression: addressExpression } = dfs(address)
-                const { expression: moneyExpression } = dfs(money)
-                return {
-                  expression: `(${addressExpression} >>= fun address => ${moneyExpression} >>= fun money => donate _ _ _ money address)`,
-                  type: 'statement',
-                }
-              }
-              case 'construct address': {
-                return {
-                  expression:
-                    '(' +
-                    value.bytes
-                      .map(
-                        (x, index) =>
-                          `${dfs(x).expression} >>= fun byte${index} => `
-                      )
-                      .join('') +
-                    'Done _ _ _ [' +
-                    value.bytes.map((_, index) => 'byte' + index).join(';') +
-                    '])',
-                  type: 'address',
-                }
-              }
-              case 'invoke': {
-                const { address, money, array, communicationSize } = value
-                const { expression: addressExpression } = dfs(address)
-                const { expression: moneyExpression } = dfs(money)
-                const { expression: communicationSizeExpression } =
-                  dfs(communicationSize)
-                return {
-                  expression: `(${addressExpression} >>= fun address => ${moneyExpression} >>= fun money => ${communicationSizeExpression} >>= fun size => @invokeWithArrays _ (arrayType _ environment${moduleIndex}) _ money address ${sanitizeArray(
-                    moduleName,
-                    array
-                  )} size ltac:(reflexivity))`,
-                  type: 'statement',
-                }
-              }
+
             }
           }
           return dfs(statement).expression
         })
 
-        return header + joinStatements(statements, 0) + '.\n'
+        return header + joinStatements(statements, 0) + '.\n' +
+          `Definition ${sanitizeFunction(moduleName, functionName)} (bools : ${variableIndex} -> bool) (numbers : ${variableIndex} -> Z) : Action (WithArrays _ (arrayType _ environment${moduleIndex})) withArraysReturnValue unit := eliminateLocalVariables bools numbers ${sanitizeFunction(moduleName, functionName)}_body.\n`
 
         function joinStatements(statements: string[], nestLevel: number) {
           statements.push('Done _ _ _ tt')

@@ -265,7 +265,7 @@ Proof.
         rewrite bool_decide_eq_true in H1.
         pose proof (H (take (S w) s)) as H9.
         assert (H2 : length (take (S w) s) < length s).
-        { rewrite take_length. lia. }
+        { rewrite length_take. lia. }
         pose proof H9 H2 as H3.
         intro hBalanceFactor.
         assert (H4 : balanceFactorBasedDefinition (take (S w) s)).
@@ -290,7 +290,7 @@ Proof.
             autorewrite with rewriteCount in H4. lia. }
         pose proof H (drop (S w) s) as H6.
         assert (H7 : length (drop (S w) s) < length s).
-        { rewrite drop_length. lia. }
+        { rewrite length_drop. lia. }
         pose proof H6 H7 H5 as hBalancedRight.
         pose proof JoinBalanced _ _ hBalancedLeft hBalancedRight as H8.
         rewrite take_drop in H8. assumption.
@@ -305,7 +305,7 @@ Proof.
           destruct s as [| b s].
           - simpl in hEmpty. lia.
           - destruct b.
-            + unfold drop. rewrite cons_length. simpl.
+            + unfold drop. simpl.
               induction s as [| x s] using rev_ind.
               * simpl in hSingleton. lia.
               * rewrite app_length. simpl. rewrite Nat.add_sub.

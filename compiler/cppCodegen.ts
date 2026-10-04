@@ -1,3 +1,4 @@
+import { analyzeArrayGrowth } from './arrayGrowth'
 import { PairMap } from './PairMap'
 import { assert } from './assert'
 import { consumeNever } from './consumeNever'
@@ -30,7 +31,7 @@ const preamble = (() => {
  */
 
 inline uint64_t readChar() { // like getchar()
-  static char buf[1 << 16];
+  static unsigned char buf[1 << 16];
   static size_t bc, be;
   if (bc >= be) {
     buf[0] = 0, bc = 0;
@@ -58,6 +59,16 @@ void flushSTDOUT() {
 })()
 
 export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
+  const growingArrays = analyzeArrayGrowth(sortedModules)
+  const hasGrowth = [...growingArrays.values()].some((arrays) => arrays.size > 0)
+  const growthPreamble = hasGrowth ? `#include <vector>
+
+template<class T>
+void growArray(std::vector<T>& array, uint64_t minimumLength) {
+  if (minimumLength > array.max_size()) std::abort();
+  if (minimumLength > array.size()) array.resize(minimumLength);
+}
+` : ''
   const crossModuleProcedureMap = new PairMap<string, string, Procedure>()
   const procedureNameMap = new PairMap<string, string, number>()
   const seenModules = new Map<string, CoqCPAST>()
@@ -80,12 +91,10 @@ export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
 
       return [...environment.arrays].map(([name, description]) => {
         const { itemTypes } = description
-        return (
-          'std::tuple<' +
-          itemTypes.map((x) => (x === 'bool' ? x : 'u' + x + '_t')).join(', ') +
-          '> *environment_' +
-          get(name)
-        )
+        const tuple = 'std::tuple<' + itemTypes.map((x) => (x === 'bool' ? x : 'u' + x + '_t')).join(', ') + '>'
+        return (growingArrays.get(module.moduleName)!.has(name)
+          ? 'std::vector<' + tuple + '>& '
+          : tuple + ' *') + 'environment_' + get(name)
       })
     })()
 
@@ -108,7 +117,7 @@ export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
             ...[...variables].map(([name, value], index) => {
               const { type } = value
               localNameMap.set(name, index)
-              return 'u' + type + '_t local_' + index
+              return (type === 'bool' ? 'bool' : 'u' + type + '_t') + ' local_' + index
             }),
           ].join(', ') +
           ') {\n' +
@@ -210,6 +219,9 @@ export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
                       instruction.tuple.map((x) => print(x)).join(', ') +
                       ' }'
                   )
+                }
+                if (instruction.type === 'grow') {
+                  return adorn('growArray(environment_' + environmentNameMap.get(instruction.name) + ', ' + print(instruction.length) + ')')
                 }
                 if (instruction.type === 'retrieve') {
                   assert(typeof instruction.name === 'string')
@@ -353,7 +365,7 @@ export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
                           )
                           .join('') +
                         'procedure_' +
-                        arrayIndex +
+                        index +
                         '(' +
                         [
                           ...environmentArrays,
@@ -559,14 +571,6 @@ export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
                   )
                 }
 
-                assert(instruction.type !== 'coerceInt256')
-                assert(instruction.type !== 'communication area size')
-                assert(instruction.type !== 'construct address')
-                assert(instruction.type !== 'donate')
-                assert(instruction.type !== 'get money')
-                assert(instruction.type !== 'get sender')
-                assert(instruction.type !== 'invoke')
-
                 return consumeNever(instruction.type)
               }
               return print(instruction, {
@@ -587,25 +591,6 @@ export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
 
     joined += mainCode
 
-    'int main() {\n' +
-      indent +
-      'std::cin.tie(0)->sync_with_stdio(0);\n' +
-      mainCode +
-      (() => {
-        const mainNumber = procedureNameMap.get([module.moduleName, 'main'])
-        if (mainNumber === undefined) return ''
-        const definition = procedures.find(({ name }) => name === 'main')
-        assert(definition !== undefined)
-        return (
-          indent +
-          'procedure_' +
-          mainNumber +
-          '(' +
-          Array(definition.variables.size).fill(0).join(', ') +
-          ');\n'
-        )
-      })() +
-      '}'
     seenModules.set(module.moduleName, module)
   }
 
@@ -616,15 +601,11 @@ export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
     if (arrays === undefined) return ''
     let i = 0
     let string = ''
-    for (const { itemTypes, length } of arrays.values()) {
-      string +=
-        'std::tuple<' +
-        itemTypes.map((x) => (x === 'bool' ? x : 'u' + x + '_t')).join(', ') +
-        '> environment_' +
-        i +
-        '[' +
-        length.raw +
-        '];\n'
+    for (const [name, { itemTypes, length }] of arrays) {
+      const tuple = 'std::tuple<' + itemTypes.map((x) => (x === 'bool' ? x : 'u' + x + '_t')).join(', ') + '>'
+      string += growingArrays.get('')!.has(name)
+        ? 'std::vector<' + tuple + '> environment_' + i + '(' + length.raw + ');\n'
+        : tuple + ' environment_' + i + '[' + length.raw + '];\n'
       i++
     }
     return string
@@ -657,6 +638,7 @@ export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
 
   return (
     preamble +
+    growthPreamble +
     mainModuleEnvironmentCode +
     'int main() {\n' +
     indent +

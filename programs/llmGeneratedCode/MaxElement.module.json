@@ -1,6 +1,10 @@
 {
-  "type": "blockchain",
-  "inputs": ["MaxElement.js"],
-  "solidityOutput": "MaxElement.sol",
-  "coqOutput": "MaxElement.v"
+  "type": "competitive",
+  "inputs": [
+    "MaxElement.js",
+    "../IO/ReadUnsignedInt64.js",
+    "../IO/PrintInt64.js"
+  ],
+  "coqOutput": "MaxElement.v",
+  "cppOutput": "MaxElement.cpp"
 }

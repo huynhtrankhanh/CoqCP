@@ -1,18 +1,18 @@
-FROM THESE PIECES OF INFORMATION ABOVE PLEASE FULFILL THE USER REQUEST
+Use the information below to fulfill the user request.
 
-MODE FOR CODE GENERATION: BLOCKCHAIN MODE
+MODE FOR CODE GENERATION: COMPETITIVE MODE
 
-LANGUAGE FOR CODE GENERATION: “INTERNAL IMPERATIVE LANGUAGE”. DECLINE REQUESTS FOR OTHER LANGUAGES.
+LANGUAGE FOR CODE GENERATION: INTERNAL IMPERATIVE LANGUAGE. DECLINE REQUESTS FOR OTHER LANGUAGES.
 <userRequest>
 PLEASE REPLACE WITH USER REQUEST
 </userRequest>
 
-WARNING: NOT ALL ARITHMETIC OPERATORS ARE SUPPORTED LIKE NORMAL. READ DOCUMENTATION CAREFULLY FOR CAVEATS AND WORKAROUNDS (for example division, comparison)
+Read the language documentation carefully. Division and comparison use explicit commands; arithmetic wraps at the operand bit width. Use grow() before indexing beyond an array's initial length.
 
-Here is language documentation:
+Here is the language documentation:
 # Internal imperative language
 
-The CoqCP project now includes a compiler. The compiler compiles an internal imperative language to two files. The first file is a Coq file to be used for program verification. The second file is a Solidity file if blockchain mode is used or C++ file if competitive programming mode is used.
+The CoqCP project now includes a compiler. The compiler compiles an internal imperative language to two files. The first file is a Coq file to be used for program verification. The second file is a C++ file for competitive programming.
 
 ## Using the compiler
 
@@ -20,44 +20,29 @@ Prerequisites: Node.js and npm. Please install both first. Then follow these ins
 
 - The compiler is in the `compiler` directory. Switch to that directory.
 - Run `npm install` to install dependencies.
-- Run `npx tsc --noCheck`. Now compiled JavaScript files are in the `dist` subfolder.
+- Run `npm run build`. Now compiled JavaScript files are in the `dist` subfolder.
 - Now you can use the command line interface. You can pass options to the compiler through arguments or a JSON file.
+  - Arguments:
+    - `node dist/cli coq_output_file cpp_output_file input_file_1 input_file_2 ... input_file_n`
+    - If you want the compiler to recompile on file changes: `node dist/cli --watch coq_output_file cpp_output_file input_file_1 input_file_2 ... input_file_n`
 
- - Arguments: 
-   For **blockchain mode**:
+  - JSON file:
+    `node dist/cli ?json json_file_path`
 
-   - `node dist/cli --blockchain coq_output_file solidity_output_file input_file_1 input_file_2 ... input_file_n`
-   - If you want the compiler to recompile on file changes: `node dist/cli --blockchain --watch coq_output_file solidity_output_file input_file_1 input_file_2 ... input_file_n`
+    Here is the schema for the JSON file.
 
-     For **competitive programming mode**:
-
-   - `node dist/cli coq_output_file cpp_output_file input_file_1 input_file_2 ... input_file_n`
-   - If you want the compiler to recompile on file changes: `node dist/cli --watch coq_output_file cpp_output_file input_file_1 input_file_2 ... input_file_n`
-
- - JSON file: 
-   `node dist/cli ?json json_file_path`
-
-   Here is the schema for the JSON file.
-
-   ```typescript
-   type Config =
-     | {
-         type: 'competitive'
-         inputs: string[]
-         coqOutput: string
-         cppOutput: string
-       }
-     | {
-         type: 'blockchain'
-         inputs: string[]
-         coqOutput: string
-         solidityOutput: string
-       }
-   ```
+    ```typescript
+    type Config = {
+      type: 'competitive'
+      inputs: string[]
+      coqOutput: string
+      cppOutput: string
+    }
+    ```
 
 ## Working on the compiler
 
-To work on the compiler, you will need to have Node.js installed. After that, switch to the `compiler` directory, and run `npm` to install the dependencies.
+To work on the compiler, you will need to have Node.js installed. After that, switch to the `compiler` directory, and run `npm install` to install the dependencies.
 
 Then, you will need to run the `tsc` compiler in watch mode. To do this, run `npx tsc -w -p .`. The `tsc` compiler now monitors all changes to the TypeScript files and produces the corresponding files in the `dist` subdirectory.
 
@@ -91,8 +76,8 @@ Here is an example of an `environment` block.
 
 ```js
 environment({
- fibSeq: array([int32], 100),
- anotherArray: array([int8, int64], 3),
+  fibSeq: array([int32], 100),
+  anotherArray: array([int8, int64], 3),
 })
 ```
 
@@ -104,7 +89,7 @@ Here is an example of a procedure.
 
 ```js
 procedure('hello', { var1: int8 }, () => {
- // ...
+  // ...
 })
 ```
 
@@ -208,7 +193,7 @@ You can coerce any boolean or number to a numeric type.
 
 **Booleans:** If you coerce `false`, you get `0`. If you coerce `true`, you get `1`.
 
-The coercion commands are `coerceInt8`, `coerceInt16`, `coerceInt32` and `coerceInt64`. `coerceInt256` is also supported in blockchain mode.
+The coercion commands are `coerceInt8`, `coerceInt16`, `coerceInt32` and `coerceInt64`.
 
 ## Get global array element
 
@@ -226,13 +211,23 @@ store("array_name", /* array index */, [tupleElement1, tupleElement2, /* ... */]
 
 Array index must be an `int64`.
 
+## Grow a global array
+
+```js
+grow('array_name', minimumLength)
+```
+
+`minimumLength` must be an `int64`. Growth is a statement. If the array is shorter than the requested length, it extends to that length; otherwise it stays the same size. Existing elements are preserved, and new tuple fields are initialized to zero or false. The declared array length is its initial length; an array that may grow can start with length zero.
+
+The compiler analyzes all procedures, including nested branches and loops, and propagates growth through cross-module array mappings. Arrays that may grow, or alias a growing array, use `std::vector` and are passed by reference. Other arrays retain fixed allocation. The generated C++ requires C++20.
+
 ## `if`/`else`
 
 ```js
 if (condition) {
- // ...
+  // ...
 } else {
- // ...
+  // ...
 }
 ```
 
@@ -246,7 +241,7 @@ Same syntax as JavaScript. `{}` (curly brackets) are mandatory.
 
 ```js
 range(endValue, (counter) => {
- // ...
+  // ...
 })
 ```
 
@@ -258,10 +253,10 @@ Example:
 
 ```js
 range(endValue, (counter) => {
- if (less(counter, 5)) {
-   ;('break')
- }
- ;('continue')
+  if (less(counter, 5)) {
+    ;('break')
+  }
+  ;('continue')
 })
 ```
 
@@ -269,13 +264,11 @@ range(endValue, (counter) => {
 
 ```js
 range('Hello, World!', (x) => {
- writeChar(x)
+  writeChar(x)
 })
 ```
 
 Iterates over all bytes of the UTF-8 representation of the string. `x` is of type `int8`. Each byte might or might not represent a character.
-
-Iteration over a string literal isn't supported in blockchain mode because I'm too lazy to implement it. Attempting to do so will not result in a compiler error but will not generate syntactically valid Solidity code. It's actually not difficult to implement, it's just that I don't have the motivation.
 
 ## Procedure call
 
@@ -283,8 +276,8 @@ Iteration over a string literal isn't supported in blockchain mode because I'm t
 
 ```js
 call('procedure_name', {
- a: 5,
- b: 6,
+  a: 5,
+  b: 6,
 })
 ```
 
@@ -296,13 +289,13 @@ It is only possible to call functions that are already declared. Recursion is no
 
 ```js
 call(
- moduleName,
- {
-   array1: 'arrayA',
-   array2: 'arrayB',
- },
- 'procedure name',
- { a: 5, b: 6 }
+  moduleName,
+  {
+    array1: 'arrayA',
+    array2: 'arrayB',
+  },
+  'procedure name',
+  { a: 5, b: 6 }
 )
 ```
 
@@ -310,342 +303,325 @@ The first two parameters are the module name and the array mapping, respectively
 
 **Array mapping:** When calling a procedure in another module, you have to supply the module with all the arrays it declares in its `environment` block. This creates a mapping between the arrays in the external module and the arrays in the current module. When calling a procedure in another module, that external module can't create arrays on its own.
 
-# Blockchain features
+Here are competitive programs and reusable input/output modules:
 
-These features can only be used if you use blockchain mode.
-
-In blockchain mode, there are two new types: `address` and `int256`.
-
-## `coerceInt256()`
-
-As mentioned earlier, this command only exists in blockchain mode.
-
-## Get sender
-
+programs/Knapsack.js
 ```js
-getSender()
-```
-
-This returns an `address`.
-
-## Get money (equivalent to `msg.value` in Solidity)
-
-```js
-getMoney()
-```
-
-This returns an `int256`. It returns the amount of money in wei that is transferred as part of the smart contract call.
-
-## Transfer money
-
-```js
-donate(address, money)
-```
-
-`address` is of type `address`, `money` is of type `int256`. This call transfers `money` wei to the address.
-
-## Invoke smart contract
-
-```js
-invoke(address, money, 'array name', communicationLength)
-```
-
-`address` is of type `address`, `money` is of type `int256`, `'array name'` is a string literal, `communicationLength` is an `int64` indicating the length of the array passed to the called smart contract. It can be less than or equal to the actual length of the array. The called smart contract can freely modify the array passed. This call transfers `money` wei to the callee.
-
-At the EVM level, the array is transferred to the callee as calldata and transferred back to the caller as return data.
-
-## Get communication size
-
-```js
-communicationSize()
-```
-
-Returns an `int64`. This is the size of the array passed to the smart contract in the `invoke()` call.
-
-## Read communication array
-
-```js
-retrieve(index)
-```
-
-`index` is an `int64`. Returns `int8`.
-
-## Modify communication array
-
-```js
-store(index, value)
-```
-
-`index` is an `int64`, `value` is an `int8`. Doesn't return.
-Here are several example programs:
+// Input: n capacity, followed by n pairs of weight and value. Output: maximum value.
 environment({
- // Global heap array (adjust capacity as needed)
- heap: array([int32], 100000),
- // Global heap size tracker (number of elements currently in the heap)
- heapSize: array([int32], 1),
+  dp: array([int64], 0),
+  weights: array([int32], 0),
+  values: array([int32], 0),
+  message: array([int32], 1),
+  n: array([int64], 1),
+  input: array([int64], 1),
+  printBuffer: array([int8], 20),
 })
 
-// siftUp moves the element at the given index upward to restore the heap property.
-procedure(
- 'siftUp',
- {
-   index: int32, // parameter: starting index
-   currentIndex: int32, // local variable for current index
-   parentIndex: int32, // local variable for parent's index
-   temp: int32, // local temporary variable for swapping
- },
- () => {
-   set('currentIndex', get('index'))
-   range(30, (i) => {
-     if (get('currentIndex') == coerceInt32(0)) {
-       ;('break')
-     }
-     // Compute parent index as (currentIndex - 1) / 2 (using unsigned division)
-     set(
-       'parentIndex',
-       divide(get('currentIndex') - coerceInt32(1), coerceInt32(2))
-     )
-     // If the current element is less than its parent, swap them.
-     if (
-       less(
-         retrieve('heap', coerceInt64(get('currentIndex')))[0],
-         retrieve('heap', coerceInt64(get('parentIndex')))[0]
-       )
-     ) {
-       set('temp', retrieve('heap', coerceInt64(get('currentIndex')))[0])
-       store('heap', coerceInt64(get('currentIndex')), [
-         retrieve('heap', coerceInt64(get('parentIndex')))[0],
-       ])
-       store('heap', coerceInt64(get('parentIndex')), [get('temp')])
-       set('currentIndex', get('parentIndex'))
-     } else {
-       ;('break')
-     }
-   })
- }
-)
-
-// siftDown moves the element at the given index downward to restore the heap property.
-procedure(
- 'siftDown',
- {
-   index: int32, // parameter: starting index
-   currentIndex: int32, // local variable for current index
-   leftChild: int32, // local variable for left child index
-   rightChild: int32, // local variable for right child index
-   smallestIndex: int32, // local variable to track the smallest among current and children
-   temp: int32, // local temporary variable for swapping
- },
- () => {
-   set('currentIndex', get('index'))
-   if (retrieve('heapSize', 0)[0] != coerceInt32(0)) {
-     range(30, (i) => {
-       // Calculate child indices
-       set('leftChild', get('currentIndex') * coerceInt32(2) + coerceInt32(1))
-       set('rightChild', get('currentIndex') * coerceInt32(2) + coerceInt32(2))
-       // Assume current index is the smallest.
-       set('smallestIndex', get('currentIndex'))
-       // Check left child.
-       if (less(get('leftChild'), retrieve('heapSize', 0)[0])) {
-         if (
-           less(
-             retrieve('heap', coerceInt64(get('leftChild')))[0],
-             retrieve('heap', coerceInt64(get('smallestIndex')))[0]
-           )
-         ) {
-           set('smallestIndex', get('leftChild'))
-         }
-       }
-       // Check right child.
-       if (less(get('rightChild'), retrieve('heapSize', 0)[0])) {
-         if (
-           less(
-             retrieve('heap', coerceInt64(get('rightChild')))[0],
-             retrieve('heap', coerceInt64(get('smallestIndex')))[0]
-           )
-         ) {
-           set('smallestIndex', get('rightChild'))
-         }
-       }
-       // If the smallest is the current element, then the heap property holds.
-       if (get('smallestIndex') == get('currentIndex')) {
-         ;('break')
-       }
-       // Otherwise, swap the current element with the smallest child.
-       set('temp', retrieve('heap', coerceInt64(get('currentIndex')))[0])
-       store('heap', coerceInt64(get('currentIndex')), [
-         retrieve('heap', coerceInt64(get('smallestIndex')))[0],
-       ])
-       store('heap', coerceInt64(get('smallestIndex')), [get('temp')])
-       set('currentIndex', get('smallestIndex'))
-     })
-   }
- }
-)
-
-// insert adds a new element into the heap.
-procedure(
- 'insert',
- {
-   value: int32, // parameter: the value to insert
-   index: int32, // local variable for index where value is inserted
- },
- () => {
-   // Place new value at the end of the heap.
-   store('heap', coerceInt64(retrieve('heapSize', 0)[0]), [get('value')])
-   // Increase the heap size.
-   store('heapSize', 0, [retrieve('heapSize', 0)[0] + coerceInt32(1)])
-   // Compute the index of the newly inserted element.
-   set('index', retrieve('heapSize', 0)[0] - coerceInt32(1))
-   // Restore the heap property.
-   call('siftUp', { index: get('index') })
- }
-)
-
-// pop removes the minimum element (at the root) from the heap.
-procedure(
- 'pop',
- {
-   index: int32, // local variable for index computations
-   temp: int32, // local temporary variable for swapping
- },
- () => {
-   if (retrieve('heapSize', 0)[0] != coerceInt32(0)) {
-     // Set index to the last element.
-     set('index', retrieve('heapSize', 0)[0] - coerceInt32(1))
-     // Swap the root with the last element.
-     set('temp', retrieve('heap', 0)[0])
-     store('heap', 0, [retrieve('heap', coerceInt64(get('index')))[0]])
-     store('heap', coerceInt64(get('index')), [get('temp')])
-     // Decrement the heap size.
-     store('heapSize', 0, [retrieve('heapSize', 0)[0] - coerceInt32(1)])
-     // Restore the heap property from the root.
-     call('siftDown', { index: coerceInt32(0) })
-   }
- }
-)
-
-procedure('main', { current: int32, sum: int64 }, () => {
- range(divide(communicationSize(), 4), (i) => {
-   set(
-     'current',
-     coerceInt32(retrieve(i * 4)) * coerceInt32(16777216) +
-       coerceInt32(retrieve(i * 4 + 1)) * coerceInt32(65536) +
-       coerceInt32(retrieve(i * 4 + 2)) * coerceInt32(256) +
-       coerceInt32(retrieve(i * 4 + 3))
-   )
-   if (retrieve('heapSize', 0)[0] != coerceInt32(0)) {
-     if (!less(get('current'), retrieve('heap', 0)[0])) {
-       set(
-         'sum',
-         get('sum') + coerceInt64(get('current') - retrieve('heap', 0)[0])
-       )
-       call('pop', {})
-       call('insert', { value: get('current') })
-     }
-     call('insert', { value: get('current') })
-   }
- })
- store(0, coerceInt8(divide(get('sum'), coerceInt64(72057594037927936)))) // Byte 7 (most significant byte)
- store(
-   1,
-   coerceInt8(
-     divide(get('sum'), coerceInt64(281474976710656)) % coerceInt64(256)
-   )
- ) // Byte 6
- store(
-   2,
-   coerceInt8(
-     divide(get('sum'), coerceInt64(1099511627776)) % coerceInt64(256)
-   )
- ) // Byte 5
- store(
-   3,
-   coerceInt8(divide(get('sum'), coerceInt64(4294967296)) % coerceInt64(256))
- ) // Byte 4
- store(
-   4,
-   coerceInt8(divide(get('sum'), coerceInt64(16777216)) % coerceInt64(256))
- ) // Byte 3
- store(
-   5,
-   coerceInt8(divide(get('sum'), coerceInt64(65536)) % coerceInt64(256))
- ) // Byte 2
- store(6, coerceInt8(divide(get('sum'), coerceInt64(256)) % coerceInt64(256))) // Byte 1
- store(7, coerceInt8(get('sum') % coerceInt64(256))) // Byte 0 (least significant byte)
+procedure('get weight', { index: int64 }, () => {
+  store('message', 0, [retrieve('weights', get('index'))[0]])
 })
-Another program
+
+procedure('get value', { index: int64 }, () => {
+  store('message', 0, [retrieve('values', get('index'))[0]])
+})
+
+// Each cell reads only the previous row, then writes one entry of the next row.
+procedure('cell', { row: int64, cap: int64, limit: int64, weight: int64, value: int64, best: int64, withItem: int64 }, () => {
+  set('weight', coerceInt64(retrieve('weights', get('row'))[0]))
+  set('value', coerceInt64(retrieve('values', get('row'))[0]))
+  set('best', retrieve('dp', get('row') * (get('limit') + 1) + get('cap'))[0])
+  if (!less(get('cap'), get('weight'))) {
+    set('withItem', retrieve('dp', get('row') * (get('limit') + 1) + (get('cap') - get('weight')))[0] + get('value'))
+    if (less(get('best'), get('withItem'))) {
+      set('best', get('withItem'))
+    }
+  }
+  store('dp', (get('row') + 1) * (get('limit') + 1) + get('cap'), [get('best')])
+})
+
+procedure('solve', { limit: int64 }, () => {
+  range(retrieve('n', 0)[0], (row) => {
+    range(get('limit') + 1, (cap) => {
+      call('cell', { row: row, cap: cap, limit: get('limit') })
+    })
+  })
+})
+
+procedure('main', { count: int64, limit: int64 }, () => {
+  call(ReadUnsignedInt64, { resultArray: 'input' }, '', {})
+  set('count', retrieve('input', 0)[0])
+  store('n', 0, [get('count')])
+  call(ReadUnsignedInt64, { resultArray: 'input' }, '', {})
+  set('limit', retrieve('input', 0)[0])
+  grow('weights', get('count'))
+  grow('values', get('count'))
+  grow('dp', (get('count') + 1) * (get('limit') + 1))
+  range(get('count'), (i) => {
+    call(ReadUnsignedInt64, { resultArray: 'input' }, '', {})
+    store('weights', i, [coerceInt32(retrieve('input', 0)[0])])
+    call(ReadUnsignedInt64, { resultArray: 'input' }, '', {})
+    store('values', i, [coerceInt32(retrieve('input', 0)[0])])
+  })
+  call('solve', { limit: get('limit') })
+  call(PrintInt64, { buffer: 'printBuffer' }, 'unsigned', { num: retrieve('dp', get('count') * (get('limit') + 1) + get('limit'))[0] })
+  writeChar(coerceInt8(10))
+})
+```
+
+programs/Knapsack.module.json
+```json
+{
+  "type": "competitive",
+  "inputs": [
+    "Knapsack.js",
+    "IO/ReadUnsignedInt64.js",
+    "IO/PrintInt64.js"
+  ],
+  "coqOutput": "../generated-coq/Knapsack.v",
+  "cppOutput": "../generated-cpp/Knapsack.cpp"
+}
+```
+
+programs/DisjointSetUnion.js
+```js
 environment({
- current: array([int32], 1),
- count: array([int32], 1),
- scratchpad: array([int8], 1024),
+  input: array([int64], 1),
+  printBuffer: array([int8], 20),
+  dsu: array([int8], 100),
+  hasBeenInitialized: array([int8], 1),
+  result: array([int8], 1),
 })
 
-procedure('main', { what: int32, absolute: address }, () => {
- // extract number from calldata
- set(
-   'what',
-   (coerceInt32(retrieve(0)) << coerceInt32(24)) +
-     (coerceInt32(retrieve(1)) << coerceInt32(16)) +
-     (coerceInt32(retrieve(2)) << coerceInt32(8)) +
-     coerceInt32(retrieve(3))
- )
-
- if (retrieve('count', 0)[0] == coerceInt32(0)) {
-   store('current', 0, [get('what')])
- }
-
- if (get('what') == retrieve('current', 0)[0]) {
-   store('count', 0, [retrieve('count', 0)[0] + coerceInt32(1)])
- } else {
-   store('count', 0, [retrieve('count', 0)[0] - coerceInt32(1)])
- }
-
- store(0, coerceInt8(retrieve('count', 0)[0] >> coerceInt32(24)))
- store(
-   1,
-   coerceInt8((retrieve('count', 0)[0] >> coerceInt32(16)) & coerceInt32(255))
- )
- store(
-   2,
-   coerceInt8((retrieve('count', 0)[0] >> coerceInt32(8)) & coerceInt32(255))
- )
- divide(3, 5)
- sDivide(3, 5)
- store(3, coerceInt8(retrieve('count', 0)[0] & coerceInt32(255)))
-
- donate(get('absolute'), coerceInt256(2000))
- invoke(get('absolute'), coerceInt256(2000), 'scratchpad', coerceInt64(1024))
- invoke(getSender(), getMoney(), 'scratchpad', coerceInt64(1024))
- invoke(
-   address(
-     coerceInt8(0),
-     coerceInt8(0),
-     coerceInt8(0),
-     coerceInt8(0),
-     coerceInt8(0),
-     coerceInt8(0),
-     coerceInt8(0),
-     coerceInt8(0),
-     coerceInt8(0),
-     coerceInt8(0),
-     coerceInt8(0),
-     coerceInt8(0),
-     coerceInt8(0),
-     coerceInt8(0),
-     coerceInt8(0),
-     coerceInt8(0),
-     coerceInt8(0),
-     coerceInt8(0),
-     coerceInt8(0),
-     coerceInt8(0)
-   ),
-   getMoney(),
-   'scratchpad',
-   coerceInt64(1024)
- )
+// Input: q, followed by q pairs of vertices (0..99). Output: component size after each union.
+procedure('main', { q: int64, u: int8, v: int8 }, () => {
+  call(DSU, { dsu: 'dsu', hasBeenInitialized: 'hasBeenInitialized', result: 'result' }, 'initialize', {})
+  call(ReadUnsignedInt64, { resultArray: 'input' }, '', {})
+  set('q', retrieve('input', 0)[0])
+  range(get('q'), (i) => {
+    call(ReadUnsignedInt64, { resultArray: 'input' }, '', {})
+    set('u', coerceInt8(retrieve('input', 0)[0]))
+    call(ReadUnsignedInt64, { resultArray: 'input' }, '', {})
+    set('v', coerceInt8(retrieve('input', 0)[0]))
+    call(DSU, { dsu: 'dsu', hasBeenInitialized: 'hasBeenInitialized', result: 'result' }, 'unite', { u: get('u'), v: get('v') })
+    call(DSU, { dsu: 'dsu', hasBeenInitialized: 'hasBeenInitialized', result: 'result' }, 'ancestor', { vertex: get('u') })
+    call(PrintInt64, { buffer: 'printBuffer' }, 'unsigned', { num: coerceInt64(coerceInt8(-retrieve('dsu', coerceInt64(retrieve('result', 0)[0]))[0])) })
+    writeChar(coerceInt8(10))
+  })
 })
-Here is internal AST representation:
+```
+
+programs/DisjointSetUnion.module.json
+```json
+{
+  "type": "competitive",
+  "inputs": [
+    "DSU.js",
+    "DisjointSetUnion.js",
+    "IO/ReadUnsignedInt64.js",
+    "IO/PrintInt64.js"
+  ],
+  "coqOutput": "../generated-coq/DisjointSetUnion.v",
+  "cppOutput": "../generated-cpp/DisjointSetUnion.cpp"
+}
+```
+
+programs/DSU.js
+```js
+module(DSU)
+environment({
+  dsu: array([int8], 100),
+  hasBeenInitialized: array([int8], 1),
+  result: array([int8], 1),
+})
+
+procedure('ancestor', { vertex: int8, work: int8 }, () => {
+  set('work', get('vertex'))
+  range(100, (_) => {
+    if (sLess(retrieve('dsu', coerceInt64(get('work')))[0], coerceInt8(0))) {
+      ;('break')
+    }
+    set('work', retrieve('dsu', coerceInt64(get('work')))[0])
+  })
+  store('result', 0, [get('work')])
+  set('work', get('vertex'))
+  range(100, (_) => {
+    if (sLess(retrieve('dsu', coerceInt64(get('work')))[0], coerceInt8(0))) {
+      ;('break')
+    }
+    set('vertex', retrieve('dsu', coerceInt64(get('work')))[0])
+    store('dsu', coerceInt64(get('work')), [retrieve('result', 0)[0]])
+    set('work', get('vertex'))
+  })
+})
+
+procedure('unite', { u: int8, v: int8, z: int8 }, () => {
+  call('ancestor', { vertex: get('u') })
+  set('u', retrieve('result', 0)[0])
+  call('ancestor', { vertex: get('v') })
+  set('v', retrieve('result', 0)[0])
+  if (get('u') != get('v')) {
+    if (
+      sLess(
+        retrieve('dsu', coerceInt64(get('u')))[0],
+        retrieve('dsu', coerceInt64(get('v')))[0]
+      )
+    ) {
+      set('z', get('u'))
+      set('u', get('v'))
+      set('v', get('z'))
+    }
+    store('dsu', coerceInt64(get('v')), [
+      retrieve('dsu', coerceInt64(get('u')))[0] +
+        retrieve('dsu', coerceInt64(get('v')))[0],
+    ])
+    store('dsu', coerceInt64(get('u')), [get('v')])
+
+  }
+})
+
+// Input: q, followed by q pairs of vertices (0..99). Output: component size after each union.
+procedure('initialize', {}, () => {
+  range(100, (i) => {
+    store('dsu', i, [coerceInt8(-1)])
+  })
+})
+```
+
+programs/IO/ReadUnsignedInt64.js
+```js
+module(ReadUnsignedInt64)
+
+environment({
+  resultArray: array([int64], 1),
+})
+
+procedure('', { tmpChar: int64, result: int64 }, () => {
+  set('result', 0)
+
+  range(20, (i) => {
+    set('tmpChar', readChar())
+    if (less(get('tmpChar'), 48) || !less(get('tmpChar'), 58)) {
+      ;('continue')
+    }
+    set('result', get('result') * 10 + (get('tmpChar') - 48))
+    ;('break')
+  })
+
+  range(20, (i) => {
+    set('tmpChar', readChar())
+
+    if (less(get('tmpChar'), 48) || !less(get('tmpChar'), 58)) {
+      ;('break')
+    }
+
+    set('result', get('result') * 10 + (get('tmpChar') - 48))
+  })
+
+  store('resultArray', 0, [get('result')])
+})
+```
+
+programs/IO/PrintInt64.js
+```js
+module(PrintInt64)
+// Create a buffer to hold characters
+environment({
+  buffer: array([int8], 20),
+})
+
+procedure('unsigned', { num: int64, i: int64, tmpChar: int8 }, () => {
+  // Handle special case for 0
+  if (get('num') == 0) {
+    writeChar(coerceInt8(48))
+  } else {
+    set('i', 0)
+
+    // Extract digits and store in buffer
+    range(20, (j) => {
+      if (get('num') == 0) {
+        ;('break')
+      }
+      set('tmpChar', coerceInt8((get('num') % 10) + 48))
+      store('buffer', get('i'), [get('tmpChar')])
+      set('num', divide(get('num'), 10))
+      set('i', get('i') + 1)
+    })
+
+    // Print digits in reverse order
+    range(get('i'), (j) => {
+      writeChar(retrieve('buffer', get('i') - j - 1)[0])
+    })
+  }
+})
+
+procedure('signed', { num: int64 }, () => {
+  if (sLess(get('num'), 0)) {
+    set('num', -get('num'))
+    writeChar(coerceInt8(45)) // Print '-'
+  }
+  call('unsigned', { num: get('num') })
+})
+```
+
+programs/llmGeneratedCode/BubbleSort.js
+```js
+// Input: n, followed by n values. Output: the sorted values, one per line.
+environment({
+  data: array([int64], 1),
+  input: array([int64], 1),
+  printBuffer: array([int8], 20),
+})
+
+procedure('main', { n: int64, temp: int64 }, () => {
+  call(ReadUnsignedInt64, { resultArray: 'input' }, '', {})
+  set('n', retrieve('input', 0)[0])
+  grow('data', get('n'))
+  range(get('n'), (i) => {
+    call(ReadUnsignedInt64, { resultArray: 'input' }, '', {})
+    store('data', i, [retrieve('input', 0)[0]])
+  })
+  range(get('n'), (i) => {
+    range(get('n') - i - 1, (j) => {
+      if (less(retrieve('data', j + 1)[0], retrieve('data', j)[0])) {
+        set('temp', retrieve('data', j)[0])
+        store('data', j, [retrieve('data', j + 1)[0]])
+        store('data', j + 1, [get('temp')])
+      }
+    })
+  })
+  range(get('n'), (i) => {
+    call(PrintInt64, { buffer: 'printBuffer' }, 'unsigned', { num: retrieve('data', i)[0] })
+    writeChar(coerceInt8(10))
+  })
+})
+```
+
+programs/llmGeneratedCode/MaxElement.js
+```js
+// Input: n, followed by n values. Output: the maximum, or 0 for an empty input.
+environment({
+  input: array([int64], 1),
+  printBuffer: array([int8], 20),
+})
+
+procedure('main', { n: int64, max: int64, current: int64 }, () => {
+  call(ReadUnsignedInt64, { resultArray: 'input' }, '', {})
+  set('n', retrieve('input', 0)[0])
+  range(get('n'), (i) => {
+    call(ReadUnsignedInt64, { resultArray: 'input' }, '', {})
+    set('current', retrieve('input', 0)[0])
+    if (less(get('max'), get('current'))) {
+      set('max', get('current'))
+    }
+  })
+  call(PrintInt64, { buffer: 'printBuffer' }, 'unsigned', { num: get('max') })
+  writeChar(coerceInt8(10))
+})
+```
+
+The current compiler/parse.ts implementation:
+```typescript
 import acorn, { ExtendNode } from 'acorn'
 import * as ESTree from 'estree'
 
@@ -655,8 +631,6 @@ export type PrimitiveType =
   | 'int16'
   | 'int32'
   | 'int64'
-  | 'int256'
-  | 'address'
 
 export interface ArrayDeclaration {
   itemTypes: PrimitiveType[]
@@ -724,8 +698,6 @@ export interface UnaryOperationInstruction {
   value: ValueType
 }
 
-export const COMMUNICATION = Symbol('communication')
-
 export type Instruction = (
   | { type: 'get'; name: string }
   | {
@@ -739,24 +711,8 @@ export type Instruction = (
       index: ValueType
       tuple: ValueType[]
     }
-  | {
-      type: 'store'
-      name: typeof COMMUNICATION
-      index: ValueType
-      value: ValueType
-    }
-  | { type: 'retrieve'; name: string | typeof COMMUNICATION; index: ValueType }
-  | { type: 'communication area size' }
-  | {
-      type: 'invoke'
-      address: ValueType
-      money: ValueType
-      array: string
-      communicationSize: ValueType
-    }
-  | { type: 'donate'; address: ValueType; money: ValueType }
-  | { type: 'get sender' }
-  | { type: 'get money' }
+  | { type: 'retrieve'; name: string; index: ValueType }
+  | { type: 'grow'; name: string; length: ValueType }
   | {
       type: 'range'
       end: ValueType
@@ -804,10 +760,6 @@ export type Instruction = (
       type: 'coerceInt64'
       value: ValueType
     }
-  | {
-      type: 'coerceInt256'
-      value: ValueType
-    }
   | { type: 'less'; left: ValueType; right: ValueType }
   | { type: 'sLess'; left: ValueType; right: ValueType }
   | {
@@ -826,7 +778,6 @@ export type Instruction = (
   | {
       type: 'break' | 'continue' | 'flush'
     }
-  | { type: 'construct address'; bytes: ValueType[] }
 ) & { location: Location }
 
 export class ParseError extends Error {
@@ -857,7 +808,1038 @@ export class CoqCPAST {
   moduleName: string = ''
   moduleNameLocation: Location | null = null
 }
-Here is code validator:
+
+export class CoqCPASTTransformer {
+  ast: acorn.ExtendNode<ESTree.Program>
+  result: CoqCPAST
+
+  constructor(code: string) {
+    this.ast = acorn.parse(code, {
+      sourceType: 'module',
+      ecmaVersion: 2023,
+      locations: true,
+    })
+    this.result = new CoqCPAST()
+  }
+
+  transform() {
+    let seenEnvironmentBlock = false
+    for (const node of this.ast.body) {
+      if (
+        node.type !== 'ExpressionStatement' ||
+        node.expression.type !== 'CallExpression' ||
+        node.expression.callee.type !== 'Identifier' ||
+        (node.expression.callee.name !== 'environment' &&
+          node.expression.callee.name !== 'procedure' &&
+          node.expression.callee.name !== 'module')
+      ) {
+        throw new ParseError(
+          'only "environment", "procedure" and "module" expressions allowed. ' +
+            formatLocation(node.loc)
+        )
+      }
+
+      if (node.expression.callee.name === 'environment') {
+        if (seenEnvironmentBlock) {
+          throw new ParseError(
+            'duplicate environment block. ' + formatLocation(node.loc)
+          )
+        }
+        seenEnvironmentBlock = true
+
+        if (node.expression.arguments.length !== 1) {
+          throw new ParseError(
+            'environment block accepts exactly 1 argument. ' +
+              formatLocation(node.loc)
+          )
+        }
+
+        const argumentNode = node.expression.arguments[0]
+        if (argumentNode.type !== 'ObjectExpression') {
+          throw new ParseError(
+            'the argument must be an object. ' +
+              formatLocation(argumentNode.loc)
+          )
+        }
+
+        for (const property of argumentNode.properties) {
+          if (property.type === 'SpreadElement') {
+            throw new ParseError(
+              "spread syntax isn't recognized. " + formatLocation(property.loc)
+            )
+          }
+
+          let keyName: string
+
+          if (property.key.type === 'Identifier') keyName = property.key.name
+          else if (property.key.type === 'Literal') {
+            if (typeof property.key.value !== 'string')
+              throw new ParseError(
+                'unrecognized key type. ' + formatLocation(property.key.loc)
+              )
+            keyName = property.key.value
+          } else
+            throw new ParseError(
+              'unrecognized key type. ' + formatLocation(property.key.loc)
+            )
+
+          const arrayDescription = property.value
+          if (
+            arrayDescription.type !== 'CallExpression' ||
+            arrayDescription.callee.type !== 'Identifier' ||
+            arrayDescription.callee.name !== 'array'
+          ) {
+            throw new ParseError(
+              'expecting an array expression. ' +
+                formatLocation(arrayDescription.loc)
+            )
+          }
+
+          if (arrayDescription.arguments.length !== 2) {
+            throw new ParseError(
+              'array() accepts exactly two arguments. ' +
+                formatLocation(arrayDescription.loc)
+            )
+          }
+
+          const typesArrayNode = arrayDescription.arguments[0]
+          const lengthNode = arrayDescription.arguments[1]
+
+          if (typesArrayNode.type !== 'ArrayExpression') {
+            throw new ParseError(
+              'first argument of array() must be an array.' +
+                formatLocation(typesArrayNode.loc)
+            )
+          }
+
+          let itemTypes: PrimitiveType[] = []
+          for (const itemType of typesArrayNode.elements) {
+            if (
+              itemType === null ||
+              itemType.type !== 'Identifier' ||
+              (itemType.name !== 'int8' &&
+                itemType.name !== 'int16' &&
+                itemType.name !== 'int32' &&
+                itemType.name !== 'int64' &&
+                itemType.name !== 'bool')
+            ) {
+              throw new ParseError(
+                'invalid array item type. range: ' +
+                  formatLocation(typesArrayNode.loc)
+              )
+            }
+
+            itemTypes.push(itemType.name)
+          }
+
+          if (!this.result.environment) {
+            this.result.environment = { arrays: new Map() }
+          }
+
+          if (this.result.environment.arrays.get(keyName) !== undefined) {
+            throw new ParseError(
+              'duplicate identifier in environment block. ' +
+                formatLocation(property.key.loc)
+            )
+          }
+
+          const lengthLiteral = this.processNode(lengthNode)
+          if (
+            lengthLiteral.type === 'literal' &&
+            lengthLiteral.valueType === 'number'
+          ) {
+            this.result.environment.arrays.set(keyName, {
+              itemTypes,
+              length: {
+                type: 'literal',
+                valueType: 'number',
+                location: lengthLiteral.location,
+                raw: lengthLiteral.raw,
+              },
+            })
+          } else {
+            throw new ParseError(
+              'second argument of array() must be a numeric literal.' +
+                formatLocation(lengthNode.loc)
+            )
+          }
+        }
+      }
+
+      if (node.expression.callee.name === 'procedure') {
+        // Parsing the procedure block
+        if (node.expression.arguments.length !== 3) {
+          throw new ParseError(
+            'procedure block accepts exactly 3 arguments. ' +
+              formatLocation(node.loc)
+          )
+        }
+
+        const procedureNameNode = node.expression.arguments[0]
+        const variableListNode = node.expression.arguments[1]
+        const bodyNode = node.expression.arguments[2]
+
+        if (
+          procedureNameNode.type !== 'Literal' ||
+          typeof procedureNameNode.value !== 'string'
+        ) {
+          throw new ParseError(
+            'first argument of procedure() must be a string literal. ' +
+              formatLocation(procedureNameNode.loc)
+          )
+        }
+
+        if (variableListNode.type !== 'ObjectExpression') {
+          throw new ParseError(
+            'second argument of procedure() must be an object. ' +
+              formatLocation(variableListNode.loc)
+          )
+        }
+
+        // building the variables object
+        let variables: Map<string, Variable> = new Map()
+        for (const property of variableListNode.properties) {
+          if (property.type === 'SpreadElement') {
+            throw new ParseError(
+              "spread syntax isn't recognized. " + formatLocation(property.loc)
+            )
+          }
+
+          let keyName: string
+
+          if (property.key.type === 'Identifier') keyName = property.key.name
+          else if (property.key.type === 'Literal') {
+            if (typeof property.key.value !== 'string')
+              throw new ParseError(
+                'unrecognized key type. ' + formatLocation(property.key.loc)
+              )
+
+            keyName = property.key.value
+          } else
+            throw new ParseError(
+              'unrecognized key type. ' + formatLocation(property.key.loc)
+            )
+
+          if (property.value.type !== 'Identifier') {
+            throw new ParseError(
+              'unrecognized value type. ' + formatLocation(property.value.loc)
+            )
+          }
+
+          if (variables.get(keyName) !== undefined) {
+            throw new ParseError(
+              'duplicate identifier in procedure variables. ' +
+                formatLocation(property.key.loc)
+            )
+          }
+
+          const declaredType = property.value.name
+          if (
+            declaredType !== 'int8' &&
+            declaredType !== 'int16' &&
+            declaredType !== 'int32' &&
+            declaredType !== 'int64' &&
+            declaredType !== 'bool'
+          )
+            throw new ParseError(
+              'invalid variable type. ' + formatLocation(property.value.loc)
+            )
+
+          variables.set(keyName, { type: declaredType })
+        }
+
+        // transforming bodyNode into Instruction[]
+        if (
+          bodyNode.type !== 'ArrowFunctionExpression' ||
+          bodyNode.body.type !== 'BlockStatement'
+        ) {
+          throw new ParseError(
+            'third argument of procedure() must be an arrow function expression. ' +
+              formatLocation(bodyNode.loc)
+          )
+        }
+
+        if (bodyNode.params.length !== 0) {
+          throw new ParseError("inner function can't take arguments")
+        }
+
+        const body: Instruction[] = this.transformBodyNode(bodyNode.body)
+
+        // adding the procedure to the result
+        this.result.procedures.push({
+          name: procedureNameNode.value,
+          variables,
+          body,
+          nameLocation: procedureNameNode.loc,
+        })
+      }
+      if (node.expression.callee.name === 'module') {
+        if (this.result.moduleName !== '') {
+          throw new ParseError(
+            'duplicate module expression. ' + formatLocation(node.loc)
+          )
+        }
+
+        if (node.expression.arguments.length !== 1) {
+          throw new ParseError(
+            'module expression accepts exactly 1 argument. ' +
+              formatLocation(node.loc)
+          )
+        }
+
+        const argument = node.expression.arguments[0]
+        if (argument.type !== 'Identifier') {
+          throw new ParseError(
+            'module expression must take an identifier. ' +
+              formatLocation(argument.loc)
+          )
+        }
+
+        this.result.moduleName = argument.name
+        this.result.moduleNameLocation = argument.loc
+      }
+    }
+    return this.result
+  }
+
+  private processNode(node: ExtendNode<ESTree.Node>): ValueType {
+    if (node.type === 'CallExpression' && node.callee.type === 'Identifier') {
+      return this.processInstruction(
+        node.callee.name,
+        node.arguments.map((x) => {
+          if (x.type === 'SpreadElement') {
+            throw new ParseError("spread syntax isn't recognized")
+          }
+
+          return x
+        }),
+        node.loc
+      )
+    } else if (node.type === 'Identifier') {
+      return { type: 'local binder', name: node.name, location: node.loc }
+    } else if (
+      node.type === 'Literal' &&
+      (typeof node.value === 'number' ||
+        typeof node.value === 'boolean' ||
+        typeof node.value === 'string')
+    ) {
+      if (node.raw === undefined) {
+        throw new ParseError(
+          "raw value of literal can't be undefined. " + formatLocation(node.loc)
+        )
+      }
+      return {
+        type: 'literal',
+        valueType:
+          typeof node.value === 'number'
+            ? 'number'
+            : typeof node.value === 'boolean'
+              ? 'boolean'
+              : 'string',
+        raw: typeof node.value === 'string' ? node.value : node.raw,
+        location: node.loc,
+      }
+    } else if (node.type === 'BinaryExpression') {
+      return this.processBinaryExpression(node)
+    } else if (node.type === 'UnaryExpression') {
+      const { operator, argument } = node
+      const value = this.processNode(argument)
+      switch (operator) {
+        case '!':
+          return {
+            type: 'unaryOp',
+            operator: 'boolean not',
+            value,
+            location: node.loc,
+          }
+        case '+':
+          return {
+            type: 'unaryOp',
+            operator: 'plus',
+            value,
+            location: node.loc,
+          }
+        case '-':
+          return {
+            type: 'unaryOp',
+            operator: 'minus',
+            value,
+            location: node.loc,
+          }
+        case '~':
+          return {
+            type: 'unaryOp',
+            operator: 'bitwise not',
+            value,
+            location: node.loc,
+          }
+        default:
+          throw new ParseError(
+            'operator not recognized. ' + formatLocation(argument.loc)
+          )
+      }
+    } else if (node.type === 'MemberExpression') {
+      const instruction = this.processNode(node.object)
+      const index = this.processNode(node.property)
+      if (instruction.type === 'literal') {
+        throw new ParseError(
+          "left hand side can't be a literal. " + formatLocation(node.loc)
+        )
+      }
+      return {
+        type: 'subscript',
+        value: instruction,
+        index,
+        location: node.loc,
+      }
+    } else if (node.type === 'LogicalExpression') {
+      const left = this.processNode(node.left)
+      const right = this.processNode(node.right)
+      const operator = this.getBinaryOperator(node.operator, node.loc)
+      return { type: 'binaryOp', operator, left, right, location: node.loc }
+    } else {
+      throw new ParseError(
+        'unrecognized node type: ' + node.type + '. ' + formatLocation(node.loc)
+      )
+    }
+  }
+
+  private processBinaryExpression(
+    node: ExtendNode<ESTree.BinaryExpression>
+  ): BinaryOperationInstruction & { location: Location } {
+    const operator = this.getBinaryOperator(node.operator, node.loc)
+    const left = this.processNode(node.left)
+    const right = this.processNode(node.right)
+    return { type: 'binaryOp', operator, left, right, location: node.loc }
+  }
+
+  private getBinaryOperator(
+    operator: string,
+    location: {
+      start: {
+        line: number
+        column: number
+      }
+      end: {
+        line: number
+        column: number
+      }
+    }
+  ): BinaryOp {
+    switch (operator) {
+      case '+':
+        return 'add'
+      case '-':
+        return 'subtract'
+      case '*':
+        return 'multiply'
+      case '==':
+        return 'equal'
+      case '!=':
+        return 'noteq'
+      case '|':
+        return 'bitwise or'
+      case '^':
+        return 'bitwise xor'
+      case '&':
+        return 'bitwise and'
+      case '>>':
+        return 'shift right'
+      case '<<':
+        return 'shift left'
+      case '%':
+        return 'mod'
+      case '&&':
+        return 'boolean and'
+      case '||':
+        return 'boolean or'
+      default:
+        throw new ParseError(
+          'invalid binary operator: ' +
+            operator +
+            '. ' +
+            formatLocation(location)
+        )
+    }
+  }
+
+  private processInstruction(
+    name: string,
+    args: ExtendNode<ESTree.Expression>[],
+    location: {
+      start: {
+        line: number
+        column: number
+      }
+      end: {
+        line: number
+        column: number
+      }
+    }
+  ): Instruction {
+    let instruction: Instruction
+
+    switch (name) {
+      case 'get': {
+        if (
+          args.length !== 1 ||
+          args[0].type !== 'Literal' ||
+          typeof args[0].value !== 'string'
+        ) {
+          throw new ParseError(
+            'get() function accepts exactly 1 string argument. ' +
+              formatLocation(location)
+          )
+        }
+        const varName = args[0].value
+        instruction = { type: 'get', name: varName, location }
+        break
+      }
+
+      case 'set': {
+        if (
+          args.length !== 2 ||
+          args[0].type !== 'Literal' ||
+          typeof args[0].value !== 'string'
+        ) {
+          throw new ParseError(
+            'set() function accepts exactly 2 arguments: variable name, value. ' +
+              formatLocation(location)
+          )
+        }
+        const varName = args[0].value
+        const value = this.processNode(args[1])
+        instruction = { type: 'set', name: varName, value, location }
+        break
+      }
+
+      case 'store': {
+        if (
+          args.length === 3 &&
+          args[0].type === 'Literal' &&
+          typeof args[0].value === 'string' &&
+          args[2].type === 'ArrayExpression'
+        ) {
+          const arrayName = args[0].value
+          const index = this.processNode(args[1])
+          const tuples = args[2].elements.map((node) => {
+            if (node === null) {
+              throw new ParseError(
+                "node can't be null. " + formatLocation(location)
+              )
+            }
+            if (node.type === 'SpreadElement') {
+              throw new ParseError(
+                "spread syntax isn't recognized. " + formatLocation(location)
+              )
+            }
+            return this.processNode(node)
+          })
+          instruction = {
+            type: 'store',
+            name: arrayName,
+            index,
+            tuple: tuples,
+            location,
+          }
+        } else {
+          throw new ParseError(
+            'store() function accepts 3 arguments: array name, index, tuple. ' +
+              formatLocation(location)
+          )
+        }
+        break
+      }
+
+      case 'retrieve': {
+        if (
+          args.length === 2 &&
+          args[0].type === 'Literal' &&
+          typeof args[0].value === 'string'
+        ) {
+          const arrayName = args[0].value
+          const index = this.processNode(args[1])
+          instruction = { type: 'retrieve', name: arrayName, index, location }
+        } else {
+          throw new ParseError(
+            'retrieve() function accepts 2 arguments, array name, index. ' +
+              formatLocation(location)
+          )
+        }
+        break
+      }
+
+      case 'grow': {
+        if (
+          args.length !== 2 ||
+          args[0].type !== 'Literal' ||
+          typeof args[0].value !== 'string'
+        ) {
+          throw new ParseError(
+            'grow() accepts 2 arguments: array name, minimum length. ' +
+              formatLocation(location)
+          )
+        }
+        instruction = {
+          type: 'grow',
+          name: args[0].value,
+          length: this.processNode(args[1]),
+          location,
+        }
+        break
+      }
+
+      case 'range': {
+        if (
+          args.length !== 2 ||
+          args[1].type !== 'ArrowFunctionExpression' ||
+          args[1].body.type !== 'BlockStatement'
+        ) {
+          throw new ParseError(
+            'range() function accepts exactly 2 arguments, second one being an arrow function. ' +
+              formatLocation(location)
+          )
+        }
+        const end = this.processNode(args[0])
+        const funcNode = args[1]
+
+        if (funcNode.params.length !== 1) {
+          throw new ParseError(
+            'arrow function must take exactly 1 argument. ' +
+              formatLocation(funcNode.loc)
+          )
+        }
+
+        const parameter = funcNode.params[0]
+
+        if (parameter.type !== 'Identifier') {
+          throw new ParseError(
+            "this parameter isn't recognized. " + formatLocation(parameter.loc)
+          )
+        }
+
+        const loopVariable = parameter.name
+
+        if (funcNode.body.type !== 'BlockStatement') {
+          throw new ParseError(
+            'block statement expected. ' + formatLocation(funcNode.loc)
+          )
+        }
+
+        const loopBody = this.transformBodyNode(funcNode.body)
+        instruction = {
+          type: 'range',
+          loopVariable,
+          loopBody,
+          end,
+          location,
+        }
+        break
+      }
+
+      case 'readChar': {
+        if (args.length !== 0) {
+          throw new ParseError(
+            'readChar() function accepts exactly 0 argument. ' +
+              formatLocation(location)
+          )
+        }
+        instruction = { type: 'readChar', location }
+        break
+      }
+
+      case 'writeChar': {
+        if (args.length !== 1) {
+          throw new ParseError(
+            'writeChar() function accepts exactly 1 argument. ' +
+              formatLocation(location)
+          )
+        }
+        const value = this.processNode(args[0])
+        instruction = { type: 'writeChar', value, location }
+        break
+      }
+
+      case 'sDivide': {
+        if (args.length !== 2) {
+          throw new ParseError(
+            'sDivide() function accepts exactly 2 arguments. ' +
+              formatLocation(location)
+          )
+        }
+        const left = this.processNode(args[0])
+        const right = this.processNode(args[1])
+        instruction = { type: 'sDivide', left, right, location }
+        break
+      }
+
+      case 'divide': {
+        if (args.length !== 2) {
+          throw new ParseError(
+            'divide() function accepts exactly 2 arguments. ' +
+              formatLocation(location)
+          )
+        }
+        const left = this.processNode(args[0])
+        const right = this.processNode(args[1])
+        instruction = { type: 'divide', left, right, location }
+        break
+      }
+
+      case 'coerceInt8': {
+        if (args.length !== 1) {
+          throw new ParseError(
+            'coerceInt8() function accepts exactly 1 argument. ' +
+              formatLocation(location)
+          )
+        }
+        const value = this.processNode(args[0])
+        instruction = { type: 'coerceInt8', value, location }
+        break
+      }
+
+      case 'coerceInt16': {
+        if (args.length !== 1) {
+          throw new ParseError(
+            'coerceInt16() function accepts exactly 1 argument. ' +
+              formatLocation(location)
+          )
+        }
+        const value = this.processNode(args[0])
+        instruction = { type: 'coerceInt16', value, location }
+        break
+      }
+
+      case 'coerceInt32': {
+        if (args.length !== 1) {
+          throw new ParseError(
+            'coerceInt32() function accepts exactly 1 argument. ' +
+              formatLocation(location)
+          )
+        }
+        const value = this.processNode(args[0])
+        instruction = { type: 'coerceInt32', value, location }
+        break
+      }
+
+      case 'coerceInt64': {
+        if (args.length !== 1) {
+          throw new ParseError(
+            'coerceInt64() function accepts exactly 1 argument. ' +
+              formatLocation(location)
+          )
+        }
+        const value = this.processNode(args[0])
+        instruction = { type: 'coerceInt64', value, location }
+        break
+      }
+
+      case 'less': {
+        if (args.length !== 2) {
+          throw new ParseError(
+            'less() function accepts exactly 2 arguments. ' +
+              formatLocation(location)
+          )
+        }
+        const left = this.processNode(args[0])
+        const right = this.processNode(args[1])
+        instruction = { type: 'less', left, right, location }
+        break
+      }
+
+      case 'sLess': {
+        if (args.length !== 2) {
+          throw new ParseError(
+            'sLess() function accepts exactly 2 arguments. ' +
+              formatLocation(location)
+          )
+        }
+        const left = this.processNode(args[0])
+        const right = this.processNode(args[1])
+        instruction = { type: 'sLess', left, right, location }
+        break
+      }
+
+      case 'call': {
+        if (args.length === 2) {
+          if (args[0].type !== 'Literal' || typeof args[0].value !== 'string') {
+            throw new ParseError(
+              'first argument to call() must be a procedure name. ' +
+                formatLocation(args[0].loc)
+            )
+          }
+
+          const procedureName = args[0].value
+          if (args[1].type !== 'ObjectExpression') {
+            throw new ParseError(
+              'second argument to call() must be an object denoting preset variables. ' +
+                formatLocation(args[1].loc)
+            )
+          }
+
+          const presetVariables: Map<string, ValueType> = new Map()
+
+          for (const property of args[1].properties) {
+            if (property.type === 'SpreadElement') {
+              throw new ParseError(
+                'spread syntax not allowed. ' + formatLocation(property.loc)
+              )
+            }
+
+            let name: string
+
+            if (property.key.type === 'Identifier') name = property.key.name
+            else if (property.key.type === 'Literal') {
+              if (typeof property.key.value !== 'string')
+                throw new ParseError(
+                  'unrecognized key type. ' + formatLocation(property.key.loc)
+                )
+              name = property.key.value
+            } else
+              throw new ParseError(
+                'unrecognized key type. ' + formatLocation(property.key.loc)
+              )
+
+            const value = this.processNode(property.value)
+
+            if (presetVariables.get(name) !== undefined) {
+              throw new ParseError(
+                'duplicate identifier in preset variables. ' +
+                  formatLocation(property.key.loc)
+              )
+            }
+
+            presetVariables.set(name, value)
+          }
+
+          instruction = {
+            type: 'call',
+            procedure: procedureName,
+            presetVariables,
+            location,
+          }
+        } else if (args.length === 4) {
+          const moduleNameNode = args[0]
+          if (moduleNameNode.type !== 'Identifier')
+            throw new ParseError(
+              'first argument to cross module call() expression must be an identifier. ' +
+                formatLocation(location)
+            )
+
+          const moduleName = moduleNameNode.name
+
+          const arrayMappingNode = args[1]
+          if (arrayMappingNode.type !== 'ObjectExpression')
+            throw new ParseError(
+              'second argument to cross module call() expression must be an object literal. ' +
+                formatLocation(location)
+            )
+
+          const procedureNameNode = args[2]
+          if (
+            procedureNameNode.type !== 'Literal' ||
+            typeof procedureNameNode.value !== 'string'
+          )
+            throw new ParseError(
+              'third argument to cross module call() expression must be a string literal. ' +
+                formatLocation(location)
+            )
+
+          const procedureName = procedureNameNode.value
+
+          const presetVariablesNode = args[3]
+          if (presetVariablesNode.type !== 'ObjectExpression')
+            throw new ParseError(
+              'fourth argument to cross module call() expression must be an object literal. ' +
+                formatLocation(location)
+            )
+
+          const arrayMapping = new Map<string, string>()
+          for (const property of arrayMappingNode.properties) {
+            if (property.type === 'SpreadElement')
+              throw new ParseError(
+                'spread syntax not allowed. ' + formatLocation(property.loc)
+              )
+
+            let arrayName: string
+
+            if (property.key.type === 'Identifier')
+              arrayName = property.key.name
+            else if (property.key.type === 'Literal') {
+              if (typeof property.key.value !== 'string')
+                throw new ParseError(
+                  'unrecognized key type. ' + formatLocation(property.loc)
+                )
+              arrayName = property.key.value
+            } else
+              throw new ParseError(
+                'unrecognized key type. ' + formatLocation(property.loc)
+              )
+
+            if (arrayMapping.get(arrayName) !== undefined)
+              throw new ParseError(
+                'duplicate identifier in array mapping. ' +
+                  formatLocation(property.loc)
+              )
+
+            if (
+              property.value.type !== 'Literal' ||
+              typeof property.value.value !== 'string'
+            )
+              throw new ParseError(
+                'value must be a string literal denoting array name. ' +
+                  formatLocation(property.loc)
+              )
+
+            arrayMapping.set(arrayName, property.value.value)
+          }
+
+          const presetVariables = new Map<string, ValueType>()
+
+          for (const property of presetVariablesNode.properties) {
+            if (property.type === 'SpreadElement')
+              throw new ParseError(
+                "spread syntax isn't recognized. " +
+                  formatLocation(property.loc)
+              )
+            let name: string
+            if (property.key.type === 'Identifier') name = property.key.name
+            else if (property.key.type === 'Literal') {
+              if (typeof property.key.value !== 'string')
+                throw new ParseError(
+                  'unrecognized key type. ' + formatLocation(property.key.loc)
+                )
+              name = property.key.value
+            } else
+              throw new ParseError(
+                'unrecognized key type. ' + formatLocation(property.key.loc)
+              )
+
+            if (presetVariables.get(name) !== undefined)
+              throw new ParseError(
+                'duplicate identifier in preset variables. ' +
+                  formatLocation(property.key.loc)
+              )
+
+            presetVariables.set(name, this.processNode(property.value))
+          }
+
+          instruction = {
+            type: 'cross module call',
+            procedure: procedureName,
+            presetVariables,
+            arrayMapping,
+            module: moduleName,
+            location,
+          }
+        } else {
+          throw new ParseError(
+            'call() takes exactly 2 arguments for intra-module calls or 4 arguments for cross module calls. ' +
+              formatLocation(location)
+          )
+        }
+        break
+      }
+
+      default:
+        throw new ParseError(
+          'unknown instruction: ' + name + '. ' + formatLocation(location)
+        )
+    }
+
+    return instruction
+  }
+
+  private transformBodyNode(
+    bodyNode: ExtendNode<ESTree.BlockStatement>
+  ): Instruction[] {
+    let instructions: Instruction[] = []
+
+    for (const statement of bodyNode.body) {
+      if (statement.type === 'EmptyStatement') continue
+      if (statement.type === 'IfStatement') {
+        const test = this.processNode(statement.test)
+        if (statement.consequent.type !== 'BlockStatement') {
+          throw new ParseError(
+            'must be a block statement. ' +
+              formatLocation(statement.consequent.loc)
+          )
+        }
+        const consequent = this.transformBodyNode(statement.consequent)
+        const alternate = statement.alternate
+        if (alternate === null || alternate === undefined) {
+          instructions.push({
+            type: 'condition',
+            condition: test,
+            body: consequent,
+            alternate: [],
+            location: statement.loc,
+          })
+          continue
+        }
+        if (alternate.type !== 'BlockStatement') {
+          if (alternate.loc === undefined || alternate.loc === null) {
+            throw new ParseError('must be a block statement. ' + statement.loc)
+          }
+          throw new ParseError(
+            'must be a block statement. ' + formatLocation(alternate.loc)
+          )
+        }
+        instructions.push({
+          type: 'condition',
+          condition: test,
+          body: consequent,
+          alternate: this.transformBodyNode(alternate),
+          location: statement.loc,
+        })
+        continue
+      }
+      if (
+        statement.type === 'ExpressionStatement' &&
+        statement.expression.type === 'Literal'
+      ) {
+        if (
+          statement.expression.value === 'break' ||
+          statement.expression.value === 'continue' ||
+          statement.expression.value === 'flush'
+        ) {
+          instructions.push({
+            type: statement.expression.value as 'break' | 'continue' | 'flush',
+            location: statement.loc,
+          })
+          continue
+        }
+        throw new ParseError(
+          'invalid statement type. ' + formatLocation(statement.loc)
+        )
+      }
+      if (
+        statement.type !== 'ExpressionStatement' ||
+        statement.expression.type !== 'CallExpression'
+      ) {
+        throw new ParseError(
+          'invalid statement type. ' + formatLocation(statement.loc)
+        )
+      }
+      const processed = castToInstruction(
+        this.processNode(statement.expression)
+      )
+      if (processed === undefined) {
+        throw new ParseError(
+          'invalid statement type. ' + formatLocation(statement.loc)
+        )
+      }
+      instructions.push(processed)
+    }
+
+    return instructions
+  }
+}
+```
+
+The current compiler/validateAST.ts implementation:
+```typescript
+import { analyzeArrayGrowth } from './arrayGrowth'
 import { PairMap } from './PairMap'
 import { consumeNever } from './consumeNever'
 import { sortModules, validateCyclicDependencies } from './dependencyGraph'
@@ -867,7 +1849,6 @@ import {
   PrimitiveType,
   CoqCPAST,
   Location,
-  COMMUNICATION,
 } from './parse'
 
 export type ValidationError =
@@ -911,14 +1892,8 @@ export type ValidationError =
           type:
             | 'instruction expects int8'
             | 'instruction expects int64'
-            | 'instruction expects address'
-            | 'instruction expects int256'
             | 'instruction expects tuple'
-            | 'instruction expects address or tuple'
         }
-      | { type: 'instruction expects [int8] array' }
-      | { type: 'instruction only available in blockchain environment' }
-      | { type: 'instruction not available in blockchain environment' }
       | { type: 'undefined array' }
       | { type: 'index out of bounds' }
       | {
@@ -926,7 +1901,6 @@ export type ValidationError =
             | 'unary operator expects numeric'
             | "unary operator can't operate on tuples"
             | "unary operator can't operate on strings"
-            | "unary operator can't operate on addresses"
             | 'unary operator expects boolean'
         }
       | { type: "array length can't be less than 1" }
@@ -955,27 +1929,24 @@ export type ValidationError =
 
 export const isNumeric = (
   x: string | PrimitiveType[]
-): x is 'int8' | 'int16' | 'int32' | 'int64' | 'int256' => {
+): x is 'int8' | 'int16' | 'int32' | 'int64' => {
   return (
     x === 'int8' ||
     x === 'int16' ||
     x === 'int32' ||
-    x === 'int64' ||
-    x === 'int256'
+    x === 'int64'
   )
 }
 
 export const sortAndValidateAST = (
-  modules: CoqCPAST[],
-  blockchain: boolean
+  modules: CoqCPAST[]
 ): ValidationError[] => {
   const sortedModules = sortModules(modules)
-  return validateAST(sortedModules, blockchain)
+  return validateAST(sortedModules)
 }
 
 export const validateAST = (
-  sortedModules: CoqCPAST[],
-  blockchain: boolean
+  sortedModules: CoqCPAST[]
 ): ValidationError[] => {
   // Check for duplicate modules
   {
@@ -1008,6 +1979,7 @@ export const validateAST = (
   const cyclicDependencyCheck = validateCyclicDependencies(sortedModules)
   if (cyclicDependencyCheck.length) return cyclicDependencyCheck
 
+  const growingArrays = analyzeArrayGrowth(sortedModules)
   const crossModuleProcedureMap = new PairMap<string, string, Procedure>()
   const seenModules = new Map<string, CoqCPAST>()
 
@@ -1036,7 +2008,7 @@ export const validateAST = (
           environment.arrays.delete(key)
           continue
         }
-        if (evaluated < 1n) {
+        if (evaluated < 0n || (evaluated === 0n && !growingArrays.get(moduleName)!.has(key))) {
           errors.push({
             type: "array length can't be less than 1",
             location: { ...array.length.location, moduleName },
@@ -1126,8 +2098,7 @@ export const validateAST = (
                 if (
                   leftType === rightType &&
                   (isNumeric(leftType) ||
-                    leftType === 'bool' ||
-                    leftType === 'address')
+                    leftType === 'bool')
                 )
                   return 'bool'
                 else {
@@ -1368,7 +2339,6 @@ export const validateAST = (
 
             return 'statement'
           }
-          case 'coerceInt256':
           case 'coerceInt16':
           case 'coerceInt32':
           case 'coerceInt64':
@@ -1388,9 +2358,7 @@ export const validateAST = (
                 ? 'int32'
                 : instruction.type === 'coerceInt64'
                   ? 'int64'
-                  : instruction.type === 'coerceInt256'
-                    ? 'int256'
-                    : 'int8'
+                  : 'int8'
           }
           case 'condition': {
             const { alternate, body, condition, location } = instruction
@@ -1475,13 +2443,6 @@ export const validateAST = (
               return 'bool'
           }
           case 'flush': {
-            if (blockchain) {
-              errors.push({
-                type: 'instruction not available in blockchain environment',
-                location: { ...instruction.location, moduleName },
-              })
-              return 'illegal'
-            }
             return 'statement'
           }
           case 'get': {
@@ -1570,23 +2531,9 @@ export const validateAST = (
             return result
           }
           case 'readChar': {
-            if (blockchain) {
-              errors.push({
-                type: 'instruction not available in blockchain environment',
-                location: { ...instruction.location, moduleName },
-              })
-              return 'illegal'
-            }
             return 'int64'
           }
           case 'writeChar': {
-            if (blockchain) {
-              errors.push({
-                type: 'instruction not available in blockchain environment',
-                location: { ...instruction.location, moduleName },
-              })
-              return 'illegal'
-            }
             const type = dfs(instruction.value)
             if (type === 'illegal') return 'illegal'
             if (type === 'statement') {
@@ -1601,6 +2548,23 @@ export const validateAST = (
                 type: 'instruction expects int8',
                 location: { ...instruction.location, moduleName },
               })
+              return 'illegal'
+            }
+            return 'statement'
+          }
+          case 'grow': {
+            const type = dfs(instruction.length)
+            if (type === 'illegal') return 'illegal'
+            if (type === 'statement') {
+              errors.push({ type: 'expression no statement', location: { ...instruction.length.location, moduleName } })
+              return 'illegal'
+            }
+            if (type !== 'int64') {
+              errors.push({ type: 'instruction expects int64', location: { ...instruction.length.location, moduleName } })
+              return 'illegal'
+            }
+            if (!environment?.arrays.has(instruction.name)) {
+              errors.push({ type: 'undefined array', location: { ...instruction.location, moduleName } })
               return 'illegal'
             }
             return 'statement'
@@ -1622,16 +2586,6 @@ export const validateAST = (
                 location: { ...instruction.location, moduleName },
               })
               return 'illegal'
-            }
-            if (name === COMMUNICATION) {
-              if (!blockchain) {
-                errors.push({
-                  type: 'instruction only available in blockchain environment',
-                  location: { ...instruction.location, moduleName },
-                })
-                return 'illegal'
-              }
-              return 'int8'
             }
             const array = environment?.arrays.get(name)
             if (array === undefined) {
@@ -1693,33 +2647,6 @@ export const validateAST = (
                 location: { ...instruction.location, moduleName },
               })
               invalid = true
-            }
-            if (name === COMMUNICATION) {
-              if (!blockchain) {
-                errors.push({
-                  type: 'instruction only available in blockchain environment',
-                  location: { ...instruction.location, moduleName },
-                })
-                return 'illegal'
-              }
-              if (invalid) return 'illegal'
-              const valueType = dfs(instruction.value)
-              if (valueType === 'illegal') return 'illegal'
-              if (valueType === 'statement') {
-                errors.push({
-                  type: 'expression no statement',
-                  location: { ...instruction.value.location, moduleName },
-                })
-                return 'illegal'
-              }
-              if (valueType !== 'int8') {
-                errors.push({
-                  type: 'instruction expects int8',
-                  location: { ...instruction.value.location, moduleName },
-                })
-                return 'illegal'
-              }
-              return 'statement'
             }
             const { tuple } = instruction
             const actualType = tuple.map(dfs)
@@ -1813,22 +2740,8 @@ export const validateAST = (
               return returnedType
             }
 
-            if (type === 'address' && blockchain) {
-              const indexType = dfs(index)
-              if (indexType === 'illegal') return 'illegal'
-              if (indexType !== 'int64') {
-                errors.push({
-                  type: 'instruction expects int64',
-                  location: { ...index.location, moduleName },
-                })
-              }
-              return 'int8'
-            }
-
             errors.push({
-              type: blockchain
-                ? 'instruction expects address or tuple'
-                : 'instruction expects tuple',
+              type: 'instruction expects tuple',
               location: { ...instruction.location, moduleName },
             })
             return 'illegal'
@@ -1873,13 +2786,6 @@ export const validateAST = (
               })
               return 'illegal'
             }
-            if (valueType === 'address') {
-              errors.push({
-                type: "unary operator can't operate on addresses",
-                location: { ...instruction.location, moduleName },
-              })
-              return 'illegal'
-            }
             if (valueType === 'bool') {
               switch (operator) {
                 case 'bitwise not':
@@ -1897,149 +2803,7 @@ export const validateAST = (
             }
             return consumeNever(valueType)
           }
-          case 'get sender': {
-            if (!blockchain) {
-              errors.push({
-                type: 'instruction only available in blockchain environment',
-                location: { ...instruction.location, moduleName },
-              })
-              return 'illegal'
-            }
-            return 'address'
-          }
-          case 'communication area size': {
-            if (!blockchain) {
-              errors.push({
-                type: 'instruction only available in blockchain environment',
-                location: { ...instruction.location, moduleName },
-              })
-              return 'illegal'
-            }
-            return 'int64'
-          }
-          case 'get money': {
-            if (!blockchain) {
-              errors.push({
-                type: 'instruction only available in blockchain environment',
-                location: { ...instruction.location, moduleName },
-              })
-              return 'illegal'
-            }
-            return 'int256'
-          }
-          case 'construct address': {
-            if (!blockchain) {
-              errors.push({
-                type: 'instruction only available in blockchain environment',
-                location: { ...instruction.location, moduleName },
-              })
-              return 'illegal'
-            }
-            let invalid = false
-            for (const byte of instruction.bytes) {
-              const type = dfs(byte)
-              if (type === 'illegal') invalid = true
-              else if (type !== 'int8') {
-                invalid = true
-                errors.push({
-                  type: 'instruction expects int8',
-                  location: { ...byte.location, moduleName },
-                })
-              }
-            }
-            if (invalid) return 'illegal'
-            return 'address'
-          }
-          case 'donate': {
-            if (!blockchain) {
-              errors.push({
-                type: 'instruction only available in blockchain environment',
-                location: { ...instruction.location, moduleName },
-              })
-              return 'illegal'
-            }
-            let invalid = false
-            const { money, address } = instruction
-            const moneyType = dfs(money)
-            const addressType = dfs(address)
-            if (moneyType === 'illegal') invalid = true
-            else if (moneyType !== 'int256') {
-              invalid = true
-              errors.push({
-                type: 'instruction expects int256',
-                location: { ...money.location, moduleName },
-              })
-            }
-            if (addressType === 'illegal') invalid = true
-            else if (addressType !== 'address') {
-              invalid = true
-              errors.push({
-                type: 'instruction expects address',
-                location: { ...address.location, moduleName },
-              })
-            }
-            if (invalid) return 'illegal'
-            return 'statement'
-          }
-          case 'invoke': {
-            if (!blockchain) {
-              errors.push({
-                type: 'instruction only available in blockchain environment',
-                location: { ...instruction.location, moduleName },
-              })
-              return 'illegal'
-            }
-            let invalid = false
-            const { money, address, array, communicationSize } = instruction
-            const moneyType = dfs(money)
-            const addressType = dfs(address)
-            const communicationSizeType = dfs(communicationSize)
-            if (moneyType === 'illegal') invalid = true
-            else if (moneyType !== 'int256') {
-              invalid = true
-              errors.push({
-                type: 'instruction expects int256',
-                location: { ...money.location, moduleName },
-              })
-            }
-            if (addressType === 'illegal') invalid = true
-            else if (addressType !== 'address') {
-              invalid = true
-              errors.push({
-                type: 'instruction expects address',
-                location: { ...address.location, moduleName },
-              })
-            }
-            if (communicationSizeType === 'illegal') invalid = true
-            else if (communicationSizeType !== 'int64') {
-              invalid = true
-              errors.push({
-                type: 'instruction expects int64',
-                location: { ...communicationSize.location, moduleName },
-              })
-            }
-            const environmentArray = environment?.arrays.get(array)
-            if (environmentArray === undefined) {
-              invalid = true
-              errors.push({
-                type: 'undefined array',
-                location: { ...instruction.location, moduleName },
-              })
-            } else {
-              if (
-                environmentArray.itemTypes.length !== 1 ||
-                environmentArray.itemTypes[0] !== 'int8'
-              ) {
-                invalid = true
-                errors.push({
-                  type: 'instruction expects [int8] array',
-                  location: { ...instruction.location, moduleName },
-                })
-              }
-            }
-            if (invalid) return 'illegal'
-            return 'statement'
-          }
+
         }
       }
       procedure.body.forEach(dfs)
@@ -2049,4 +2813,4 @@ export const validateAST = (
   }
   return errors
 }
-
+```

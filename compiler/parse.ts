@@ -7,8 +7,6 @@ export type PrimitiveType =
   | 'int16'
   | 'int32'
   | 'int64'
-  | 'int256'
-  | 'address'
 
 export interface ArrayDeclaration {
   itemTypes: PrimitiveType[]
@@ -76,8 +74,6 @@ export interface UnaryOperationInstruction {
   value: ValueType
 }
 
-export const COMMUNICATION = Symbol('communication')
-
 export type Instruction = (
   | { type: 'get'; name: string }
   | {
@@ -91,24 +87,8 @@ export type Instruction = (
       index: ValueType
       tuple: ValueType[]
     }
-  | {
-      type: 'store'
-      name: typeof COMMUNICATION
-      index: ValueType
-      value: ValueType
-    }
-  | { type: 'retrieve'; name: string | typeof COMMUNICATION; index: ValueType }
-  | { type: 'communication area size' }
-  | {
-      type: 'invoke'
-      address: ValueType
-      money: ValueType
-      array: string
-      communicationSize: ValueType
-    }
-  | { type: 'donate'; address: ValueType; money: ValueType }
-  | { type: 'get sender' }
-  | { type: 'get money' }
+  | { type: 'retrieve'; name: string; index: ValueType }
+  | { type: 'grow'; name: string; length: ValueType }
   | {
       type: 'range'
       end: ValueType
@@ -156,10 +136,6 @@ export type Instruction = (
       type: 'coerceInt64'
       value: ValueType
     }
-  | {
-      type: 'coerceInt256'
-      value: ValueType
-    }
   | { type: 'less'; left: ValueType; right: ValueType }
   | { type: 'sLess'; left: ValueType; right: ValueType }
   | {
@@ -178,7 +154,6 @@ export type Instruction = (
   | {
       type: 'break' | 'continue' | 'flush'
     }
-  | { type: 'construct address'; bytes: ValueType[] }
 ) & { location: Location }
 
 export class ParseError extends Error {
@@ -322,8 +297,6 @@ export class CoqCPASTTransformer {
                 itemType.name !== 'int16' &&
                 itemType.name !== 'int32' &&
                 itemType.name !== 'int64' &&
-                itemType.name !== 'int256' &&
-                itemType.name !== 'address' &&
                 itemType.name !== 'bool')
             ) {
               throw new ParseError(
@@ -442,8 +415,6 @@ export class CoqCPASTTransformer {
             declaredType !== 'int16' &&
             declaredType !== 'int32' &&
             declaredType !== 'int64' &&
-            declaredType !== 'int256' &&
-            declaredType !== 'address' &&
             declaredType !== 'bool'
           )
             throw new ParseError(
@@ -747,19 +718,9 @@ export class CoqCPASTTransformer {
             tuple: tuples,
             location,
           }
-        } else if (args.length === 2) {
-          const index = this.processNode(args[0])
-          const value = this.processNode(args[1])
-          instruction = {
-            type: 'store',
-            name: COMMUNICATION,
-            index,
-            value,
-            location,
-          }
         } else {
           throw new ParseError(
-            'store() function accepts 3 arguments: array name, index, tuple or 2 arguments: index, value. ' +
+            'store() function accepts 3 arguments: array name, index, tuple. ' +
               formatLocation(location)
           )
         }
@@ -775,104 +736,30 @@ export class CoqCPASTTransformer {
           const arrayName = args[0].value
           const index = this.processNode(args[1])
           instruction = { type: 'retrieve', name: arrayName, index, location }
-        } else if (args.length === 1) {
-          const index = this.processNode(args[0])
-          instruction = {
-            type: 'retrieve',
-            name: COMMUNICATION,
-            index,
-            location,
-          }
         } else {
           throw new ParseError(
-            'retrieve() function accepts 2 arguments, array name, index or 1 argument: index. ' +
+            'retrieve() function accepts 2 arguments, array name, index. ' +
               formatLocation(location)
           )
         }
         break
       }
 
-      case 'communicationSize': {
-        if (args.length !== 0) {
-          throw new ParseError(
-            'communicationSize() takes no arguments. ' +
-              formatLocation(location)
-          )
-        }
-        instruction = { type: 'communication area size', location }
-        break
-      }
-
-      case 'getSender': {
-        if (args.length !== 0) {
-          throw new ParseError(
-            'getSender() takes no arguments. ' + formatLocation(location)
-          )
-        }
-        instruction = { type: 'get sender', location }
-        break
-      }
-
-      case 'getMoney': {
-        if (args.length !== 0) {
-          throw new ParseError(
-            'getMoney() takes no arguments. ' + formatLocation(location)
-          )
-        }
-        instruction = { type: 'get money', location }
-        break
-      }
-
-      case 'invoke': {
+      case 'grow': {
         if (
-          args.length !== 4 ||
-          args[2].type !== 'Literal' ||
-          typeof args[2].value !== 'string'
+          args.length !== 2 ||
+          args[0].type !== 'Literal' ||
+          typeof args[0].value !== 'string'
         ) {
           throw new ParseError(
-            'invoke() accepts 4 arguments: address, money, communication array, communication size. ' +
-              formatLocation(location)
-          )
-        }
-        const address = this.processNode(args[0])
-        const money = this.processNode(args[1])
-        const array = args[2].value
-        const communicationSize = this.processNode(args[3])
-
-        instruction = {
-          type: 'invoke',
-          address,
-          money,
-          array,
-          communicationSize,
-          location,
-        }
-        break
-      }
-
-      case 'donate': {
-        if (args.length !== 2) {
-          throw new ParseError(
-            'donate() accepts 2 arguments: address, money. ' +
-              formatLocation(location)
-          )
-        }
-        const address = this.processNode(args[0])
-        const money = this.processNode(args[1])
-        instruction = { type: 'donate', address, money, location }
-        break
-      }
-
-      case 'address': {
-        if (args.length !== 20) {
-          throw new ParseError(
-            'address() function accepts exactly 20 arguments. ' +
+            'grow() accepts 2 arguments: array name, minimum length. ' +
               formatLocation(location)
           )
         }
         instruction = {
-          type: 'construct address',
-          bytes: args.map((x) => ({ ...this.processNode(x), location: x.loc })),
+          type: 'grow',
+          name: args[0].value,
+          length: this.processNode(args[1]),
           location,
         }
         break
@@ -1020,18 +907,6 @@ export class CoqCPASTTransformer {
         }
         const value = this.processNode(args[0])
         instruction = { type: 'coerceInt64', value, location }
-        break
-      }
-
-      case 'coerceInt256': {
-        if (args.length !== 1) {
-          throw new ParseError(
-            'coerceInt256() function accepts exactly 1 argument. ' +
-              formatLocation(location)
-          )
-        }
-        const value = this.processNode(args[0])
-        instruction = { type: 'coerceInt256', value, location }
         break
       }
 

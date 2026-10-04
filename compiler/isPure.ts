@@ -12,7 +12,6 @@ const isPure = (value: ValueType): boolean => {
     case 'coerceInt32':
     case 'coerceInt64':
     case 'coerceInt8':
-    case 'coerceInt256':
       return isPure(value.value)
     case 'condition':
       return false
@@ -52,18 +51,9 @@ const isPure = (value: ValueType): boolean => {
       return false
     case 'cross module call':
       return false
-    case 'communication area size':
-      return true
-    case 'construct address':
-      return value.bytes.every((x) => isPure(x))
-    case 'donate':
+    case 'grow':
       return false
-    case 'get money':
-      return true
-    case 'get sender':
-      return true
-    case 'invoke':
-      return false
+
   }
 }
 

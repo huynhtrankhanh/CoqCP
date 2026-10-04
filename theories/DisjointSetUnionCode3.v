@@ -1,12 +1,11 @@
 From CoqCP Require Import DisjointSetUnion DisjointSetUnionCode DisjointSetUnionCode2 Options.
 From stdpp Require Import numbers list.
 
-Lemma maxScoreIsAttainable : interact state (map (fun x => (0%Z, Z.of_nat x)) (seq 1 99)) = 5049%Z.
-Proof. reflexivity. Qed.
+Lemma maxScoreIsAttainable : modelScore (map (fun x => (0%Z, Z.of_nat x)) (seq 1 99)) = 5049%Z.
+Proof. vm_compute. reflexivity. Qed.
 
-Lemma maxScoreIsMax (x : list (Z * Z)) (hN : forall a b, In (a, b) x -> Z.le 0 a /\ Z.lt a 256 /\ Z.le 0 b /\ Z.lt b 256) : (interact state x <= 5049)%Z.
+Lemma maxScoreIsMax (x : list (Z * Z)) (hN : forall a b, In (a, b) x -> Z.le 0 a /\ Z.lt a 256 /\ Z.le 0 b /\ Z.lt b 256) : (modelScore x <= 5049)%Z.
 Proof.
-  rewrite interactEqualsModelScore; [| assumption].
   unfold modelScore.
   remember (dsuFromInteractions _ _) as nx eqn:xn.
   pose proof maxScore3 nx as qk.

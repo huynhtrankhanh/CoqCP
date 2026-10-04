@@ -1,6 +1,6 @@
 # Internal imperative language
 
-The CoqCP project now includes a compiler. The compiler compiles an internal imperative language to two files. The first file is a Coq file to be used for program verification. The second file is a Solidity file if blockchain mode is used or C++ file if competitive programming mode is used.
+The CoqCP project now includes a compiler. The compiler compiles an internal imperative language to two files. The first file is a Coq file to be used for program verification. The second file is a C++ file for competitive programming.
 
 ## Using the compiler
 
@@ -8,42 +8,29 @@ Prerequisites: Node.js and npm. Please install both first. Then follow these ins
 
 - The compiler is in the `compiler` directory. Switch to that directory.
 - Run `npm install` to install dependencies.
-- Run `npx tsc --noCheck`. Now compiled JavaScript files are in the `dist` subfolder.
+- Run `npm run build`. Now compiled JavaScript files are in the `dist` subfolder.
 - Now you can use the command line interface. You can pass options to the compiler through arguments or a JSON file.
-  - Arguments:  
-    For **blockchain mode**:
-    - `node dist/cli --blockchain coq_output_file solidity_output_file input_file_1 input_file_2 ... input_file_n`
-    - If you want the compiler to recompile on file changes: `node dist/cli --blockchain --watch coq_output_file solidity_output_file input_file_1 input_file_2 ... input_file_n`
-
-      For **competitive programming mode**:
-
+  - Arguments:
     - `node dist/cli coq_output_file cpp_output_file input_file_1 input_file_2 ... input_file_n`
     - If you want the compiler to recompile on file changes: `node dist/cli --watch coq_output_file cpp_output_file input_file_1 input_file_2 ... input_file_n`
 
-  - JSON file:  
+  - JSON file:
     `node dist/cli ?json json_file_path`
 
     Here is the schema for the JSON file.
 
     ```typescript
-    type Config =
-      | {
-          type: 'competitive'
-          inputs: string[]
-          coqOutput: string
-          cppOutput: string
-        }
-      | {
-          type: 'blockchain'
-          inputs: string[]
-          coqOutput: string
-          solidityOutput: string
-        }
+    type Config = {
+      type: 'competitive'
+      inputs: string[]
+      coqOutput: string
+      cppOutput: string
+    }
     ```
 
 ## Working on the compiler
 
-To work on the compiler, you will need to have Node.js installed. After that, switch to the `compiler` directory, and run `npm` to install the dependencies.
+To work on the compiler, you will need to have Node.js installed. After that, switch to the `compiler` directory, and run `npm install` to install the dependencies.
 
 Then, you will need to run the `tsc` compiler in watch mode. To do this, run `npx tsc -w -p .`. The `tsc` compiler now monitors all changes to the TypeScript files and produces the corresponding files in the `dist` subdirectory.
 
@@ -194,7 +181,7 @@ You can coerce any boolean or number to a numeric type.
 
 **Booleans:** If you coerce `false`, you get `0`. If you coerce `true`, you get `1`.
 
-The coercion commands are `coerceInt8`, `coerceInt16`, `coerceInt32` and `coerceInt64`. `coerceInt256` is also supported in blockchain mode.
+The coercion commands are `coerceInt8`, `coerceInt16`, `coerceInt32` and `coerceInt64`.
 
 ## Get global array element
 
@@ -211,6 +198,16 @@ store("array_name", /* array index */, [tupleElement1, tupleElement2, /* ... */]
 ```
 
 Array index must be an `int64`.
+
+## Grow a global array
+
+```js
+grow('array_name', minimumLength)
+```
+
+`minimumLength` must be an `int64`. Growth is a statement. If the array is shorter than the requested length, it extends to that length; otherwise it stays the same size. Existing elements are preserved, and new tuple fields are initialized to zero or false. The declared array length is its initial length; an array that may grow can start with length zero.
+
+The compiler analyzes all procedures, including nested branches and loops, and propagates growth through cross-module array mappings. Arrays that may grow, or alias a growing array, use `std::vector` and are passed by reference. Other arrays retain fixed allocation. The generated C++ requires C++20.
 
 ## `if`/`else`
 
@@ -261,8 +258,6 @@ range('Hello, World!', (x) => {
 
 Iterates over all bytes of the UTF-8 representation of the string. `x` is of type `int8`. Each byte might or might not represent a character.
 
-Iteration over a string literal isn't supported in blockchain mode because I'm too lazy to implement it. Attempting to do so will not result in a compiler error but will not generate syntactically valid Solidity code. It's actually not difficult to implement, it's just that I don't have the motivation.
-
 ## Procedure call
 
 ### Within the same module
@@ -295,71 +290,3 @@ call(
 The first two parameters are the module name and the array mapping, respectively. The module name isn't a string, it is written without quotes. The two remaining variables are the procedure name and the preset variables.
 
 **Array mapping:** When calling a procedure in another module, you have to supply the module with all the arrays it declares in its `environment` block. This creates a mapping between the arrays in the external module and the arrays in the current module. When calling a procedure in another module, that external module can't create arrays on its own.
-
-# Blockchain features
-
-These features can only be used if you use blockchain mode.
-
-In blockchain mode, there are two new types: `address` and `int256`.
-
-## `coerceInt256()`
-
-As mentioned earlier, this command only exists in blockchain mode.
-
-## Get sender
-
-```js
-getSender()
-```
-
-This returns an `address`.
-
-## Get money (equivalent to `msg.value` in Solidity)
-
-```js
-getMoney()
-```
-
-This returns an `int256`. It returns the amount of money in wei that is transferred as part of the smart contract call.
-
-## Transfer money
-
-```js
-donate(address, money)
-```
-
-`address` is of type `address`, `money` is of type `int256`. This call transfers `money` wei to the address.
-
-## Invoke smart contract
-
-```js
-invoke(address, money, 'array name', communicationLength)
-```
-
-`address` is of type `address`, `money` is of type `int256`, `'array name'` is a string literal, `communicationLength` is an `int64` indicating the length of the array passed to the called smart contract. It can be less than or equal to the actual length of the array. The called smart contract can freely modify the array passed. This call transfers `money` wei to the callee.
-
-At the EVM level, the array is transferred to the callee as calldata and transferred back to the caller as return data.
-
-## Get communication size
-
-```js
-communicationSize()
-```
-
-Returns an `int64`. This is the size of the array passed to the smart contract in the `invoke()` call.
-
-## Read communication array
-
-```js
-retrieve(index)
-```
-
-`index` is an `int64`. Returns `int8`.
-
-## Modify communication array
-
-```js
-store(index, value)
-```
-
-`index` is an `int64`, `value` is an `int8`. Doesn't return.

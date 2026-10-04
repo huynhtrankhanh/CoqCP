@@ -1,6 +1,11 @@
 {
-  "type": "blockchain",
-  "inputs": ["DisjointSetUnion.js"],
-  "solidityOutput": "../generated-solidity/DisjointSetUnion.sol",
-  "coqOutput": "../generated-coq/DisjointSetUnion.v"
+  "type": "competitive",
+  "inputs": [
+    "DSU.js",
+    "DisjointSetUnion.js",
+    "IO/ReadUnsignedInt64.js",
+    "IO/PrintInt64.js"
+  ],
+  "coqOutput": "../generated-coq/DisjointSetUnion.v",
+  "cppOutput": "../generated-cpp/DisjointSetUnion.cpp"
 }
