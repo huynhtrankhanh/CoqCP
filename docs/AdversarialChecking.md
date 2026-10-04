@@ -65,7 +65,7 @@ contrast, an implementation that simply declares its program or admits its proof
 introduces assumptions, which the policy rejects by default.
 
 For competitive programs, specify successful execution and the complete output
-stream. A statement that only constrains output *if execution succeeds* can let
+stream. A statement that only constrains output _if execution succeeds_ can let
 an always-failing program satisfy the requirement. Keep input bounds and memory
 semantics on the trusted side too.
 
@@ -255,16 +255,16 @@ compiler exits, a separate checker sandbox receives the artifacts read-only.
 
 Default limits are:
 
-| Resource | Default | CLI option |
-|---|---:|---|
-| Wall time per compilation or checking stage | 120 seconds | `--wall-seconds` |
-| CPU time per process | 60 seconds | `--cpu-seconds` |
-| Virtual address space per process | 2048 MiB | `--memory-mib` |
-| Writable work tmpfs | 256 MiB | `--work-mib` |
-| Individual output file and total retained `.vo` bytes | 64 MiB | `--artifact-mib` |
-| Compiler diagnostics / checker output | 1 MiB | `--log-mib` |
-| Open file descriptors per tool process | 128 | fixed |
-| Tasks for the evaluator's OS user per tool process | 256 | fixed `RLIMIT_NPROC` |
+| Resource                                              |     Default | CLI option           |
+| ----------------------------------------------------- | ----------: | -------------------- |
+| Wall time per compilation or checking stage           | 120 seconds | `--wall-seconds`     |
+| CPU time per process                                  |  60 seconds | `--cpu-seconds`      |
+| Virtual address space per process                     |    2048 MiB | `--memory-mib`       |
+| Writable work tmpfs                                   |     256 MiB | `--work-mib`         |
+| Individual output file and total retained `.vo` bytes |      64 MiB | `--artifact-mib`     |
+| Compiler diagnostics / checker output                 |       1 MiB | `--log-mib`          |
+| Open file descriptors per tool process                |         128 | fixed                |
+| Tasks for the evaluator's OS user per tool process    |         256 | fixed `RLIMIT_NPROC` |
 
 The CPU and memory limits are per process, not a cgroup-wide accounting promise.
 The trusted worker compiles sequentially and compiler children cannot fork.
@@ -285,10 +285,10 @@ or eliminate vulnerabilities in the trusted checker.
 
 The examples exercise different interfaces:
 
-| Specification | Submitted example | Guarantee |
-|---|---|---|
-| [Increment.v](../verification/specs/Increment.v) | `verification/examples/increment` | Total successor function; no axioms |
-| [Knapsack.v](../verification/specs/Knapsack.v) | `verification/examples/knapsack` | Optimal value among feasible item sublists; no axioms |
+| Specification                                      | Submitted example                   | Guarantee                                                                                                                           |
+| -------------------------------------------------- | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| [Increment.v](../verification/specs/Increment.v)   | `verification/examples/increment`   | Total successor function; no axioms                                                                                                 |
+| [Knapsack.v](../verification/specs/Knapsack.v)     | `verification/examples/knapsack`    | Optimal value among feasible item sublists; no axioms                                                                               |
 | [KnapsackIO.v](../verification/specs/KnapsackIO.v) | `verification/examples/knapsack-io` | Successful execution and exact decimal output with newline, under the existing arithmetic bounds; functional extensionality allowed |
 
 Run the acceptance and containment regression suite:

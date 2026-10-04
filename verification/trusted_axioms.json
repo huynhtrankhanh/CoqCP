@@ -1,7 +1,5 @@
 {
   "format": 1,
   "coq_version": "8.20.1",
-  "axioms": [
-    "Coq.Logic.FunctionalExtensionality.functional_extensionality_dep"
-  ]
+  "axioms": ["Coq.Logic.FunctionalExtensionality.functional_extensionality_dep"]
 }
