@@ -1,7 +1,9 @@
 {
   "format": 1,
   "rocq_version": "9.3.0",
-  "axioms": ["Stdlib.Logic.FunctionalExtensionality.functional_extensionality_dep"],
+  "axioms": [
+    "Stdlib.Logic.FunctionalExtensionality.functional_extensionality_dep"
+  ],
   "indices_not_mattering": [
     "Corelib.Init.Datatypes.eq_true",
     "Corelib.Init.Logic.eq",
