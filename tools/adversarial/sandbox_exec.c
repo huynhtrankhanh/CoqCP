@@ -31,7 +31,8 @@ int main(int argc, char **argv) {
     "fork", "vfork", "socket", "socketpair", "connect", "bind", "listen",
     "accept", "accept4", "mount", "umount2", "pivot_root", "chroot",
     "unshare", "setns", "ptrace", "process_vm_readv", "process_vm_writev",
-    "pidfd_getfd", "pidfd_send_signal", "kill", "tkill", "tgkill",
+    "pidfd_getfd", "pidfd_send_signal", "pidfd_open", "kill", "tkill", "tgkill",
+    "rt_sigqueueinfo", "rt_tgsigqueueinfo", "process_madvise", "process_mrelease",
     "bpf", "perf_event_open", "userfaultfd", "io_uring_setup",
     "io_uring_enter", "io_uring_register", "keyctl", "add_key", "request_key",
     "reboot", "kexec_load", "kexec_file_load", "init_module", "finit_module",
@@ -49,6 +50,10 @@ int main(int argc, char **argv) {
       seccomp_rule_add(filter, SCMP_ACT_ERRNO(ENOSYS), clone3_call, 0)) die("clone3 rule");
   if (seccomp_rule_add(filter, SCMP_ACT_ERRNO(EPERM), SCMP_SYS(clone), 1,
       SCMP_A0(SCMP_CMP_MASKED_EQ, CLONE_THREAD, 0))) die("clone rule");
+  /* A child must not change its supervisor's limits. glibc uses pid=0
+     when implementing getrlimit/setrlimit for the current process. */
+  if (seccomp_rule_add(filter, SCMP_ACT_ERRNO(EPERM), SCMP_SYS(prlimit64), 1,
+      SCMP_A0(SCMP_CMP_NE, 0))) die("prlimit rule");
   if (seccomp_load(filter)) die("seccomp_load");
   seccomp_release(filter);
   execvp(argv[4], argv + 4);

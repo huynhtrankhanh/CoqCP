@@ -32,7 +32,8 @@ def main():
         raise RuntimeError("rocq dep returned an unexpected build order")
     for source in order:
         output = "/work/" + Path(source).with_suffix(".vo").name
-        subprocess.run(prefix + [config["rocq"], "compile", "-q", "-native-compiler", "no",
+        subprocess.run(prefix + ["/tool/compile-safe", "-coqlib", config["coqlib"],
+                                 "-q", "-native-compiler", "no",
                                  "-async-proofs", "off", *flags, "-o", output, source],
                        stdout=sys.stderr, stderr=sys.stderr, check=True)
     artifacts = {}

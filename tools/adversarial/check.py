@@ -24,6 +24,8 @@ TOOLS = Path(__file__).resolve().parent
 BIN = REPO / ".verification/bin"
 VERSION = "9.3.0"
 TOOLCHAIN = Path("/opt/rocq") / VERSION
+PLUGIN_POLICY = REPO / "verification/compiler_plugins.json"
+BINARIES = ["spec-check", "sandbox-exec", "compile-safe"]
 NAME = re.compile(r"[A-Za-z][A-Za-z0-9_]*\.v\Z")
 DEFAULT_LIMITS = dict(wall_seconds=120, cpu_seconds=60, memory_mib=2048,
                       work_mib=256, artifact_mib=64, log_mib=1)
@@ -87,19 +89,43 @@ def build():
         subprocess.run([command("gcc"), "-std=c11", "-Wall", "-Wextra", "-Werror", "-O2",
                         str(TOOLS / "sandbox_exec.c"), "-lseccomp", "-o",
                         str(work / "sandbox-exec")], check=True)
-        for name in ["spec-check", "sandbox-exec"]:
+        shutil.copyfile(TOOLS / "compile_safe.ml", work / "compile_safe.ml")
+        shutil.copyfile(TOOLS / "compile_lockdown.c", work / "compile_lockdown.c")
+        plugins = compiler_plugins()
+        subprocess.run([command("ocamlfind"), "ocamlopt", "-c", "compile_lockdown.c",
+                        "-ccopt", "-Wall -Wextra -Werror"],
+                       cwd=work, env=build_env, check=True)
+        subprocess.run([command("ocamlfind"), "ocamlopt", "-rectypes", "-thread", "-linkall",
+                        "-linkpkg", "-package", ",".join(["rocq-runtime.toplevel", *plugins]),
+                        "-o", str(work / "compile-safe"), "compile_lockdown.o", "compile_safe.ml",
+                        "-cclib", "-lseccomp"], cwd=work, env=build_env, check=True)
+        for name in BINARIES:
             os.replace(work / name, BIN / name)
     (BIN / "sources.json").write_bytes(encoded(build_fingerprints()))
 
 
 def build_fingerprints():
-    return dict({name: digest(TOOLS / name) for name in ["spec_check.ml", "sandbox_exec.c"]},
-                trusted_axioms=digest(POLICY_FILE))
+    return dict({name: digest(TOOLS / name) for name in
+                 ["spec_check.ml", "sandbox_exec.c", "compile_safe.ml", "compile_lockdown.c"]},
+                trusted_axioms=digest(POLICY_FILE), compiler_plugins=digest(PLUGIN_POLICY))
+
+
+def compiler_plugins():
+    policy = json.loads(PLUGIN_POLICY.read_bytes())
+    plugins = policy.get("plugins")
+    if (set(policy) != {"format", "rocq_version", "plugins"}
+            or policy["format"] != 1 or policy["rocq_version"] != VERSION
+            or not isinstance(plugins, list) or not plugins
+            or any(not isinstance(name, str)
+                   or not re.fullmatch(r"rocq-runtime\.plugins\.[a-z][a-z0-9_]*", name)
+                   for name in plugins) or len(set(plugins)) != len(plugins)):
+        raise Rejected("Invalid evaluator-owned compiler plugin policy")
+    return plugins
 
 
 def ensure_built():
     expected = build_fingerprints()
-    if not all((BIN / name).is_file() for name in ["spec-check", "sandbox-exec", "sources.json"]):
+    if not all((BIN / name).is_file() for name in [*BINARIES, "sources.json"]):
         build()
     elif json.loads((BIN / "sources.json").read_bytes()) != expected:
         build()
@@ -119,8 +145,9 @@ def toolchain():
                      env=probe_env).decode().strip()).resolve()
     if not coqlib.is_relative_to(TOOLCHAIN / "lib"):
         raise Rejected("Rocq libraries must belong to the pinned toolchain")
-    files = [Path(rocq), BIN / "spec-check", BIN / "sandbox-exec",
-             TOOLS / "worker.py", TOOLS / "check.py", TOOLS / "ci_policy.py", POLICY_FILE]
+    files = [Path(rocq), *(BIN / name for name in BINARIES),
+             TOOLS / "worker.py", TOOLS / "check.py", TOOLS / "ci_policy.py", POLICY_FILE,
+             PLUGIN_POLICY]
     # Rocq 9.3 installs package libraries in rocq.d as well as legacy coqlib
     # mirrors. Fingerprint both representations and their findlib metadata.
     files += sorted((TOOLCHAIN / "lib").rglob("*.vo"))
@@ -166,7 +193,7 @@ class Sandbox:
         args += ["--proc", "/proc", "--dev", "/dev", "--size", str(16 * 1024**2),
                  "--tmpfs", "/tmp", "--size", str(limits["work_mib"] * 1024**2),
                  "--tmpfs", "/work", "--dir", "/tool"]
-        for name in ["spec-check", "sandbox-exec"]:
+        for name in BINARIES:
             args += ["--ro-bind", str(BIN / name), "/tool/" + name]
         args += ["--ro-bind", str(TOOLS / "worker.py"), "/tool/worker.py"]
         for host, target in mounts:
@@ -229,7 +256,7 @@ def library_roots(bundle):
 
 def compile_sources(inputs, sources, namespace, bundle, runtime, sandbox):
     config = dict(sandbox.limits, sources=sources, namespace=namespace,
-                  rocq=runtime["rocq"], roots=library_roots(bundle))
+                  rocq=runtime["rocq"], coqlib=runtime["coqlib"], roots=library_roots(bundle))
     if namespace == "Submission":
         config["roots"].append(["/bundle/spec", "Trusted"])
     (inputs / "build.json").write_bytes(encoded(config))
