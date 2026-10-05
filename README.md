@@ -22,6 +22,7 @@ Documentation:
 
 - [Internal imperative language](docs/InternalImperativeLanguage.md)
 - [Proof coverage and verification commands](docs/ProofCoverage.md)
+- [End-to-end execution and interactive protocol contracts](docs/EndToEndVerification.md)
 - [Adversarial checking of AI-generated programs and proofs](docs/AdversarialChecking.md)
 
 <hr>
@@ -31,6 +32,7 @@ Documentation:
 - [Repeat and compare](docs/RepeatCompare.md)
 - [Disjoint set union](docs/DisjointSetUnion.md)
 - [CSES 3305: K-th Highest Score](CSES/3305/README.md)
+- [CSES 3228: Permuted Binary Strings](CSES/3228/README.md)
 
 Tasks:
 

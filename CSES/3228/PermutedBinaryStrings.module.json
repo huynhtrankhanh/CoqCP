@@ -1,0 +1,10 @@
+{
+  "type": "competitive",
+  "inputs": [
+    "PermutedBinaryStrings.js",
+    "../../programs/IO/ReadUnsignedInt64.js",
+    "../../programs/IO/PrintInt64.js"
+  ],
+  "cppOutput": "../../generated-cpp/PermutedBinaryStrings.cpp",
+  "coqOutput": "../../generated-coq/PermutedBinaryStrings.v"
+}

@@ -77,7 +77,12 @@ introduces assumptions, which the policy rejects by default.
 For competitive programs, specify successful execution and the complete output
 stream. A statement that only constrains output _if execution succeeds_ can let
 an always-failing program satisfy the requirement. Keep input bounds and memory
-semantics on the trusted side too.
+semantics on the trusted side too. For interactive programs, require the exact
+flush snapshots as well.
+[PermutedBinaryStringsIO.v](../verification/specs/PermutedBinaryStringsIO.v)
+binds the program to the generated entry point and requires successful full
+execution with all query/reply boundaries; see
+[End-to-end verification](EndToEndVerification.md).
 
 ## Freeze the evaluator's specification
 
@@ -310,6 +315,7 @@ The examples exercise different interfaces:
 | [Increment.v](../verification/specs/Increment.v)   | `verification/examples/increment`   | Total successor function; no axioms                                                                                                 |
 | [Knapsack.v](../verification/specs/Knapsack.v)     | `verification/examples/knapsack`    | Optimal value among feasible item sublists; no axioms                                                                               |
 | [KnapsackIO.v](../verification/specs/KnapsackIO.v) | `verification/examples/knapsack-io` | Successful execution and exact decimal output with newline, under the existing arithmetic bounds; functional extensionality allowed |
+| [PermutedBinaryStringsIO.v](../verification/specs/PermutedBinaryStringsIO.v) | `verification/examples/permuted-binary-strings-io` | Generated entry point, successful complete execution, exact bytes and all query/final flush snapshots; functional extensionality allowed |
 
 Run the acceptance and containment regression suite:
 
@@ -326,7 +332,7 @@ python3 tools/adversarial/examples.py --output .verification/example-results
 The suite covers valid and alternate programs, helper dependency ordering,
 notation and namespace deception, extra premises, missing fields, abstract and
 functor implementations, the shared CI axiom policy, arbitrary policy rejection,
-admitted and unused axioms,
+admitted and unused axioms, weaker decoder and unobserved execution certificates,
 unsafe definitions inside unused functors, corrupted libraries, bundle and
 manifest tampering, symlinks, precompiled submissions, and sandbox filesystem,
 network, fork, timeout, CPU, memory, output, and disk limits. Missing sandbox

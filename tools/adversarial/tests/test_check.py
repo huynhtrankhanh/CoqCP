@@ -413,5 +413,71 @@ else:
                 gate.Sandbox(self.limits)
 
 
+class InteractiveContractTests(unittest.TestCase):
+    """A decoder theorem or unobserved I/O theorem is not a full certificate."""
+
+    @classmethod
+    def setUpClass(cls):
+        gate.ensure_built()
+        cls.temporary = tempfile.TemporaryDirectory(prefix="coqcp-interactive-contract-")
+        cls.root = Path(cls.temporary.name)
+        cls.runtime = gate.toolchain()
+        cls.sandbox = gate.Sandbox(dict(gate.DEFAULT_LIMITS))
+        cls.bundle = cls.root / "bundle"
+        cls.spec_id = gate.prepare(
+            gate.REPO / "verification/specs/PermutedBinaryStringsIO.v",
+            cls.bundle, cls.runtime, cls.sandbox, gate.trusted_axioms())
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.temporary.cleanup()
+
+    def evaluate(self, source):
+        with tempfile.TemporaryDirectory(dir=self.root) as temporary:
+            root = Path(temporary)
+            submission = root / "submission"
+            submission.mkdir()
+            (submission / "Candidate.v").write_text(source)
+            return gate.evaluate(self.bundle, self.spec_id, submission, root / "result",
+                                 self.runtime, self.sandbox)
+
+    def test_full_generated_certificate(self):
+        source = (gate.REPO / "verification/examples/permuted-binary-strings-io/Candidate.v").read_text()
+        report = self.evaluate(source)
+        self.assertEqual(report["status"], "accepted", report)
+        self.assertEqual(report["axioms"], gate.trusted_axioms())
+
+    def test_decoder_certificate_is_insufficient(self):
+        report = self.evaluate(r"""From CoqCP Require Import Options PermutedBinaryStrings
+  PermutedBinaryStringsProtocol.
+Require Trusted.Spec.
+Module Implementation.
+  Definition program : Trusted.Spec.Program := CoqCP.PermutedBinaryStringsProtocol.program.
+  Lemma correct : forall n a, valid n a -> solve a = a.
+  Proof. intros n a h. exact (proj1 (solve_correct n a h)). Qed.
+End Implementation.
+""")
+        self.assertEqual(report["status"], "rejected", report)
+        self.assertIn("Signature mismatch", report["reason"])
+
+    def test_unobserved_execution_is_insufficient(self):
+        report = self.evaluate(r"""From CoqCP Require Import Options Execution InteractiveExecution
+  PermutedBinaryStrings PermutedBinaryStringsProtocol PermutedBinaryStringsEndToEnd.
+From Generated Require Import PermutedBinaryStrings.
+From stdpp Require Import numbers list.
+Require Trusted.Spec.
+Module Implementation.
+  Definition program : Trusted.Spec.Program := CoqCP.PermutedBinaryStringsProtocol.program.
+  Lemma correct : forall n a, valid n a -> exists final,
+    exec program (initial a) = Some (tt, final) /\
+    stdout final = outputBytes a /\ stdin final = nil.
+  Proof. intros n a h. exact (endToEnd_erases program (initial a) (outputBytes a)
+    (flushes a) (generated_end_to_end n a h)). Qed.
+End Implementation.
+""")
+        self.assertEqual(report["status"], "rejected", report)
+        self.assertIn("Signature mismatch", report["reason"])
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -21,6 +21,26 @@ inputs. This C++ runtime change does not change generated Coq actions. Compiler
 regressions exercise short responses with open stdin, multiple buffer refills,
 all byte values, and the EOF sentinel on files and pipes.
 
+`theories/PermutedBinaryStringsEndToEnd.v` proves `generated_end_to_end`
+for the actual generated CSES 3228 entry point, starting with its generated
+initial arrays. It covers decimal input, binary response input, all ten rounds,
+array bounds and unsigned arithmetic, decimal answer formatting, successful
+termination, exact output, full consumption of the specified input, and all
+11 flush boundaries. At each query flush, the query's reply is still unread.
+The formal input contract uses truthful replies with LF separators. The proof
+uses functional extensionality; there are no admitted obligations.
+`PermutedBinaryStrings.v` and `PermutedBinaryStringsCode.v` supply the mathematical
+reconstruction and generated bit-procedure proofs, which have no axioms.
+The emitted C++ is also checked by a pipe-based interactive grader, including
+CRLF and fragmented replies. See the [solution](../CSES/3228/README.md).
+
+`theories/InteractiveExecution.v` provides the reusable observed interpreter and
+`endToEnd` contract. It preserves ordinary execution while recording output and
+unread input at every flush. The evaluator-owned
+`verification/specs/PermutedBinaryStringsIO.v` requires this complete contract
+and binds it to the generated entry point. See the
+[framework fix and proof requirements](EndToEndVerification.md).
+
 The other generated examples have compile-and-run checks. The TypeScript parser, validation, growth analysis, and C++ emitter are tested; they are not themselves formally verified compiler passes. The proofs establish properties of generated Coq actions. They do not prove equivalence of arbitrary emitted C++ programs to those actions or model C++ allocation failure.
 
 To check the compiler and regenerate examples:

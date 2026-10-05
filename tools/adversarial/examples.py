@@ -20,6 +20,7 @@ def main():
         ("Increment", "increment", []),
         ("Knapsack", "knapsack", []),
         ("KnapsackIO", "knapsack-io", check.trusted_axioms()),
+        ("PermutedBinaryStringsIO", "permuted-binary-strings-io", check.trusted_axioms()),
     ]:
         bundle = args.output / example / "bundle"
         spec_id = check.prepare(check.REPO / "verification/specs" / (spec + ".v"),

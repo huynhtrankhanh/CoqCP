@@ -58,3 +58,14 @@ theories/KthHighestScore.v
 generated-coq/KthHighestScore.v
 
 theories/KthHighestScoreCode.v
+
+theories/PermutedBinaryStrings.v
+generated-coq/PermutedBinaryStrings.v
+theories/PermutedBinaryStringsCode.v
+theories/InteractiveExecution.v
+theories/PermutedBinaryStringsIO.v
+theories/PermutedBinaryStringsPrinter.v
+theories/PermutedBinaryStringsProgram.v
+theories/PermutedBinaryStringsObservations.v
+theories/PermutedBinaryStringsProtocol.v
+theories/PermutedBinaryStringsEndToEnd.v
