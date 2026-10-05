@@ -310,11 +310,11 @@ or eliminate vulnerabilities in the trusted checker.
 
 The examples exercise different interfaces:
 
-| Specification                                      | Submitted example                   | Guarantee                                                                                                                           |
-| -------------------------------------------------- | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| [Increment.v](../verification/specs/Increment.v)   | `verification/examples/increment`   | Total successor function; no axioms                                                                                                 |
-| [Knapsack.v](../verification/specs/Knapsack.v)     | `verification/examples/knapsack`    | Optimal value among feasible item sublists; no axioms                                                                               |
-| [KnapsackIO.v](../verification/specs/KnapsackIO.v) | `verification/examples/knapsack-io` | Successful execution and exact decimal output with newline, under the existing arithmetic bounds; functional extensionality allowed |
+| Specification                                                                | Submitted example                                  | Guarantee                                                                                                                                |
+| ---------------------------------------------------------------------------- | -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| [Increment.v](../verification/specs/Increment.v)                             | `verification/examples/increment`                  | Total successor function; no axioms                                                                                                      |
+| [Knapsack.v](../verification/specs/Knapsack.v)                               | `verification/examples/knapsack`                   | Optimal value among feasible item sublists; no axioms                                                                                    |
+| [KnapsackIO.v](../verification/specs/KnapsackIO.v)                           | `verification/examples/knapsack-io`                | Successful execution and exact decimal output with newline, under the existing arithmetic bounds; functional extensionality allowed      |
 | [PermutedBinaryStringsIO.v](../verification/specs/PermutedBinaryStringsIO.v) | `verification/examples/permuted-binary-strings-io` | Generated entry point, successful complete execution, exact bytes and all query/final flush snapshots; functional extensionality allowed |
 
 Run the acceptance and containment regression suite:
