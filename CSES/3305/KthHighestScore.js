@@ -14,7 +14,9 @@ procedure('query', { country: int8, index: int64, n: int64 }, () => {
     } else {
       writeChar(get('country'))
       writeChar(coerceInt8(32))
-      call(PrintInt64, { buffer: 'printBuffer' }, 'unsigned', { num: get('index') })
+      call(PrintInt64, { buffer: 'printBuffer' }, 'unsigned', {
+        num: get('index'),
+      })
       writeChar(coerceInt8(10))
       ;('flush')
       call(ReadUnsignedInt64, { resultArray: 'input' }, '', {})
@@ -22,47 +24,70 @@ procedure('query', { country: int8, index: int64, n: int64 }, () => {
     }
   }
 })
-procedure('main', {
-  n: int64, k: int64, lo: int64, hi: int64,
-  mid: int64, j: int64, f: int64, s: int64, answer: int64,
-}, () => {
-  call(ReadUnsignedInt64, { resultArray: 'input' }, '', {})
-  set('n', retrieve('input', 0)[0])
-  call(ReadUnsignedInt64, { resultArray: 'input' }, '', {})
-  set('k', retrieve('input', 0)[0])
-  if (less(get('n'), get('k'))) {
-    set('lo', get('k') - get('n'))
-  }
-  set('hi', get('k'))
-  if (less(get('n'), get('hi'))) {
-    set('hi', get('n'))
-  }
-  range(17, (round) => {
-    if (get('lo') == get('hi')) {
-      ;('break')
+procedure(
+  'main',
+  {
+    n: int64,
+    k: int64,
+    lo: int64,
+    hi: int64,
+    mid: int64,
+    j: int64,
+    f: int64,
+    s: int64,
+    answer: int64,
+  },
+  () => {
+    call(ReadUnsignedInt64, { resultArray: 'input' }, '', {})
+    set('n', retrieve('input', 0)[0])
+    call(ReadUnsignedInt64, { resultArray: 'input' }, '', {})
+    set('k', retrieve('input', 0)[0])
+    if (less(get('n'), get('k'))) {
+      set('lo', get('k') - get('n'))
     }
-    set('mid', divide(get('lo') + get('hi'), 2))
-    set('j', get('k') - get('mid'))
-    call('query', { country: coerceInt8(70), index: get('mid') + 1, n: get('n') })
+    set('hi', get('k'))
+    if (less(get('n'), get('hi'))) {
+      set('hi', get('n'))
+    }
+    range(17, (round) => {
+      if (get('lo') == get('hi')) {
+        ;('break')
+      }
+      set('mid', divide(get('lo') + get('hi'), 2))
+      set('j', get('k') - get('mid'))
+      call('query', {
+        country: coerceInt8(70),
+        index: get('mid') + 1,
+        n: get('n'),
+      })
+      set('f', retrieve('reply', 0)[0])
+      call('query', { country: coerceInt8(83), index: get('j'), n: get('n') })
+      set('s', retrieve('reply', 0)[0])
+      if (less(get('f'), get('s'))) {
+        set('hi', get('mid'))
+      } else {
+        set('lo', get('mid') + 1)
+      }
+    })
+    call('query', { country: coerceInt8(70), index: get('lo'), n: get('n') })
     set('f', retrieve('reply', 0)[0])
-    call('query', { country: coerceInt8(83), index: get('j'), n: get('n') })
+    call('query', {
+      country: coerceInt8(83),
+      index: get('k') - get('lo'),
+      n: get('n'),
+    })
     set('s', retrieve('reply', 0)[0])
-    if (less(get('f'), get('s'))) {
-      set('hi', get('mid'))
-    } else {
-      set('lo', get('mid') + 1)
+    set('answer', get('f'))
+    if (less(get('s'), get('answer'))) {
+      set('answer', get('s'))
     }
-  })
-  call('query', { country: coerceInt8(70), index: get('lo'), n: get('n') })
-  set('f', retrieve('reply', 0)[0])
-  call('query', { country: coerceInt8(83), index: get('k') - get('lo'), n: get('n') })
-  set('s', retrieve('reply', 0)[0])
-  set('answer', get('f'))
-  if (less(get('s'), get('answer'))) {
-    set('answer', get('s'))
+    range('! ', (c) => {
+      writeChar(c)
+    })
+    call(PrintInt64, { buffer: 'printBuffer' }, 'unsigned', {
+      num: get('answer'),
+    })
+    writeChar(coerceInt8(10))
+    ;('flush')
   }
-  range('! ', (c) => { writeChar(c) })
-  call(PrintInt64, { buffer: 'printBuffer' }, 'unsigned', { num: get('answer') })
-  writeChar(coerceInt8(10))
-  ;('flush')
-})
+)

@@ -24,9 +24,17 @@ it('reads a short interactive response while stdin stays open', async () => {
     child = spawn(binary, [], { stdio: ['pipe', 'pipe', 'pipe'] })
     const output = await new Promise((resolve, reject) => {
       let text = ''
-      const timer = setTimeout(() => reject(new Error('Reader blocked with stdin open')), 2000)
-      child.on('error', (error) => { clearTimeout(timer); reject(error) })
-      child.stdout.on('data', (bytes) => { text += bytes.toString() })
+      const timer = setTimeout(
+        () => reject(new Error('Reader blocked with stdin open')),
+        2000
+      )
+      child.on('error', (error) => {
+        clearTimeout(timer)
+        reject(error)
+      })
+      child.stdout.on('data', (bytes) => {
+        text += bytes.toString()
+      })
       child.on('close', (code) => {
         clearTimeout(timer)
         if (code === 0) resolve(text)
@@ -67,7 +75,10 @@ it('preserves bytes across buffer refills and returns the EOF sentinel', () => {
     fs.writeFileSync(inputFile, input)
     const fd = fs.openSync(inputFile, 'r')
     try {
-      const fromFile = spawnSync(binary, [], { stdio: [fd, 'pipe', 'pipe'], timeout: 2000 })
+      const fromFile = spawnSync(binary, [], {
+        stdio: [fd, 'pipe', 'pipe'],
+        timeout: 2000,
+      })
       expect(fromFile.status).toBe(0)
       expect(fromFile.stdout.equals(expected)).toBe(true)
     } finally {

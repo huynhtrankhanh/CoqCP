@@ -1,6 +1,10 @@
 {
   "type": "competitive",
-  "inputs": ["KthHighestScore.js", "../../programs/IO/ReadUnsignedInt64.js", "../../programs/IO/PrintInt64.js"],
+  "inputs": [
+    "KthHighestScore.js",
+    "../../programs/IO/ReadUnsignedInt64.js",
+    "../../programs/IO/PrintInt64.js"
+  ],
   "cppOutput": "../../generated-cpp/KthHighestScore.cpp",
   "coqOutput": "../../generated-coq/KthHighestScore.v"
 }
