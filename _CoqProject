@@ -52,3 +52,9 @@ generated-coq/FenwickTree.v
 -R programs/llmGeneratedCode/ GeneratedExamples
 programs/llmGeneratedCode/BubbleSort.v
 programs/llmGeneratedCode/MaxElement.v
+
+theories/KthHighestScore.v
+
+generated-coq/KthHighestScore.v
+
+theories/KthHighestScoreCode.v

@@ -30,6 +30,7 @@ Documentation:
 - [Selection sort](docs/SelectionSort.md)
 - [Repeat and compare](docs/RepeatCompare.md)
 - [Disjoint set union](docs/DisjointSetUnion.md)
+- [CSES 3305: K-th Highest Score](CSES/3305/README.md)
 
 Tasks:
 

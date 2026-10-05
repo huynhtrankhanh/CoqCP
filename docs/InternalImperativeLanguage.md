@@ -36,6 +36,14 @@ Then, you will need to run the `tsc` compiler in watch mode. To do this, run `np
 
 ## Language introduction
 
+Generated C++ uses the same FastIO reader for batch and interactive programs.
+It buffers up to 64 KiB, refilling with a POSIX `read` call and retrying `EINTR`.
+A refill accepts short reads, so the grader can keep its input pipe open while
+sending a single response. The public `readChar()` behavior and generated Coq
+`ReadChar` effects stay unchanged. See the [Linux `read` documentation](https://man7.org/linux/man-pages/man2/read.2.html).
+For interactive programs, output a newline and execute `;('flush')` after each
+query and final answer. The generated C++ runtime requires a POSIX system.
+
 The internal imperative language steals JavaScript syntax and interprets the parsed AST differently. As JavaScript syntax is stolen, the internal language is subject to every single JavaScript syntactic rule, including automatic semicolon insertion.
 
 The documentation for this language isn't very precise. I hope you can fill in the gaps by reading the generated Coq and C++ code.

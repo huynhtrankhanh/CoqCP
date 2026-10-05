@@ -6,6 +6,21 @@
 
 `theories/DisjointSetUnionCode.v` and `DisjointSetUnionCode2.v` preserve the ancestor, path-compression, and union proofs. `competitiveMergeRefinesModel` proves that the generated library's merge operation refines the mathematical DSU state. `DisjointSetUnionCode3.v` proves the cumulative merge-score bound. The competitive DSU input/output frontend has executable checks, but no end-to-end theorem.
 
+`theories/KthHighestScore.v` proves the CSES 3305 algorithm's answer rank,
+valid query indices, and a maximum of 36 queries. Its `solve_correct` theorem
+has no axioms. `theories/KthHighestScoreCode.v` proves that the search loop
+extracted from the generated Coq main body refines that algorithm when its
+query procedure is replaced by a truthful score oracle; this includes
+64-bit arithmetic and loop control. That refinement uses functional
+extensionality. Decimal I/O and the emitted C++ are tested with a pipe-based
+interactive grader, rather than covered by an end-to-end proof. See the
+[solution and verification commands](../CSES/3305/README.md).
+
+The shared FastIO template buffers POSIX `read` calls for batch and interactive
+inputs. This C++ runtime change does not change generated Coq actions. Compiler
+regressions exercise short responses with open stdin, multiple buffer refills,
+all byte values, and the EOF sentinel on files and pipes.
+
 The other generated examples have compile-and-run checks. The TypeScript parser, validation, growth analysis, and C++ emitter are tested; they are not themselves formally verified compiler passes. The proofs establish properties of generated Coq actions. They do not prove equivalence of arbitrary emitted C++ programs to those actions or model C++ allocation failure.
 
 To check the compiler and regenerate examples:

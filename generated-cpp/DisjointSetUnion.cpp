@@ -2,26 +2,32 @@
 #include <tuple>
 #include <cstdlib>
 #include <cstdint>
+#include <unistd.h>
+#include <cerrno>
 using std::get;
 /**
  * Author: chilli
  * License: CC0
  * Source: Own work
- * Description: Read an integer from stdin. Usage requires your program to pipe in
- * input from file.
+ * Description: Buffered character input for batch and interactive programs.
+ * Refill uses a short POSIX read, retrying interruptions.
  * Usage: ./a.out < input.txt
  * Time: About 5x as fast as cin/scanf.
  * Status: tested on SPOJ INTEST, unit tested
  */
 
-inline uint64_t readChar() { // like getchar()
+inline uint64_t readChar() { // buffered for both files and interactive pipes
   static unsigned char buf[1 << 16];
   static size_t bc, be;
   if (bc >= be) {
-    buf[0] = 0, bc = 0;
-    be = fread(buf, 1, sizeof(buf), stdin);
+    ssize_t count;
+    do {
+      count = ::read(STDIN_FILENO, buf, sizeof(buf));
+    } while (count < 0 && errno == EINTR);
+    if (count <= 0) return uint64_t(-1);
+    bc = 0;
+    be = static_cast<size_t>(count);
   }
-  if (bc >= be) return -1;
   return buf[bc++]; // returns -1 on EOF
 }
 
