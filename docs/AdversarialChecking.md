@@ -36,10 +36,16 @@ Use a regular, non-root OS user for preparation and submission checking. Root
 bypasses Linux's process-count resource limit, so the runner rejects root.
 Installation can use `sudo`. No privileges are requested by the checker.
 
-Bubblewrap must support user, mount, PID, network, IPC, and UTS namespaces, and
-seccomp must be available. A host policy that prevents namespace creation causes
-the job to fail. An administrator must configure a suitable worker host; the
-checker never disables host protections automatically. This profile expects
+Bubblewrap must support user, mount, PID, IPC, and UTS namespaces, and seccomp
+must be available. Network namespaces are used by default. When an enclosing
+sandbox prevents creating a network namespace, explicitly pass
+`--network-isolation seccomp` to both `prepare` and `check`. This mode retains
+the enclosing network namespace and installs a filter through Bubblewrap
+before the worker starts. It denies socket creation and network operations
+in the worker and every child. Compiler and kernel processes also retain
+their existing seccomp restrictions. Filter installation failures reject the
+job; there is no unsandboxed fallback. Other namespace failures still cause
+the job to fail. The checker never disables host protections. This profile expects
 system tools under `/usr` and the dedicated Rocq toolchain under
 `/opt/rocq/9.3.0`, rather than a snap, an opam switch in a home directory,
 macOS, or Windows. Only installed runtime directories from that switch are
@@ -258,7 +264,9 @@ gate process.
 
 Both compilation and independent checking run with:
 
-- separate user, PID, mount, network, IPC, and UTS namespaces;
+- separate user, PID, mount, IPC, and UTS namespaces;
+- a separate network namespace by default, or an inherited network-syscall
+  filter installed before the worker starts in explicit seccomp mode;
 - all capabilities dropped, no new privileges, and further user namespaces
   disabled;
 - a cleared environment, isolated temporary home, and no Rocq startup script;

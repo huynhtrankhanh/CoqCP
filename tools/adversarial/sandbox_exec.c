@@ -7,6 +7,7 @@
 #include <seccomp.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/prctl.h>
 #include <sys/resource.h>
 #include <unistd.h>
@@ -17,6 +18,25 @@ static void limit(int which, rlim_t value) {
   if (setrlimit(which, &setting)) die("setrlimit");
 }
 int main(int argc, char **argv) {
+  /* Bubblewrap can install this filter before starting the trusted worker.
+     It remains inherited by every compiler child, including the worker mode
+     that must retain fork/exec to supervise those children. */
+  if (argc == 2 && !strcmp(argv[1], "--export-network-filter")) {
+    scmp_filter_ctx filter = seccomp_init(SCMP_ACT_ALLOW);
+    if (!filter) die("seccomp_init");
+    const char *network[] = {"socket", "socketpair", "socketcall", "connect",
+      "bind", "listen", "accept", "accept4", "sendto", "sendmsg", "sendmmsg",
+      "recvfrom", "recvmsg", "recvmmsg"};
+    for (size_t i = 0; i < sizeof(network)/sizeof(network[0]); i++) {
+      int syscall = seccomp_syscall_resolve_name(network[i]);
+      if (syscall != __NR_SCMP_ERROR &&
+          seccomp_rule_add(filter, SCMP_ACT_ERRNO(EPERM), syscall, 0))
+        die("network seccomp rule");
+    }
+    if (seccomp_export_bpf(filter, STDOUT_FILENO)) die("seccomp_export_bpf");
+    seccomp_release(filter);
+    return 0;
+  }
   if (argc < 5) { fputs("sandbox-exec CPU MEMORY_MIB FILE_MIB COMMAND...\n", stderr); return 125; }
   limit(RLIMIT_CPU, strtoul(argv[1], NULL, 10));
   limit(RLIMIT_AS, (rlim_t)strtoul(argv[2], NULL, 10) * 1024 * 1024);

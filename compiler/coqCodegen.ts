@@ -621,7 +621,7 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                   finalExpression = 'fst (' + finalExpression + ')'
                 if (index > 0) finalExpression = `(snd (${finalExpression}))`
                 return {
-                  expression: `(${expression} >>= (fun element_tuple => Done _ _ _ ${finalExpression}))`,
+                  expression: `(${expression} >>= (fun element_tuple => Done _ _ _ (${finalExpression})))`,
                   type: type[index],
                 }
               }

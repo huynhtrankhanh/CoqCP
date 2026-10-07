@@ -165,11 +165,14 @@ def toolchain():
 
 
 class Sandbox:
-    def __init__(self, limits):
+    def __init__(self, limits, network_isolation="namespace"):
         if os.getuid() == 0 or os.geteuid() == 0:
             raise Rejected("Run proof checking as a non-root OS user; root bypasses process-count limits")
         self.limits = limits
         self.bwrap = command("bwrap")
+        if network_isolation not in ("namespace", "seccomp"):
+            raise Rejected("Unknown network isolation mode")
+        self.network_isolation = network_isolation
 
     def run(self, argv, mounts, *, compiler_worker=False):
         limits = self.limits
@@ -198,6 +201,13 @@ class Sandbox:
         args += ["--ro-bind", str(TOOLS / "worker.py"), "/tool/worker.py"]
         for host, target in mounts:
             args += ["--ro-bind", str(host), target]
+        network_filter = None
+        if self.network_isolation == "seccomp":
+            network_filter = tempfile.TemporaryFile()
+            subprocess.run([str(BIN / "sandbox-exec"), "--export-network-filter"],
+                           stdout=network_filter, check=True)
+            network_filter.seek(0)
+            args += ["--share-net", "--seccomp", str(network_filter.fileno())]
         args += ["--chdir", "/work", "--remount-ro", "/", "--"]
         if not compiler_worker:
             args += ["/tool/sandbox-exec", str(limits["cpu_seconds"]),
@@ -212,9 +222,14 @@ class Sandbox:
             resource.setrlimit(resource.RLIMIT_FSIZE,
                                (limits["artifact_mib"] * 1024**2,) * 2)
 
-        process = subprocess.Popen(args, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE, start_new_session=True,
-                                   close_fds=True, preexec_fn=set_limits, env={})
+        try:
+            process = subprocess.Popen(args, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
+                                       stderr=subprocess.PIPE, start_new_session=True,
+                                       close_fds=True, preexec_fn=set_limits, env={},
+                                       pass_fds=(() if network_filter is None else (network_filter.fileno(),)))
+        finally:
+            if network_filter is not None:
+                network_filter.close()
         output, errors = bytearray(), bytearray()
         capacity = ((limits["artifact_mib"] * 1024**2 * 4 // 3 + 65536)
                     if compiler_worker else limits["log_mib"] * 1024**2)
@@ -383,6 +398,7 @@ def evaluate(bundle, spec_id, submission, output, runtime, sandbox):
     output.parent.mkdir(parents=True, exist_ok=True)
     output.mkdir(mode=0o700)
     report = dict(status="rejected", spec_id=spec_id, sandbox="bubblewrap+seccomp",
+                  network_isolation=sandbox.network_isolation,
                   limits=sandbox.limits, toolchain_fingerprint=runtime["fingerprint"])
     try:
         with tempfile.TemporaryDirectory(prefix="evaluate-") as temporary:
@@ -438,6 +454,8 @@ def main():
     check.add_argument("--submission", type=Path, required=True)
     check.add_argument("--output", type=Path, required=True, help="New directory for artifacts and report")
     for child in [freeze, check]:
+        child.add_argument("--network-isolation", choices=["namespace", "seccomp"], default="namespace",
+                           help="Isolate network namespace, or block all network syscalls before the worker starts")
         for name, default in DEFAULT_LIMITS.items():
             child.add_argument("--" + name.replace("_", "-"), type=int, default=default)
     args = parser.parse_args()
@@ -450,7 +468,7 @@ def main():
         if any(value <= 0 for value in limits.values()):
             raise Rejected("All resource limits must be positive")
         ensure_built()
-        runtime, sandbox = toolchain(), Sandbox(limits)
+        runtime, sandbox = toolchain(), Sandbox(limits, args.network_isolation)
         if args.action == "prepare":
             allowed = trusted_axioms() if args.axiom_policy == "ci" else []
             spec_id = prepare(args.spec.resolve(), args.bundle.absolute(), runtime, sandbox, allowed)

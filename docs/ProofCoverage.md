@@ -34,6 +34,32 @@ reconstruction and generated bit-procedure proofs, which have no axioms.
 The emitted C++ is also checked by a pipe-based interactive grader, including
 CRLF and fragmented replies. See the [solution](../CSES/3228/README.md).
 
+The Codeforces 1770G solver has a complete generated-main execution proof.
+Its self-contained `verification/specs/KoxiaAndBracketIO.v` enumerates positional
+masks, selects longest balanced retained subsequences, and counts the optima
+modulo 998244353. For every input length from 1 through 500000, the contract
+requires successful execution of the actual generated main from the generated
+initial arrays, exact decimal output followed by LF, and full consumption of
+the LF-terminated input. `verification/examples/koxia-and-bracket/Candidate.v`
+proves this contract and is accepted by the adversarial kernel and frozen module
+gate under the CI axiom policy. It uses functional extensionality and no admissions.
+
+The proof covers the input scan and optimal split, the half-count bijection,
+modular DP decomposition, certified prime and roots, generated NTT and binomial
+convolution, table initialization, leaf transitions, every frame transition,
+complete traversal, preprocessing, both solve calls, and decimal printing.
+`KoxiaVisitInvariant.v`, `KoxiaSolveExecution.v`, and the `KoxiaMain*` modules
+compose the generated operations with their memory and capacity invariants.
+The algorithmic analysis establishes O(n log²(n+2)) time and O(n) solver storage,
+plus the fixed input buffer and frame stack. This is an analysis of the
+algorithm; the functional semantics do not formalize instruction costs.
+
+Independent native oracles, maximum-size stress cases, compiler regressions,
+and all eight adversarial certificate rejection checks have passed. The rejection
+checks complement the accepted universal theorem. See the
+[solution and recorded validation](../Codeforces/contests/1770/G/README.md) and
+[correctness and complexity explanation](../Codeforces/contests/1770/G/Proof.md).
+
 `theories/InteractiveExecution.v` provides the reusable observed interpreter and
 `endToEnd` contract. It preserves ordinary execution while recording output and
 unread input at every flush. The evaluator-owned

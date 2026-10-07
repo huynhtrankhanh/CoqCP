@@ -33,6 +33,7 @@ Documentation:
 - [Disjoint set union](docs/DisjointSetUnion.md)
 - [CSES 3305: K-th Highest Score](CSES/3305/README.md)
 - [CSES 3228: Permuted Binary Strings](CSES/3228/README.md)
+- [Codeforces 1770G: Koxia and Bracket (end-to-end verified)](Codeforces/contests/1770/G/README.md)
 
 Tasks:
 

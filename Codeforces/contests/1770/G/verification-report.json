@@ -1,0 +1,346 @@
+{
+  "solver_certified": true,
+  "positive_submission": {
+    "artifacts": {
+      "Candidate.vo": "b933b36d3299445b8cc397ae70bd937da665f39a16d44cc0e7cd932bc0d9c4d7",
+      "FullCounting.vo": "0fe5196544fbb7c5fcc9cc8acf522ad85024658e9bef06a5c9db97fd83e69d18",
+      "HalfCounting.vo": "33e0a68152e6c28ae92fd866a46d360457c646b5000a52428e2e2f19fa175347",
+      "MinimumScan.vo": "3f5bdf11140fa283dfb471b8590b934d7c3acc7da18e0a02d42697dedbed9ffb",
+      "OptimalSplit.vo": "cdeb3a28a10a9131da3e913a18808fed5e82b6a3fe44dbc18a18b8cd7e26d52f",
+      "SpecPrinter.vo": "a4872227f13ab8863076d6c4748cadf0026e05dcc2a167e3b4b9c954ee76344d",
+      "SpecProperties.vo": "1dce106c5935812f53e4a98bf15653fa725ad94f9f99a0ebd5b626fa456a5238"
+    },
+    "axioms": [
+      "Stdlib.Logic.FunctionalExtensionality.functional_extensionality_dep"
+    ],
+    "implementation": "Submission.Candidate.Implementation",
+    "limits": {
+      "artifact_mib": 64,
+      "cpu_seconds": 180,
+      "log_mib": 1,
+      "memory_mib": 4096,
+      "wall_seconds": 300,
+      "work_mib": 256
+    },
+    "network_isolation": "seccomp",
+    "rocq_version": "9.3.0",
+    "sandbox": "bubblewrap+seccomp",
+    "sources": {
+      "Candidate.v": "430dae9a312894f443e311c9230f23558688e6516c8020b6e886f743f1eed96f",
+      "FullCounting.v": "cc9890f64671ba2c1ed0457249c8754a1e9bbca598748a19659b575ad9c8c63a",
+      "HalfCounting.v": "20fc5540aaf248f848b98b7a47b94ac06323106cdd56397f85568b63e3b46852",
+      "MinimumScan.v": "19a59248d1868601b5555fcc97039f8d1a3a9207bbbb025aa53efdb8c0065d2b",
+      "OptimalSplit.v": "bf71489ffd151577fdde980020f767931624899ef7fd42f6da313aa28074b702",
+      "SpecPrinter.v": "1892f7c23541e27b6f8d8d95bbbedd8493c84e9f042b906f07ef39dd513ee332",
+      "SpecProperties.v": "d9a1eb05b6f127b03a0237dfd616ebe36ae7ec3f2039a19fab87ae72eb9fc470"
+    },
+    "spec_id": "33e7f989392d4351b2fa3c92bf3f30829c314ddb9122ae7bb59e83186173cd8a",
+    "specification": "Trusted.Spec.SOLUTION",
+    "stage": "complete",
+    "status": "accepted",
+    "toolchain_fingerprint": "04aed7a06d664d992be9b867c3be149cf077d2a86ae20187039a7c486bf5a257"
+  },
+  "spec_id": "33e7f989392d4351b2fa3c92bf3f30829c314ddb9122ae7bb59e83186173cd8a",
+  "spec_source_sha256": "b9f4de67aad9b3ec0d00d20e487e80ebf588b1a5155effc585c1454a252fe37d",
+  "spec_properties_checked": true,
+  "abstract_polynomial_proofs_checked": true,
+  "path_count_proofs_checked": true,
+  "abstract_problem_correctness_checked": true,
+  "modular_arithmetic_proofs_checked": true,
+  "generated_power_execution_checked": true,
+  "generated_input_execution_checked": true,
+  "generated_ntt_execution_checked": true,
+  "generated_table_initialization_checked": true,
+  "generated_convolution_execution_checked": true,
+  "generated_convolution_coefficients_checked": true,
+  "generated_leaf_dp_checked": true,
+  "generated_frame_transitions_checked": true,
+  "generated_traversal_execution_checked": true,
+  "generated_preprocessing_execution_checked": true,
+  "generated_solve_execution_checked": true,
+  "generated_main_execution_checked": true,
+  "abstract_stack_schedule_checked": true,
+  "storage_bounds_checked": true,
+  "generated_printer_execution_checked": true,
+  "review_sources_sha256": {
+    "SpecProperties.v": "d9a1eb05b6f127b03a0237dfd616ebe36ae7ec3f2039a19fab87ae72eb9fc470",
+    "OptimalSplit.v": "bf71489ffd151577fdde980020f767931624899ef7fd42f6da313aa28074b702",
+    "HalfCounting.v": "20fc5540aaf248f848b98b7a47b94ac06323106cdd56397f85568b63e3b46852",
+    "FullCounting.v": "cc9890f64671ba2c1ed0457249c8754a1e9bbca598748a19659b575ad9c8c63a",
+    "SpecPrinter.v": "1892f7c23541e27b6f8d8d95bbbedd8493c84e9f042b906f07ef39dd513ee332",
+    "MinimumScan.v": "19a59248d1868601b5555fcc97039f8d1a3a9207bbbb025aa53efdb8c0065d2b",
+    "KoxiaPolynomial.v": "db67768fae34b2a5d37aa2d773f2da4a63a181517d8d06c13388b19a6315a9ee",
+    "KoxiaPaths.v": "6301831a279db8cf7dde0ba0367bf46ba819a9207ad0b264c94d96943daf42e0",
+    "KoxiaModular.v": "514778eb4633e7bf948ff0b5eb3ce20b5697dd2e16f4e8c4b751cee1e52f9777",
+    "KoxiaIntegers.v": "3d06e406101d8e2d3e15d00eb58d98469fc9ae4bdd08ce965d590e7201fcb3e3",
+    "KoxiaPrimeCertificate.v": "f2b6e5f881524184072f3408af6724abdbf2ab6e6ebe2439e361a94515745be5",
+    "KoxiaPrime.v": "eb07394bcb63b23c31c9eefa49c0c11a4bf3242ab6ae800f14d67eeeb61af521",
+    "KoxiaNumberTheory.v": "9bcb05043581a110cb7c7f1d61a4045a9d626ae4b3f6f1109b8f9c038a0bdf3f",
+    "KoxiaPower.v": "44be2bd91d545612a83f26590e880a521769c002fa4a02b3ab07bbdd33d6e0a0",
+    "KoxiaRoots.v": "3a2b9510a3fb248ea14964d66d37bd5ccbeeeb1e92a74a3fe6a5e0750cf76962",
+    "KoxiaFourier.v": "147acca45c141baf69dc89f412b8b1bcfe4554dde2596dbb2f3ff63f537e1b64",
+    "KoxiaRadix.v": "ce6072da37deaf01ea6929c9a6e908cd9d324108fb1b3542bd4ba9793e62a068",
+    "KoxiaArrays.v": "149cc7ca1fdf5cd783983540ec5d603f6c7115342104cf059cafc015b4ba5eac",
+    "KoxiaNTT.v": "f9f371fcfda6af1e8c872e303d7d9274165aee85f40218a161c50e25f120c2f1",
+    "KoxiaNTTButterflies.v": "61c950696d7b123c69fa34c45caf4454a96b8df4d64e1051b85ae2522822f5e9",
+    "KoxiaNTTCorrect.v": "95dabc2b4f898c0eab556fd26342515e4843e54be7adfd9a3db0b7e66cdee338",
+    "KoxiaBinomial.v": "675affd7d774f0047dc7b476f92de3c58eac26829b2c400d8a0ddaf546b25106",
+    "KoxiaTables.v": "473abb8b7202f3e7b3bdb976f382fb3554d93f78398c1a38fd840e43e0597370",
+    "KoxiaTableLoops.v": "4df50285ca629c1824207a513161394d98281cca39352837f7563451735e1d51",
+    "KoxiaArrayLoops.v": "bc69342bfdf8416f9c53d64eb8a5a153f3b0cc3af2e5286a73891463a9e36d9e",
+    "KoxiaSizes.v": "297daeea36af09c860c5ed56e107445897f8d6fa49e7330672ac4a89221a3c8f",
+    "KoxiaNegation.v": "9fad7e47c278c3843d53b299e1c48ea7d2a5c677bc12565c892d859f4a9b7480",
+    "KoxiaConvolution.v": "9e253c33eeb2aca096978abdf86a487c6a4dcbc16db24bb0eb55e7835937b346",
+    "KoxiaConvolutionMath.v": "784b57b503d50a44143a66e03d64d895a8b3ab5949fba2530a3da035253229b5",
+    "KoxiaConvolutionProgram.v": "12b62f9c45729fd1466ef640f59131fcca35d4d9ace581c2f98bdbb4761b4956",
+    "KoxiaConvolutionExecution.v": "9c634045c45f194cf7dada76c421c57cae0098eacf8af3eae32552e94a92e6c7",
+    "KoxiaConvolutionSums.v": "d277ccc6c5bafc378375620f62d44bedf91d6d398eceda468747d5711aabdcc6",
+    "KoxiaConvolutionCorrect.v": "fe233db948d891591f1a1adaec35d5970e64dc7299db60e41ee7241a28dd543e",
+    "KoxiaPolynomialBuffers.v": "e99e39b5d3f0f4cbfef5f5b3ed90e6f36ab5517e96ddccb804305dbc3265ec7d",
+    "KoxiaLeaf.v": "e856dd38fd4e722845a04812319675302b2425d0099b2215ac0defd9eaa0f093",
+    "KoxiaLeafEvents.v": "8584468e8d347127a186a716708d068b3aecdc6f692a9b4e012e87c475476d64",
+    "KoxiaLeafRun.v": "88a5b5c3495f235b52978c3e568469dcceb677c451680bb6a6e2b5e987112e7e",
+    "KoxiaBufferSplit.v": "e26db0f234ec591cc2743279cd5f7e5d6ddf00214492fcf285c125e6de38e21b",
+    "KoxiaTraversal.v": "e9806f350cc5a5566924a443d28f22384327ea4b4280fa1eeb9630d12922615d",
+    "KoxiaArena.v": "7423ff5f1ead0f212a03da88d3f7e3ada3a5b696fb2085f1570e0a1259ef98f2",
+    "KoxiaMerge.v": "bedfc736c686a74143768fb6929f9c4dca40f8160e073be7d7e6b0ff5c4b19c5",
+    "KoxiaTreeBuffers.v": "451ec54b79bd651f3465d4b4706e9a64d144244abd835cc0a1a75fffc684063c",
+    "KoxiaSolveProgram.v": "ecabe657ad19911d0ccd624ede48930ac513859cd6bd8f7d5728b675a6fb3a15",
+    "KoxiaFrames.v": "d57caab006b3364dc2e54f4de88e8af0e33653a687a88ff2770ae9c1d29eee4d",
+    "KoxiaFrameLeaves.v": "598cd4a3e833cfd4f68280641f8f713345111ede511c7acaf3fd29b5fd360822",
+    "KoxiaGeneratedVisit.v": "6a2a86ed61dc410c31daf93cd1013b502c0f6a299c4735dd212b442275aa48b4",
+    "KoxiaCapacity.v": "9a8cb1797cd52a90536d9ff5c6c60eb6c16f3d8f765f5be3e8a654e1d9e59341",
+    "KoxiaStack.v": "5f70deeb37521ecff775ed32cc807790301c5fb5f50fb66ef08162d11d3eca2f",
+    "KoxiaVisitSchedule.v": "1748be7da33848e81146e58a20ddf421672d1c8653b09af5681234e9c591c3b8",
+    "KoxiaVisitMemory.v": "56cefea7aba8f2a1471abad84122e43cf0146393d2a82f10e0fa04f82dd85297",
+    "KoxiaConcreteVisits.v": "18303a02d62c0db9df80b9fa7e79562b60f6f084aaccecf2e32752a7f2ea68b4",
+    "KoxiaVisitBounds.v": "e64f45e67e4f41ea076c911c6cee0a712f358408f5d71ff9afcd593915895cf6",
+    "KoxiaVisitInvariant.v": "0c2dfe0a445bf20b3f965393d9983445e5df785196271ea98ad8818760e817ad",
+    "KoxiaPreprocess.v": "946eb2ea8fa4a8fea69120919f7f4a590f22cca49d1e48dabd86a47c9373f16e",
+    "KoxiaSolveExecution.v": "5ec19d80396f196362c67b65b4a8f2616c91beb1a1a317e2d0745574b9f2ebf2",
+    "KoxiaLiterals.v": "a61c6fd9a7ae905a5d2373170292fd1a143e246e4b950bb52a43e8b480955310",
+    "KoxiaMainProgram.v": "0d5b68bc561dc84bdc92c7d4ef8b292f27eb4a78fc25b911e63a231f6a332d47",
+    "KoxiaMainMemory.v": "f6595cb94fe014bca133606ace7f08196f0c11737a70179ed3c9b2611ef25065",
+    "KoxiaMainInitialization.v": "33346981dfb417c9259410e1de84b63d1a768e706b5884618129a3a821f025f0",
+    "KoxiaMainSegments.v": "0fc59116ecb9f0bde314e1dbe8ca5bfc65ef33b20cc542b419074a8eceafedaa",
+    "KoxiaMainResult.v": "0a6406a3c92b2c89feb1ed84b9fd115e74099cd9afa49942f7625893d38fa61b",
+    "KoxiaFrameRight.v": "66b69dafe346b887d3764300a929d626bceb334604d5f9073eeb63ffee810b23",
+    "KoxiaFrameMerge.v": "7939765e8da9670e420ee1c564061d7c84cbed31c3bae0c5f5793d0a5f19eb53",
+    "KoxiaFrameLeft.v": "64eb61aa94a8313a5950f406412e48efe968ab7e4248feee356be619d2dee059",
+    "KoxiaConvolutionReady.v": "ac83fea3738bf998c13aade0a1b155f6dcfebcf5614028378f2826d4d111c7df",
+    "KoxiaMemoryPreservation.v": "b11c89c562f041503b7b42b6ae9e8474da851d669787f052db4013119a357a50",
+    "KoxiaFrameStores.v": "4b4087985544e4999184893d84f58a8f5df239bab5a3950c8fb9f36f5e633c85",
+    "KoxiaLeftValues.v": "473f4d166fe0442094b38d1088951665db1154c19c090561c37e2465e8647b7e",
+    "KoxiaLeftExecution.v": "b8f17b0f4f7f3935f8d77b5859487cbec818f02a11a0f08a99b7462fdb4ad947",
+    "KoxiaPrefixFlags.v": "b18f2ba648d62f00379679e39e131339dfa80c5c0e424b11a58b61a305c6e6c7",
+    "KoxiaInput.v": "d41943dfada01f7e7b9f44c3286ce32fa8e1438e5cff784bc7a400cb723f8312",
+    "KoxiaPrinter.v": "868eb6463139673f9458e76715eec98b6b27d78a2f5cc11b1d823f885c43b8d3",
+    "KoxiaWorkspace.v": "b2e5d16c6f3b8950c3cca7537f079f2eaf885e33959b3792b91f53c1e67220ad"
+  },
+  "rejected_submissions": [
+    "missing-correct",
+    "true-instead-of-contract",
+    "extra-premise",
+    "admitted",
+    "notation-shadowing",
+    "conditional-failing-execution",
+    "abstract-algorithm-proof",
+    "abstract-problem-proof"
+  ],
+  "negative_submissions": {
+    "missing-correct": {
+      "artifacts": {
+        "Candidate.vo": "8c03f2061e22e17841e6d75fdf1f8fdea7c08c440cc621234ff843c22d8590cb"
+      },
+      "limits": {
+        "artifact_mib": 64,
+        "cpu_seconds": 180,
+        "log_mib": 1,
+        "memory_mib": 4096,
+        "wall_seconds": 300,
+        "work_mib": 256
+      },
+      "network_isolation": "seccomp",
+      "reason": "Sandbox command failed: Acceptance rejected: Anomaly\n                     \"Uncaught exception Failure(\"Implementation does not satisfy Trusted.Spec.SOLUTION\").\"\nPlease report at http://rocq-prover.org/bugs/.\n",
+      "sandbox": "bubblewrap+seccomp",
+      "sources": {
+        "Candidate.v": "7a20ac18b39c4987b7659d769d8ad3a74ea08533ae9cdd6c9d61ab2793c2d775"
+      },
+      "spec_id": "33e7f989392d4351b2fa3c92bf3f30829c314ddb9122ae7bb59e83186173cd8a",
+      "stage": "kernel-and-contract",
+      "status": "rejected",
+      "toolchain_fingerprint": "04aed7a06d664d992be9b867c3be149cf077d2a86ae20187039a7c486bf5a257"
+    },
+    "true-instead-of-contract": {
+      "artifacts": {
+        "Candidate.vo": "7ee9e2851d258dc6b4dd78907c207e57f1887e9dda43e28899c100c474d2a28d"
+      },
+      "limits": {
+        "artifact_mib": 64,
+        "cpu_seconds": 180,
+        "log_mib": 1,
+        "memory_mib": 4096,
+        "wall_seconds": 300,
+        "work_mib": 256
+      },
+      "network_isolation": "seccomp",
+      "reason": "Sandbox command failed: Acceptance rejected: Anomaly\n                     \"Uncaught exception Failure(\"Signature mismatch for field correct\").\"\nPlease report at http://rocq-prover.org/bugs/.\n",
+      "sandbox": "bubblewrap+seccomp",
+      "sources": {
+        "Candidate.v": "75a79269ab7cd35b8461d23d24ebff2640bddeaac921a7fd7e241c6e56730172"
+      },
+      "spec_id": "33e7f989392d4351b2fa3c92bf3f30829c314ddb9122ae7bb59e83186173cd8a",
+      "stage": "kernel-and-contract",
+      "status": "rejected",
+      "toolchain_fingerprint": "04aed7a06d664d992be9b867c3be149cf077d2a86ae20187039a7c486bf5a257"
+    },
+    "extra-premise": {
+      "artifacts": {
+        "Candidate.vo": "fbdb908c131b5a182a0edbb5daa0216b9e57b46d1dccf2a860dca3a4a26edce3"
+      },
+      "limits": {
+        "artifact_mib": 64,
+        "cpu_seconds": 180,
+        "log_mib": 1,
+        "memory_mib": 4096,
+        "wall_seconds": 300,
+        "work_mib": 256
+      },
+      "network_isolation": "seccomp",
+      "reason": "Sandbox command failed: Acceptance rejected: Anomaly\n                     \"Uncaught exception Failure(\"Signature mismatch for field correct\").\"\nPlease report at http://rocq-prover.org/bugs/.\n",
+      "sandbox": "bubblewrap+seccomp",
+      "sources": {
+        "Candidate.v": "1da24822cf48f7bbc79c7e61f651b3e3052b98978c55beac3a30137b44311887"
+      },
+      "spec_id": "33e7f989392d4351b2fa3c92bf3f30829c314ddb9122ae7bb59e83186173cd8a",
+      "stage": "kernel-and-contract",
+      "status": "rejected",
+      "toolchain_fingerprint": "04aed7a06d664d992be9b867c3be149cf077d2a86ae20187039a7c486bf5a257"
+    },
+    "admitted": {
+      "artifacts": {
+        "Candidate.vo": "0413fc154f11312b28b98a5c890821247fc09368f828418cbad0071e17b48c75"
+      },
+      "limits": {
+        "artifact_mib": 64,
+        "cpu_seconds": 180,
+        "log_mib": 1,
+        "memory_mib": 4096,
+        "wall_seconds": 300,
+        "work_mib": 256
+      },
+      "network_isolation": "seccomp",
+      "reason": "Sandbox command failed: Acceptance rejected: Anomaly\n                     \"Uncaught exception Failure(\"Unapproved axiom: Submission.Candidate.Implementation.correct\").\"\nPlease report at http://rocq-prover.org/bugs/.\n",
+      "sandbox": "bubblewrap+seccomp",
+      "sources": {
+        "Candidate.v": "ffe9fab10a9f515e61885c10d1666c8a99ab84467c15d43f9a5f917462e1f45b"
+      },
+      "spec_id": "33e7f989392d4351b2fa3c92bf3f30829c314ddb9122ae7bb59e83186173cd8a",
+      "stage": "kernel-and-contract",
+      "status": "rejected",
+      "toolchain_fingerprint": "04aed7a06d664d992be9b867c3be149cf077d2a86ae20187039a7c486bf5a257"
+    },
+    "notation-shadowing": {
+      "artifacts": {
+        "Candidate.vo": "1beb4f42a1e2b9dfea9847ff96c16d07eac010646f68b3405edfd75aae84e9b2"
+      },
+      "limits": {
+        "artifact_mib": 64,
+        "cpu_seconds": 180,
+        "log_mib": 1,
+        "memory_mib": 4096,
+        "wall_seconds": 300,
+        "work_mib": 256
+      },
+      "network_isolation": "seccomp",
+      "reason": "Sandbox command failed: Acceptance rejected: Anomaly\n                     \"Uncaught exception Failure(\"Signature mismatch for field correct\").\"\nPlease report at http://rocq-prover.org/bugs/.\n",
+      "sandbox": "bubblewrap+seccomp",
+      "sources": {
+        "Candidate.v": "b3590006dbcf02dffae52d5100f0c0aa453ff227af5b0e45f079de3a2987ef19"
+      },
+      "spec_id": "33e7f989392d4351b2fa3c92bf3f30829c314ddb9122ae7bb59e83186173cd8a",
+      "stage": "kernel-and-contract",
+      "status": "rejected",
+      "toolchain_fingerprint": "04aed7a06d664d992be9b867c3be149cf077d2a86ae20187039a7c486bf5a257"
+    },
+    "conditional-failing-execution": {
+      "artifacts": {
+        "Candidate.vo": "f944d483b3381eea0ecf0c52f4421da18da5561d60de01e545bca58041a6bd3a"
+      },
+      "limits": {
+        "artifact_mib": 64,
+        "cpu_seconds": 180,
+        "log_mib": 1,
+        "memory_mib": 4096,
+        "wall_seconds": 300,
+        "work_mib": 256
+      },
+      "network_isolation": "seccomp",
+      "reason": "Sandbox command failed: Acceptance rejected: Anomaly\n                     \"Uncaught exception Failure(\"Signature mismatch for field correct\").\"\nPlease report at http://rocq-prover.org/bugs/.\n",
+      "sandbox": "bubblewrap+seccomp",
+      "sources": {
+        "Candidate.v": "69498a5d6aab53773a4720ef899bb761784cb2bdf8313989dc0557bb1ec191e3"
+      },
+      "spec_id": "33e7f989392d4351b2fa3c92bf3f30829c314ddb9122ae7bb59e83186173cd8a",
+      "stage": "kernel-and-contract",
+      "status": "rejected",
+      "toolchain_fingerprint": "04aed7a06d664d992be9b867c3be149cf077d2a86ae20187039a7c486bf5a257"
+    },
+    "abstract-algorithm-proof": {
+      "artifacts": {
+        "Candidate.vo": "d6ac98e059c769ad3d59a3853e0bd1d2791bf71b8a32ed216759c8c1ad838455"
+      },
+      "limits": {
+        "artifact_mib": 64,
+        "cpu_seconds": 180,
+        "log_mib": 1,
+        "memory_mib": 4096,
+        "wall_seconds": 300,
+        "work_mib": 256
+      },
+      "network_isolation": "seccomp",
+      "reason": "Sandbox command failed: Acceptance rejected: Anomaly\n                     \"Uncaught exception Failure(\"Signature mismatch for field correct\").\"\nPlease report at http://rocq-prover.org/bugs/.\n",
+      "sandbox": "bubblewrap+seccomp",
+      "sources": {
+        "Candidate.v": "2852055ffa25d6363af58bb7ea94d339d5584a7237a632c2d67f379641fd18ee"
+      },
+      "spec_id": "33e7f989392d4351b2fa3c92bf3f30829c314ddb9122ae7bb59e83186173cd8a",
+      "stage": "kernel-and-contract",
+      "status": "rejected",
+      "toolchain_fingerprint": "04aed7a06d664d992be9b867c3be149cf077d2a86ae20187039a7c486bf5a257"
+    },
+    "abstract-problem-proof": {
+      "artifacts": {
+        "Candidate.vo": "9ef142895d2ed8b71650bde0814836fb8118a4e6f2d00932d3434f2ce55a7c7a",
+        "FullCounting.vo": "0fe5196544fbb7c5fcc9cc8acf522ad85024658e9bef06a5c9db97fd83e69d18",
+        "HalfCounting.vo": "33e0a68152e6c28ae92fd866a46d360457c646b5000a52428e2e2f19fa175347",
+        "MinimumScan.vo": "3f5bdf11140fa283dfb471b8590b934d7c3acc7da18e0a02d42697dedbed9ffb",
+        "OptimalSplit.vo": "cdeb3a28a10a9131da3e913a18808fed5e82b6a3fe44dbc18a18b8cd7e26d52f",
+        "SpecProperties.vo": "1dce106c5935812f53e4a98bf15653fa725ad94f9f99a0ebd5b626fa456a5238"
+      },
+      "limits": {
+        "artifact_mib": 64,
+        "cpu_seconds": 180,
+        "log_mib": 1,
+        "memory_mib": 4096,
+        "wall_seconds": 300,
+        "work_mib": 256
+      },
+      "network_isolation": "seccomp",
+      "reason": "Sandbox command failed: Acceptance rejected: Anomaly\n                     \"Uncaught exception Failure(\"Signature mismatch for field correct\").\"\nPlease report at http://rocq-prover.org/bugs/.\n",
+      "sandbox": "bubblewrap+seccomp",
+      "sources": {
+        "Candidate.v": "e211cd533597cf1794a77e21250c481f396876b8f7703189ce46473875e42034",
+        "FullCounting.v": "cc9890f64671ba2c1ed0457249c8754a1e9bbca598748a19659b575ad9c8c63a",
+        "HalfCounting.v": "20fc5540aaf248f848b98b7a47b94ac06323106cdd56397f85568b63e3b46852",
+        "MinimumScan.v": "19a59248d1868601b5555fcc97039f8d1a3a9207bbbb025aa53efdb8c0065d2b",
+        "OptimalSplit.v": "bf71489ffd151577fdde980020f767931624899ef7fd42f6da313aa28074b702",
+        "SpecProperties.v": "d9a1eb05b6f127b03a0237dfd616ebe36ae7ec3f2039a19fab87ae72eb9fc470"
+      },
+      "spec_id": "33e7f989392d4351b2fa3c92bf3f30829c314ddb9122ae7bb59e83186173cd8a",
+      "stage": "kernel-and-contract",
+      "status": "rejected",
+      "toolchain_fingerprint": "04aed7a06d664d992be9b867c3be149cf077d2a86ae20187039a7c486bf5a257"
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "type": "competitive",
+  "inputs": ["KoxiaAndBracket.js", "../../../../programs/IO/PrintInt64.js"],
+  "coqOutput": "../../../../generated-coq/KoxiaAndBracket.v",
+  "cppOutput": "../../../../generated-cpp/KoxiaAndBracket.cpp"
+}
