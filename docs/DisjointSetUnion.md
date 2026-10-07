@@ -4,6 +4,13 @@
 
 The generated DSU library has proofs for ancestor lookup, path compression, and union. `competitiveMergeRefinesModel` connects a generated union operation to the mathematical DSU state. The parser and component-size printing frontend are covered by executable examples, rather than an end-to-end DSU theorem.
 
+The abstract trees and union-find mathematics live in `theories/DisjointSetUnion.v`
+and `theories/UnionFindModel.v`. The generated execution proofs live in
+`verification/disjoint-set-union/candidate/`, checked against the single
+[`spec/Spec.v`](../verification/disjoint-set-union/spec/Spec.v). Run the
+adversarial checker with `--only disjoint-set-union` as described in
+[the verification layout](../verification/README.md).
+
 The tree proofs below also study the cumulative merge score: each successful merge contributes the combined component size. For 100 singleton components, the maximum score is 5049, attained by repeatedly adding a singleton to the same component. `modelScore`, `maxScoreIsAttainable`, and `maxScoreIsMax` formalize this combinatorial result.
 
 Proof strategy: we model actions as a tree.

@@ -39,6 +39,26 @@ def encoded(value):
     return json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
 
 
+def decoded(data, description):
+    """Decode a security-boundary JSON object without Python extensions."""
+    def reject_constant(value):
+        raise Rejected(f"Invalid {description}: non-standard JSON value {value}")
+
+    def unique_object(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise Rejected(f"Invalid {description}: duplicate field {key}")
+            result[key] = value
+        return result
+
+    try:
+        return json.loads(data, parse_constant=reject_constant,
+                          object_pairs_hook=unique_object)
+    except (json.JSONDecodeError, UnicodeDecodeError) as error:
+        raise Rejected(f"Invalid {description}: {error}") from error
+
+
 def digest(path):
     with path.open("rb") as stream:
         return hashlib.file_digest(stream, "sha256").hexdigest()
@@ -165,14 +185,63 @@ def toolchain():
 
 
 class Sandbox:
-    def __init__(self, limits, network_isolation="namespace"):
+    def __init__(self, limits, network_isolation="auto"):
         if os.getuid() == 0 or os.geteuid() == 0:
             raise Rejected("Run proof checking as a non-root OS user; root bypasses process-count limits")
         self.limits = limits
         self.bwrap = command("bwrap")
-        if network_isolation not in ("namespace", "seccomp"):
+        if network_isolation not in ("auto", "namespace", "seccomp"):
             raise Rejected("Unknown network isolation mode")
-        self.network_isolation = network_isolation
+        modes = ["namespace", "seccomp"] if network_isolation == "auto" else [network_isolation]
+        failures = []
+        for mode in modes:
+            safe, reason = self._probe(mode)
+            if safe:
+                self.network_isolation = mode
+                break
+            failures.append(mode + ": " + reason)
+        else:
+            raise Rejected("No safe condition for sandbox: " + "; ".join(failures))
+
+    def _network_filter(self):
+        network_filter = tempfile.TemporaryFile()
+        try:
+            subprocess.run([str(BIN / "sandbox-exec"), "--export-network-filter"],
+                           stdout=network_filter, stderr=subprocess.PIPE, check=True)
+            network_filter.seek(0)
+            return network_filter
+        except BaseException:
+            network_filter.close()
+            raise
+
+    def _probe(self, mode):
+        args = [self.bwrap, "--unshare-all", "--unshare-user", "--die-with-parent",
+                "--new-session", "--disable-userns", "--assert-userns-disabled",
+                "--cap-drop", "ALL", "--clearenv"]
+        for directory in ["/usr/bin", "/usr/lib", "/usr/lib64"]:
+            if Path(directory).exists():
+                args += ["--ro-bind", directory, directory]
+        for target in ["bin", "lib", "lib64"]:
+            args += ["--symlink", "usr/" + target, "/" + target]
+        args += ["--proc", "/proc", "--dev", "/dev"]
+        network_filter = None
+        try:
+            if mode == "seccomp":
+                network_filter = self._network_filter()
+                args += ["--share-net", "--seccomp", str(network_filter.fileno())]
+            args += ["--remount-ro", "/dev", "--remount-ro", "/", "--", "/usr/bin/true"]
+            result = subprocess.run(args, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                                    stderr=subprocess.PIPE, close_fds=True, env={}, timeout=10,
+                                    pass_fds=(() if network_filter is None
+                                              else (network_filter.fileno(),)))
+            if result.returncode == 0:
+                return True, ""
+            return False, result.stderr.decode("utf-8", errors="replace").strip()[-1024:]
+        except (OSError, subprocess.SubprocessError) as error:
+            return False, str(error)
+        finally:
+            if network_filter is not None:
+                network_filter.close()
 
     def run(self, argv, mounts, *, compiler_worker=False):
         limits = self.limits
@@ -203,12 +272,12 @@ class Sandbox:
             args += ["--ro-bind", str(host), target]
         network_filter = None
         if self.network_isolation == "seccomp":
-            network_filter = tempfile.TemporaryFile()
-            subprocess.run([str(BIN / "sandbox-exec"), "--export-network-filter"],
-                           stdout=network_filter, check=True)
-            network_filter.seek(0)
+            network_filter = self._network_filter()
             args += ["--share-net", "--seccomp", str(network_filter.fileno())]
-        args += ["--chdir", "/work", "--remount-ro", "/", "--"]
+        # Bubblewrap's private /dev is a separate, otherwise writable tmpfs.
+        # Keep its device nodes usable while preventing regular files there
+        # from bypassing the bounded /work and /tmp mounts.
+        args += ["--chdir", "/work", "--remount-ro", "/dev", "--remount-ro", "/", "--"]
         if not compiler_worker:
             args += ["/tool/sandbox-exec", str(limits["cpu_seconds"]),
                      str(limits["memory_mib"]), str(limits["artifact_mib"])]
@@ -221,12 +290,18 @@ class Sandbox:
             resource.setrlimit(resource.RLIMIT_CPU, (limits["cpu_seconds"], limits["cpu_seconds"]))
             resource.setrlimit(resource.RLIMIT_FSIZE,
                                (limits["artifact_mib"] * 1024**2,) * 2)
+            resource.setrlimit(resource.RLIMIT_NOFILE, (128, 128))
+            resource.setrlimit(resource.RLIMIT_NPROC, (256, 256))
 
         try:
-            process = subprocess.Popen(args, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
-                                       stderr=subprocess.PIPE, start_new_session=True,
-                                       close_fds=True, preexec_fn=set_limits, env={},
-                                       pass_fds=(() if network_filter is None else (network_filter.fileno(),)))
+            try:
+                process = subprocess.Popen(
+                    args, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE, start_new_session=True, close_fds=True,
+                    preexec_fn=set_limits, env={},
+                    pass_fds=(() if network_filter is None else (network_filter.fileno(),)))
+            except OSError as error:
+                raise Rejected("No safe condition for sandbox: " + str(error)) from error
         finally:
             if network_filter is not None:
                 network_filter.close()
@@ -254,7 +329,10 @@ class Sandbox:
                 process.wait(timeout=max(0.01, end - time.monotonic()))
             if process.returncode:
                 # Never interpret compiler output as acceptance or a context summary.
-                raise Rejected("Sandbox command failed: " + errors.decode("utf-8", errors="replace")[-8192:])
+                reason = errors.decode("utf-8", errors="replace")[-8192:]
+                if any(line.startswith("bwrap:") for line in reason.splitlines()):
+                    raise Rejected("No safe condition for sandbox: " + reason)
+                raise Rejected("Sandbox command failed: " + reason)
             return bytes(output)
         finally:
             if process.poll() is None:
@@ -277,9 +355,12 @@ def compile_sources(inputs, sources, namespace, bundle, runtime, sandbox):
     (inputs / "build.json").write_bytes(encoded(config))
     raw = sandbox.run(["/usr/bin/python3", "-I", "/tool/worker.py"],
                       [(inputs, "/inputs"), (bundle, "/bundle")], compiler_worker=True)
-    result = json.loads(raw)
+    result = decoded(raw, "compiler response")
     expected = {Path(name).with_suffix(".vo").name for name in sources}
-    if set(result) != {"artifacts"} or set(result["artifacts"]) != expected:
+    if (not isinstance(result, dict) or set(result) != {"artifacts"}
+            or not isinstance(result["artifacts"], dict)
+            or set(result["artifacts"]) != expected
+            or any(not isinstance(data, str) for data in result["artifacts"].values())):
         raise Rejected("Unexpected compiler artifact manifest")
     artifacts = {}
     for name, data in result["artifacts"].items():
@@ -287,6 +368,19 @@ def compile_sources(inputs, sources, namespace, bundle, runtime, sandbox):
     if sum(map(len, artifacts.values())) > sandbox.limits["artifact_mib"] * 1024**2:
         raise Rejected("Compiled artifacts exceed limit")
     return artifacts
+
+
+def validate_kernel_report(report, allowed, expected_status):
+    if (not isinstance(report, dict)
+            or set(report) != {"status", "rocq_version", "axioms"}
+            or report.get("status") != expected_status
+            or report.get("rocq_version") != VERSION
+            or not isinstance(report.get("axioms"), list)
+            or any(not isinstance(name, str) for name in report["axioms"])
+            or report["axioms"] != sorted(set(report["axioms"]))
+            or not set(report["axioms"]).issubset(allowed)):
+        raise Rejected("Unexpected kernel checker response")
+    return report
 
 
 def kernel_check(bundle, artifacts, runtime, sandbox, allowed, *, spec_only=False):
@@ -308,10 +402,9 @@ def kernel_check(bundle, artifacts, runtime, sandbox, allowed, *, spec_only=Fals
         args += ["--root", physical, logical]
     for axiom in allowed:
         args += ["--allow-axiom", axiom]
-    report = json.loads(sandbox.run(args, mounts))
-    if report.get("status") != ("spec-checked" if spec_only else "accepted"):
-        raise Rejected("Unexpected kernel checker response")
-    return report
+    report = decoded(sandbox.run(args, mounts), "kernel checker response")
+    return validate_kernel_report(report, set(allowed),
+                                  "spec-checked" if spec_only else "accepted")
 
 
 def snapshot_libraries(bundle):
@@ -377,13 +470,27 @@ def validate_bundle(bundle, spec_id, runtime):
     manifest_bytes = read_regular(bundle / "manifest.json", 2 * 1024**2)
     if hashlib.sha256(manifest_bytes).hexdigest() != spec_id:
         raise Rejected("Specification ID mismatch: use the evaluator's original ID")
-    manifest = json.loads(manifest_bytes)
-    if manifest["format"] != 1 or manifest["toolchain"] != runtime:
+    manifest = decoded(manifest_bytes, "specification manifest")
+    fields = {"format", "toolchain", "allowed_axioms", "ci_trusted_axioms",
+              "ci_indices_not_mattering", "specification", "implementation",
+              "files", "baseline"}
+    if not isinstance(manifest, dict) or set(manifest) != fields:
+        raise Rejected("Invalid specification manifest schema")
+    if (type(manifest["format"]) is not int or manifest["format"] != 1
+            or manifest["toolchain"] != runtime):
         raise Rejected("Toolchain changed since the specification was frozen; prepare a new bundle")
-    if (manifest["ci_trusted_axioms"] != trusted_axioms()
+    allowed = manifest["allowed_axioms"]
+    if (not isinstance(allowed, list)
+            or any(not isinstance(name, str) for name in allowed)
+            or allowed != sorted(set(allowed))
+            or manifest["ci_trusted_axioms"] != trusted_axioms()
             or manifest["ci_indices_not_mattering"] != trusted_inductives()
-            or not set(manifest["allowed_axioms"]).issubset(trusted_axioms())):
+            or not set(allowed).issubset(trusted_axioms())):
         raise Rejected("Frozen policy exceeds the evaluator-owned CI trust set")
+    if (manifest["specification"] != "Trusted.Spec.SOLUTION"
+            or manifest["implementation"] != "Submission.Candidate.Implementation"):
+        raise Rejected("Invalid specification manifest interface")
+    validate_kernel_report(manifest["baseline"], set(allowed), "spec-checked")
     for path in bundle.rglob("*"):
         if path.is_symlink() or not (path.is_dir() or path.is_file()):
             raise Rejected("Specification bundle contains a symlink or special file")
@@ -414,7 +521,7 @@ def evaluate(bundle, spec_id, submission, output, runtime, sandbox):
                     raise Rejected("Submissions contain only top-level .v source files")
                 data = read_regular(path, 8 * 1024**2)
                 total += len(data)
-                if total > 8 * 1024**2 or len(sources) >= 64:
+                if total > 8 * 1024**2 or len(sources) >= 128:
                     raise Rejected("Submission exceeds source size/count limit")
                 (inputs / path.name).write_bytes(data)
                 sources.append(path.name)
@@ -454,8 +561,9 @@ def main():
     check.add_argument("--submission", type=Path, required=True)
     check.add_argument("--output", type=Path, required=True, help="New directory for artifacts and report")
     for child in [freeze, check]:
-        child.add_argument("--network-isolation", choices=["namespace", "seccomp"], default="namespace",
-                           help="Isolate network namespace, or block all network syscalls before the worker starts")
+        child.add_argument("--network-isolation", choices=["auto", "namespace", "seccomp"],
+                           default="auto", help="Probe a network namespace then safely fall back "
+                           "to blocking network syscalls, or require one specific mode")
         for name, default in DEFAULT_LIMITS.items():
             child.add_argument("--" + name.replace("_", "-"), type=int, default=default)
     args = parser.parse_args()

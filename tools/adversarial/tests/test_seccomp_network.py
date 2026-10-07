@@ -64,9 +64,65 @@ print('isolated')
                 ['/usr/bin/python3', '-I', '-c', source], [(visible, '/trusted')]), b'isolated\n')
             self.assertEqual((visible / 'immutable').read_text(), 'trusted')
 
+    def test_memory_backed_files_cannot_bypass_writable_space_limit(self):
+        limits = dict(gate.DEFAULT_LIMITS, work_mib=4)
+        source = """
+import ctypes, errno, os, pathlib
+pathlib.Path('/dev/null').write_bytes(b'usable')
+for action in [lambda: pathlib.Path('/dev/quota-bypass').write_bytes(b'x'),
+               lambda: os.memfd_create('quota-bypass')]:
+    try:
+        action()
+    except OSError as error:
+        assert error.errno in (errno.EPERM, errno.EROFS, errno.EACCES), error
+    else:
+        raise AssertionError('Unbounded memory-backed file creation was permitted')
+libc = ctypes.CDLL(None, use_errno=True)
+libseccomp = ctypes.CDLL('libseccomp.so.2')
+libseccomp.seccomp_syscall_resolve_name.argtypes = [ctypes.c_char_p]
+libseccomp.seccomp_syscall_resolve_name.restype = ctypes.c_int
+memfd_secret = libseccomp.seccomp_syscall_resolve_name(b'memfd_secret')
+if memfd_secret >= 0:
+    ctypes.set_errno(0)
+    assert libc.syscall(memfd_secret, 0) == -1 and ctypes.get_errno() == errno.EPERM
+for action in [lambda: libc.shmget(0, 4096, 0o600),
+               lambda: libc.msgget(0, 0o600),
+               lambda: libc.semget(0, 1, 0o600)]:
+    ctypes.set_errno(0)
+    assert action() == -1 and ctypes.get_errno() == errno.EPERM
+print('memory-backed files blocked')
+"""
+        sandbox = gate.Sandbox(limits, network_isolation="seccomp")
+        self.assertEqual(sandbox.run(
+            ["/usr/bin/python3", "-I", "-c", source], []),
+            b"memory-backed files blocked\n")
+
+    def test_worker_has_process_and_descriptor_limits(self):
+        source = """
+import resource
+assert resource.getrlimit(resource.RLIMIT_NOFILE) == (128, 128)
+assert resource.getrlimit(resource.RLIMIT_NPROC) == (256, 256)
+print('worker bounded')
+"""
+        self.assertEqual(self.sandbox().run(
+            ["/usr/bin/python3", "-I", "-c", source], [], compiler_worker=True),
+            b"worker bounded\n")
+
     def test_unknown_mode_rejected(self):
         with self.assertRaises(gate.Rejected):
             gate.Sandbox(dict(gate.DEFAULT_LIMITS), network_isolation='disabled')
+
+    def test_auto_uses_only_a_successfully_probed_fallback(self):
+        with patch.object(gate.Sandbox, '_probe',
+                          side_effect=[(False, 'network namespaces unavailable'), (True, '')]):
+            sandbox = gate.Sandbox(dict(gate.DEFAULT_LIMITS))
+        self.assertEqual(sandbox.network_isolation, 'seccomp')
+
+    def test_no_safe_sandbox_fails_closed(self):
+        with patch.object(gate.Sandbox, '_probe',
+                          side_effect=[(False, 'namespace denied'), (False, 'filter denied')]):
+            with self.assertRaisesRegex(gate.Rejected, 'No safe condition for sandbox'):
+                gate.Sandbox(dict(gate.DEFAULT_LIMITS))
 
 
 class SeccompAcceptanceTests(test_check.AcceptanceTests):

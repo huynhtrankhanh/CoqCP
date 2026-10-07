@@ -16,7 +16,7 @@ O(n log² n) bound.
 - [Generated C++](../../../../generated-cpp/KoxiaAndBracket.cpp)
 - [Generated Rocq](../../../../generated-coq/KoxiaAndBracket.v)
 - [Correctness and complexity explanation](Proof.md)
-- [End-to-end certificate](../../../../verification/examples/koxia-and-bracket/Candidate.v)
+- [End-to-end certificate](../../../../verification/koxia-and-bracket/candidate/Candidate.v)
 - [Recorded adversarial validation](verification-report.json)
 
 Split the string at its first global minimum balance. Every optimal deletion
@@ -36,7 +36,7 @@ for the split bijection, DP interpretation, convolution identity, and recurrence
 
 ## Formal contract and coverage
 
-[KoxiaAndBracketIO.v](../../../../verification/specs/KoxiaAndBracketIO.v)
+[Spec.v](../../../../verification/koxia-and-bracket/spec/Spec.v)
 enumerates Boolean **position masks**, retains their selected characters,
 checks the Dyck prefix condition and zero total balance, chooses the greatest
 retained length, and counts masks attaining it. Different masks count
@@ -52,6 +52,12 @@ input parsing, selection of the split, table initialization, preprocessing,
 both complete solves, modular multiplication, and decimal printing.
 
 The proof chain includes:
+
+All of these modules live in
+[`verification/koxia-and-bracket/candidate/`](../../../../verification/koxia-and-bracket/candidate/)
+and are compiled and audited as submitted helpers. Only the single
+`spec/Spec.v`, general theories, and generated definitions belong to the frozen
+evaluator inputs.
 
 - `SpecProperties.v`, `OptimalSplit.v`, `HalfCounting.v`, `FullCounting.v`, and
   `MinimumScan.v`: mask semantics, optimal split, half counts, product, and scan.

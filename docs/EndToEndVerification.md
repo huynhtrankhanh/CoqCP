@@ -67,12 +67,13 @@ an explicitly stated trusted compilation chain.
 
 ## CSES 3228 certificate
 
-`theories/PermutedBinaryStringsProtocol.v` specifies canonical decimal input and
-truthful LF-terminated reply lines. `replyBytes_truthful` connects these reply
-bytes to indexing the actual mathematical query by the hidden permutation.
-It also specifies the complete output and each query/final-answer flush.
+`verification/permuted-binary-strings/spec/Spec.v` specifies canonical decimal
+input, truthful LF-terminated reply lines, complete output, and every
+query/final-answer flush. The candidate's `PermutedBinaryStringsProtocol.v`
+proves `replyBytes_truthful`, connecting the specified reply bytes to indexing
+the actual mathematical query by the hidden permutation.
 
-`theories/PermutedBinaryStringsEndToEnd.v` proves `generated_end_to_end` for the
+`verification/permuted-binary-strings/candidate/PermutedBinaryStringsEndToEnd.v` proves `generated_end_to_end` for the
 actual generated `main`, with the generated zero-initialized arrays. Its helpers
 normalize the generated procedure calls, prove the decimal and bit readers,
 compose ten reconstruction rounds, and prove repeated decimal printing with the
@@ -88,7 +89,7 @@ specified stream, while native transport behaviour remains part of the runtime
 and compilation boundary stated above.
 
 The shipped frozen-spec example is
-`verification/examples/permuted-binary-strings-io/Candidate.v`. The acceptance
+`verification/permuted-binary-strings/candidate/Candidate.v`. The acceptance
 regressions require the full certificate to pass and reject both a correct
 abstract decoder theorem and a successful ordinary execution theorem lacking
 flush observations. Run them after building the registered project libraries:

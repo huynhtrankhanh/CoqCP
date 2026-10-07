@@ -71,8 +71,8 @@ Exactly `k-1` real scores are greater than this answer. Thus it is the
 - `KthHighestScore.module.json`: compiler configuration.
 - `../../generated-cpp/KthHighestScore.cpp`: standalone C++20 submission.
 - `../../generated-coq/KthHighestScore.v`: compiler-generated Coq actions.
-- `../../theories/KthHighestScore.v`: executable mathematical model and proofs.
-- `../../theories/KthHighestScoreCode.v`: generated search loop refinement.
+- `../../verification/kth-highest-score/candidate/KthHighestScore.v`: executable mathematical model and proofs.
+- `../../verification/kth-highest-score/candidate/KthHighestScoreCode.v`: generated search loop refinement.
 - `test_interactive.py`: pipe-based grader with exhaustive small cases, randomized
   contests, maximum-size cases, and exact comparison of source/model query traces.
 
@@ -104,6 +104,8 @@ python3 CSES/3305/test_interactive.py --binary /tmp/cses3305
 rocq makefile -f _CoqProject -o Makefile
 make -j2
 make validate
+python3 tools/adversarial/examples.py --only kth-highest-score \
+  --output .verification/kth-highest-score-review
 ```
 
 The shared FastIO template uses a 64 KiB buffer for both batch and interactive

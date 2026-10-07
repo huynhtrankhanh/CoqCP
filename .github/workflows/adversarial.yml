@@ -31,7 +31,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install Rocq and stdpp
         uses: ./.github/actions/setup-rocq
-      - name: Build trusted project libraries
+      - name: Build shared theories and generated definitions
         run: |
           rocq makefile -f _CoqProject -o Makefile
           make -j2
@@ -41,7 +41,7 @@ jobs:
           chown -R proofchecker:proofchecker .
       - name: Run adversarial acceptance and sandbox regressions
         run: runuser -u proofchecker -- python3 -m unittest discover -s tools/adversarial/tests -v
-      - name: Check the mathematical and input/output contracts
+      - name: Check every program's spec and full candidate proof chain
         run: runuser -u proofchecker -- python3 tools/adversarial/examples.py --output .verification/ci-examples
       - name: Upload checked artifacts and reports
         if: always()

@@ -1,4 +1,4 @@
-From CoqCP Require Import Options Imperative KnapsackCode.
+From CoqCP Require Import Options Imperative DecimalEncoding.
 From stdpp Require Import numbers list.
 Open Scope Z_scope.
 Definition decodeDigits (digits : list Z) (initial : Z) :=

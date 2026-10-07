@@ -34,12 +34,12 @@ Since every hidden value satisfies `0 <= x < 1000 < 1024`, ten rounds recover
 - `PermutedBinaryStrings.module.json`: compiler configuration.
 - `../../generated-cpp/PermutedBinaryStrings.cpp`: standalone C++20 submission.
 - `../../generated-coq/PermutedBinaryStrings.v`: generated Coq actions.
-- `../../theories/PermutedBinaryStrings.v`: response-based executable solver
+- `../../verification/permuted-binary-strings/candidate/PermutedBinaryStrings.v`: response-based executable solver
   and correctness proofs. `interaction_correct` feeds the solver replies formed
   by indexing the actual query lists as specified by the grader and proves that
   the output equals the hidden permutation. `solve_correct` additionally proves
   query length, binary digits, and the ten-query bound.
-- `../../theories/PermutedBinaryStringsCode.v`: proofs of the complete generated
+- `../../verification/permuted-binary-strings/candidate/PermutedBinaryStringsCode.v`: proofs of the complete generated
   `queryBit` and `recordBit` procedure bodies. `generated_query_bit` proves the
   exact ASCII byte emitted for each query position. `generated_decode_step`
   proves that the generated array update implements the reconstruction invariant,
@@ -47,7 +47,7 @@ Since every hidden value satisfies `0 <= x < 1000 < 1024`, ten rounds recover
 - `test_interactive.py`: pipe-based grader checking the complete executable's
   query trace, flushes, responses, answer, and termination.
 
-`../../theories/PermutedBinaryStringsEndToEnd.v` proves
+`../../verification/permuted-binary-strings/candidate/PermutedBinaryStringsEndToEnd.v` proves
 `generated_end_to_end` for the actual generated `main`, initialized with the
 actual generated arrays. For every valid permutation it proves successful
 execution, the exact ten query lines and final answer line, complete input
@@ -56,10 +56,11 @@ reply is read; the final flush contains the full permutation and no unread
 input. This includes the numeric reader, bit reader, loop composition,
 initialization, memory bounds, unsigned arithmetic, and repeated decimal printing.
 
-The input and output specification lives separately in
-`../../theories/PermutedBinaryStringsProtocol.v`. The evaluator-owned
-`../../verification/specs/PermutedBinaryStringsIO.v` binds the certificate to the
-generated entry point and requires this full execution contract. The reusable
+The single input/output specification is
+`../../verification/permuted-binary-strings/spec/Spec.v`. It binds the certificate
+to the generated entry point and requires this full execution contract.
+`candidate/PermutedBinaryStringsProtocol.v` proves the truthful-reply lemma.
+The reusable
 framework change and the gap it closes are documented in
 [End-to-end verification](../../docs/EndToEndVerification.md).
 
@@ -83,4 +84,6 @@ python3 CSES/3228/test_interactive.py --binary /tmp/cses3228
 rocq makefile -f _CoqProject -o Makefile
 make -j2
 make validate
+python3 tools/adversarial/examples.py --only permuted-binary-strings \
+  --output .verification/permuted-binary-strings-review
 ```

@@ -1,14 +1,14 @@
 # Proof coverage
 
-`theories/KnapsackCode2.v` proves `extractAnswerEq` for the generated competitive Knapsack program. The proof covers decimal input, array growth and initialization, loading items, every dynamic-programming cell, and decimal output with a final newline. It assumes the allocated table size and total item value fit unsigned 64-bit arithmetic, and each weight and value fits unsigned 32-bit arithmetic. The theorem ends in `Qed`; there are no admitted lemmas in its dependency chain. `Print Assumptions extractAnswerEq` reports functional extensionality.
+`verification/knapsack/candidate/KnapsackCode2.v` proves `extractAnswerEq` for the generated competitive Knapsack program. The proof covers decimal input, array growth and initialization, loading items, every dynamic-programming cell, and decimal output with a final newline. It assumes the allocated table size and total item value fit unsigned 64-bit arithmetic, and each weight and value fits unsigned 32-bit arithmetic. The theorem ends in `Qed`; there are no admitted lemmas in its dependency chain. `Print Assumptions extractAnswerEq` reports functional extensionality.
 
 `theories/ArrayGrowth.v` proves length, preservation of existing elements, zero initialization, no shrinking, and execution of translated growth for the Coq runtime. The compiler performs a fixed-point analysis over growth calls and cross-module array mappings to select vector storage consistently for aliases.
 
-`theories/DisjointSetUnionCode.v` and `DisjointSetUnionCode2.v` preserve the ancestor, path-compression, and union proofs. `competitiveMergeRefinesModel` proves that the generated library's merge operation refines the mathematical DSU state. `DisjointSetUnionCode3.v` proves the cumulative merge-score bound. The competitive DSU input/output frontend has executable checks, but no end-to-end theorem.
+`verification/disjoint-set-union/candidate/DisjointSetUnionCode.v` and `DisjointSetUnionCode2.v` preserve the ancestor, path-compression, and union proofs. `competitiveMergeRefinesModel` proves that the generated library's merge operation refines the mathematical DSU state. `DisjointSetUnionCode3.v` proves the cumulative merge-score bound. The competitive DSU input/output frontend has executable checks, but no end-to-end theorem.
 
-`theories/KthHighestScore.v` proves the CSES 3305 algorithm's answer rank,
+`verification/kth-highest-score/candidate/KthHighestScore.v` proves the CSES 3305 algorithm's answer rank,
 valid query indices, and a maximum of 36 queries. Its `solve_correct` theorem
-has no axioms. `theories/KthHighestScoreCode.v` proves that the search loop
+has no axioms. `verification/kth-highest-score/candidate/KthHighestScoreCode.v` proves that the search loop
 extracted from the generated Coq main body refines that algorithm when its
 query procedure is replaced by a truthful score oracle; this includes
 64-bit arithmetic and loop control. That refinement uses functional
@@ -21,7 +21,7 @@ inputs. This C++ runtime change does not change generated Coq actions. Compiler
 regressions exercise short responses with open stdin, multiple buffer refills,
 all byte values, and the EOF sentinel on files and pipes.
 
-`theories/PermutedBinaryStringsEndToEnd.v` proves `generated_end_to_end`
+`verification/permuted-binary-strings/candidate/PermutedBinaryStringsEndToEnd.v` proves `generated_end_to_end`
 for the actual generated CSES 3228 entry point, starting with its generated
 initial arrays. It covers decimal input, binary response input, all ten rounds,
 array bounds and unsigned arithmetic, decimal answer formatting, successful
@@ -35,12 +35,12 @@ The emitted C++ is also checked by a pipe-based interactive grader, including
 CRLF and fragmented replies. See the [solution](../CSES/3228/README.md).
 
 The Codeforces 1770G solver has a complete generated-main execution proof.
-Its self-contained `verification/specs/KoxiaAndBracketIO.v` enumerates positional
+Its self-contained `verification/koxia-and-bracket/spec/Spec.v` enumerates positional
 masks, selects longest balanced retained subsequences, and counts the optima
 modulo 998244353. For every input length from 1 through 500000, the contract
 requires successful execution of the actual generated main from the generated
 initial arrays, exact decimal output followed by LF, and full consumption of
-the LF-terminated input. `verification/examples/koxia-and-bracket/Candidate.v`
+the LF-terminated input. `verification/koxia-and-bracket/candidate/Candidate.v`
 proves this contract and is accepted by the adversarial kernel and frozen module
 gate under the CI axiom policy. It uses functional extensionality and no admissions.
 
@@ -63,7 +63,7 @@ checks complement the accepted universal theorem. See the
 `theories/InteractiveExecution.v` provides the reusable observed interpreter and
 `endToEnd` contract. It preserves ordinary execution while recording output and
 unread input at every flush. The evaluator-owned
-`verification/specs/PermutedBinaryStringsIO.v` requires this complete contract
+`verification/permuted-binary-strings/spec/Spec.v` requires this complete contract
 and binds it to the generated entry point. See the
 [framework fix and proof requirements](EndToEndVerification.md).
 
@@ -94,16 +94,25 @@ export PATH=/opt/rocq/9.3.0/bin:$PATH
 rocq --version
 ```
 
-Compile the project and independently check every registered proof:
+Compile and check the shared theories and generated definitions, then compile
+and independently check every concrete candidate against its frozen spec:
 
 ```sh
 rocq makefile -f _CoqProject -o Makefile
 make clean
 make -j2
 make validate
+python3 tools/adversarial/examples.py --output .verification/program-checks
 ```
 
 The project maps `theories/` to `CoqCP`, `generated-coq/` to `Generated`, and `programs/llmGeneratedCode/` to `GeneratedExamples`.
+Program proof chains live in `verification/<problem>/candidate/`, outside
+`_CoqProject`, and are compiled under `Submission` by the adversarial checker.
+Each problem has one small `spec/Spec.v`, compiled as `Trusted.Spec`, containing
+definitions and its `SOLUTION` interface. The spec never imports candidate
+proofs. Candidates can import reusable theories such as decimal encoding,
+array execution, and the abstract union-find model. See
+[the repository layout](../verification/README.md).
 `make validate` runs `rocq check` on every module listed in `_CoqProject` with those load paths and prints the assumption summary. CI uses the same target and allows only the axioms in [trusted_axioms.json](../verification/trusted_axioms.json), currently functional extensionality, with no unsafe definitions. The adversarial checker uses this same policy. Standard library imports use the `Stdlib` namespace; the code generator emits it too.
 
 Rocq 9.3 reports six declarations from the trusted libraries that rely on its
@@ -115,6 +124,6 @@ After upgrading from Coq 8.20, regenerate the Makefile and recompile all `.vo`
 files. Frozen specification bundles from that toolchain must also be prepared
 again; the checker rejects bundles with a different toolchain fingerprint.
 
-For untrusted AI-generated submissions, use the separate [adversarial checking infrastructure](AdversarialChecking.md). It freezes an evaluator-owned `Spec.v`, compiles source-only submissions in a Bubblewrap/seccomp sandbox, independently checks every submitted library, and checks the submitted module against the frozen signature. It includes mathematical knapsack and complete input/output contracts for the existing proofs.
+All concrete program proofs use the [adversarial checking infrastructure](AdversarialChecking.md). It freezes an evaluator-owned `Spec.v`, compiles source-only submissions in a Bubblewrap/seccomp sandbox, independently checks every submitted library, and checks the submitted module against the frozen signature. Knapsack's single contract specifies the mathematical optimum and successful generated execution together.
 
 The checked-in HTML pages for the migrated imperative runtime and generated-program proofs were refreshed with `coqdoc` from the current sources.

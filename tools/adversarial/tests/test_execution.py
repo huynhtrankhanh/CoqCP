@@ -19,7 +19,7 @@ class CompilerExecutionTests(unittest.TestCase):
         cls.runtime = gate.toolchain()
         cls.sandbox = gate.Sandbox(dict(gate.DEFAULT_LIMITS))
         cls.bundle = cls.root / "bundle"
-        cls.spec_id = gate.prepare(gate.REPO / "verification/specs/Increment.v",
+        cls.spec_id = gate.prepare(gate.REPO / "verification/increment/spec/Spec.v",
                                   cls.bundle, cls.runtime, cls.sandbox, [])
         cls.plugins = cls.root / "plugins"
         attack = cls.plugins / "coqcp_attack"

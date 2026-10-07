@@ -24,6 +24,7 @@ Documentation:
 - [Proof coverage and verification commands](docs/ProofCoverage.md)
 - [End-to-end execution and interactive protocol contracts](docs/EndToEndVerification.md)
 - [Adversarial checking of AI-generated programs and proofs](docs/AdversarialChecking.md)
+- [Program proof layout: one spec and a candidate per problem](verification/README.md)
 
 <hr>
 

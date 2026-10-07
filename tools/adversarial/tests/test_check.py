@@ -74,6 +74,53 @@ class ContextPolicyTests(unittest.TestCase):
             validate_context(self.SUMMARY + "* Axioms: <none>\n")
 
 
+class ProtocolValidationTests(unittest.TestCase):
+    class Sandbox:
+        limits = dict(gate.DEFAULT_LIMITS)
+
+        def __init__(self, response):
+            self.response = response
+
+        def run(self, _argv, _mounts, *, compiler_worker=False):
+            return self.response
+
+    def test_compiler_response_must_be_strict_json_with_exact_schema(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            inputs, bundle = root / "inputs", root / "bundle"
+            inputs.mkdir()
+            bundle.mkdir()
+            runtime = {"rocq": "/rocq", "coqlib": "/coqlib"}
+            invalid = [
+                b'{"artifacts":{"Candidate.vo":""},"accepted":true}',
+                b'{"artifacts":{"Candidate.vo":NaN}}',
+                b'{"artifacts":{},"artifacts":{"Candidate.vo":""}}',
+            ]
+            for response in invalid:
+                with self.subTest(response=response), self.assertRaises(gate.Rejected):
+                    gate.compile_sources(inputs, ["Candidate.v"], "Submission", bundle,
+                                         runtime, self.Sandbox(response))
+
+    def test_checker_response_requires_version_axioms_and_exact_schema(self):
+        allowed = gate.trusted_axioms()
+        valid = gate.encoded({"status": "accepted", "rocq_version": gate.VERSION,
+                              "axioms": allowed})
+        invalid = [
+            b'{"status":"accepted"}',
+            valid[:-1] + b',"extra":true}',
+            valid.replace(gate.VERSION.encode(), b"0.0.0"),
+            b'{"status":"accepted","status":"rejected",'
+            b'"rocq_version":"9.3.0","axioms":[]}',
+        ]
+        with tempfile.TemporaryDirectory() as temporary:
+            bundle = Path(temporary)
+            runtime = {"coqlib": "/coqlib"}
+            for response in invalid:
+                with self.subTest(response=response), self.assertRaises(gate.Rejected):
+                    gate.kernel_check(bundle, None, runtime, self.Sandbox(response), allowed,
+                                      spec_only=True)
+
+
 class AcceptanceTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -83,7 +130,7 @@ class AcceptanceTests(unittest.TestCase):
         cls.runtime = gate.toolchain()
         cls.sandbox = gate.Sandbox(dict(gate.DEFAULT_LIMITS))
         cls.bundle = cls.root / "bundle"
-        cls.spec_id = gate.prepare(gate.REPO / "verification/specs/Increment.v",
+        cls.spec_id = gate.prepare(gate.REPO / "verification/increment/spec/Spec.v",
                                   cls.bundle, cls.runtime, cls.sandbox, [])
 
     @classmethod
@@ -223,6 +270,19 @@ End Conditional.
         self.evaluate(source, {"ZHelper.v": "From CoqCP Require Import Options.\nDefinition successor := S.\n"},
                       accepted=True)
 
+    def test_source_cannot_create_or_replace_compiler_artifacts(self):
+        helper = "From CoqCP Require Import Options.\nDefinition successor := S.\n"
+        source = VALID.replace("Require Trusted.Spec.",
+                               "Require Trusted.Spec Submission.AHelper.")
+        source = source.replace("Module Implementation.",
+                                'Print Universes "/work/AHelper.vo".\nModule Implementation.')
+        self.evaluate(source, {"AHelper.v": helper},
+                      reason="Submission modified a compiler artifact")
+
+        source = VALID.replace("Module Implementation.",
+                               'Print Universes "/work/Candidate.vo".\nModule Implementation.')
+        self.evaluate(source, reason="Submission created or removed a compiler artifact")
+
     def test_sealed_module(self):
         self.evaluate(VALID.replace("Module Implementation.",
                                     "Module Implementation : Trusted.Spec.SOLUTION."), accepted=True)
@@ -244,7 +304,7 @@ End Conditional.
             root = Path(temporary)
             bundle = root / "bundle"
             allowed = gate.trusted_axioms()
-            spec_id = gate.prepare(gate.REPO / "verification/specs/Increment.v", bundle,
+            spec_id = gate.prepare(gate.REPO / "verification/increment/spec/Spec.v", bundle,
                                    self.runtime, self.sandbox, allowed)
             submission = root / "submission"
             submission.mkdir()
@@ -256,7 +316,7 @@ End Conditional.
 
     def test_arbitrary_axiom_name_is_never_approved(self):
         with self.assertRaisesRegex(gate.Rejected, "CI trust set"):
-            gate.prepare(gate.REPO / "verification/specs/Increment.v", self.root / "forbidden-policy",
+            gate.prepare(gate.REPO / "verification/increment/spec/Spec.v", self.root / "forbidden-policy",
                          self.runtime, self.sandbox, ["Stdlib.Logic.Classical_Prop.classic"])
         with self.assertRaisesRegex(gate.Rejected, "CI trust set"):
             gate.kernel_check(self.bundle, None, self.runtime, self.sandbox,
@@ -404,7 +464,7 @@ else:
     def test_missing_sandbox_has_no_fallback(self):
         sandbox = gate.Sandbox(self.limits)
         sandbox.bwrap = "/nonexistent-bubblewrap"
-        with self.assertRaises(FileNotFoundError):
+        with self.assertRaisesRegex(gate.Rejected, "No safe condition for sandbox"):
             sandbox.run(["/usr/bin/true"], [])
 
     def test_root_execution_is_rejected(self):
@@ -422,10 +482,11 @@ class InteractiveContractTests(unittest.TestCase):
         cls.temporary = tempfile.TemporaryDirectory(prefix="coqcp-interactive-contract-")
         cls.root = Path(cls.temporary.name)
         cls.runtime = gate.toolchain()
-        cls.sandbox = gate.Sandbox(dict(gate.DEFAULT_LIMITS))
+        cls.sandbox = gate.Sandbox(dict(gate.DEFAULT_LIMITS,
+                                      wall_seconds=600, cpu_seconds=180, memory_mib=4096))
         cls.bundle = cls.root / "bundle"
         cls.spec_id = gate.prepare(
-            gate.REPO / "verification/specs/PermutedBinaryStringsIO.v",
+            gate.REPO / "verification/permuted-binary-strings/spec/Spec.v",
             cls.bundle, cls.runtime, cls.sandbox, gate.trusted_axioms())
 
     @classmethod
@@ -438,21 +499,25 @@ class InteractiveContractTests(unittest.TestCase):
             submission = root / "submission"
             submission.mkdir()
             (submission / "Candidate.v").write_text(source)
+            helpers = gate.REPO / "verification/permuted-binary-strings/candidate"
+            for helper in helpers.glob("*.v"):
+                if helper.name != "Candidate.v":
+                    shutil.copyfile(helper, submission / helper.name)
             return gate.evaluate(self.bundle, self.spec_id, submission, root / "result",
                                  self.runtime, self.sandbox)
 
     def test_full_generated_certificate(self):
-        source = (gate.REPO / "verification/examples/permuted-binary-strings-io/Candidate.v").read_text()
+        source = (gate.REPO / "verification/permuted-binary-strings/candidate/Candidate.v").read_text()
         report = self.evaluate(source)
         self.assertEqual(report["status"], "accepted", report)
         self.assertEqual(report["axioms"], gate.trusted_axioms())
 
     def test_decoder_certificate_is_insufficient(self):
-        report = self.evaluate(r"""From CoqCP Require Import Options PermutedBinaryStrings
-  PermutedBinaryStringsProtocol.
+        report = self.evaluate(r"""From CoqCP Require Import Options.
+From Submission Require Import PermutedBinaryStrings PermutedBinaryStringsProtocol.
 Require Trusted.Spec.
 Module Implementation.
-  Definition program : Trusted.Spec.Program := CoqCP.PermutedBinaryStringsProtocol.program.
+  Definition program : Trusted.Spec.Program := Trusted.Spec.program.
   Lemma correct : forall n a, valid n a -> solve a = a.
   Proof. intros n a h. exact (proj1 (solve_correct n a h)). Qed.
 End Implementation.
@@ -461,13 +526,13 @@ End Implementation.
         self.assertIn("Signature mismatch", report["reason"])
 
     def test_unobserved_execution_is_insufficient(self):
-        report = self.evaluate(r"""From CoqCP Require Import Options Execution InteractiveExecution
-  PermutedBinaryStrings PermutedBinaryStringsProtocol PermutedBinaryStringsEndToEnd.
+        report = self.evaluate(r"""From CoqCP Require Import Options Execution InteractiveExecution.
+From Submission Require Import PermutedBinaryStrings PermutedBinaryStringsProtocol PermutedBinaryStringsEndToEnd.
 From Generated Require Import PermutedBinaryStrings.
 From stdpp Require Import numbers list.
 Require Trusted.Spec.
 Module Implementation.
-  Definition program : Trusted.Spec.Program := CoqCP.PermutedBinaryStringsProtocol.program.
+  Definition program : Trusted.Spec.Program := Trusted.Spec.program.
   Lemma correct : forall n a, valid n a -> exists final,
     exec program (initial a) = Some (tt, final) /\
     stdout final = outputBytes a /\ stdin final = nil.

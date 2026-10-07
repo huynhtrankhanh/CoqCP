@@ -4,27 +4,11 @@ import hashlib
 import json
 from pathlib import Path
 import subprocess
+import re
 
 ROOT = Path(__file__).resolve().parents[4]
 CHECKER = ROOT / "tools/adversarial/check.py"
-SPEC = ROOT / "verification/specs/KoxiaAndBracketIO.v"
-ROCQ = "/opt/rocq/9.3.0/bin/rocq"
-KERNEL_MODULES = [
-    "KoxiaPolynomial", "KoxiaPaths", "KoxiaModular", "KoxiaIntegers",
-    "KoxiaPrimeCertificate", "KoxiaPrime", "KoxiaNumberTheory", "KoxiaPower",
-    "KoxiaRoots", "KoxiaFourier", "KoxiaRadix", "KoxiaArrays", "KoxiaNTT",
-    "KoxiaNTTButterflies", "KoxiaNTTCorrect", "KoxiaBinomial", "KoxiaTables",
-    "KoxiaTableLoops", "KoxiaArrayLoops", "KoxiaSizes", "KoxiaNegation",
-    "KoxiaConvolution", "KoxiaConvolutionMath", "KoxiaConvolutionProgram",
-    "KoxiaConvolutionExecution", "KoxiaConvolutionSums", "KoxiaConvolutionCorrect",
-    "KoxiaPolynomialBuffers", "KoxiaLeaf", "KoxiaLeafEvents", "KoxiaLeafRun",
-    "KoxiaBufferSplit", "KoxiaTraversal", "KoxiaArena", "KoxiaMerge",
-    "KoxiaTreeBuffers", "KoxiaSolveProgram", "KoxiaFrames", "KoxiaFrameLeaves", "KoxiaGeneratedVisit",
-    "KoxiaCapacity", "KoxiaStack", "KoxiaVisitSchedule", "KoxiaVisitMemory", "KoxiaConcreteVisits", "KoxiaVisitBounds", "KoxiaVisitInvariant", "KoxiaPreprocess", "KoxiaSolveExecution", "KoxiaLiterals", "KoxiaMainProgram", "KoxiaMainMemory", "KoxiaMainInitialization", "KoxiaMainSegments", "KoxiaMainResult", "KoxiaFrameRight", "KoxiaFrameMerge",
-    "KoxiaFrameLeft", "KoxiaConvolutionReady", "KoxiaMemoryPreservation",
-    "KoxiaFrameStores", "KoxiaLeftValues", "KoxiaLeftExecution", "KoxiaPrefixFlags",
-    "KoxiaInput", "KoxiaPrinter", "KoxiaWorkspace",
-]
+SPEC = ROOT / "verification/koxia-and-bracket/spec/Spec.v"
 
 
 def invoke(arguments):
@@ -40,10 +24,10 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", type=Path, required=True,
                         help="A fresh directory for the frozen specification and reports")
-    parser.add_argument("--network-isolation", choices=["namespace", "seccomp"], default="namespace")
+    parser.add_argument("--network-isolation", choices=["auto", "namespace", "seccomp"], default="auto")
     parser.add_argument("--cpu-seconds", type=int, default=180,
                         help="Per-process CPU budget for the complete proof dependency chain")
-    parser.add_argument("--wall-seconds", type=int, default=300)
+    parser.add_argument("--wall-seconds", type=int, default=1800)
     parser.add_argument("--memory-mib", type=int, default=4096)
     args = parser.parse_args()
     resources = ["--cpu-seconds", str(args.cpu_seconds),
@@ -65,29 +49,9 @@ def main():
     (directory / "preparation.json").write_text(json.dumps(prepared, indent=2) + "\n")
     print("Frozen full end-to-end contract:", spec_id, flush=True)
 
-    properties = ROOT / "verification/examples/koxia-and-bracket"
-    proof_directory = directory / "properties"
-    proof_directory.mkdir()
-    reviews = ["SpecProperties", "OptimalSplit", "HalfCounting", "FullCounting",
-               "SpecPrinter", "MinimumScan"]
-    for name in reviews:
-        (proof_directory / (name + ".v")).write_bytes((properties / (name + ".v")).read_bytes())
-    flags = ["-q", "-R", "theories", "CoqCP", "-R", "generated-coq", "Generated",
-             "-Q", str(directory / "bundle/spec"), "Trusted",
-             "-Q", str(proof_directory), "Submission"]
-    for name in reviews:
-        subprocess.run([ROCQ, "compile", *flags, str(proof_directory / (name + ".v"))],
-                       cwd=ROOT, check=True)
-    checked = subprocess.run([ROCQ, "check", "-silent", *flags[1:],
-                              "Trusted.Spec", *["Submission." + name for name in reviews],
-                              *["CoqCP." + name for name in KERNEL_MODULES]],
-                             cwd=ROOT, capture_output=True, text=True, check=True)
-    (directory / "properties-kernel-check.log").write_text(checked.stdout + checked.stderr)
-
-    submission = directory / "solution-submission"
-    submission.mkdir()
-    for name in [*reviews, "Candidate"]:
-        (submission / (name + ".v")).write_bytes((properties / (name + ".v")).read_bytes())
+    properties = ROOT / "verification/koxia-and-bracket/candidate"
+    # All proof helpers are submitted and independently audited by the gate.
+    submission = properties
     code, positive = invoke([
         "python3", str(CHECKER), "check", "--bundle", str(directory / "bundle"),
         "--spec-id", spec_id, "--submission", str(submission),
@@ -100,6 +64,7 @@ def main():
     print("End-to-end generated solver: accepted by the kernel and frozen contract gate", flush=True)
 
     header = """From CoqCP Require Import Options Imperative Execution.
+
 From Stdlib Require Import ZArith.ZArith.
 From Generated Require Import KoxiaAndBracket.
 Require Trusted.Spec.
@@ -119,6 +84,7 @@ Definition program : Trusted.Spec.Program :=
             "Notation \"'required' p\" := True (at level 10).\n"
             "Lemma correct : required program. Proof. exact I. Qed.\nEnd Implementation.\n",
         "conditional-failing-execution": """From CoqCP Require Import Options Imperative Execution.
+
 From Stdlib Require Import ZArith.ZArith.
 From Generated Require Import KoxiaAndBracket.
 Require Trusted.Spec.
@@ -130,7 +96,8 @@ Lemma correct : forall state final, exec program state = Some (tt, final) ->
 Proof. intros state final impossible. discriminate impossible. Qed.
 End Implementation.
 """,
-        "abstract-algorithm-proof": """From CoqCP Require Import Options KoxiaPolynomial.
+        "abstract-algorithm-proof": """From CoqCP Require Import Options.
+From Submission Require Import KoxiaPolynomial.
 From Stdlib Require Import ZArith.ZArith.
 From Generated Require Import KoxiaAndBracket.
 Require Trusted.Spec.
@@ -142,6 +109,7 @@ Proof. exact accelerated_correct. Qed.
 End Implementation.
 """,
         "abstract-problem-proof": """From CoqCP Require Import Options.
+
 From Stdlib Require Import ZArith.ZArith.
 From Generated Require Import KoxiaAndBracket.
 Require Trusted.Spec Submission.MinimumScan Submission.FullCounting.
@@ -162,9 +130,21 @@ End Implementation.
         submission = directory / (name + "-submission")
         submission.mkdir()
         (submission / "Candidate.v").write_text(source)
-        if name == "abstract-problem-proof":
-            for helper in ["SpecProperties", "OptimalSplit", "HalfCounting", "FullCounting", "MinimumScan"]:
-                (submission / (helper + ".v")).write_bytes((properties / (helper + ".v")).read_bytes())
+        # Assemble only the repo-owned helpers needed by each deliberately weak
+        # theorem, including transitive imports in the Submission namespace.
+        pending = [source]
+        copied = set()
+        while pending:
+            text = pending.pop()
+            names = set(re.findall(r"Submission\.([A-Za-z][A-Za-z0-9_]*)", text))
+            for imports in re.findall(r"From Submission Require (?:Import|Export)\s+(.*?)\.",
+                                      text, re.DOTALL):
+                names.update(imports.split())
+            for helper in sorted(names - copied):
+                copied.add(helper)
+                helper_source = (properties / (helper + ".v")).read_text()
+                (submission / (helper + ".v")).write_text(helper_source)
+                pending.append(helper_source)
         code, report = invoke([
             "python3", str(CHECKER), "check", "--bundle", str(directory / "bundle"),
             "--spec-id", spec_id, "--submission", str(submission),
@@ -212,10 +192,8 @@ End Implementation.
         "storage_bounds_checked": True,
         "generated_printer_execution_checked": True,
         "review_sources_sha256": {
-            **{name + ".v": hashlib.sha256((proof_directory / (name + ".v")).read_bytes()).hexdigest()
-               for name in reviews},
-            **{name + ".v": hashlib.sha256((ROOT / "theories" / (name + ".v")).read_bytes()).hexdigest()
-               for name in KERNEL_MODULES},
+            path.name: hashlib.sha256(path.read_bytes()).hexdigest()
+            for path in sorted(properties.glob("*.v"))
         },
         "rejected_submissions": list(reports),
         "negative_submissions": reports,

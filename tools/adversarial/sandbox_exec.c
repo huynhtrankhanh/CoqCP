@@ -55,6 +55,7 @@ int main(int argc, char **argv) {
     "rt_sigqueueinfo", "rt_tgsigqueueinfo", "process_madvise", "process_mrelease",
     "bpf", "perf_event_open", "userfaultfd", "io_uring_setup",
     "io_uring_enter", "io_uring_register", "keyctl", "add_key", "request_key",
+    "memfd_create", "memfd_secret", "shmget", "msgget", "semget", "mq_open",
     "reboot", "kexec_load", "kexec_file_load", "init_module", "finit_module",
     "delete_module", "open_by_handle_at", "name_to_handle_at", "mknod", "mknodat"
   };

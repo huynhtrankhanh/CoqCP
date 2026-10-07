@@ -37,16 +37,18 @@ bypasses Linux's process-count resource limit, so the runner rejects root.
 Installation can use `sudo`. No privileges are requested by the checker.
 
 Bubblewrap must support user, mount, PID, IPC, and UTS namespaces, and seccomp
-must be available. Network namespaces are used by default. When an enclosing
-sandbox prevents creating a network namespace, explicitly pass
-`--network-isolation seccomp` to both `prepare` and `check`. This mode retains
-the enclosing network namespace and installs a filter through Bubblewrap
-before the worker starts. It denies socket creation and network operations
-in the worker and every child. Compiler and kernel processes also retain
-their existing seccomp restrictions. Filter installation failures reject the
-job; there is no unsandboxed fallback. Other namespace failures still cause
-the job to fail. The checker never disables host protections. This profile expects
-system tools under `/usr` and the dedicated Rocq toolchain under
+must be available. The default `--network-isolation auto` mode first probes a
+separate network namespace. If an enclosing sandbox denies only that namespace,
+the runner probes and selects the secure seccomp mode, which retains the
+enclosing network namespace but installs a filter through Bubblewrap before the
+worker starts. The filter denies socket creation and network operations in the
+worker and every child. Compiler and kernel processes also retain their existing
+seccomp restrictions. If neither complete mode can be constructed, the job
+reports `No safe condition for sandbox` and rejects before reading submission
+code. There is no unsandboxed fallback. An evaluator can require one mode with
+`--network-isolation namespace` or `--network-isolation seccomp`. The checker
+never disables host protections. This profile expects system tools under `/usr`
+and the dedicated Rocq toolchain under
 `/opt/rocq/9.3.0`, rather than a snap, an opam switch in a home directory,
 macOS, or Windows. Only installed runtime directories from that switch are
 mounted; opam state, downloads, and build logs are excluded.
@@ -56,7 +58,7 @@ and the gate, prepare each specification again, and record the new evaluator ID.
 
 ## Write the specification
 
-The small example [Increment.v](../verification/specs/Increment.v) is:
+The small [Increment specification](../verification/increment/spec/Spec.v) is:
 
 ```coq
 From CoqCP Require Import Options.
@@ -85,7 +87,7 @@ stream. A statement that only constrains output _if execution succeeds_ can let
 an always-failing program satisfy the requirement. Keep input bounds and memory
 semantics on the trusted side too. For interactive programs, require the exact
 flush snapshots as well.
-[PermutedBinaryStringsIO.v](../verification/specs/PermutedBinaryStringsIO.v)
+[the Permuted Binary Strings specification](../verification/permuted-binary-strings/spec/Spec.v)
 binds the program to the generated entry point and requires successful full
 execution with all query/reply boundaries; see
 [End-to-end verification](EndToEndVerification.md).
@@ -94,7 +96,7 @@ execution with all query/reply boundaries; see
 
 ```sh
 python3 tools/adversarial/check.py prepare \
-  --spec verification/specs/Increment.v \
+  --spec verification/increment/spec/Spec.v \
   --bundle .verification/increment-bundle
 ```
 
@@ -121,9 +123,10 @@ can instead select the exact set already trusted by project CI:
 
 ```sh
 python3 tools/adversarial/check.py prepare \
-  --spec verification/specs/KnapsackIO.v \
-  --bundle .verification/knapsack-io-bundle \
-  --axiom-policy ci
+  --spec verification/knapsack/spec/Spec.v \
+  --bundle .verification/knapsack-bundle \
+  --axiom-policy ci \
+  --cpu-seconds 180 --wall-seconds 600 --memory-mib 4096
 ```
 
 The shared policy is [trusted_axioms.json](../verification/trusted_axioms.json).
@@ -156,7 +159,9 @@ declarations. Changing this set also requires rebuilding and freezing new bundle
 A submission is a dedicated directory containing only top-level `.v` files,
 including `Candidate.v`. Names must be ASCII Rocq identifiers. Symlinks, special
 files, subdirectories, precompiled libraries, project files, and build scripts
-are rejected. At most 64 sources and 8 MiB of source text are accepted.
+are rejected. At most 128 sources and 8 MiB of source text are accepted. The
+source-count bound accommodates the complete Koxia proof chain (74 files);
+the byte, artifact, memory, CPU, and filesystem limits remain enforced.
 
 For the increment contract, `Candidate.v` can contain:
 
@@ -176,6 +181,13 @@ such as `Submission.Helper`. The build worker uses `rocq dep` to order the submi
 sources and invokes `rocq compile` directly. It never invokes a submitted Makefile,
 `_CoqProject`, shell command, or package-install script.
 
+Each compiler writes its `.vo` into a fresh unpredictable directory. After that
+compiler exits successfully, the trusted worker captures the bounded regular
+file and publishes it under the expected library name for later dependencies.
+Before and after every compilation, the worker rejects missing, additional, or
+modified `.vo` files. Captured bytes are kept in worker memory, so a later source
+cannot replace an earlier compiler result that will be sent to the kernel gate.
+
 The AI can develop against a copy of the specification. The evaluator must keep
 its bundle and recorded ID outside the AI's writable submission environment.
 
@@ -187,7 +199,7 @@ Use the specification ID printed during preparation:
 python3 tools/adversarial/check.py check \
   --bundle .verification/increment-bundle \
   --spec-id YOUR_RECORDED_SPEC_ID \
-  --submission verification/examples/increment \
+  --submission verification/increment/candidate \
   --output .verification/increment-result
 ```
 
@@ -239,6 +251,10 @@ In a fresh process, the gate:
    candidate short-name or notation tables.
 6. Calls `Subtyping.check_subtypes` with Rocq's checked universe conversion.
 
+The supervisor accepts only strict JSON from the compiler worker and kernel
+checker. Duplicate fields, non-standard JSON values, missing or extra fields,
+the wrong Rocq version, and axioms outside the frozen policy all fail closed.
+
 The comparison uses kernel conversion and ordinary module subtyping. It does not
 compare strings, pretty-printed syntax, proof names, or an AI's explanation.
 Extra implementation fields are allowed. Missing fields, a proof about another
@@ -273,11 +289,12 @@ Both compilation and independent checking run with:
 - read-only system runtime directories, narrowly selected OCamlfind
   configuration, specification bundles, tool binaries, and source/artifact inputs;
 - no host home directory, repository mount, credentials, or host network;
-- read-only root filesystem, a bounded writable `/work` tmpfs, and a 16 MiB
-  `/tmp` tmpfs;
+- read-only root and private `/dev` filesystems, a bounded writable `/work`
+  tmpfs, and a 16 MiB `/tmp` tmpfs;
 - denied process forks, sockets, namespace changes, mounts, tracing,
   cross-process memory access, signaling of the build supervisor, and privileged
-  kernel APIs; OCaml runtime threads are allowed;
+  kernel APIs; anonymous memory-backed files and IPC objects are also denied so
+  they cannot bypass the tmpfs quotas; OCaml runtime threads are allowed;
 - a build supervisor protected against child access through `/proc` by disabling
   dumpability.
 
@@ -316,14 +333,25 @@ or eliminate vulnerabilities in the trusted checker.
 
 ## Shipped contracts and checks
 
-The examples exercise different interfaces:
+Every problem uses `verification/<problem>/spec/Spec.v` and
+`verification/<problem>/candidate/`. There is one small specification per
+problem; proof helpers are submitted with the candidate. Candidates may import
+general `CoqCP` theories. Concrete program proofs are excluded from the frozen
+project libraries. See [the layout and commands](../verification/README.md).
 
-| Specification                                                                | Submitted example                                  | Guarantee                                                                                                                                |
-| ---------------------------------------------------------------------------- | -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| [Increment.v](../verification/specs/Increment.v)                             | `verification/examples/increment`                  | Total successor function; no axioms                                                                                                      |
-| [Knapsack.v](../verification/specs/Knapsack.v)                               | `verification/examples/knapsack`                   | Optimal value among feasible item sublists; no axioms                                                                                    |
-| [KnapsackIO.v](../verification/specs/KnapsackIO.v)                           | `verification/examples/knapsack-io`                | Successful execution and exact decimal output with newline, under the existing arithmetic bounds; functional extensionality allowed      |
-| [PermutedBinaryStringsIO.v](../verification/specs/PermutedBinaryStringsIO.v) | `verification/examples/permuted-binary-strings-io` | Generated entry point, successful complete execution, exact bytes and all query/final flush snapshots; functional extensionality allowed |
+| Problem | Contract |
+| --- | --- |
+| Increment | Total successor function |
+| Watermelon | Existence of a division into positive even weights |
+| Restore Three Numbers | Reconstruction up to permutation |
+| Knapsack | Successful generated execution and exact decimal encoding of an optimal value |
+| Disjoint Set Union | Generated union refines the abstract model; merge-score bound and attainment |
+| K-th Highest Score | Successful generated search-loop refinement with truthful oracle queries |
+| Permuted Binary Strings | Complete generated execution, exact bytes, and every flush boundary |
+| Koxia and Bracket | Complete generated execution and positional-mask optimum count |
+
+The first three contracts use no axioms. The generated execution contracts use
+the CI policy. Each spec defines its own formal scope and input bounds.
 
 Run the acceptance and containment regression suite:
 
@@ -342,9 +370,9 @@ notation and namespace deception, extra premises, missing fields, abstract and
 functor implementations, the shared CI axiom policy, arbitrary policy rejection,
 admitted and unused axioms, weaker decoder and unobserved execution certificates,
 unsafe definitions inside unused functors, corrupted libraries, bundle and
-manifest tampering, symlinks, precompiled submissions, and sandbox filesystem,
-network, fork, timeout, CPU, memory, output, and disk limits. Missing sandbox
-support and root execution fail closed.
+manifest tampering, symlinks, precompiled submissions, attempted `.vo` creation
+or replacement, and sandbox filesystem, network, fork, timeout, CPU, memory,
+output, and disk limits. Missing sandbox support and root execution fail closed.
 
 [The CI workflow](../.github/workflows/adversarial.yml) builds trusted project
 libraries, runs the regressions, checks the examples, and uploads the resulting
