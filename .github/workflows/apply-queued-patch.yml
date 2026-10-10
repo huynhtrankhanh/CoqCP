@@ -1,0 +1,114 @@
+name: Apply Queued Patch
+
+on:
+  workflow_dispatch:
+    inputs:
+      patch_file:
+        description: "Filename under patches/pending/ (for example fix-wasi.patch)"
+        required: true
+        type: string
+
+# This workflow must be run manually from main. It never pushes to main.
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  apply-and-open-pr:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    concurrency:
+      group: apply-queued-patch-${{ inputs.patch_file }}
+      cancel-in-progress: false
+    steps:
+      - name: Check out the default branch
+        uses: actions/checkout@v4
+
+      - name: Validate, apply, remove patch, and push branch
+        id: apply
+        shell: bash
+        env:
+          PATCH_FILE: ${{ inputs.patch_file }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$PATCH_FILE" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*\.patch$ ]]; then
+            echo "::error::Provide a .patch filename, not a path"
+            exit 1
+          fi
+          patch="patches/pending/$PATCH_FILE"
+          if [[ ! -f "$patch" || -L "$patch" ]]; then
+            echo "::error::Patch must be a regular, non-symlink file: $patch"
+            exit 1
+          fi
+
+          # Inspect both paths of renames; the queue is workflow-managed.
+          python3 - "$patch" <<'PYCODE'
+          import subprocess
+          import sys
+
+          stats = subprocess.check_output(
+              ["git", "apply", "--numstat", "-z", "--", sys.argv[1]]
+          )
+          for field in stats.split(b"\0"):
+              path = field.split(b"\t", 2)[-1]
+              if path.startswith(b"patches/pending/"):
+                  sys.exit(f"Patch must not modify the queue: {path!r}")
+          PYCODE
+
+          patch_sha256="$(sha256sum "$patch" | cut -d ' ' -f1)"
+          git apply --check --index -- "$patch"
+          git apply --index -- "$patch"
+          git rm -- "$patch"
+          git diff --cached --check
+
+          branch="patch-queue/run-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git switch -c "$branch"
+          git commit -m "Apply queued patch: $PATCH_FILE"
+          git push --set-upstream origin "$branch"
+
+          {
+            echo "branch=$branch"
+            echo "patch_sha256=$patch_sha256"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Create pull request
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PATCH_FILE: ${{ inputs.patch_file }}
+          PATCH_SHA256: ${{ steps.apply.outputs.patch_sha256 }}
+          PATCH_BRANCH: ${{ steps.apply.outputs.branch }}
+          BASE_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          body="$RUNNER_TEMP/queued-patch-pr.md"
+          cat > "$body" <<EOF
+          Applied \`patches/pending/$PATCH_FILE\` and deleted the consumed patch in this same PR.
+
+          - **Source revision:** \`$BASE_SHA\`
+          - **Patch SHA-256:** \`$PATCH_SHA256\`
+          - **Validation:** \`git apply --check --index\` and \`git diff --cached --check\` passed.
+          - **Not run:** the patched project's tests (review/CI should verify the result).
+
+          Created by the manually triggered **Apply Queued Patch** workflow.
+          EOF
+
+          if url="$(gh pr create --base main --head "$PATCH_BRANCH" \
+              --title "Apply queued patch: $PATCH_FILE" --body-file "$body")"; then
+            {
+              echo '### Pull request created'
+              echo "$url"
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            compare="https://github.com/${GITHUB_REPOSITORY}/compare/main...${PATCH_BRANCH}"
+            {
+              echo '### Pull request creation blocked'
+              echo "The branch was pushed: \`$PATCH_BRANCH\`."
+              echo "[Open the compare page to create the PR manually]($compare)"
+              echo 'Enable **Allow GitHub Actions to create and approve pull requests** in Settings → Actions → General to make this fully automatic.'
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo '::error::Patch branch pushed, but GitHub denied automatic PR creation'
+            exit 1
+          fi
