@@ -376,8 +376,8 @@ Default limits are:
 | Resource                                              |     Default | CLI option           |
 | ----------------------------------------------------- | ----------: | -------------------- |
 | Wall time per compilation or checking stage           | 120 seconds | `--wall-seconds`     |
-| CPU time per WASI invocation / native process          |  60 seconds | `--cpu-seconds`      |
-| Wasm instruction fuel per WASI invocation              |  50 billion | `--fuel`             |
+| CPU time per WASI invocation / native process         |  60 seconds | `--cpu-seconds`      |
+| Wasm instruction fuel per WASI invocation             |  50 billion | `--fuel`             |
 | Virtual address space per process                     |    2048 MiB | `--memory-mib`       |
 | Writable virtual workspace / native work tmpfs        |     256 MiB | `--work-mib`         |
 | Individual output file and total retained `.vo` bytes |      64 MiB | `--artifact-mib`     |

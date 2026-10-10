@@ -91,16 +91,16 @@ forces entry-level observation checks rather than relying on old file hashes.
 
 ## Cache identities and taint
 
-| Location | Contents | Reuse requirements |
-| --- | --- | --- |
-| `.verification/wasi-host` | Docker-exported executable and dependencies | Host source, dependency pins, platform key |
-| `/opt/rocq` | Pinned native build tools, WASI SDK, OCaml C runtime source and Num | Toolchain and installer key |
-| `.verification/wasi` | Evaluator Wasm and AOT images | Runtime source, policy, and actual packaged-host fingerprints |
-| `.verification/wasi-libraries` | Materialized portable trusted `.vo` files and manifest | Source/compiler identity, dependency graph and every artifact hash |
-| `.verification/wasi-cache/trusted-compile` | Successful trusted library compilations | Compiler, source, limits, observed inputs |
-| `.verification/wasi-cache/compile` | Successful specification/candidate compilations | Compiler, source, namespace, flags, limits, observed inputs |
-| `.verification/wasi-cache/kernel` | Validated checker responses | Full runtime, contract, arguments, limits, and all visible artifacts |
-| `.verification/wasi-cache/checked-prefix` | Independently checked library prefixes and hidden-axiom maps | Checker/host/profile seed, complete preceding environment, current artifact bytes, and indirect opaque-proof reads |
+| Location                                   | Contents                                                            | Reuse requirements                                                                                                 |
+| ------------------------------------------ | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `.verification/wasi-host`                  | Docker-exported executable and dependencies                         | Host source, dependency pins, platform key                                                                         |
+| `/opt/rocq`                                | Pinned native build tools, WASI SDK, OCaml C runtime source and Num | Toolchain and installer key                                                                                        |
+| `.verification/wasi`                       | Evaluator Wasm and AOT images                                       | Runtime source, policy, and actual packaged-host fingerprints                                                      |
+| `.verification/wasi-libraries`             | Materialized portable trusted `.vo` files and manifest              | Source/compiler identity, dependency graph and every artifact hash                                                 |
+| `.verification/wasi-cache/trusted-compile` | Successful trusted library compilations                             | Compiler, source, limits, observed inputs                                                                          |
+| `.verification/wasi-cache/compile`         | Successful specification/candidate compilations                     | Compiler, source, namespace, flags, limits, observed inputs                                                        |
+| `.verification/wasi-cache/kernel`          | Validated checker responses                                         | Full runtime, contract, arguments, limits, and all visible artifacts                                               |
+| `.verification/wasi-cache/checked-prefix`  | Independently checked library prefixes and hidden-axiom maps        | Checker/host/profile seed, complete preceding environment, current artifact bytes, and indirect opaque-proof reads |
 
 Compilation entries record a map of input observations, rather than just a list
 of imported module names:
@@ -337,16 +337,16 @@ and checking operations; evaluating the candidate has another pair. Therefore a
 or that its complete cold run has a 30-minute total cap. Complete cache hits can
 finish these operations in seconds; cold runs must do their actual proof work.
 
-| Failure | Check next |
-| --- | --- |
-| Host missing or cannot start | Install the complete exported host directory; check platform/ABI and `prlimit` availability |
-| Runtime rebuild after restore | Compare runtime inputs and packaged-host fingerprints; changed code or host bytes should rebuild |
-| Missing physical library path | Check the logical namespace, installed source, and static plugin policy |
-| Fuel exhausted | Measure the computation; use `--fuel` for a justified larger instruction budget |
-| CPU or wall time exceeded | Separate proof reduction from GC or host work before increasing limits |
-| GC heap or process memory exhausted | Measure live data and collector behavior; more fuel cannot fix memory exhaustion |
-| Cache misses after a helper change | Inspect content, metadata, absence, and directory observations; dependent invalidation is expected |
-| Frozen bundle identity mismatch | Re-prepare under the approved new runtime/policy and record the new ID |
+| Failure                             | Check next                                                                                         |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Host missing or cannot start        | Install the complete exported host directory; check platform/ABI and `prlimit` availability        |
+| Runtime rebuild after restore       | Compare runtime inputs and packaged-host fingerprints; changed code or host bytes should rebuild   |
+| Missing physical library path       | Check the logical namespace, installed source, and static plugin policy                            |
+| Fuel exhausted                      | Measure the computation; use `--fuel` for a justified larger instruction budget                    |
+| CPU or wall time exceeded           | Separate proof reduction from GC or host work before increasing limits                             |
+| GC heap or process memory exhausted | Measure live data and collector behavior; more fuel cannot fix memory exhaustion                   |
+| Cache misses after a helper change  | Inspect content, metadata, absence, and directory observations; dependent invalidation is expected |
+| Frozen bundle identity mismatch     | Re-prepare under the approved new runtime/policy and record the new ID                             |
 
 Trusted library progress is printed every 25 completed modules. Successful
 modules are cached immediately, so a later failure does not discard earlier

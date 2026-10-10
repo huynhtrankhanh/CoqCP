@@ -4,34 +4,98 @@
   "operation_attempts": 3,
   "profiles": {
     "small": {
-      "wall_seconds": 120, "cpu_seconds": 60, "memory_mib": 2048,
-      "work_mib": 256, "artifact_mib": 64, "log_mib": 1,
+      "wall_seconds": 120,
+      "cpu_seconds": 60,
+      "memory_mib": 2048,
+      "work_mib": 256,
+      "artifact_mib": 64,
+      "log_mib": 1,
       "fuel": 50000000000
     },
     "full-proof-chain": {
-      "wall_seconds": 1200, "cpu_seconds": 600, "memory_mib": 4096,
-      "work_mib": 256, "artifact_mib": 64, "log_mib": 1,
+      "wall_seconds": 1200,
+      "cpu_seconds": 600,
+      "memory_mib": 4096,
+      "work_mib": 256,
+      "artifact_mib": 64,
+      "log_mib": 1,
       "fuel": 2000000000000
     },
     "kth-proof-chain": {
-      "wall_seconds": 1800, "cpu_seconds": 1200, "memory_mib": 4096,
-      "work_mib": 256, "artifact_mib": 64, "log_mib": 1,
+      "wall_seconds": 1800,
+      "cpu_seconds": 1200,
+      "memory_mib": 4096,
+      "work_mib": 256,
+      "artifact_mib": 64,
+      "log_mib": 1,
       "fuel": 2000000000000
     },
     "koxia-proof-chain": {
-      "wall_seconds": 1800, "cpu_seconds": 600, "memory_mib": 4096,
-      "work_mib": 256, "artifact_mib": 64, "log_mib": 1,
+      "wall_seconds": 1800,
+      "cpu_seconds": 600,
+      "memory_mib": 4096,
+      "work_mib": 256,
+      "artifact_mib": 64,
+      "log_mib": 1,
       "fuel": 2000000000000
     }
   },
   "examples": [
-    {"name": "increment", "spec": "verification/increment/spec/Spec.v", "candidate": "verification/increment/candidate", "axiom_policy": "none", "profile": "small"},
-    {"name": "watermelon", "spec": "verification/watermelon/spec/Spec.v", "candidate": "verification/watermelon/candidate", "axiom_policy": "none", "profile": "full-proof-chain"},
-    {"name": "restore-three-numbers", "spec": "verification/restore-three-numbers/spec/Spec.v", "candidate": "verification/restore-three-numbers/candidate", "axiom_policy": "none", "profile": "full-proof-chain"},
-    {"name": "knapsack", "spec": "verification/knapsack/spec/Spec.v", "candidate": "verification/knapsack/candidate", "axiom_policy": "ci", "profile": "full-proof-chain"},
-    {"name": "disjoint-set-union", "spec": "verification/disjoint-set-union/spec/Spec.v", "candidate": "verification/disjoint-set-union/candidate", "axiom_policy": "ci", "profile": "full-proof-chain"},
-    {"name": "kth-highest-score", "spec": "verification/kth-highest-score/spec/Spec.v", "candidate": "verification/kth-highest-score/candidate", "axiom_policy": "ci", "profile": "kth-proof-chain"},
-    {"name": "permuted-binary-strings", "spec": "verification/permuted-binary-strings/spec/Spec.v", "candidate": "verification/permuted-binary-strings/candidate", "axiom_policy": "ci", "profile": "full-proof-chain"},
-    {"name": "koxia-and-bracket", "spec": "verification/koxia-and-bracket/spec/Spec.v", "candidate": "verification/koxia-and-bracket/candidate", "axiom_policy": "ci", "profile": "koxia-proof-chain"}
+    {
+      "name": "increment",
+      "spec": "verification/increment/spec/Spec.v",
+      "candidate": "verification/increment/candidate",
+      "axiom_policy": "none",
+      "profile": "small"
+    },
+    {
+      "name": "watermelon",
+      "spec": "verification/watermelon/spec/Spec.v",
+      "candidate": "verification/watermelon/candidate",
+      "axiom_policy": "none",
+      "profile": "full-proof-chain"
+    },
+    {
+      "name": "restore-three-numbers",
+      "spec": "verification/restore-three-numbers/spec/Spec.v",
+      "candidate": "verification/restore-three-numbers/candidate",
+      "axiom_policy": "none",
+      "profile": "full-proof-chain"
+    },
+    {
+      "name": "knapsack",
+      "spec": "verification/knapsack/spec/Spec.v",
+      "candidate": "verification/knapsack/candidate",
+      "axiom_policy": "ci",
+      "profile": "full-proof-chain"
+    },
+    {
+      "name": "disjoint-set-union",
+      "spec": "verification/disjoint-set-union/spec/Spec.v",
+      "candidate": "verification/disjoint-set-union/candidate",
+      "axiom_policy": "ci",
+      "profile": "full-proof-chain"
+    },
+    {
+      "name": "kth-highest-score",
+      "spec": "verification/kth-highest-score/spec/Spec.v",
+      "candidate": "verification/kth-highest-score/candidate",
+      "axiom_policy": "ci",
+      "profile": "kth-proof-chain"
+    },
+    {
+      "name": "permuted-binary-strings",
+      "spec": "verification/permuted-binary-strings/spec/Spec.v",
+      "candidate": "verification/permuted-binary-strings/candidate",
+      "axiom_policy": "ci",
+      "profile": "full-proof-chain"
+    },
+    {
+      "name": "koxia-and-bracket",
+      "spec": "verification/koxia-and-bracket/spec/Spec.v",
+      "candidate": "verification/koxia-and-bracket/candidate",
+      "axiom_policy": "ci",
+      "profile": "koxia-proof-chain"
+    }
   ]
 }
