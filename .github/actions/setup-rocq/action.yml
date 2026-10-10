@@ -6,9 +6,12 @@ runs:
     - name: Install build and sandbox dependencies
       shell: bash
       run: |
-        apt-get update
-        apt-get install -y --no-install-recommends ca-certificates curl git python3 build-essential ocaml opam libgmp-dev pkg-config m4 rsync unzip libseccomp-dev bubblewrap passwd util-linux
-        mkdir -p /opt/rocq
+        task_sudo=
+        if [ "$(id -u)" != 0 ]; then task_sudo=sudo; fi
+        $task_sudo apt-get update
+        $task_sudo apt-get install -y --no-install-recommends ca-certificates curl git python3 build-essential ocaml opam libgmp-dev pkg-config m4 rsync unzip passwd util-linux
+        $task_sudo mkdir -p /opt/rocq
+        $task_sudo chown "$(id -u):$(id -g)" /opt/rocq
     - name: Install the pinned proof dependencies
       shell: bash
       run: |

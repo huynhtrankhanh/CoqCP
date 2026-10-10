@@ -35,10 +35,27 @@ sources in the sandbox, and independently checks every helper and the final
 `Implementation` module. Reports and compiled artifacts stay under
 `.verification/`; candidate directories contain only `.v` sources.
 
-The shipped program checks, except the tiny increment example, use 180 seconds of CPU per process,
-4 GiB of memory, and 600 seconds per sandbox command; Koxia allows 1800 seconds
-for compilation of its 74-source chain. The checker CLI's smaller default
-budgets remain available for small submissions.
+Example paths, axiom-policy selections, and resource profiles are configuration
+in [adversarial-examples.json](adversarial-examples.json), validated against the
+independent [JSON Schema](adversarial-examples.schema.json). Python orchestrates
+the checks; it does not define the example configuration. Most complete proof
+chains allow 600 seconds CPU and 4 GiB memory per invocation, with a 1,200-second
+wall deadline per compilation batch or independent checking operation. Freezing
+the spec and checking the candidate are separate operations, so this is not a
+total example duration. Koxia has a longer wall budget, and K-th Highest Score
+has a larger CPU budget. The tiny increment example uses the checker CLI's
+default profile.
+`operation_attempts` permits a bounded retry after a compilation or kernel
+resource failure only when completed modules or library checkpoints were saved.
+Failed attempt reports and artifacts remain under `attempt-N`; logical failures
+and operations without completed progress are not retried. Each attempt retains
+its declared resource limits and full audit.
+
+The default backend compiles Rocq's original C runtime and VM to WASI. Docker
+builds and exports the standalone host, then proof checking runs directly.
+See the [WASI runtime guide](../docs/WasiRuntime.md) and
+[technical decisions](../docs/WasiDecisions.md) for provisioning, cache taint,
+the trust boundary, and performance limits.
 
 Knapsack, Permuted Binary Strings, and Koxia and Bracket certify generated-main
 execution. K-th Highest Score certifies the generated search loop with truthful

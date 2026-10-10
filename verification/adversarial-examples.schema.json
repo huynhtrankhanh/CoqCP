@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:coqcp:adversarial-examples:v1",
+  "title": "Evaluator-owned adversarial examples",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["$schema", "format", "operation_attempts", "profiles", "examples"],
+  "properties": {
+    "$schema": {"const": "adversarial-examples.schema.json"},
+    "format": {"type": "integer", "const": 1},
+    "operation_attempts": {"type": "integer", "enum": [1, 2, 3]},
+    "profiles": {
+      "type": "object",
+      "propertyNames": {"$ref": "#/$defs/name"},
+      "additionalProperties": {"$ref": "#/$defs/limits"}
+    },
+    "examples": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "spec", "candidate", "axiom_policy", "profile"],
+        "properties": {
+          "name": {"$ref": "#/$defs/name"},
+          "spec": {"type": "string", "pattern": "^verification/[a-z0-9]+(?:-[a-z0-9]+)*/spec/Spec\\.v$"},
+          "candidate": {"type": "string", "pattern": "^verification/[a-z0-9]+(?:-[a-z0-9]+)*/candidate$"},
+          "axiom_policy": {"enum": ["none", "ci"]},
+          "profile": {"$ref": "#/$defs/name"}
+        }
+      }
+    }
+  },
+  "$defs": {
+    "name": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"},
+    "positive": {"type": "integer", "minimum": 1},
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["wall_seconds", "cpu_seconds", "memory_mib", "work_mib", "artifact_mib", "log_mib", "fuel"],
+      "properties": {
+        "wall_seconds": {"$ref": "#/$defs/positive"},
+        "cpu_seconds": {"$ref": "#/$defs/positive"},
+        "memory_mib": {"$ref": "#/$defs/positive"},
+        "work_mib": {"$ref": "#/$defs/positive"},
+        "artifact_mib": {"$ref": "#/$defs/positive"},
+        "log_mib": {"$ref": "#/$defs/positive"},
+        "fuel": {"$ref": "#/$defs/positive"}
+      }
+    }
+  }
+}

@@ -60,15 +60,20 @@ Proof.
 Qed.
 
 Definition nonzeroResidues := map Z.of_nat (seq 1 (Z.to_nat (koxiaModulus-1))).
-Lemma nonzeroResidues_member x : In x nonzeroResidues <-> 0 < x < koxiaModulus.
+(* Keep the modulus symbolic when rewriting membership. Unifying [in_seq]
+   with the concrete bound would expand nearly a billion unary successors. *)
+Lemma positive_residues_member modulus x : 0 < modulus ->
+  In x (map Z.of_nat (seq 1 (Z.to_nat (modulus-1)))) <-> 0 < x < modulus.
 Proof.
-  unfold nonzeroResidues. rewrite in_map_iff. split.
+  intro positive. rewrite in_map_iff. split.
   - intros [n [equal member]]. apply in_seq in member. subst x.
-    pose proof modulus_positive. rewrite Z2Nat.inj_sub in member by lia. lia.
+    rewrite Z2Nat.inj_sub in member by lia. lia.
   - intro bound. exists (Z.to_nat x). split; [apply Z2Nat.id; lia |].
-    apply in_seq. pose proof modulus_positive.
+    apply in_seq.
     rewrite Z2Nat.inj_sub by lia. lia.
 Qed.
+Lemma nonzeroResidues_member x : In x nonzeroResidues <-> 0 < x < koxiaModulus.
+Proof. apply positive_residues_member, modulus_positive. Qed.
 Lemma nonzeroResidues_length : Z.of_nat (length nonzeroResidues) = koxiaModulus-1.
 Proof. unfold nonzeroResidues. rewrite length_map, length_seq. apply Z2Nat.id. pose proof modulus_positive; lia. Qed.
 Lemma injective_map_unique {A B} (f : A -> B) xs :
@@ -91,11 +96,18 @@ Lemma multiplication_residues_permutation a : 0 < a < koxiaModulus ->
 Proof.
   intro ha. apply NoDup_Permutation_bis.
   - apply injective_map_unique; [| apply nonzeroResidues_unique].
-    intros x y hx hy equal. apply nonzeroResidues_member in hx. apply nonzeroResidues_member in hy.
+    intros x y hx hy equal.
+    pose proof (proj1 (nonzeroResidues_member x) hx) as hxBound.
+    pose proof (proj1 (nonzeroResidues_member y) hy) as hyBound.
+    clear hx hy.
     apply (modulo_cancel a x y ha) in equal. rewrite !Z.mod_small in equal by lia. exact equal.
   - rewrite length_map. lia.
-  - intros y member. apply in_map_iff in member. destruct member as [x [equal member]].
-    apply nonzeroResidues_member in member. subst y. apply nonzeroResidues_member.
+  - intros y member.
+    destruct (proj1 (@in_map_iff Z Z (fun x => (a*x) mod koxiaModulus)
+      nonzeroResidues y) member) as [x [equal xMember]].
+    pose proof (proj1 (nonzeroResidues_member x) xMember) as xBound.
+    clear member xMember. subst y.
+    apply (proj2 (nonzeroResidues_member ((a*x) mod koxiaModulus))).
     pose proof (residue_bounds (a*x)) as range. split; [| lia].
     assert (nonzero : (a*x) mod koxiaModulus <> 0).
     { intro zero. assert (cancel : x mod koxiaModulus = 0).
@@ -110,7 +122,8 @@ Proof.
   apply residueProduct_permutation in permutation.
   rewrite residueProduct_scale, nonzeroResidues_length in permutation.
   assert (hp : 0 < residueProduct nonzeroResidues < koxiaModulus).
-  { apply residueProduct_positive. apply Forall_forall. intros x member. apply nonzeroResidues_member. exact member. }
+  { apply residueProduct_positive. apply Forall_forall. intros x member.
+    exact (proj1 (nonzeroResidues_member x) member). }
   apply (modulo_cancel (residueProduct nonzeroResidues) (a^(koxiaModulus-1)) 1 hp).
   rewrite Z.mul_comm, permutation, Z.mul_1_r, Z.mod_small by lia.
   reflexivity.

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Freeze evaluator specifications and check source-only Rocq submissions."""
 import argparse
+from contextlib import contextmanager
+import fcntl
 import base64
 import hashlib
 import json
@@ -22,13 +24,15 @@ from ci_policy import POLICY_FILE, trusted_axioms, trusted_inductives
 REPO = Path(__file__).resolve().parents[2]
 TOOLS = Path(__file__).resolve().parent
 BIN = REPO / ".verification/bin"
+WASI_BIN = REPO / ".verification/wasi"
+WASI_LIB = REPO / ".verification/wasi-libraries"
 VERSION = "9.3.0"
 TOOLCHAIN = Path("/opt/rocq") / VERSION
 PLUGIN_POLICY = REPO / "verification/compiler_plugins.json"
 BINARIES = ["spec-check", "sandbox-exec", "compile-safe"]
 NAME = re.compile(r"[A-Za-z][A-Za-z0-9_]*\.v\Z")
 DEFAULT_LIMITS = dict(wall_seconds=120, cpu_seconds=60, memory_mib=2048,
-                      work_mib=256, artifact_mib=64, log_mib=1)
+                      work_mib=256, artifact_mib=64, log_mib=1, fuel=50_000_000_000)
 
 
 class Rejected(Exception):
@@ -91,7 +95,23 @@ def command(program):
     return str(found)
 
 
-def build():
+@contextmanager
+def runtime_build_lock(backend):
+    directory = WASI_BIN if backend == "wasi" else BIN
+    directory.mkdir(parents=True, exist_ok=True)
+    with (directory / ".build.lock").open("a") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        yield
+
+
+def build(backend="wasi"):
+    if backend == "wasi":
+        import wasi_build
+        with runtime_build_lock(backend):
+            wasi_build.build(sys.modules[__name__])
+        import wasi_libraries
+        wasi_libraries.build(sys.modules[__name__])
+        return
     BIN.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="build-", dir=BIN.parent) as temporary:
         work = Path(temporary)
@@ -121,10 +141,21 @@ def build():
                         "-cclib", "-lseccomp"], cwd=work, env=build_env, check=True)
         for name in BINARIES:
             os.replace(work / name, BIN / name)
-    (BIN / "sources.json").write_bytes(encoded(build_fingerprints()))
+    (BIN / "sources.json").write_bytes(encoded(build_fingerprints("bubblewrap")))
 
 
-def build_fingerprints():
+def build_fingerprints(backend="wasi"):
+    if backend == "wasi":
+        return {name: digest(TOOLS / name) for name in [
+            "wasi_build.py", "wasi_c_runtime.py", "portable/ocaml-wasi.patch",
+            "wasi_checker_cache.py", "portable/checked_prefix.ml",
+            "install_wasi_assets.py",
+            "wasi_z.ml", "wasi_q.ml",
+            "compile_wasi.ml", "dep_wasi.ml", "spec_check.ml", "ci_policy.py",
+            "wasi_host.py", "wasi_fs.py",
+        ]} | {"trusted_axioms": digest(POLICY_FILE), "compiler_plugins": digest(PLUGIN_POLICY),
+              "host": {str(path.relative_to("/opt/rocq/wasi/host")): digest(path)
+                       for path in sorted(Path("/opt/rocq/wasi/host").rglob("*")) if path.is_file()}}
     return dict({name: digest(TOOLS / name) for name in
                  ["spec_check.ml", "sandbox_exec.c", "compile_safe.ml", "compile_lockdown.c"]},
                 trusted_axioms=digest(POLICY_FILE), compiler_plugins=digest(PLUGIN_POLICY))
@@ -143,15 +174,25 @@ def compiler_plugins():
     return plugins
 
 
-def ensure_built():
-    expected = build_fingerprints()
-    if not all((BIN / name).is_file() for name in [*BINARIES, "sources.json"]):
-        build()
-    elif json.loads((BIN / "sources.json").read_bytes()) != expected:
-        build()
+def ensure_built(backend="wasi"):
+    directory = WASI_BIN if backend == "wasi" else BIN
+    binaries = [name + suffix for name in ["spec-check", "compile-safe", "rocq-dep"]
+                for suffix in [".wasm", ".cwasm"]] if backend == "wasi" else BINARIES
+    with runtime_build_lock(backend):
+        expected = build_fingerprints(backend)
+        if (not all((directory / name).is_file() for name in [*binaries, "sources.json"]) or
+                json.loads((directory / "sources.json").read_bytes()) != expected):
+            if backend == "wasi":
+                import wasi_build
+                wasi_build.build(sys.modules[__name__])
+            else:
+                build(backend)
+    if backend == "wasi":
+        import wasi_libraries
+        wasi_libraries.build(sys.modules[__name__])
 
 
-def toolchain():
+def toolchain(backend="wasi"):
     rocq = command("rocq")
     if not Path(rocq).is_relative_to(TOOLCHAIN):
         raise Rejected(f"Use the pinned Rocq installation under {TOOLCHAIN}")
@@ -165,9 +206,22 @@ def toolchain():
                      env=probe_env).decode().strip()).resolve()
     if not coqlib.is_relative_to(TOOLCHAIN / "lib"):
         raise Rejected("Rocq libraries must belong to the pinned toolchain")
-    files = [Path(rocq), *(BIN / name for name in BINARIES),
+    binaries = [WASI_BIN / (name + suffix) for name in ["spec-check", "compile-safe", "rocq-dep"]
+                for suffix in [".wasm", ".cwasm"]] if backend == "wasi" else [BIN / name for name in BINARIES]
+    files = [Path(rocq), *binaries,
              TOOLS / "worker.py", TOOLS / "check.py", TOOLS / "ci_policy.py", POLICY_FILE,
              PLUGIN_POLICY]
+    if backend == "wasi":
+        files += [TOOLS / name for name in ["wasi_host.py", "wasi_fs.py", "wasi_backend.py", "wasi_cache.py", "wasi_libraries.py"]]
+        files += sorted((TOOLS / "portable").glob("*.v"))
+        # The complete trusted source set defines library identity. Materializing
+        # another approved dependency must not invalidate a frozen contract.
+        files += sorted(coqlib.rglob("*.v"))
+        files += [REPO / source for source in project_layout()[1]]
+        host = Path("/opt/rocq/wasi/host/coqcp-wasi-host")
+        if not host.is_file():
+            raise Rejected("WASI host missing; run tools/install-wasi.sh")
+        files += sorted(path for path in host.parent.rglob("*") if path.is_file())
     # Rocq 9.3 installs package libraries in rocq.d as well as legacy coqlib
     # mirrors. Fingerprint both representations and their findlib metadata.
     files += sorted((TOOLCHAIN / "lib").rglob("*.vo"))
@@ -178,10 +232,20 @@ def toolchain():
     files += sorted(path for path in (TOOLCHAIN / "libexec").rglob("*") if path.is_file())
     files += [TOOLCHAIN / "lib/findlib.conf"]
     state = hashlib.sha256()
+    compiler_state = hashlib.sha256()
+    checker_images = {WASI_BIN / "spec-check.wasm", WASI_BIN / "spec-check.cwasm"}
     for path in sorted(set(files)):
-        state.update(encoded([str(path), digest(path)]))
-    return {"version": VERSION, "rocq": rocq,
-            "coqlib": str(coqlib), "fingerprint": state.hexdigest()}
+        identity = encoded([str(path), digest(path)])
+        state.update(identity)
+        # Independent checker changes invalidate acceptance, while compilation
+        # still uses the same executable, host, policy and visibility protocol.
+        if path.suffix not in (".vo", ".v") and path not in checker_images:
+            compiler_state.update(identity)
+    result = {"version": VERSION, "rocq": rocq, "backend": backend,
+              "coqlib": str(coqlib), "fingerprint": state.hexdigest()}
+    if backend == "wasi":
+        result["compiler_fingerprint"] = compiler_state.hexdigest()
+    return result
 
 
 class Sandbox:
@@ -189,6 +253,7 @@ class Sandbox:
         if os.getuid() == 0 or os.geteuid() == 0:
             raise Rejected("Run proof checking as a non-root OS user; root bypasses process-count limits")
         self.limits = limits
+        self.name = "bubblewrap+seccomp"
         self.bwrap = command("bwrap")
         if network_isolation not in ("auto", "namespace", "seccomp"):
             raise Rejected("Unknown network isolation mode")
@@ -342,12 +407,24 @@ class Sandbox:
             process.stderr.close()
 
 
+def make_sandbox(limits, backend="wasi", network_isolation="auto", runtime=None,
+                 cache_directory=None):
+    if backend == "wasi":
+        if network_isolation != "auto":
+            raise Rejected("WASI network isolation is enforced by capabilities")
+        from wasi_backend import WasiSandbox
+        return WasiSandbox(sys.modules[__name__], limits, runtime, cache_directory)
+    return Sandbox(limits, network_isolation)
+
+
 def library_roots(bundle):
     return [["/bundle/libraries/" + name, name] for name in ["CoqCP", "Generated", "GeneratedExamples"]
             if (bundle / "libraries" / name).exists()]
 
 
 def compile_sources(inputs, sources, namespace, bundle, runtime, sandbox):
+    if hasattr(sandbox, "compile"):
+        return sandbox.compile(inputs, sources, namespace, bundle, runtime)
     config = dict(sandbox.limits, sources=sources, namespace=namespace,
                   rocq=runtime["rocq"], coqlib=runtime["coqlib"], roots=library_roots(bundle))
     if namespace == "Submission":
@@ -407,7 +484,7 @@ def kernel_check(bundle, artifacts, runtime, sandbox, allowed, *, spec_only=Fals
                                   "spec-checked" if spec_only else "accepted")
 
 
-def snapshot_libraries(bundle):
+def project_layout():
     tokens = (REPO / "_CoqProject").read_text().split()
     mappings, sources = [], []
     index = 0
@@ -419,12 +496,18 @@ def snapshot_libraries(bundle):
             if tokens[index].endswith(".v"):
                 sources.append(Path(tokens[index]))
             index += 1
+    return mappings, sources
+
+
+def snapshot_libraries(bundle, runtime):
+    mappings, sources = project_layout()
     for source in sources:
         for physical, logical in mappings:
             if source.is_relative_to(physical):
                 target = bundle / "libraries" / logical / source.relative_to(physical).with_suffix(".vo")
                 target.parent.mkdir(parents=True, exist_ok=True)
-                compiled = REPO / source.with_suffix(".vo")
+                root = WASI_LIB / "project" if runtime.get("backend") == "wasi" else REPO
+                compiled = root / source.with_suffix(".vo")
                 if not compiled.exists():
                     raise Rejected(f"Missing trusted library {compiled}; build the project first")
                 target.write_bytes(read_regular(compiled, 64 * 1024**2))
@@ -443,7 +526,7 @@ def prepare(spec, bundle, runtime, sandbox, allowed):
     bundle.parent.mkdir(parents=True, exist_ok=True)
     bundle.mkdir(mode=0o700)  # Refuse to overwrite an existing specification.
     try:
-        snapshot_libraries(bundle)
+        snapshot_libraries(bundle, runtime)
         (bundle / "spec").mkdir()
         source = read_regular(spec, 8 * 1024**2)
         with tempfile.TemporaryDirectory(prefix="spec-input-") as temporary:
@@ -504,7 +587,7 @@ def evaluate(bundle, spec_id, submission, output, runtime, sandbox):
     validate_bundle(bundle, spec_id, runtime)
     output.parent.mkdir(parents=True, exist_ok=True)
     output.mkdir(mode=0o700)
-    report = dict(status="rejected", spec_id=spec_id, sandbox="bubblewrap+seccomp",
+    report = dict(status="rejected", spec_id=spec_id, sandbox=sandbox.name,
                   network_isolation=sandbox.network_isolation,
                   limits=sandbox.limits, toolchain_fingerprint=runtime["fingerprint"])
     try:
@@ -542,6 +625,8 @@ def evaluate(bundle, spec_id, submission, output, runtime, sandbox):
             report["stage"] = "complete"
     except (Rejected, OSError, ValueError, subprocess.SubprocessError) as error:
         report["reason"] = str(error)
+    if hasattr(sandbox, "cache"):
+        report["cache"] = dict(hits=sandbox.cache.hits, misses=sandbox.cache.misses)
     (output / "report.json").write_bytes(encoded(report) + b"\n")
     return report
 
@@ -549,7 +634,7 @@ def evaluate(bundle, spec_id, submission, output, runtime, sandbox):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="action", required=True)
-    sub.add_parser("build", help="Build the standalone kernel gate and sandbox helper")
+    build_parser = sub.add_parser("build", help="Build the standalone compiler and kernel gate")
     freeze = sub.add_parser("prepare", help="Freeze an evaluator-controlled Spec.v and its policy")
     freeze.add_argument("--spec", type=Path, required=True)
     freeze.add_argument("--bundle", type=Path, required=True)
@@ -560,7 +645,12 @@ def main():
     check.add_argument("--spec-id", required=True, help="ID recorded by the evaluator at preparation")
     check.add_argument("--submission", type=Path, required=True)
     check.add_argument("--output", type=Path, required=True, help="New directory for artifacts and report")
+    for child in [build_parser, freeze, check]:
+        child.add_argument("--backend", choices=["wasi", "bubblewrap"], default="wasi")
     for child in [freeze, check]:
+        child.add_argument("--cache", type=Path, default=REPO / ".verification/wasi-cache",
+                           help="Evaluator-owned persistent cache directory")
+        child.add_argument("--no-cache", action="store_true", help="Recompile and independently recheck every input")
         child.add_argument("--network-isolation", choices=["auto", "namespace", "seccomp"],
                            default="auto", help="Probe a network namespace then safely fall back "
                            "to blocking network syscalls, or require one specific mode")
@@ -569,14 +659,17 @@ def main():
     args = parser.parse_args()
     try:
         if args.action == "build":
-            build()
-            print(json.dumps({"status": "built", "directory": str(BIN)}))
+            build(args.backend)
+            print(json.dumps({"status": "built", "backend": args.backend,
+                              "directory": str(WASI_BIN if args.backend == "wasi" else BIN)}))
             return 0
         limits = {name: getattr(args, name) for name in DEFAULT_LIMITS}
         if any(value <= 0 for value in limits.values()):
             raise Rejected("All resource limits must be positive")
-        ensure_built()
-        runtime, sandbox = toolchain(), Sandbox(limits, args.network_isolation)
+        ensure_built(args.backend)
+        runtime = toolchain(args.backend)
+        sandbox = make_sandbox(limits, args.backend, args.network_isolation, runtime,
+                               None if args.no_cache else args.cache)
         if args.action == "prepare":
             allowed = trusted_axioms() if args.axiom_policy == "ci" else []
             spec_id = prepare(args.spec.resolve(), args.bundle.absolute(), runtime, sandbox, allowed)

@@ -7,10 +7,15 @@ on:
       - '**.v'
       - 'tools/adversarial/**'
       - 'verification/trusted_axioms.json'
+      - 'verification/compiler_plugins.json'
+      - 'verification/adversarial-examples*.json'
       - '_CoqProject'
       - 'coqcp-toolchain.opam'
       - 'tools/install-toolchain.sh'
+      - 'tools/install-wasi.sh'
+      - 'tools/build-wasi-host.sh'
       - '.github/actions/setup-rocq/**'
+      - '.github/actions/setup-wasi/**'
       - '.github/workflows/adversarial.yml'
   pull_request:
     branches: [main]
@@ -20,29 +25,54 @@ permissions:
 
 jobs:
   acceptance-and-containment:
-    runs-on: ubuntu-latest
-    timeout-minutes: 45
-    # The outer container permits namespace creation; every submitted compiler
-    # and proof checker runs inside the inner Bubblewrap/seccomp sandbox.
-    container:
-      image: ubuntu:26.04
-      options: --security-opt seccomp=unconfined --security-opt apparmor=unconfined
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
     steps:
       - uses: actions/checkout@v4
-      - name: Install Rocq and stdpp
-        uses: ./.github/actions/setup-rocq
+      - name: Restore WASI host, tools, and proof caches
+        id: wasi
+        uses: ./.github/actions/setup-wasi
       - name: Build shared theories and generated definitions
         run: |
           rocq makefile -f _CoqProject -o Makefile
           make -j2
-      - name: Create an unprivileged evaluator user
-        run: |
-          useradd --uid 10001 --create-home proofchecker
-          chown -R proofchecker:proofchecker .
       - name: Run adversarial acceptance and sandbox regressions
-        run: runuser -u proofchecker -- python3 -m unittest discover -s tools/adversarial/tests -v
+        env:
+          COQCP_TEST_CACHE: .verification/wasi-cache
+        run: python3 -m unittest discover -s tools/adversarial/tests -v
+      # Retain completed modules/checkpoints even if a later test fails.
+      - name: Save compiled runtimes and proof subtrees
+        if: always() && steps.wasi.outputs.proof-cache-key != ''
+        uses: actions/cache/save@v4
+        with:
+          key: ${{ steps.wasi.outputs.proof-cache-key }}
+          path: |
+            .verification/wasi
+            .verification/wasi-libraries
+            .verification/wasi-cache
+
+  complete-examples:
+    needs: acceptance-and-containment
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore WASI host, tools, and proof caches
+        id: wasi
+        uses: ./.github/actions/setup-wasi
       - name: Check every program's spec and full candidate proof chain
-        run: runuser -u proofchecker -- python3 tools/adversarial/examples.py --output .verification/ci-examples
+        run: python3 tools/adversarial/examples.py --output .verification/ci-examples
+      # This job restores the preceding job's completed work and saves its own
+      # immutable snapshot for the next workflow run.
+      - name: Save compiled runtimes and proof subtrees
+        if: always() && steps.wasi.outputs.proof-cache-key != ''
+        uses: actions/cache/save@v4
+        with:
+          key: ${{ steps.wasi.outputs.proof-cache-key }}
+          path: |
+            .verification/wasi
+            .verification/wasi-libraries
+            .verification/wasi-cache
       - name: Upload checked artifacts and reports
         if: always()
         uses: actions/upload-artifact@v4

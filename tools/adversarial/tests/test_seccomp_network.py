@@ -1,5 +1,6 @@
 """Network isolation when an enclosing sandbox denies network namespaces."""
 import errno
+import os
 import sys
 import tempfile
 import unittest
@@ -11,10 +12,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import check as gate
 
 
+@unittest.skipUnless(os.environ.get("COQCP_TEST_BUBBLEWRAP") == "1",
+                     "Optional native backend; set COQCP_TEST_BUBBLEWRAP=1 to test")
 class SeccompNetworkTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        gate.ensure_built()
+        gate.ensure_built("bubblewrap")
 
     def sandbox(self):
         return gate.Sandbox(dict(gate.DEFAULT_LIMITS), network_isolation="seccomp")
@@ -125,13 +128,11 @@ print('worker bounded')
                 gate.Sandbox(dict(gate.DEFAULT_LIMITS))
 
 
+@unittest.skipUnless(os.environ.get("COQCP_TEST_BUBBLEWRAP") == "1",
+                     "Optional native backend; set COQCP_TEST_BUBBLEWRAP=1 to test")
 class SeccompAcceptanceTests(test_check.AcceptanceTests):
-    @classmethod
-    def setUpClass(cls):
-        original = test_check.gate.Sandbox
-        with patch.object(test_check.gate, 'Sandbox',
-                          side_effect=lambda limits: original(limits, network_isolation='seccomp')):
-            super().setUpClass()
+    backend = "bubblewrap"
+    network_isolation = "seccomp"
 
 
 if __name__ == '__main__':

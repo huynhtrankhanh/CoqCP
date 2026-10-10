@@ -1,0 +1,253 @@
+--- a/runtime/domain.c
++++ b/runtime/domain.c
+@@ -957,6 +957,9 @@
+ 
+ void caml_init_domains(uintnat max_domains, uintnat minor_heap_wsz)
+ {
++#ifdef __wasi__
++  max_domains = 1;
++#endif
+   atomic_store_relaxed(&domains_exiting, 0);
+   atomic_store_relaxed(&caml_num_domains_running, 0);
+ 
+@@ -1117,7 +1120,7 @@
+ static void install_backup_thread (dom_internal* di)
+ {
+   int err;
+-#ifndef _WIN32
++#if !defined(_WIN32) && !defined(__wasi__)
+   sigset_t mask, old_mask;
+ #endif
+ 
+@@ -1132,7 +1135,7 @@
+ 
+   CAMLassert(!backup_thread_running(di));
+ 
+-#ifndef _WIN32
++#if !defined(_WIN32) && !defined(__wasi__)
+   /* No signals on the backup thread */
+   sigfillset(&mask);
+   pthread_sigmask(SIG_BLOCK, &mask, &old_mask);
+@@ -1142,7 +1145,7 @@
+   err = pthread_create(&di->backup_thread, 0, backup_thread_func, (void*)di);
+   caml_check_error(err, "failed to create domain backup thread");
+ 
+-#ifndef _WIN32
++#if !defined(_WIN32) && !defined(__wasi__)
+   pthread_sigmask(SIG_SETMASK, &old_mask, NULL);
+ #endif
+ 
+@@ -1229,7 +1232,7 @@
+   struct domain_startup_params* p = v;
+   struct domain_ml_values *ml_values = p->ml_values;
+ 
+-#ifndef _WIN32
++#if !defined(_WIN32) && !defined(__wasi__)
+   void * signal_stack = caml_init_signal_stack();
+   if (signal_stack == NULL) {
+     caml_fatal_error("Failed to create domain: signal stack");
+@@ -1294,7 +1297,7 @@
+   } else {
+     caml_gc_log("Failed to create domain");
+   }
+-#ifndef _WIN32
++#if !defined(_WIN32) && !defined(__wasi__)
+   caml_free_signal_stack(signal_stack);
+ #endif
+   return 0;
+@@ -1534,7 +1537,7 @@
+ 
+   #ifdef DEBUG
+   Caml_state->inside_stw_handler = 1;
+-  #endif
++#endif
+   stw_request.callback(
+       domain,
+       stw_request.data,
+@@ -1542,7 +1545,7 @@
+       stw_request.participating);
+   #ifdef DEBUG
+   Caml_state->inside_stw_handler = 0;
+-  #endif
++#endif
+ 
+   decrement_stw_domains_still_processing();
+ 
+@@ -1743,12 +1746,12 @@
+ 
+   #ifdef DEBUG
+   domain_state->inside_stw_handler = 1;
+-  #endif
++#endif
+   handler(domain_state, data,
+           stw_request.num_domains, stw_request.participating);
+   #ifdef DEBUG
+   domain_state->inside_stw_handler = 0;
+-  #endif
++#endif
+ 
+   /* Note: the last domain passing through this function will
+      temporarily take [all_domains_lock] again and use it to broadcast
+@@ -2225,7 +2228,11 @@
+       /* If this STW request is handled by the backup thread, the
+          domain thread is currently running C code. */
+       domain_self->domain_canceled = true;
++#ifdef __wasi__
++      caml_fatal_error("WASI does not support canceling domains");
++#else
+       (void)pthread_cancel(domain_self->tid);
++#endif
+       /* We are intentionally not waiting for the thread to terminate here,
+          and not decrementing the number of running domains either, since
+          we don't know the state of the various locks and condition
+@@ -2240,7 +2247,11 @@
+       /* No particular memory resource cleanup is attempted here, for we
+          have no idea which state each domain is in. */
+     }
++#ifdef __wasi__
++    caml_fatal_error("WASI does not support domain thread exit");
++#else
+     pthread_exit(0);
++#endif
+   }
+ }
+ 
+--- a/runtime/startup_aux.c
++++ b/runtime/startup_aux.c
+@@ -127,6 +127,9 @@
+   }
+ 
+   /* Validate */
++#ifdef __wasi__
++  params.max_domains = 1;
++#endif
+   if (params.max_domains < 1) {
+     caml_fatal_error("OCAMLRUNPARAM: max_domains(d) must be at least 1");
+   }
+--- a/runtime/unix.c
++++ b/runtime/unix.c
+@@ -405,7 +405,9 @@
+ 
+ char *caml_secure_getenv (char const *var)
+ {
+-#ifdef HAS_SECURE_GETENV
++#ifdef __wasi__
++  return getenv(var);
++#elif defined(HAS_SECURE_GETENV)
+   return secure_getenv (var);
+ #elif defined (HAS___SECURE_GETENV)
+   return __secure_getenv (var);
+@@ -472,7 +474,12 @@
+   uintnat alloc_sz = size;
+   void* mem;
+ 
+-  mem = mmap(0, alloc_sz, reserve_only ? PROT_NONE : (PROT_READ | PROT_WRITE),
++#ifdef __wasi__
++  int prot = PROT_READ | PROT_WRITE;
++#else
++  int prot = reserve_only ? PROT_NONE : PROT_READ | PROT_WRITE;
++#endif
++  mem = mmap(0, alloc_sz, prot,
+              MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+   if (mem == MAP_FAILED)
+     return 0;
+@@ -482,12 +489,18 @@
+ 
+ static void* map_fixed(void* mem, uintnat size, int prot)
+ {
++#ifdef __wasi__
++  if (prot != PROT_NONE) memset(mem, 0, size);
++  return mem;
++#else
++
+   if (mmap(mem, size, prot, MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED,
+            -1, 0) == MAP_FAILED) {
+     return 0;
+   } else {
+     return mem;
+   }
++#endif
+ }
+ 
+ #else
+--- a/runtime/platform.c
++++ b/runtime/platform.c
+@@ -54,7 +54,11 @@
+   pthread_mutexattr_t attr;
+   rc = pthread_mutexattr_init(&attr);
+   if (rc != 0) goto error1;
++#ifdef __wasi__
++  rc = pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_NORMAL);
++#else
+   rc = pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_ERRORCHECK);
++#endif
+   if (rc != 0) goto error2;
+   rc = pthread_mutex_init(m, &attr);
+   // fall through
+--- a/runtime/sys.c
++++ b/runtime/sys.c
+@@ -29,7 +29,7 @@
+ #ifdef _WIN32
+ #include <direct.h> /* for _wchdir and _wgetcwd */
+ #include <io.h> /* for _wopen and close */
+-#else
++#elif !defined(__wasi__)
+ #include <sys/wait.h>
+ #endif
+ #include "caml/config.h"
+@@ -589,8 +589,8 @@
+         #define CLK_TCK HZ
+       #else
+         #define CLK_TCK 60
+-      #endif
+     #endif
++  #endif
+     struct tms t;
+     clock_t acc = 0;
+     times(&t);
+@@ -603,7 +603,7 @@
+     /* clock() is standard ANSI C. We have no way of getting
+        subprocess times in this branch. */
+     return (double)clock_os() / CLOCKS_PER_SEC;
+-  #endif
++#endif
+ #endif
+ }
+ 
+@@ -659,7 +659,9 @@
+   if (n < 16) data[n++] = time(NULL);
+ #endif
+   if (n < 16) data[n++] = getpid();
++#ifndef __wasi__
+   if (n < 16) data[n++] = getppid();
++#endif
+   return n;
+ }
+ #endif
+--- a/runtime/sync_posix.h
++++ b/runtime/sync_posix.h
+@@ -37,7 +37,11 @@
+ 
+   rc = pthread_mutexattr_init(&attr);
+   if (rc != 0) goto error1;
++#ifdef __wasi__
++  rc = pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_NORMAL);
++#else
+   rc = pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_ERRORCHECK);
++#endif
+   if (rc != 0) goto error2;
+   m = caml_stat_alloc_noexc(sizeof(pthread_mutex_t));
+   if (m == NULL) { rc = ENOMEM; goto error2; }
+--- a/otherlibs/unix/envir_unix.c
++++ b/otherlibs/unix/envir_unix.c
+@@ -39,7 +39,9 @@
+ 
+ static char **secure_environ(void)
+ {
+-#ifdef HAS_GETAUXVAL
++#ifdef __wasi__
++  return environ;
++#elif defined(HAS_GETAUXVAL)
+   if (!getauxval(AT_SECURE))
+     return environ;
+   else

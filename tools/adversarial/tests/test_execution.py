@@ -7,20 +7,28 @@ import subprocess
 import tempfile
 import unittest
 
-from test_check import gate, VALID
+from test_check import gate, VALID, fixture_cache
 
 
 class CompilerExecutionTests(unittest.TestCase):
+    backend = "wasi"
+
     @classmethod
     def setUpClass(cls):
-        gate.ensure_built()
+        gate.ensure_built(cls.backend)
         cls.temporary = tempfile.TemporaryDirectory(prefix="coqcp-execution-tests-")
         cls.root = Path(cls.temporary.name)
-        cls.runtime = gate.toolchain()
-        cls.sandbox = gate.Sandbox(dict(gate.DEFAULT_LIMITS))
+        cls.runtime = gate.toolchain(cls.backend)
+        # Independent checking includes the imported tactic-library closure.
+        cls.sandbox = gate.make_sandbox(dict(gate.DEFAULT_LIMITS, cpu_seconds=600,
+                                        wall_seconds=1200, memory_mib=4096,
+                                        fuel=2_000_000_000_000), cls.backend,
+                                        runtime=cls.runtime, cache_directory=fixture_cache(cls.root))
         cls.bundle = cls.root / "bundle"
         cls.spec_id = gate.prepare(gate.REPO / "verification/increment/spec/Spec.v",
                                   cls.bundle, cls.runtime, cls.sandbox, [])
+        if cls.backend == "wasi":
+            return
         cls.plugins = cls.root / "plugins"
         attack = cls.plugins / "coqcp_attack"
         attack.mkdir(parents=True)
@@ -118,9 +126,12 @@ let () =
 
     @classmethod
     def tearDownClass(cls):
+        if hasattr(cls.sandbox, "close"):
+            cls.sandbox.close()
         cls.temporary.cleanup()
 
-    def evaluate(self, source, extra=None, *, accepted=False):
+    def evaluate(self, source, extra=None, *, accepted=False,
+                 reason="Disabled in the submission compiler: dynamic ML plugin"):
         with tempfile.TemporaryDirectory(dir=self.root) as temporary:
             root = Path(temporary)
             submission = root / "submission"
@@ -133,14 +144,16 @@ let () =
             self.assertEqual(report["status"], "accepted" if accepted else "rejected", report)
             if not accepted:
                 self.assertEqual(report["stage"], "compilation", report)
-                self.assertIn("Disabled in the submission compiler: dynamic ML plugin", report["reason"])
+                self.assertIn(reason, report["reason"])
             return report
 
     def test_direct_unapproved_plugin(self):
         self.evaluate('Declare ML Module "rocq-runtime.plugins.extraction".\n' + VALID)
 
     def test_plugin_loaded_by_require(self):
-        self.evaluate("From Corelib Require Import extraction.Extraction.\n" + VALID)
+        self.evaluate("From Corelib Require Import extraction.Extraction.\n" + VALID,
+                      reason="Unable to locate library" if self.backend == "wasi" else
+                      "Disabled in the submission compiler: dynamic ML plugin")
 
     def test_plugin_in_loaded_source(self):
         self.evaluate('Load "/inputs/Payload.v".\n' + VALID,
@@ -162,6 +175,8 @@ let () =
                       accepted=True)
 
     def test_real_native_payload_runs_in_stock_compiler_and_is_blocked_in_safe_compiler(self):
+        if self.backend != "bubblewrap":
+            self.skipTest("Native executable payload fixture")
         with tempfile.TemporaryDirectory(dir=self.root) as temporary:
             inputs = Path(temporary)
             (inputs / "Candidate.v").write_text('Declare ML Module "coqcp_attack".\n')
@@ -187,9 +202,17 @@ print('payload-blocked')
             self.assertEqual(result, b"payload-blocked\n")
 
     def test_lockdown_blocks_exec_and_executable_memory_in_all_threads(self):
+        if self.backend != "bubblewrap":
+            self.skipTest("Native executable memory and OS thread restrictions")
         result = self.sandbox.run(["/probe"],
                                  [(self.probe, "/probe"), (self.plugins, "/plugins")])
         self.assertEqual(result, b"locked\n")
+
+
+@unittest.skipUnless(os.environ.get("COQCP_TEST_BUBBLEWRAP") == "1",
+                     "Optional native backend; set COQCP_TEST_BUBBLEWRAP=1 to test")
+class NativeCompilerExecutionTests(CompilerExecutionTests):
+    backend = "bubblewrap"
 
 
 if __name__ == "__main__":

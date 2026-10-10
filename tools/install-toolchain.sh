@@ -16,7 +16,7 @@ if ! opam repository list --all --short | awk '$0 == "rocq-released" {found=1} E
   opam repository add rocq-released https://rocq-prover.org/opam/released --dont-select --yes
 fi
 if [[ ! -d "$OPAMROOT/$task_switch/.opam-switch" ]]; then
-  opam switch create "$task_switch" ocaml-system --yes --jobs=2
+  opam switch create "$task_switch" ocaml-base-compiler.5.4.0 --yes --jobs=2
 fi
 opam repository set-repos rocq-released default --switch="$task_switch" --yes
 # Prefer the switch's libraries over libraries from an older system Coq.

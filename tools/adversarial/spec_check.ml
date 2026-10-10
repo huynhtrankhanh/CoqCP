@@ -69,10 +69,12 @@ let audit env opac allowed =
       safe_flags (Constant.to_string constant) body.const_typing_flags;
       if check_axioms && not (Declareops.constant_has_body body) &&
          (match Environ.lookup_constant_opt constant env with None -> true | Some _ -> false) then begin
-        (* The checker keeps sealed-body dependencies in an abstract table.
-           Extend a temporary environment to query that table for constants
-           in unapplied functor bodies, which global folds do not include. *)
-        let local = Environ.add_constant constant body env in
+        (* Global dependencies are already in [axioms]. The upstream helper
+           folds all constants, so query this hidden declaration alone: its
+           sealed-body dependencies still come from the same opaque table.
+           Adding it to the full environment would rescan every global for
+           each hidden functor declaration. No typechecking happens here. *)
+        let local = Environ.add_constant constant body Environ.empty_env in
         let dependencies = Coq_checklib.Mod_checking.constants_of_opaques local opac in
         List.iter (fun dependency -> axioms := Cset_env.add dependency !axioms) dependencies
       end
@@ -98,7 +100,16 @@ let audit env opac allowed =
 
 let () =
   try
+    (* Large imported environments outlive short typechecking allocations.
+       Keep a modest nursery and avoid repeatedly tracing that live graph.
+       WASM32 uses eight MiB here; process/guest limits still bound the heap. *)
+    let gc = Gc.get () in
+    Gc.set { gc with minor_heap_size = 2 * 1024 * 1024; space_overhead = 200 };
     if Coq_config.version <> "9.3.0" then fail "This checker requires Rocq 9.3.0";
+    if not Coq_config.bytecode_compiler then fail "This checker requires Rocq VM support";
+    (* Match upstream rocqchk's VM mode: discard stored VM metadata and
+       recompile bytecode from the declarations before checking them. *)
+    Coq_checklib.CheckFlags.enable_vm := true;
     let roots = ref [] and allowed = ref [] and libraries = ref [] in
     let freeze = ref false in
     let rec args = function
@@ -129,7 +140,7 @@ let () =
       (if !freeze then [] else "Submission.Candidate" :: !libraries) in
     let senv = Safe_typing.empty_environment
       |> Safe_typing.set_impredicative_set false |> Safe_typing.set_indices_matter false
-      |> Safe_typing.set_VM false |> Safe_typing.set_native_compiler false
+      |> Safe_typing.set_VM true |> Safe_typing.set_native_compiler false
       |> Safe_typing.set_allow_sprop true in
     let senv, opac = Check.recheck_library senv ~norec:[] ~admit:[]
       ~check:(List.map logical_file check) in

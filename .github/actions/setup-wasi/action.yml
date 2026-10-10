@@ -1,0 +1,59 @@
+name: Restore and install the WASI proof toolchain
+description: Restore the Docker-exported host, pinned tools, and validated proof caches
+outputs:
+  proof-cache-key:
+    description: Unique immutable proof snapshot key for this run and job
+    value: ${{ steps.proof-cache.outputs.cache-primary-key }}
+runs:
+  using: composite
+  steps:
+    - name: Restore standalone WASI host
+      id: host-cache
+      uses: actions/cache/restore@v4
+      with:
+        path: .verification/wasi-host
+        key: wasi-host-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('tools/adversarial/Dockerfile.wasi-host', 'tools/adversarial/host-requirements.txt', 'tools/adversarial/install_wasi_assets.py', 'tools/adversarial/wasi_host.py', 'tools/adversarial/wasi_fs.py') }}
+    - name: Build standalone host with Docker
+      if: steps.host-cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: bash tools/build-wasi-host.sh
+    - name: Cache the exported standalone host
+      if: steps.host-cache.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v4
+      with:
+        path: .verification/wasi-host
+        key: ${{ steps.host-cache.outputs.cache-primary-key }}
+    # Docker is no longer needed after exporting the standalone executable.
+    - name: Create toolchain cache directory
+      shell: bash
+      run: |
+        sudo mkdir -p /opt/rocq
+        sudo chown "$(id -u):$(id -g)" /opt/rocq
+    - name: Restore proof toolchain
+      uses: actions/cache@v4
+      with:
+        path: /opt/rocq
+        key: rocq-wasi-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('coqcp-toolchain.opam', 'tools/install-toolchain.sh', 'tools/install-wasi.sh', 'tools/adversarial/install_wasi_assets.py', 'tools/adversarial/wasi_build.py', 'tools/adversarial/wasi_*.ml') }}
+    - name: Install Rocq and stdpp
+      uses: ./.github/actions/setup-rocq
+    - name: Install WASI compiler and exported host
+      shell: bash
+      run: |
+        bash tools/install-wasi.sh --no-host
+        rm -rf /opt/rocq/wasi/host
+        mkdir -p /opt/rocq/wasi/host
+        cp -a .verification/wasi-host/host/. /opt/rocq/wasi/host/
+    - name: Restore compiled runtimes and proof subtrees
+      id: proof-cache
+      uses: actions/cache/restore@v4
+      with:
+        path: |
+          .verification/wasi
+          .verification/wasi-libraries
+          .verification/wasi-cache
+        key: wasi-proofs-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('tools/adversarial/*.py', 'tools/adversarial/*.ml', 'tools/adversarial/portable/**', 'tools/adversarial/host-requirements.txt', 'verification/compiler_plugins.json', 'verification/trusted_axioms.json', 'verification/adversarial-examples*.json', 'coqcp-toolchain.opam', '_CoqProject') }}-${{ hashFiles('theories/**/*.v', 'generated-coq/**/*.v', 'verification/**/*.v') }}-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.job }}
+        restore-keys: |
+          wasi-proofs-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('tools/adversarial/*.py', 'tools/adversarial/*.ml', 'tools/adversarial/portable/**', 'tools/adversarial/host-requirements.txt', 'verification/compiler_plugins.json', 'verification/trusted_axioms.json', 'verification/adversarial-examples*.json', 'coqcp-toolchain.opam', '_CoqProject') }}-${{ hashFiles('theories/**/*.v', 'generated-coq/**/*.v', 'verification/**/*.v') }}-${{ github.run_id }}-${{ github.run_attempt }}-
+          wasi-proofs-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('tools/adversarial/*.py', 'tools/adversarial/*.ml', 'tools/adversarial/portable/**', 'tools/adversarial/host-requirements.txt', 'verification/compiler_plugins.json', 'verification/trusted_axioms.json', 'verification/adversarial-examples*.json', 'coqcp-toolchain.opam', '_CoqProject') }}-${{ hashFiles('theories/**/*.v', 'generated-coq/**/*.v', 'verification/**/*.v') }}-
+          wasi-proofs-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('tools/adversarial/*.py', 'tools/adversarial/*.ml', 'tools/adversarial/portable/**', 'tools/adversarial/host-requirements.txt', 'verification/compiler_plugins.json', 'verification/trusted_axioms.json', 'verification/adversarial-examples*.json', 'coqcp-toolchain.opam', '_CoqProject') }}-
+          wasi-proofs-v1-${{ runner.os }}-${{ runner.arch }}-

@@ -2,7 +2,9 @@ From CoqCP Require Import Options.
 
 Require Export Trusted.Spec.
 From Stdlib Require Import Arith.PeanoNat Arith.Compare_dec Lists.List Bool.Bool Lia.
+From Stdlib Require Import ZArith.ZArith.
 Import ListNotations.
+Local Open Scope nat_scope.
 
 (* A partition probe is two country queries, with sentinels answered locally. *)
 Fixpoint search (fuel : nat) (p : nat -> bool) (lo hi : nat) : nat :=
@@ -203,7 +205,12 @@ Section Contest.
     unfold partition. apply search_correct.
     - pose proof feasible_bounds. lia.
     - pose proof feasible_bounds.
-      assert (hp : 100000 < 2^17) by (apply Nat.ltb_lt; vm_compute; reflexivity). lia.
+      (* Compute the closed bound with binary integers, avoiding expansion of
+         131,072 unary successors in the portable VM fallback. *)
+      assert (hp : 100000 < 2^17).
+      { apply Nat2Z.inj_lt. rewrite Nat2Z.inj_pow.
+        change (100000 < 2^17)%Z. vm_compute. reflexivity. }
+      lia.
     - apply crossing_high.
     - intros x hx. lia.
     - exact crossing_monotone.

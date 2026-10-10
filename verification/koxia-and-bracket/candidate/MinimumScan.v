@@ -7,6 +7,13 @@ From stdpp Require Import numbers.
 Import ListNotations Trusted.Spec Submission.SpecProperties Submission.OptimalSplit.
 Local Open Scope Z_scope.
 
+(* Compute closed unary bounds once with the original VM. Ordinary conversion
+   at each [change] traverses the entire half-million-successor numeral. *)
+Lemma input_capacity_integer : Z.of_nat 500000 = 500000.
+Proof. vm_compute. reflexivity. Qed.
+Lemma input_fuel_integer : Z.of_nat 500001 = 500001.
+Proof. vm_compute. reflexivity. Qed.
+
 Record MinimumState := {
   currentBalance : Z;
   currentMinimum : Z;
@@ -109,7 +116,7 @@ Lemma inputNums_minimum_step prefix state (ch : bool) :
 Proof.
   intros invariant limit. pose proof (minimum_state_bounds prefix state invariant) as [levels minima].
   pose proof invariant as [_ [count _]].
-  apply Nat2Z.inj_lt in limit. change (Z.of_nat (length prefix) < 500000) in limit.
+  apply Nat2Z.inj_lt in limit. rewrite input_capacity_integer in limit.
   unfold nextInputNums, nextBalance, stateInputNums, minimumStep.
   assert (count_fit : coerceInt (Z.of_nat (consumed state)+1) 64 = Z.of_nat (S (consumed state))).
   { rewrite coerce64_small; [lia |]. change (0 <= Z.of_nat (consumed state)+1 < 18446744073709551616). lia. }
@@ -147,14 +154,14 @@ Proof.
         (coerceInt (currentBalance state) 64) (coerceInt (currentMinimum state) 64)
         (Z.of_nat (selectedIndex state))) =
       stateInputNums (minimumScan s (minimumStep state ch)) 10).
-    apply Nat2Z.inj_le in limit. rewrite Nat2Z.inj_add in limit.
+    apply Nat2Z.inj_le in limit. rewrite Nat2Z.inj_add, input_capacity_integer in limit.
     change (Z.of_nat (length prefix)+Z.of_nat (S (length s)) <= 500000) in limit.
     rewrite Nat2Z.inj_succ in limit.
     rewrite (inputNums_minimum_step prefix state ch invariant
-      ltac:(apply Nat2Z.inj_lt; change (Z.of_nat (length prefix)<500000); lia)).
+      ltac:(apply Nat2Z.inj_lt; rewrite input_capacity_integer; lia)).
     apply (IH (prefix++[ch])).
     + apply minimumInvariant_step. exact invariant.
-    + apply Nat2Z.inj_le. rewrite Nat2Z.inj_add, length_app, Nat2Z.inj_add.
+    + apply Nat2Z.inj_le. rewrite Nat2Z.inj_add, length_app, Nat2Z.inj_add, input_capacity_integer.
       change (Z.of_nat (length prefix)+1+Z.of_nat (length s) <= 500000). lia.
 Qed.
 
@@ -180,11 +187,12 @@ Proof.
   intros limit incoming storage.
   assert (fuel : (length (bracketBytes s)<500001)%nat).
   { rewrite bracketBytes_length. apply Nat2Z.inj_lt.
-    apply Nat2Z.inj_le in limit. change (Z.of_nat (length s)<=500000) in limit.
+    rewrite input_fuel_integer.
+    apply Nat2Z.inj_le in limit. rewrite input_capacity_integer in limit.
     change (Z.of_nat (length s)<500001). lia. }
   assert (width : Z.of_nat (length ([] : list Z)+length (bracketBytes s)) < 18446744073709551616).
   { rewrite bracketBytes_length. apply Nat2Z.inj_le in limit.
-    change (Z.of_nat (length s)<=500000) in limit.
+    rewrite input_capacity_integer in limit.
     change (Z.of_nat (length s)<18446744073709551616). lia. }
   destruct (inputAction_execution (bracketBytes s) 500001 [] 500000 (inputNums 0 0 0 0 0)
     state (bracketBytes_valid s) fuel ltac:(rewrite bracketBytes_length; exact limit)
