@@ -7,28 +7,23 @@ import subprocess
 import tempfile
 import unittest
 
-from test_check import gate, VALID, fixture_cache
+from test_check import gate, VALID
 
 
 class CompilerExecutionTests(unittest.TestCase):
-    backend = "wasi"
-
     @classmethod
     def setUpClass(cls):
-        gate.ensure_built(cls.backend)
+        gate.ensure_built()
         cls.temporary = tempfile.TemporaryDirectory(prefix="coqcp-execution-tests-")
         cls.root = Path(cls.temporary.name)
-        cls.runtime = gate.toolchain(cls.backend)
+        cls.runtime = gate.toolchain()
         # Independent checking includes the imported tactic-library closure.
         cls.sandbox = gate.make_sandbox(dict(gate.DEFAULT_LIMITS, cpu_seconds=600,
-                                        wall_seconds=1200, memory_mib=4096,
-                                        fuel=2_000_000_000_000), cls.backend,
-                                        runtime=cls.runtime, cache_directory=fixture_cache(cls.root))
+                                        wall_seconds=1200, memory_mib=4096),
+                                        runtime=cls.runtime)
         cls.bundle = cls.root / "bundle"
         cls.spec_id = gate.prepare(gate.REPO / "verification/increment/spec/Spec.v",
                                   cls.bundle, cls.runtime, cls.sandbox, [])
-        if cls.backend == "wasi":
-            return
         cls.plugins = cls.root / "plugins"
         attack = cls.plugins / "coqcp_attack"
         attack.mkdir(parents=True)
@@ -152,8 +147,7 @@ let () =
 
     def test_plugin_loaded_by_require(self):
         self.evaluate("From Corelib Require Import extraction.Extraction.\n" + VALID,
-                      reason="Unable to locate library" if self.backend == "wasi" else
-                      "Disabled in the submission compiler: dynamic ML plugin")
+                      reason="Disabled in the submission compiler: dynamic ML plugin")
 
     def test_plugin_in_loaded_source(self):
         self.evaluate('Load "/inputs/Payload.v".\n' + VALID,
@@ -175,8 +169,6 @@ let () =
                       accepted=True)
 
     def test_real_native_payload_runs_in_stock_compiler_and_is_blocked_in_safe_compiler(self):
-        if self.backend != "bubblewrap":
-            self.skipTest("Native executable payload fixture")
         with tempfile.TemporaryDirectory(dir=self.root) as temporary:
             inputs = Path(temporary)
             (inputs / "Candidate.v").write_text('Declare ML Module "coqcp_attack".\n')
@@ -202,17 +194,9 @@ print('payload-blocked')
             self.assertEqual(result, b"payload-blocked\n")
 
     def test_lockdown_blocks_exec_and_executable_memory_in_all_threads(self):
-        if self.backend != "bubblewrap":
-            self.skipTest("Native executable memory and OS thread restrictions")
         result = self.sandbox.run(["/probe"],
                                  [(self.probe, "/probe"), (self.plugins, "/plugins")])
         self.assertEqual(result, b"locked\n")
-
-
-@unittest.skipUnless(os.environ.get("COQCP_TEST_BUBBLEWRAP") == "1",
-                     "Optional native backend; set COQCP_TEST_BUBBLEWRAP=1 to test")
-class NativeCompilerExecutionTests(CompilerExecutionTests):
-    backend = "bubblewrap"
 
 
 if __name__ == "__main__":

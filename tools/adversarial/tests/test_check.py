@@ -1,7 +1,6 @@
 """Acceptance and containment regressions; no third-party Python packages."""
 import importlib.util
 import json
-import os
 from pathlib import Path
 import shutil
 import sys
@@ -25,12 +24,6 @@ Module Implementation.
   Proof. intro input. reflexivity. Qed.
 End Implementation.
 """
-
-
-def fixture_cache(root):
-    """CI reuses evaluator-owned work; cache mutation tests keep private roots."""
-    shared = os.environ.get("COQCP_TEST_CACHE")
-    return Path(shared).resolve() if shared else root / "cache"
 
 
 class ContextPolicyTests(unittest.TestCase):
@@ -129,26 +122,20 @@ class ProtocolValidationTests(unittest.TestCase):
 
 
 class AcceptanceTests(unittest.TestCase):
-    backend = "wasi"
-    network_isolation = "auto"
-
     @classmethod
     def setUpClass(cls):
-        gate.ensure_built(cls.backend)
+        gate.ensure_built()
         cls.temporary = tempfile.TemporaryDirectory(prefix="coqcp-acceptance-tests-")
         cls.root = Path(cls.temporary.name)
-        cls.runtime = gate.toolchain(cls.backend)
-        cls.sandbox = gate.make_sandbox(dict(gate.DEFAULT_LIMITS), cls.backend,
-                                        cls.network_isolation, runtime=cls.runtime,
-                                        cache_directory=fixture_cache(cls.root))
+        cls.runtime = gate.toolchain()
+        cls.sandbox = gate.make_sandbox(dict(gate.DEFAULT_LIMITS), runtime=cls.runtime)
         cls.bundle = cls.root / "bundle"
         cls.spec_id = gate.prepare(gate.REPO / "verification/increment/spec/Spec.v",
                                   cls.bundle, cls.runtime, cls.sandbox, [])
 
     @classmethod
     def tearDownClass(cls):
-        if hasattr(cls.sandbox, "close"):
-            cls.sandbox.close()
+        cls.sandbox.close()
         cls.temporary.cleanup()
 
     def evaluate(self, source, extra=None, *, accepted=False, reason=None):
@@ -173,17 +160,6 @@ class AcceptanceTests(unittest.TestCase):
     def test_valid_program(self):
         self.evaluate(VALID, accepted=True)
 
-    def test_checker_change_invalidates_acceptance_but_preserves_compiler_identity(self):
-        if self.backend != "wasi":
-            self.skipTest("WASI compiler identity")
-        before = gate.toolchain(self.backend)
-        original_digest = gate.digest
-        checker = gate.WASI_BIN / "spec-check.wasm"
-        with patch.object(gate, "digest", side_effect=lambda path:
-                          "0" * 64 if Path(path) == checker else original_digest(path)):
-            changed = gate.toolchain(self.backend)
-        self.assertNotEqual(before["fingerprint"], changed["fingerprint"])
-        self.assertEqual(before["compiler_fingerprint"], changed["compiler_fingerprint"])
 
     def test_vm_large_unary_computation_and_kernel_recheck(self):
         computations = "Definition vm_n0 := 1.\n" + "\n".join(
@@ -342,206 +318,6 @@ End Conditional.
         source = source.replace("nat -> nat := S", "nat -> nat := successor")
         self.evaluate(source, {"ZHelper.v": "Definition successor := S.\n"}, accepted=True)
 
-    def test_wasi_subtree_cache_tracks_actual_helper_dependencies(self):
-        if self.runtime.get("backend") != "wasi":
-            self.skipTest("WASI subtree cache")
-        with tempfile.TemporaryDirectory(dir=self.root) as temporary:
-            root = Path(temporary)
-            inputs = root / "inputs"
-            inputs.mkdir()
-            (inputs / "Candidate.v").write_text(
-                VALID.replace("Require Trusted.Spec.", "Require Trusted.Spec Submission.ZHelper.")
-                     .replace("nat -> nat := S", "nat -> nat := Submission.ZHelper.successor"))
-            (inputs / "ZHelper.v").write_text("Definition successor := S.\n")
-            (inputs / "Unrelated.v").write_text("Definition unused := 1.\n")
-            sandbox = gate.make_sandbox(dict(gate.DEFAULT_LIMITS), runtime=self.runtime,
-                                        cache_directory=root / "cache")
-            try:
-                def compile_batch():
-                    return gate.compile_sources(inputs, ["Candidate.v", "ZHelper.v", "Unrelated.v"],
-                                                "Submission", self.bundle, self.runtime, sandbox)
-                with patch.object(sandbox, "_exchange", wraps=sandbox._exchange) as exchange:
-                    first = compile_batch()
-                requests = [call.args[0] for call in exchange.call_args_list
-                            if "compile-safe." in call.args[0]["module"]]
-                self.assertEqual(len(requests), 3)
-                self.assertEqual(sum("files" in request for request in requests), 1)
-                self.assertFalse(any(path.startswith("/inputs/")
-                                     for path in requests[0]["files"]))
-                overlays = {request["args"][-1]: set(request["overlay"]) for request in requests}
-                self.assertEqual(overlays["/inputs/Unrelated.v"], {"/inputs/Unrelated.v"})
-                self.assertEqual(overlays["/inputs/ZHelper.v"], {"/inputs/ZHelper.v"})
-                self.assertEqual(overlays["/inputs/Candidate.v"],
-                                 {"/inputs/Candidate.v", "/inputs/ZHelper.v", "/work/ZHelper.vo"})
-                self.assertEqual(sandbox.cache.misses, 3)
-                self.assertEqual(compile_batch(), first)
-                self.assertEqual(sandbox.cache.hits, 3)
-                (inputs / "Unrelated.v").write_text("Definition unused := 2.\n")
-                compile_batch()
-                self.assertEqual((sandbox.cache.hits, sandbox.cache.misses), (5, 4))
-                (inputs / "ZHelper.v").write_text("Definition successor (n : nat) := 1 + n.\n")
-                compile_batch()
-                self.assertEqual((sandbox.cache.hits, sandbox.cache.misses), (6, 6))
-            finally:
-                sandbox.close()
-
-    def test_lazy_library_preserves_frozen_contract_and_axiom_policy(self):
-        if self.runtime.get("backend") != "wasi":
-            self.skipTest("WASI library provisioning")
-        source = VALID.replace("Module Implementation.", r'''
-From Stdlib Require Import Classical_Prop.
-Lemma extra_classical (P : Prop) : P \/ ~ P.
-Proof. exact (classic P). Qed.
-Module Implementation.''')
-        # Cold independent checking includes the classical library's entire
-        # proof closure, even though the submission itself is tiny.
-        limits = self.sandbox.limits
-        sandbox = self.sandbox
-        self.sandbox = gate.make_sandbox(dict(limits, cpu_seconds=600,
-            wall_seconds=1200, memory_mib=4096, fuel=2_000_000_000_000),
-            self.backend, runtime=self.runtime, cache_directory=fixture_cache(self.root))
-        try:
-            self.evaluate(source, reason="Unapproved axiom")
-        finally:
-            self.sandbox.close()
-            self.sandbox = sandbox
-        self.assertEqual(gate.toolchain(), self.runtime)
-        self.evaluate(VALID, accepted=True)
-
-    def test_wasi_example_retry_resumes_completed_prefixes_in_fresh_stores(self):
-        if self.runtime.get("backend") != "wasi":
-            self.skipTest("WASI checked-prefix retry")
-        import examples
-        with tempfile.TemporaryDirectory(dir=self.root) as temporary:
-            root = Path(temporary)
-            candidate = root / "candidate"
-            candidate.mkdir()
-            (candidate / "Candidate.v").write_text(VALID)
-            sandbox = gate.make_sandbox(dict(gate.DEFAULT_LIMITS), runtime=self.runtime,
-                                        cache_directory=root / "cache")
-            original = sandbox.invoke
-            checkpoint = False
-            failed = False
-            def resource_failure_after_progress(module, argv, *args, **kwargs):
-                nonlocal checkpoint, failed
-                if module == "spec-check":
-                    if checkpoint and not failed:
-                        failed = True
-                        sandbox.close()
-                        raise gate.Rejected("Sandbox wall time limit exceeded")
-                    argv = [*argv[:-1], "0.5"]
-                result = original(module, argv, *args, **kwargs)
-                if module == "spec-check" and b'"prefix-checked"' in result["stdout"]:
-                    checkpoint = True
-                return result
-            try:
-                with patch.object(examples, "check", gate), patch.object(
-                        sandbox, "invoke", side_effect=resource_failure_after_progress):
-                    report, attempts = examples.evaluate_with_checkpoints(
-                        self.bundle, self.spec_id, candidate, root / "result",
-                        self.runtime, sandbox, 2)
-                self.assertTrue(failed)
-                self.assertEqual((report["status"], attempts), ("accepted", 2), report)
-                self.assertEqual(report["axioms"], [])
-                rejected = json.loads((root / "attempt-1/report.json").read_bytes())
-                self.assertEqual(rejected["status"], "rejected")
-                self.assertEqual(rejected["stage"], "kernel-and-contract")
-                self.assertIn("Candidate.vo", rejected["artifacts"])
-            finally:
-                sandbox.close()
-
-    def test_wasi_example_retry_resumes_completed_compiler_modules(self):
-        if self.runtime.get("backend") != "wasi":
-            self.skipTest("WASI compiler progress retry")
-        import examples
-        with tempfile.TemporaryDirectory(dir=self.root) as temporary:
-            root = Path(temporary)
-            candidate = root / "candidate"
-            candidate.mkdir()
-            (candidate / "Helper.v").write_text("Definition helper := 0.\n")
-            (candidate / "Candidate.v").write_text(
-                "From Submission Require Import Helper.\n" + VALID)
-            sandbox = gate.make_sandbox(dict(gate.DEFAULT_LIMITS), runtime=self.runtime,
-                                        cache_directory=root / "cache")
-            original = sandbox.invoke
-            compiled = 0
-            failed = False
-            def resource_failure_after_module(module, argv, *args, **kwargs):
-                nonlocal compiled, failed
-                if module == "compile-safe" and compiled and not failed:
-                    failed = True
-                    sandbox.close()
-                    raise gate.Rejected("Sandbox wall time limit exceeded")
-                result = original(module, argv, *args, **kwargs)
-                if module == "compile-safe":
-                    compiled += 1
-                return result
-            try:
-                with patch.object(examples, "check", gate), patch.object(
-                        sandbox, "invoke", side_effect=resource_failure_after_module):
-                    report, attempts = examples.evaluate_with_checkpoints(
-                        self.bundle, self.spec_id, candidate, root / "result",
-                        self.runtime, sandbox, 2)
-                self.assertTrue(failed)
-                self.assertEqual((report["status"], attempts, compiled),
-                                 ("accepted", 2, 2), report)
-                self.assertEqual(report["axioms"], [])
-                rejected = json.loads((root / "attempt-1/report.json").read_bytes())
-                self.assertEqual(rejected["stage"], "compilation")
-            finally:
-                sandbox.close()
-
-    def test_wasi_checked_prefix_reuse_and_hidden_axiom_invalidation(self):
-        if self.runtime.get("backend") != "wasi":
-            self.skipTest("WASI checked prefixes")
-        with tempfile.TemporaryDirectory(dir=self.root) as temporary:
-            root = Path(temporary)
-            sandbox = gate.make_sandbox(dict(gate.DEFAULT_LIMITS), runtime=self.runtime,
-                                        cache_directory=root / "cache")
-            previous = self.sandbox
-            self.sandbox = sandbox
-            try:
-                original_invoke = sandbox.invoke
-                checkpoints = []
-                def short_checkpoints(module, argv, *args, **kwargs):
-                    argv = [*argv[:-1], "0.5"]
-                    result = original_invoke(module, argv, *args, **kwargs)
-                    if b'"prefix-checked"' in result["stdout"]:
-                        checkpoints.append(result)
-                    return result
-                with patch.object(sandbox, "invoke", side_effect=short_checkpoints) as invoke:
-                    gate.kernel_check(self.bundle, None, self.runtime, sandbox, [], spec_only=True)
-                first = invoke.call_args
-                self.assertIn("--checked-prefix", first.args[1])
-                self.assertTrue(checkpoints)
-                self.assertTrue(list((root / "cache/checked-prefix").rglob("*.json")))
-                shutil.rmtree(root / "cache/kernel")
-                with patch.object(sandbox, "_exchange", wraps=sandbox._exchange) as exchange, \
-                        patch.object(sandbox, "invoke", wraps=sandbox.invoke) as invoke:
-                    gate.kernel_check(self.bundle, None, self.runtime, sandbox, [], spec_only=True)
-                request = exchange.call_args.args[0]
-                self.assertIn(request["snapshot"], sandbox.snapshots)
-                self.assertTrue(any(path.startswith("/checked-prefix/") for path in invoke.call_args.args[2]))
-                # Sealing hides an implementation's body. Reusing the checked
-                # prefix must retain its opaque dependency map for the audit.
-                sealed = '''
-Module Type SEALED. Parameter value : nat. End SEALED.
-Module Hidden : SEALED. Definition value := 0. End Hidden.
-'''
-                self.evaluate(VALID + sealed, accepted=True)
-                self.evaluate(VALID + sealed.replace("Definition value := 0.",
-                    "Axiom secret : nat. Definition value := secret."),
-                    reason="Unapproved axiom")
-                self.evaluate(VALID + sealed, accepted=True)
-                # Damage is a miss, including certificates already restored
-                # from a previous successful invocation.
-                for path in (root / "cache/checked-prefix").rglob("*.json"):
-                    path.write_bytes(b"damaged")
-                shutil.rmtree(root / "cache/kernel")
-                gate.kernel_check(self.bundle, None, self.runtime, sandbox, [], spec_only=True)
-            finally:
-                sandbox.close()
-                self.sandbox = previous
 
     def test_source_cannot_create_or_replace_compiler_artifacts(self):
         helper = "From CoqCP Require Import Options.\nDefinition successor := S.\n"
@@ -559,6 +335,23 @@ Module Hidden : SEALED. Definition value := 0. End Hidden.
     def test_sealed_module(self):
         self.evaluate(VALID.replace("Module Implementation.",
                                     "Module Implementation : Trusted.Spec.SOLUTION."), accepted=True)
+
+    def test_sealed_helper_hidden_axiom_is_checked(self):
+        sealed = """
+Module Type SEALED. Parameter value : nat. End SEALED.
+Module Hidden : SEALED. Definition value := 0. End Hidden.
+"""
+        self.evaluate(VALID + sealed, accepted=True)
+        self.evaluate(VALID + sealed.replace("Definition value := 0.",
+            "Axiom secret : nat. Definition value := secret."), reason="Unapproved axiom")
+
+    def test_classical_library_is_outside_the_axiom_policy(self):
+        source = VALID.replace("Module Implementation.", r'''
+From Stdlib Require Import Classical_Prop.
+Lemma extra_classical (P : Prop) : P \/ ~ P.
+Proof. exact (classic P). Qed.
+Module Implementation.''')
+        self.evaluate(source, reason="Unapproved axiom")
 
     def test_abstract_implementation_is_rejected(self):
         self.evaluate(HEADER + "Declare Module Implementation : Trusted.Spec.SOLUTION.\n",
@@ -662,15 +455,13 @@ Module Hidden : SEALED. Definition value := 0. End Hidden.
                 gate.kernel_check(self.bundle, broken, self.runtime, self.sandbox, [])
 
 
-@unittest.skipUnless(os.environ.get("COQCP_TEST_BUBBLEWRAP") == "1",
-                     "Optional native backend; set COQCP_TEST_BUBBLEWRAP=1 to test")
 class SandboxTests(unittest.TestCase):
     def setUp(self):
-        gate.ensure_built("bubblewrap")
+        gate.ensure_built()
         self.limits = dict(gate.DEFAULT_LIMITS)
 
     def run_python(self, source, mounts=()):
-        return gate.Sandbox(self.limits).run(["/usr/bin/python3", "-I", "-c", source], mounts)
+        return gate.make_sandbox(self.limits).run(["/usr/bin/python3", "-I", "-c", source], mounts)
 
     def test_filesystem_network_process_and_environment_isolation(self):
         with tempfile.TemporaryDirectory(prefix="coqcp-private-") as temporary:
@@ -682,7 +473,7 @@ class SandboxTests(unittest.TestCase):
             source = f"""
 import errno, os, pathlib, socket
 assert not pathlib.Path({str(private / 'secret')!r}).exists()
-assert not pathlib.Path('/etc/passwd').exists()
+assert not pathlib.Path('/var/run/docker.sock').exists()
 assert 'COQPATH' not in os.environ
 for operation in [lambda: socket.socket(), os.fork,
                   lambda: pathlib.Path('/trusted/immutable').write_text('changed')]:
@@ -737,15 +528,14 @@ else:
             self.run_python("open('/work/large', 'wb').write(b'x' * (2 * 1024 * 1024))")
 
     def test_missing_sandbox_has_no_fallback(self):
-        sandbox = gate.Sandbox(self.limits)
-        sandbox.bwrap = "/nonexistent-bubblewrap"
-        with self.assertRaisesRegex(gate.Rejected, "No safe condition for sandbox"):
-            sandbox.run(["/usr/bin/true"], [])
+        with patch.object(gate, "command", return_value="/nonexistent-docker"):
+            with self.assertRaisesRegex(gate.Rejected, "No safe condition for sandbox"):
+                gate.make_sandbox(self.limits)
 
     def test_root_execution_is_rejected(self):
         with patch.object(gate.os, "getuid", return_value=0):
             with self.assertRaisesRegex(gate.Rejected, "non-root"):
-                gate.Sandbox(self.limits)
+                gate.make_sandbox(self.limits)
 
 
 class InteractiveContractTests(unittest.TestCase):
@@ -758,9 +548,8 @@ class InteractiveContractTests(unittest.TestCase):
         cls.root = Path(cls.temporary.name)
         cls.runtime = gate.toolchain()
         cls.sandbox = gate.make_sandbox(dict(gate.DEFAULT_LIMITS,
-                                      wall_seconds=1200, cpu_seconds=600, memory_mib=4096,
-                                      fuel=2_000_000_000_000),
-                                      runtime=cls.runtime, cache_directory=fixture_cache(cls.root))
+                                      wall_seconds=1200, cpu_seconds=600, memory_mib=4096),
+                                      runtime=cls.runtime)
         cls.bundle = cls.root / "bundle"
         cls.spec_id = gate.prepare(
             gate.REPO / "verification/permuted-binary-strings/spec/Spec.v",

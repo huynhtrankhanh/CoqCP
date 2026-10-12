@@ -1,5 +1,5 @@
 /* Apply limits and a seccomp filter before executing one untrusted tool.
- * Bubblewrap supplies filesystem and namespace isolation. No subprocesses,
+ * gVisor supplies filesystem isolation. No subprocesses,
  * network sockets, namespace changes, tracing, or privileged kernel APIs. */
 #define _GNU_SOURCE
 #include <errno.h>
@@ -18,25 +18,8 @@ static void limit(int which, rlim_t value) {
   if (setrlimit(which, &setting)) die("setrlimit");
 }
 int main(int argc, char **argv) {
-  /* Bubblewrap can install this filter before starting the trusted worker.
-     It remains inherited by every compiler child, including the worker mode
-     that must retain fork/exec to supervise those children. */
-  if (argc == 2 && !strcmp(argv[1], "--export-network-filter")) {
-    scmp_filter_ctx filter = seccomp_init(SCMP_ACT_ALLOW);
-    if (!filter) die("seccomp_init");
-    const char *network[] = {"socket", "socketpair", "socketcall", "connect",
-      "bind", "listen", "accept", "accept4", "sendto", "sendmsg", "sendmmsg",
-      "recvfrom", "recvmsg", "recvmmsg"};
-    for (size_t i = 0; i < sizeof(network)/sizeof(network[0]); i++) {
-      int syscall = seccomp_syscall_resolve_name(network[i]);
-      if (syscall != __NR_SCMP_ERROR &&
-          seccomp_rule_add(filter, SCMP_ACT_ERRNO(EPERM), syscall, 0))
-        die("network seccomp rule");
-    }
-    if (seccomp_export_bpf(filter, STDOUT_FILENO)) die("seccomp_export_bpf");
-    seccomp_release(filter);
-    return 0;
-  }
+  int worker = argc > 1 && !strcmp(argv[1], "--worker");
+  if (worker) { argc--; argv++; }
   if (argc < 5) { fputs("sandbox-exec CPU MEMORY_MIB FILE_MIB COMMAND...\n", stderr); return 125; }
   limit(RLIMIT_CPU, strtoul(argv[1], NULL, 10));
   limit(RLIMIT_AS, (rlim_t)strtoul(argv[2], NULL, 10) * 1024 * 1024);
@@ -60,6 +43,9 @@ int main(int argc, char **argv) {
     "delete_module", "open_by_handle_at", "name_to_handle_at", "mknod", "mknodat"
   };
   for (size_t i = 0; i < sizeof(blocked) / sizeof(blocked[0]); i++) {
+    /* Only the evaluator-owned supervisor may spawn compiler children. */
+    if (worker && (!strcmp(blocked[i], "fork") || !strcmp(blocked[i], "vfork")))
+      continue;
     int syscall = seccomp_syscall_resolve_name(blocked[i]);
     if (syscall != __NR_SCMP_ERROR &&
         seccomp_rule_add(filter, SCMP_ACT_ERRNO(EPERM), syscall, 0)) die("seccomp_rule_add");
@@ -69,11 +55,11 @@ int main(int argc, char **argv) {
   int clone3_call = seccomp_syscall_resolve_name("clone3");
   if (clone3_call != __NR_SCMP_ERROR &&
       seccomp_rule_add(filter, SCMP_ACT_ERRNO(ENOSYS), clone3_call, 0)) die("clone3 rule");
-  if (seccomp_rule_add(filter, SCMP_ACT_ERRNO(EPERM), SCMP_SYS(clone), 1,
+  if (!worker && seccomp_rule_add(filter, SCMP_ACT_ERRNO(EPERM), SCMP_SYS(clone), 1,
       SCMP_A0(SCMP_CMP_MASKED_EQ, CLONE_THREAD, 0))) die("clone rule");
   /* A child must not change its supervisor's limits. glibc uses pid=0
      when implementing getrlimit/setrlimit for the current process. */
-  if (seccomp_rule_add(filter, SCMP_ACT_ERRNO(EPERM), SCMP_SYS(prlimit64), 1,
+  if (!worker && seccomp_rule_add(filter, SCMP_ACT_ERRNO(EPERM), SCMP_SYS(prlimit64), 1,
       SCMP_A0(SCMP_CMP_NE, 0))) die("prlimit rule");
   if (seccomp_load(filter)) die("seccomp_load");
   seccomp_release(filter);

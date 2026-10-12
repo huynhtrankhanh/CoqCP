@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       patch_file:
-        description: "Filename under patches/pending/ (for example fix-wasi.patch)"
+        description: "Filename under patches/pending/ (for example fix-checker.patch)"
         required: true
         type: string
 

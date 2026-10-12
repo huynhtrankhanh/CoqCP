@@ -83,13 +83,15 @@ The project uses the latest stable releases checked on October 4, 2026: Rocq
 9.3.0, its separately released Stdlib 9.2.0, and stdpp 1.13.0. Versions are pinned
 in [coqcp-toolchain.opam](../coqcp-toolchain.opam).
 
-On Ubuntu 26.04, install the toolchain outside the repository:
+On Ubuntu 24.04 with a running Docker daemon accessible to the evaluator user,
+install the toolchain outside the repository:
 
 ```sh
 sudo apt-get update
-sudo apt-get install ca-certificates curl git python3 build-essential ocaml opam libgmp-dev pkg-config m4 rsync unzip libseccomp-dev bubblewrap
+sudo apt-get install ca-certificates curl git python3 build-essential ocaml opam libgmp-dev pkg-config m4 rsync unzip libseccomp-dev
 sudo install -d -o "$(id -un)" -g "$(id -gn)" /opt/rocq
 bash tools/install-toolchain.sh
+bash tools/install-gvisor.sh
 export PATH=/opt/rocq/9.3.0/bin:$PATH
 rocq --version
 ```
@@ -124,6 +126,6 @@ After upgrading from Coq 8.20, regenerate the Makefile and recompile all `.vo`
 files. Frozen specification bundles from that toolchain must also be prepared
 again; the checker rejects bundles with a different toolchain fingerprint.
 
-All concrete program proofs use the [adversarial checking infrastructure](AdversarialChecking.md). It freezes an evaluator-owned `Spec.v`, compiles source-only submissions in a Bubblewrap/seccomp sandbox, independently checks every submitted library, and checks the submitted module against the frozen signature. Knapsack's single contract specifies the mathematical optimum and successful generated execution together.
+All concrete program proofs use the [adversarial checking infrastructure](AdversarialChecking.md). It freezes an evaluator-owned `Spec.v`, compiles source-only submissions in a gVisor/seccomp sandbox, independently checks every submitted library, and checks the submitted module against the frozen signature. Knapsack's single contract specifies the mathematical optimum and successful generated execution together.
 
 The checked-in HTML pages for the migrated imperative runtime and generated-program proofs were refreshed with `coqdoc` from the current sources.

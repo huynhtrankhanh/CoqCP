@@ -12,10 +12,9 @@ on:
       - '_CoqProject'
       - 'coqcp-toolchain.opam'
       - 'tools/install-toolchain.sh'
-      - 'tools/install-wasi.sh'
-      - 'tools/build-wasi-host.sh'
+      - 'tools/install-gvisor.sh'
       - '.github/actions/setup-rocq/**'
-      - '.github/actions/setup-wasi/**'
+      - '.github/actions/setup-gvisor/**'
       - '.github/workflows/adversarial.yml'
   pull_request:
     branches: [main]
@@ -29,27 +28,14 @@ jobs:
     timeout-minutes: 360
     steps:
       - uses: actions/checkout@v4
-      - name: Restore WASI host, tools, and proof caches
-        id: wasi
-        uses: ./.github/actions/setup-wasi
+      - name: Install native toolchain and gVisor
+        uses: ./.github/actions/setup-gvisor
       - name: Build shared theories and generated definitions
         run: |
           rocq makefile -f _CoqProject -o Makefile
           make -j2
       - name: Run adversarial acceptance and sandbox regressions
-        env:
-          COQCP_TEST_CACHE: .verification/wasi-cache
         run: python3 -m unittest discover -s tools/adversarial/tests -v
-      # Retain completed modules/checkpoints even if a later test fails.
-      - name: Save compiled runtimes and proof subtrees
-        if: always() && steps.wasi.outputs.proof-cache-key != ''
-        uses: actions/cache/save@v4
-        with:
-          key: ${{ steps.wasi.outputs.proof-cache-key }}
-          path: |
-            .verification/wasi
-            .verification/wasi-libraries
-            .verification/wasi-cache
 
   complete-examples:
     needs: acceptance-and-containment
@@ -57,22 +43,14 @@ jobs:
     timeout-minutes: 360
     steps:
       - uses: actions/checkout@v4
-      - name: Restore WASI host, tools, and proof caches
-        id: wasi
-        uses: ./.github/actions/setup-wasi
+      - name: Install native toolchain and gVisor
+        uses: ./.github/actions/setup-gvisor
+      - name: Build shared theories and generated definitions
+        run: |
+          rocq makefile -f _CoqProject -o Makefile
+          make -j2
       - name: Check every program's spec and full candidate proof chain
         run: python3 tools/adversarial/examples.py --output .verification/ci-examples
-      # This job restores the preceding job's completed work and saves its own
-      # immutable snapshot for the next workflow run.
-      - name: Save compiled runtimes and proof subtrees
-        if: always() && steps.wasi.outputs.proof-cache-key != ''
-        uses: actions/cache/save@v4
-        with:
-          key: ${{ steps.wasi.outputs.proof-cache-key }}
-          path: |
-            .verification/wasi
-            .verification/wasi-libraries
-            .verification/wasi-cache
       - name: Upload checked artifacts and reports
         if: always()
         uses: actions/upload-artifact@v4

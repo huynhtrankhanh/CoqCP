@@ -1,7 +1,6 @@
 {
   "$schema": "adversarial-examples.schema.json",
   "format": 1,
-  "operation_attempts": 3,
   "profiles": {
     "small": {
       "wall_seconds": 120,
@@ -9,8 +8,7 @@
       "memory_mib": 2048,
       "work_mib": 256,
       "artifact_mib": 64,
-      "log_mib": 1,
-      "fuel": 50000000000
+      "log_mib": 1
     },
     "full-proof-chain": {
       "wall_seconds": 1200,
@@ -18,8 +16,7 @@
       "memory_mib": 4096,
       "work_mib": 256,
       "artifact_mib": 64,
-      "log_mib": 1,
-      "fuel": 2000000000000
+      "log_mib": 1
     },
     "kth-proof-chain": {
       "wall_seconds": 1800,
@@ -27,8 +24,7 @@
       "memory_mib": 4096,
       "work_mib": 256,
       "artifact_mib": 64,
-      "log_mib": 1,
-      "fuel": 2000000000000
+      "log_mib": 1
     },
     "koxia-proof-chain": {
       "wall_seconds": 1800,
@@ -36,8 +32,7 @@
       "memory_mib": 4096,
       "work_mib": 256,
       "artifact_mib": 64,
-      "log_mib": 1,
-      "fuel": 2000000000000
+      "log_mib": 1
     }
   },
   "examples": [

@@ -1,0 +1,14 @@
+# Only shared runtime dependencies; the installed native toolchain is mounted
+# read-only. No opam state, source repository, credentials, or Docker socket.
+ARG BASE_IMAGE=ubuntu:24.04@sha256:534baea6a22c03a63003dbc8dbe78fe34bc0d7e595d9a9dc9834884ff530eb55
+FROM ${BASE_IMAGE}
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 libgmp10 libseccomp2 \
+    && rm -rf /var/lib/apt/lists/* \
+    && mkdir /work /tool /inputs /bundle /artifacts
+ENV PATH=/opt/rocq/9.3.0/bin:/usr/bin:/bin HOME=/tmp TMPDIR=/tmp \
+    LANG=C.UTF-8 OCAMLRUNPARAM=b=0,d=1 \
+    OCAMLPATH=/opt/rocq/9.3.0/lib \
+    OCAMLFIND_CONF=/opt/rocq/9.3.0/lib/findlib.conf
+USER 65532:65532
+WORKDIR /work

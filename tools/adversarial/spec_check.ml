@@ -102,7 +102,7 @@ let () =
   try
     (* Large imported environments outlive short typechecking allocations.
        Keep a modest nursery and avoid repeatedly tracing that live graph.
-       WASM32 uses eight MiB here; process/guest limits still bound the heap. *)
+       Process limits still bound the heap. *)
     let gc = Gc.get () in
     Gc.set { gc with minor_heap_size = 2 * 1024 * 1024; space_overhead = 200 };
     if Coq_config.version <> "9.3.0" then fail "This checker requires Rocq 9.3.0";

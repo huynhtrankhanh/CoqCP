@@ -1,0 +1,28 @@
+name: Install native Rocq and gVisor
+description: Restore the native toolchain and install the pinned systrap sandbox
+runs:
+  using: composite
+  steps:
+    - name: Create toolchain cache directory
+      shell: bash
+      run: |
+        sudo mkdir -p /opt/rocq
+        sudo chown "$(id -u):$(id -g)" /opt/rocq
+    - name: Restore native proof toolchain
+      uses: actions/cache@v4
+      with:
+        # Retain opam's root configuration and repositories as well as its
+        # switch; a switch directory alone is not a registered installation.
+        path: /opt/rocq
+        key: rocq-native-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('coqcp-toolchain.opam', 'tools/install-toolchain.sh') }}
+    - name: Install Rocq and stdpp
+      uses: ./.github/actions/setup-rocq
+    - name: Install native sandbox build dependencies
+      shell: bash
+      run: sudo apt-get install -y --no-install-recommends libseccomp-dev
+    - name: Install pinned gVisor and runtime image
+      shell: bash
+      run: bash tools/install-gvisor.sh
+    - name: Build native compiler and independent kernel gate
+      shell: bash
+      run: python3 tools/adversarial/check.py build

@@ -7,14 +7,12 @@
   "required": [
     "$schema",
     "format",
-    "operation_attempts",
     "profiles",
     "examples"
   ],
   "properties": {
     "$schema": { "const": "adversarial-examples.schema.json" },
     "format": { "type": "integer", "const": 1 },
-    "operation_attempts": { "type": "integer", "enum": [1, 2, 3] },
     "profiles": {
       "type": "object",
       "propertyNames": { "$ref": "#/$defs/name" },
@@ -56,8 +54,7 @@
         "memory_mib",
         "work_mib",
         "artifact_mib",
-        "log_mib",
-        "fuel"
+        "log_mib"
       ],
       "properties": {
         "wall_seconds": { "$ref": "#/$defs/positive" },
@@ -65,8 +62,7 @@
         "memory_mib": { "$ref": "#/$defs/positive" },
         "work_mib": { "$ref": "#/$defs/positive" },
         "artifact_mib": { "$ref": "#/$defs/positive" },
-        "log_mib": { "$ref": "#/$defs/positive" },
-        "fuel": { "$ref": "#/$defs/positive" }
+        "log_mib": { "$ref": "#/$defs/positive" }
       }
     }
   }

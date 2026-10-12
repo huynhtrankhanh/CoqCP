@@ -1,4 +1,4 @@
-"""Trusted build worker, run only inside Bubblewrap's bounded tmpfs.
+"""Trusted build worker, run only inside a sandbox's bounded tmpfs.
 
 Compiler diagnostics go to stderr. Stdout transports artifacts, never a verdict.
 Every compiler/parser process gets its own limits and seccomp filter.

@@ -24,7 +24,6 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", type=Path, required=True,
                         help="A fresh directory for the frozen specification and reports")
-    parser.add_argument("--network-isolation", choices=["auto", "namespace", "seccomp"], default="auto")
     parser.add_argument("--cpu-seconds", type=int, default=180,
                         help="Per-process CPU budget for the complete proof dependency chain")
     parser.add_argument("--wall-seconds", type=int, default=1800)
@@ -38,7 +37,6 @@ def main():
     code, prepared = invoke([
         "python3", str(CHECKER), "prepare", "--spec", str(SPEC),
         "--bundle", str(directory / "bundle"), "--axiom-policy", "ci",
-        "--network-isolation", args.network_isolation,
         *resources,
     ])
     if code:
@@ -56,7 +54,6 @@ def main():
         "python3", str(CHECKER), "check", "--bundle", str(directory / "bundle"),
         "--spec-id", spec_id, "--submission", str(submission),
         "--output", str(directory / "solution-result"),
-        "--network-isolation", args.network_isolation,
         *resources,
     ])
     if code or positive.get("status") != "accepted" or positive.get("stage") != "complete":
@@ -149,7 +146,6 @@ End Implementation.
             "python3", str(CHECKER), "check", "--bundle", str(directory / "bundle"),
             "--spec-id", spec_id, "--submission", str(submission),
             "--output", str(directory / (name + "-result")),
-            "--network-isolation", args.network_isolation,
             *resources,
         ])
         if code == 0 or report.get("status") != "rejected":

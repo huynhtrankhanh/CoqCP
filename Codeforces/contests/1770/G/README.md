@@ -96,7 +96,7 @@ make validate
 g++ -std=c++20 -O2 generated-cpp/KoxiaAndBracket.cpp -o /tmp/koxia
 python3 Codeforces/contests/1770/G/test_solution.py --executable /tmp/koxia --large
 python3 Codeforces/contests/1770/G/check_adversarial.py \
-  --output .verification/koxia-review-new --network-isolation seccomp
+  --output .verification/koxia-review-new
 ```
 
 Use a fresh output directory. The default network isolation uses a network
