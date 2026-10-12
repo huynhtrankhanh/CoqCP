@@ -314,16 +314,16 @@ compiler exits, a separate checker sandbox receives the artifacts read-only.
 
 Default limits are:
 
-| Resource                                              |     Default | CLI option           |
-| ----------------------------------------------------- | ----------: | -------------------- |
-| Wall time per compilation or checking stage           | 120 seconds | `--wall-seconds`     |
-| CPU time per tool process                            |  60 seconds | `--cpu-seconds`      |
-| Virtual address space per process                     |    2048 MiB | `--memory-mib`       |
-| Writable work tmpfs                                   |     256 MiB | `--work-mib`         |
-| Individual output file and total retained `.vo` bytes |      64 MiB | `--artifact-mib`     |
-| Compiler diagnostics / checker output                 |       1 MiB | `--log-mib`          |
-| Open file descriptors per tool process                |         128 | fixed                |
-| Tasks in a gVisor container                          |         256 | fixed container limit |
+| Resource                                              |     Default | CLI option            |
+| ----------------------------------------------------- | ----------: | --------------------- |
+| Wall time per compilation or checking stage           | 120 seconds | `--wall-seconds`      |
+| CPU time per tool process                             |  60 seconds | `--cpu-seconds`       |
+| Virtual address space per process                     |    2048 MiB | `--memory-mib`        |
+| Writable work tmpfs                                   |     256 MiB | `--work-mib`          |
+| Individual output file and total retained `.vo` bytes |      64 MiB | `--artifact-mib`      |
+| Compiler diagnostics / checker output                 |       1 MiB | `--log-mib`           |
+| Open file descriptors per tool process                |         128 | fixed                 |
+| Tasks in a gVisor container                           |         256 | fixed container limit |
 
 gVisor bounds total container memory (including tmpfs) and tasks through Docker's
 cgroup limits. Native CPU and virtual-address-space limits apply per tool process;

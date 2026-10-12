@@ -4,12 +4,7 @@
   "title": "Evaluator-owned adversarial examples",
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "$schema",
-    "format",
-    "profiles",
-    "examples"
-  ],
+  "required": ["$schema", "format", "profiles", "examples"],
   "properties": {
     "$schema": { "const": "adversarial-examples.schema.json" },
     "format": { "type": "integer", "const": 1 },
