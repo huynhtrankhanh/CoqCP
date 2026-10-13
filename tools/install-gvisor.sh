@@ -29,6 +29,8 @@ $task_sudo "$task_install/runsc" install --runtime=coqcp-gvisor -- \
 $task_sudo systemctl restart docker
 # The calling evaluator user needs access to its local Docker daemon (as on
 # GitHub-hosted Ubuntu runners). The socket is never passed into the sandbox.
-docker --host=unix:///var/run/docker.sock build \
-  -f "$task_repo/tools/adversarial/Dockerfile.gvisor" \
-  -t coqcp-gvisor:rocq-9.3.0 "$task_repo/tools/adversarial"
+task_image_args=()
+if [ -n "${COQCP_GVISOR_IMAGE_ARCHIVE:-}" ]; then
+  task_image_args=(--archive "$COQCP_GVISOR_IMAGE_ARCHIVE")
+fi
+python3 "$task_repo/tools/adversarial/runtime_image.py" "${task_image_args[@]}"

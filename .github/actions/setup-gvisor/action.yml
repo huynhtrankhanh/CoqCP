@@ -20,9 +20,27 @@ runs:
     - name: Install native sandbox build dependencies
       shell: bash
       run: sudo apt-get install -y --no-install-recommends libseccomp-dev
+    - name: Restore immutable runtime image
+      id: runtime-image
+      uses: actions/cache/restore@v4
+      with:
+        path: |
+          .verification/runtime-image.tar
+          .verification/runtime-image.json
+        key: gvisor-image-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('tools/adversarial/Dockerfile.gvisor', 'tools/adversarial/runtime_image.py', 'tools/install-gvisor.sh') }}
     - name: Install pinned gVisor and runtime image
       shell: bash
+      env:
+        COQCP_GVISOR_IMAGE_ARCHIVE: ${{ github.workspace }}/.verification/runtime-image.tar
       run: bash tools/install-gvisor.sh
+    - name: Publish immutable runtime image from main
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.runtime-image.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v4
+      with:
+        path: |
+          .verification/runtime-image.tar
+          .verification/runtime-image.json
+        key: ${{ steps.runtime-image.outputs.cache-primary-key }}
     - name: Build native compiler and independent kernel gate
       shell: bash
       run: python3 tools/adversarial/check.py build

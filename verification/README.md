@@ -50,6 +50,14 @@ and independent kernel audit. Docker remains available during checking. See the
 [gVisor runtime guide](../docs/GvisorRuntime.md) for installation, resource
 bounds, and the trust boundary.
 
+Successful compilation artifacts and independent kernel reports are cached by
+default in evaluator-owned `.verification/cache`. Keys bind the full validation
+runtime identity, input bytes, frozen bundle, flags, policies, and limits. Changes
+to the runtime invalidate both caches. `examples.py --cache PATH` selects another
+private cache; `--no-cache` forces fresh compilation and checking. Each run still
+writes complete bundles, source snapshots, artifacts, and reports, including
+cache hit/miss counts. See [sound caching](../docs/AdversarialChecking.md#sound-caching).
+
 Knapsack, Permuted Binary Strings, and Koxia and Bracket certify generated-main
 execution. K-th Highest Score certifies the generated search loop with truthful
 oracle queries; DSU certifies generated union operations and score bounds.

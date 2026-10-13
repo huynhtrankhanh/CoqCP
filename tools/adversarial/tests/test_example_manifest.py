@@ -120,6 +120,7 @@ class ExampleManifestTests(unittest.TestCase):
         provision.assert_called_once_with()
         runtime.assert_called_once_with()
         self.assertEqual(make.call_args.args[0], limits)
+        self.assertEqual(make.call_args.kwargs["cache_directory"], check.DEFAULT_CACHE)
         self.assertEqual(prepare.call_args.args[0], check.REPO / entry["spec"])
         self.assertEqual(prepare.call_args.args[-1], ["allowed"])
         self.assertEqual(evaluate.call_args.args[2], check.REPO / entry["candidate"])

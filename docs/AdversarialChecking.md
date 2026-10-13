@@ -339,13 +339,56 @@ toolchain, driver, and expected specification IDs trusted. This sandbox reduces
 the submission's access; it does not establish correctness of the Linux kernel
 or eliminate vulnerabilities in the trusted checker.
 
-## Toolchain reuse
+## Sound caching
 
-gVisor reuses the installed native toolchain and built project libraries. Each
-batch starts fresh compiler processes, and every acceptance check rechecks all
-submitted artifacts in a new sandbox. Candidate compilation results and kernel
-verdicts are not cached. CI caches the native toolchain and builds the project
-libraries in each job.
+The default evaluator-owned cache is `.verification/cache`. Use `--cache PATH`
+to select another private directory, or `--no-cache` with `prepare`, `check`, or
+`examples.py` to execute every compiler and kernel operation again. Selftests use
+the same cache through `make_sandbox`; their assertions and direct containment,
+plugin-payload, and resource-limit probes still execute on every run.
+
+Compilation entries contain the entire successful batch of `.vo` artifacts.
+Their keys bind every input file, including helper sources and `Load` inputs,
+all frozen bundle bytes, visible file names and permissions, logical namespace,
+compiler configuration, and all resource limits. Kernel entries separately bind
+all artifact bytes (including unused helpers), the complete frozen bundle,
+module/library arguments, axiom policy, and limits. Only successful operations
+are stored; rejected proofs, malformed responses, timeouts, and resource failures
+are never stored as successful checks. Changing any source in a batch recompiles
+that batch. Every restored artifact is verified against its recorded SHA-256,
+and cached kernel responses undergo the same strict schema and axiom validation
+as fresh responses.
+
+**Both key domains include the complete validation runtime identity.** This
+covers validation and compilation sources and binaries, policies, every mounted
+toolchain and OCaml runtime file, gVisor binaries and flags, immutable image ID,
+Docker engine identity and client binary, and execution user. An edit to the
+checker, worker, sandbox, cache logic, or installed runtime invalidates both
+compilation and kernel entries. Runtime identity is computed at command startup;
+keep the installed toolchain and runtime immutable while a run is active.
+Specification IDs remain tied to that runtime.
+Bundle IDs, bundle contents, and source admission are validated before any hit;
+the gVisor startup probe also runs even when all proof operations are cached.
+
+The cache is trusted evaluator state, just like the toolchain and frozen
+specification. Keep it outside the submitting AI's writable environment and all
+mounted input, bundle, artifact, and toolchain directories. The default location
+is never mounted into the guest. The implementation requires private owned
+directories, rejects symlinks and special files, serializes same-key operations,
+and publishes verified blobs and manifests atomically. Hashes detect damage;
+they are not authentication against a writer allowed to replace trusted state.
+Missing, truncated, malformed, or hash-mismatched entries are cache misses.
+Reports expose compilation and kernel hit/miss counts under `cache`.
+
+CI restores proof entries for both selftests and examples and saves new entries
+only after a successful `push` run on `main`. Pull requests can consume the
+base branch's cache but cannot publish through this workflow. This uses
+[GitHub's branch-scoped cache access](https://docs.github.com/en/actions/reference/workflows-and-actions/dependency-caching).
+The runtime image archive is cached separately with its recipe, archive hash,
+and immutable image ID checked on restoration; identical jobs therefore retain
+the same image identity. An updated image recipe rebuilds the image and changes
+the proof-cache identity. Caches contain no secrets. Retention and deletion are
+evaluator maintenance; deleting entries only removes reuse.
 
 ## Shipped contracts and checks
 

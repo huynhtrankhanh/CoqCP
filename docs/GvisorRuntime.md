@@ -104,6 +104,17 @@ python3 -m unittest discover -s tools/adversarial/tests -v
 python3 tools/adversarial/examples.py --output .verification/gvisor-examples
 ```
 
-Native runs recompile candidates and independently recheck all artifacts. They
-reuse installed libraries but do not reuse candidate compilation results or
-kernel verdicts.
+Native runs cache successful complete compilations and independent kernel
+reports in evaluator-owned `.verification/cache`. Both domains bind the full
+validation runtime, frozen bundle, operation inputs, and limits. Hash-verified
+`.vo` blobs can be restored without recompiling; a prior kernel report is reused
+only for identical artifact bytes and checking context. Cache hits preserve
+bundle validation and the fresh gVisor probe. `--no-cache` forces fresh proof
+operations. See [sound caching](AdversarialChecking.md#sound-caching) for the trust
+boundary, invalidation rules, and selftest behavior.
+
+CI caches a Docker image archive separately so identical jobs use the same
+immutable image ID. `COQCP_GVISOR_IMAGE_ARCHIVE` selects an evaluator-owned archive
+for `install-gvisor.sh`; restoration verifies the recipe, archive hash, and loaded
+image ID. Only successful pushes to `main` publish proof entries; runtime image
+archives are published from `main` after provisioning succeeds.

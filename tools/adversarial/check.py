@@ -16,10 +16,12 @@ import sys
 import tempfile
 
 from ci_policy import POLICY_FILE, trusted_axioms, trusted_inductives
+from result_cache import ResultCache, snapshot
 
 REPO = Path(__file__).resolve().parents[2]
 TOOLS = Path(__file__).resolve().parent
 BIN = REPO / ".verification/bin"
+DEFAULT_CACHE = REPO / ".verification/cache"
 VERSION = "9.3.0"
 TOOLCHAIN = Path("/opt/rocq") / VERSION
 PLUGIN_POLICY = REPO / "verification/compiler_plugins.json"
@@ -177,29 +179,36 @@ def toolchain():
     stdlib = ocaml_stdlib(sys.modules[__name__])
     files = [Path(rocq), *(BIN / name for name in BINARIES),
              TOOLS / "worker.py", TOOLS / "check.py", TOOLS / "ci_policy.py", POLICY_FILE,
-             PLUGIN_POLICY, TOOLS / "gvisor_backend.py", TOOLS / "gvisor_entry.py"]
+             PLUGIN_POLICY, TOOLS / "gvisor_backend.py", TOOLS / "gvisor_entry.py",
+             TOOLS / "result_cache.py", TOOLS / "runtime_image.py", TOOLS / "Dockerfile.gvisor",
+             REPO / "tools/install-gvisor.sh", Path(command("docker"))]
     files += sorted(path for path in stdlib.rglob("*") if path.is_file())
-    # Rocq 9.3 installs package libraries in rocq.d as well as legacy coqlib
-    # mirrors. Fingerprint both representations and their findlib metadata.
-    files += sorted((TOOLCHAIN / "lib").rglob("*.vo"))
-    files += sorted((TOOLCHAIN / "lib").rglob("*.cmxs"))
-    files += sorted((TOOLCHAIN / "lib").rglob("META"))
-    files += sorted((TOOLCHAIN / "lib").rglob("*.env"))
-    files += sorted(path for path in (TOOLCHAIN / "bin").iterdir() if path.is_file())
-    files += sorted(path for path in (TOOLCHAIN / "libexec").rglob("*") if path.is_file())
-    files += [TOOLCHAIN / "lib/findlib.conf"]
+    # Bind every mounted runtime file, including source libraries that Load
+    # can consult, rather than only compiled-library and plugin extensions.
+    directories = []
+    for root in [TOOLCHAIN / name for name in ("bin", "lib", "libexec", "share")] + [stdlib]:
+        if root.exists():
+            directories += [root, *(path for path in root.rglob("*") if path.is_dir())]
+            files += [path for path in root.rglob("*") if path.is_file()]
     state = hashlib.sha256()
     state.update(encoded(sandbox_identity))
+    state.update(encoded(build_fingerprints()))
+    state.update(encoded({"uid": os.getuid(), "gid": os.getgid()}))
+    for path in sorted(set(directories)):
+        state.update(encoded([str(path), stat.S_IMODE(path.stat().st_mode)]))
     for path in sorted(set(files)):
-        state.update(encoded([str(path), digest(path)]))
+        state.update(encoded([str(path), digest(path), stat.S_IMODE(path.stat().st_mode)]))
     return {"version": VERSION, "rocq": rocq, "backend": "gvisor",
             "coqlib": str(coqlib), "fingerprint": state.hexdigest(),
             "sandbox_identity": sandbox_identity, "ocaml_stdlib": str(stdlib)}
 
 
-def make_sandbox(limits, runtime=None):
+def make_sandbox(limits, runtime=None, cache_directory=DEFAULT_CACHE):
     from gvisor_backend import GvisorSandbox
-    return GvisorSandbox(sys.modules[__name__], limits, runtime)
+    sandbox = GvisorSandbox(sys.modules[__name__], limits, runtime)
+    sandbox.cache = (ResultCache(sys.modules[__name__], cache_directory)
+                     if cache_directory is not None else None)
+    return sandbox
 
 
 def library_roots(bundle):
@@ -213,6 +222,23 @@ def compile_sources(inputs, sources, namespace, bundle, runtime, sandbox):
     if namespace == "Submission":
         config["roots"].append(["/bundle/spec", "Trusted"])
     (inputs / "build.json").write_bytes(encoded(config))
+    cache = getattr(sandbox, "cache", None)
+    if cache is None:
+        return compile_uncached(inputs, sources, bundle, sandbox)
+    request = {"runtime": runtime, "config": config,
+               "inputs": snapshot(sys.modules[__name__], inputs),
+               "bundle": snapshot(sys.modules[__name__], bundle)}
+    with cache.lock("compile", request) as key:
+        artifacts = cache.compiled(key, {Path(name).with_suffix(".vo").name for name in sources},
+                                   sandbox.limits["artifact_mib"] * 1024**2)
+        if artifacts is not None:
+            return artifacts
+        artifacts = compile_uncached(inputs, sources, bundle, sandbox)
+        cache.save_compiled(key, artifacts)
+        return artifacts
+
+
+def compile_uncached(inputs, sources, bundle, sandbox):
     raw = sandbox.run(["/usr/bin/python3", "-I", "/tool/worker.py"],
                       [(inputs, "/inputs"), (bundle, "/bundle")], compiler_worker=True)
     result = decoded(raw, "compiler response")
@@ -262,9 +288,24 @@ def kernel_check(bundle, artifacts, runtime, sandbox, allowed, *, spec_only=Fals
         args += ["--root", physical, logical]
     for axiom in allowed:
         args += ["--allow-axiom", axiom]
-    report = decoded(sandbox.run(args, mounts), "kernel checker response")
-    return validate_kernel_report(report, set(allowed),
-                                  "spec-checked" if spec_only else "accepted")
+    expected_status = "spec-checked" if spec_only else "accepted"
+
+    def run():
+        report = decoded(sandbox.run(args, mounts), "kernel checker response")
+        return validate_kernel_report(report, set(allowed), expected_status)
+
+    cache = getattr(sandbox, "cache", None)
+    if cache is None:
+        return run()
+    request = {"runtime": runtime, "limits": dict(sandbox.limits), "argv": args,
+               "mounts": {target: snapshot(sys.modules[__name__], host) for host, target in mounts}}
+    with cache.lock("kernel", request) as key:
+        report = cache.checked(key, set(allowed), expected_status)
+        if report is not None:
+            return report
+        report = run()
+        cache.save_checked(key, report)
+        return report
 
 
 def project_layout():
@@ -407,6 +448,9 @@ def evaluate(bundle, spec_id, submission, output, runtime, sandbox):
             report["stage"] = "complete"
     except (Rejected, OSError, ValueError, subprocess.SubprocessError) as error:
         report["reason"] = str(error)
+    cache = getattr(sandbox, "cache", None)
+    if cache is not None:
+        report["cache"] = cache.statistics()
     (output / "report.json").write_bytes(encoded(report) + b"\n")
     return report
 
@@ -426,6 +470,9 @@ def main():
     check.add_argument("--submission", type=Path, required=True)
     check.add_argument("--output", type=Path, required=True, help="New directory for artifacts and report")
     for child in [freeze, check]:
+        child.add_argument("--cache", type=Path, default=DEFAULT_CACHE,
+                           help="Evaluator-owned compilation and validation cache")
+        child.add_argument("--no-cache", action="store_true", help="Recompile and recheck every input")
         for name, default in DEFAULT_LIMITS.items():
             child.add_argument("--" + name.replace("_", "-"), type=int, default=default)
     args = parser.parse_args()
@@ -440,7 +487,8 @@ def main():
             raise Rejected("All resource limits must be positive")
         ensure_built()
         runtime = toolchain()
-        sandbox = make_sandbox(limits, runtime=runtime)
+        sandbox = make_sandbox(limits, runtime=runtime,
+                               cache_directory=None if args.no_cache else args.cache)
         if args.action == "prepare":
             allowed = trusted_axioms() if args.axiom_policy == "ci" else []
             spec_id = prepare(args.spec.resolve(), args.bundle.absolute(), runtime, sandbox, allowed)

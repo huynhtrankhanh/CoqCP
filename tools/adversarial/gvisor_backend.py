@@ -42,7 +42,10 @@ def identity(gate):
     image = query(gate, ["image", "inspect", IMAGE, "--format", "{{json .Id}}"])
     if not isinstance(image, str) or not image.startswith("sha256:"):
         raise gate.Rejected("Invalid evaluator gVisor image identity")
-    return {"image": image, "runtime": expected,
+    engine = query(gate, ["version", "--format", "{{json .Server}}"])
+    if not isinstance(engine, dict) or not engine.get("Version"):
+        raise gate.Rejected("Invalid evaluator Docker runtime identity")
+    return {"image": image, "runtime": expected, "engine": engine,
             "files": {str(path.relative_to(INSTALL)): gate.digest(path)
                       for path in sorted(INSTALL.rglob("*")) if path.is_file()}}
 

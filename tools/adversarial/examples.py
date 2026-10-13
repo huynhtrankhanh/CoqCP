@@ -16,6 +16,9 @@ def main():
     except (ValueError, OSError, check.Rejected) as error:
         parser.error(str(error))
     parser.add_argument("--output", type=Path, required=True, help="New output directory")
+    parser.add_argument("--cache", type=Path, default=check.DEFAULT_CACHE,
+                        help="Evaluator-owned compilation and validation cache")
+    parser.add_argument("--no-cache", action="store_true", help="Recompile and recheck every input")
     parser.add_argument("--only", action="append",
                         choices=[entry["name"] for entry in manifest["examples"]],
                         help="Check only these problems (repeatable)")
@@ -29,7 +32,8 @@ def main():
             continue
         allowed = check.trusted_axioms() if entry["axiom_policy"] == "ci" else []
         limits = dict(manifest["profiles"][entry["profile"]])
-        sandbox = check.make_sandbox(limits, runtime=runtime)
+        sandbox = check.make_sandbox(limits, runtime=runtime,
+                                     cache_directory=None if args.no_cache else args.cache)
         bundle = args.output / example / "bundle"
         try:
             spec_id = check.prepare(check.REPO / entry["spec"],

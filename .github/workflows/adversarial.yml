@@ -30,12 +30,26 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install native toolchain and gVisor
         uses: ./.github/actions/setup-gvisor
+      - name: Restore evaluator-owned proof cache
+        id: proof-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: .verification/cache
+          key: proof-cache-v1-${{ runner.os }}-${{ runner.arch }}-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.job }}
+          restore-keys: |
+            proof-cache-v1-${{ runner.os }}-${{ runner.arch }}-
       - name: Build shared theories and generated definitions
         run: |
           rocq makefile -f _CoqProject -o Makefile
           make -j2
       - name: Run adversarial acceptance and sandbox regressions
         run: python3 -m unittest discover -s tools/adversarial/tests -v
+      - name: Publish successful proof work from main
+        if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/cache/save@v4
+        with:
+          path: .verification/cache
+          key: ${{ steps.proof-cache.outputs.cache-primary-key }}
 
   complete-examples:
     needs: acceptance-and-containment
@@ -45,12 +59,26 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install native toolchain and gVisor
         uses: ./.github/actions/setup-gvisor
+      - name: Restore evaluator-owned proof cache
+        id: proof-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: .verification/cache
+          key: proof-cache-v1-${{ runner.os }}-${{ runner.arch }}-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.job }}
+          restore-keys: |
+            proof-cache-v1-${{ runner.os }}-${{ runner.arch }}-
       - name: Build shared theories and generated definitions
         run: |
           rocq makefile -f _CoqProject -o Makefile
           make -j2
       - name: Check every program's spec and full candidate proof chain
         run: python3 tools/adversarial/examples.py --output .verification/ci-examples
+      - name: Publish successful proof work from main
+        if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/cache/save@v4
+        with:
+          path: .verification/cache
+          key: ${{ steps.proof-cache.outputs.cache-primary-key }}
       - name: Upload checked artifacts and reports
         if: always()
         uses: actions/upload-artifact@v4
