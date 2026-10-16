@@ -72,26 +72,39 @@ Exactly `k-1` real scores are greater than this answer. Thus it is the
 - `../../generated-cpp/KthHighestScore.cpp`: standalone C++20 submission.
 - `../../generated-coq/KthHighestScore.v`: compiler-generated Coq actions.
 - `../../verification/kth-highest-score/candidate/KthHighestScore.v`: executable mathematical model and proofs.
-- `../../verification/kth-highest-score/candidate/KthHighestScoreCode.v`: generated search loop refinement.
+- `../../verification/kth-highest-score/candidate/KthHighestScoreCode.v`: extraction of the actual generated search loop and arithmetic facts.
+- `../../verification/kth-highest-score/candidate/KthHighestScoreProgram.v`: exact normalization of the generated entry point and query routine.
+- `../../verification/kth-highest-score/candidate/KthHighestScoreIO.v` and `KthHighestScorePrinter.v`: decimal parser and repeated-use printer proofs.
+- `../../verification/kth-highest-score/candidate/KthHighestScoreEndToEnd.v`: complete observed execution proof.
+- `../../verification/kth-highest-score/candidate/KthHighestScoreExamples.v`: kernel-checked byte transcripts, including both final sentinel cases, the last rank, and two search probes.
 - `test_interactive.py`: pipe-based grader with exhaustive small cases, randomized
   contests, maximum-size cases, and exact comparison of source/model query traces.
 
-The frozen specification in `verification/kth-highest-score/spec/Spec.v` states
-the task directly over two descending score sequences: return a score that
-occurs in one sequence and has exactly `k-1` real scores above it. It contains
-no generated-program imports, sentinel definitions, machine states, or query
-oracle. `Implementation.correct` proves this contract from the ordinary input
-assumptions.
+The specification in `verification/kth-highest-score/spec/Spec.v` binds the
+candidate to the actual generated `funcdef_0__main`, with its generated initial
+arrays. It requires successful execution from decimal `n k\n` input and truthful
+decimal replies. Every emitted query must name a real score, at most 36 queries
+may be emitted, and the final decimal answer must occur in one country with
+exactly `k-1` real scores above it. The query strategy is a witness of execution;
+the specification contains no binary-search algorithm or sentinel extension.
 
-The candidate separately proves that its sentinel extension preserves those
-ordinary inputs and that its partition answer meets the task contract.
-`generated_search_correct` then relates the actual generated search loop to
-that answer, using a truthful oracle for the interactive grader replies. This
-loop proof covers unsigned 64-bit arithmetic, midpoint division, local-variable
-updates, and loop exit. It does not prove the decimal I/O procedures or the C++
-compiler correct. The emitted C++ I/O and query trace are checked by the local
-grader. The semantic proof has no axioms; the generated-loop refinement uses
-functional extensionality. There are no admitted obligations.
+The complete output includes every `F i\n` or `S i\n` request and the final
+`! score\n` line. At each query flush, the corresponding reply must still be
+unread. The final flush requires the whole answer and no remaining input.
+Termination, full input consumption, output formatting, and flush placement
+are proof obligations, rather than conditions assumed before checking an answer.
+
+`Implementation.correct` proves this end-to-end contract. The proof connects
+the actual generated parser, initialization, search, query routine, final
+selection, printer, and flushes. It covers array bounds, unsigned 64-bit
+arithmetic, local sentinels, and the query limit. No procedure or input action
+is replaced by an oracle. The mathematical proof has no axioms; the execution
+proof uses the project's permitted functional extensionality assumption. There
+are no admitted obligations.
+
+The guarantee is in CoqCP's execution semantics. The TypeScript compiler and
+native C++ runtime remain outside the formal proof; the emitted executable is
+additionally exercised by the pipe-based grader.
 
 ## Build and check
 

@@ -6,15 +6,20 @@
 
 `verification/disjoint-set-union/candidate/DisjointSetUnionCode.v` and `DisjointSetUnionCode2.v` preserve the ancestor, path-compression, and union proofs. `competitiveMergeRefinesModel` proves that the generated library's merge operation refines the mathematical DSU state. `DisjointSetUnionCode3.v` proves the cumulative merge-score bound. The competitive DSU input/output frontend has executable checks, but no end-to-end theorem.
 
-`verification/kth-highest-score/spec/Spec.v` gives a task-level contract over
-two descending score sequences. It states that the result occurs in one
-sequence and that exactly `k-1` real scores are greater. The specification is
-independent of generated Coq code, sentinels, machine state, and oracle
-construction. The candidate proves the partition algorithm against this
-contract and separately proves that the generated search loop refines the
-algorithm with truthful interactive replies. The loop refinement covers
-64-bit arithmetic and control flow and uses functional extensionality. Decimal
-I/O and emitted C++ are checked by a pipe-based interactive grader. See the
+`verification/kth-highest-score/candidate/Candidate.v` proves the complete
+`Trusted.Spec.required` contract for the actual generated K-th Highest Score
+entry point. The spec requires canonical decimal `n k` input, truthful replies,
+legal queries, at most 36 requests, a correct k-th score, successful termination,
+complete input consumption, exact output, and every query/final-answer flush.
+Each reply remains unread at its query's flush. The specification describes the
+protocol and rank condition without prescribing the search algorithm or
+replacing any generated procedure. `KthHighestScoreEndToEnd.v` connects all
+parser, initialization, search, query, selection, and printing steps.
+Four independently written byte transcripts and a wrong-rank rejection example
+are checked as part of the candidate. The execution proof uses functional
+extensionality; the mathematical proof has no axioms. There are no admitted
+obligations. Native C++ is additionally tested by the pipe-based grader; the
+compiler and native runtime are outside the formal proof. See the
 [solution and verification commands](../CSES/3305/README.md).
 
 The shared FastIO template buffers POSIX `read` calls for batch and interactive
