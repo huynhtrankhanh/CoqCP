@@ -69,6 +69,17 @@ and binds it to the generated entry point. See the
 
 The other generated examples have compile-and-run checks. The TypeScript parser, validation, growth analysis, and C++ emitter are tested; they are not themselves formally verified compiler passes. The proofs establish properties of generated Coq actions. They do not prove equivalence of arbitrary emitted C++ programs to those actions or model C++ allocation failure.
 
+`verification/sorting-subarrays/candidate/MainIO.v` proves successful complete
+`runIO` execution of the submitted byte-stream entry point. It covers the
+decimal header, signed array values, all query pairs, checked parsing, EOF,
+the verified lazy segment tree and binary search, exact signed decimal output
+with LF, and complete consumption of the canonical input. The program is a
+direct CoqCP `Action`, extracted with its proved parser and printer; the native
+backend handles raw byte effects. The standard adversarial examples runner
+checks its stronger contract under the existing CI axiom policy. Extraction,
+native compilation, and the byte backend remain the deployment trust boundary.
+See the [solution and commands](../verification/sorting-subarrays/README.md).
+
 To check the compiler and regenerate examples:
 
 ```sh

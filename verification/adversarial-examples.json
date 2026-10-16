@@ -91,6 +91,13 @@
       "candidate": "verification/koxia-and-bracket/candidate",
       "axiom_policy": "ci",
       "profile": "koxia-proof-chain"
+    },
+    {
+      "name": "sorting-subarrays",
+      "spec": "verification/sorting-subarrays/spec/Spec.v",
+      "candidate": "verification/sorting-subarrays/candidate",
+      "axiom_policy": "ci",
+      "profile": "full-proof-chain"
     }
   ]
 }

@@ -408,6 +408,7 @@ project libraries. See [the layout and commands](../verification/README.md).
 | K-th Highest Score      | Successful generated search-loop refinement with truthful oracle queries      |
 | Permuted Binary Strings | Complete generated execution, exact bytes, and every flush boundary           |
 | Koxia and Bracket       | Complete generated execution and positional-mask optimum count                |
+| Sorting Subarrays       | Complete byte-stream execution, signed decimal I/O, and the final selected value |
 
 The first three contracts use no axioms. The generated execution contracts use
 the CI policy. Each spec defines its own formal scope and input bounds.

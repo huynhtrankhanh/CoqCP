@@ -43,4 +43,5 @@ Explanation:
 - After processing the second query, the array becomes [1, 2, 3, 4, 5].
 - The value of A[3] after processing all the queries is 3.
 
-**Your job:** find out the solution to this problem and code a formally verified solution.
+**Solved:** [end-to-end verified threshold/segment-tree solution, executable, and adversarial
+validation commands](../verification/sorting-subarrays/README.md).

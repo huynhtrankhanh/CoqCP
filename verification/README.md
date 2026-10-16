@@ -64,6 +64,13 @@ oracle queries; DSU certifies generated union operations and score bounds.
 Watermelon and Restore Three Numbers certify Gallina solvers. These scopes do
 not claim additional byte-stream or emitted-C++ verification.
 
+Sorting Subarrays certifies its complete byte-stream `Action` entry point:
+signed decimal parsing, all queries, the lazy segment tree and binary search,
+successful termination, exact signed output, and full consumption of the
+specified LF-terminated input. Its executable extracts that same entry point;
+the native wrapper supplies raw byte effects. See its
+[contract and validation commands](sorting-subarrays/README.md).
+
 `trusted_axioms.json` and `compiler_plugins.json` are evaluator policies, not
 problem specifications. See [adversarial checking](../docs/AdversarialChecking.md)
 for the sandbox, frozen bundle IDs, and direct prepare/check commands.
