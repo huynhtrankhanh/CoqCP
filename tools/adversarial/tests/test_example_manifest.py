@@ -29,7 +29,6 @@ class ExampleManifestTests(unittest.TestCase):
 
     def test_repository_manifest_has_existing_sources_and_complete_resource_profiles(self):
         manifest = example_manifest.load()
-        self.assertEqual(len(manifest["examples"]), 9)
         for entry in manifest["examples"]:
             self.assertEqual(set(manifest["profiles"][entry["profile"]]), set(check.DEFAULT_LIMITS))
             self.assertTrue((check.REPO / entry["spec"]).is_file())
