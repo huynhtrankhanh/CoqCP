@@ -76,21 +76,22 @@ Exactly `k-1` real scores are greater than this answer. Thus it is the
 - `test_interactive.py`: pipe-based grader with exhaustive small cases, randomized
   contests, maximum-size cases, and exact comparison of source/model query traces.
 
-`solve_correct` proves that the modeled answer is a real score with exactly
-`k-1` scores above it, that every emitted query has an index in `1..n`, and that
-at most 36 queries are emitted. `extend_valid` derives the sentinel-based input
-contract from decreasing country scores in `1..1000000000`.
+The frozen specification in `verification/kth-highest-score/spec/Spec.v` states
+the task directly over two descending score sequences: return a score that
+occurs in one sequence and has exactly `k-1` real scores above it. It contains
+no generated-program imports, sentinel definitions, machine states, or query
+oracle. `Implementation.correct` proves this contract from the ordinary input
+assumptions.
 
-`generated_search_correct` extracts the search loop from the actual generated
-Coq main body and proves that its local-variable execution returns the partition
-used by the mathematical model. It abstracts the query procedure by an oracle
-that stores the correct score in the reply array. The proof includes unsigned
-64-bit arithmetic, midpoint division, local-variable updates, and loop exit.
-It does not prove the decimal I/O procedures or the C++ compiler correct.
-The complete emitted C++ program's I/O and query trace are checked by the local
-grader. The mathematical proof uses no axioms; the generated-loop refinement
-uses functional extensionality, as permitted by the repository's proof policy.
-There are no admitted obligations.
+The candidate separately proves that its sentinel extension preserves those
+ordinary inputs and that its partition answer meets the task contract.
+`generated_search_correct` then relates the actual generated search loop to
+that answer, using a truthful oracle for the interactive grader replies. This
+loop proof covers unsigned 64-bit arithmetic, midpoint division, local-variable
+updates, and loop exit. It does not prove the decimal I/O procedures or the C++
+compiler correct. The emitted C++ I/O and query trace are checked by the local
+grader. The semantic proof has no axioms; the generated-loop refinement uses
+functional extensionality. There are no admitted obligations.
 
 ## Build and check
 

@@ -6,6 +6,13 @@ From Stdlib Require Import ZArith.ZArith.
 Import ListNotations.
 Local Open Scope nat_scope.
 
+(* The generated search uses local sentinels; these are implementation details,
+   derived from the ordinary descending-score assumptions in the spec. *)
+Definition ceiling := S 1000000000.
+Definition country_valid (n : nat) (f : nat -> nat) :=
+  f 0 = ceiling /\ f (S n) = 0 /\
+  (forall x y, x < y -> y <= S n -> f y < f x).
+
 (* A partition probe is two country queries, with sentinels answered locally. *)
 Fixpoint search (fuel : nat) (p : nat -> bool) (lo hi : nat) : nat :=
   match fuel with
@@ -117,6 +124,14 @@ Qed.
 (* Constructing sentinels from exactly the task's ordinary input assumptions. *)
 Definition extend (n : nat) (raw : nat -> nat) (i : nat) :=
   if i =? 0 then ceiling else if i <=? n then raw i else 0.
+Lemma extend_real n raw i (hi : 1 <= i <= n) : extend n raw i = raw i.
+Proof.
+  unfold extend.
+  assert (hz : (i =? 0) = false) by (apply Nat.eqb_neq; lia).
+  assert (hn : (i <=? n) = true) by (apply Nat.leb_le; lia).
+  now rewrite hz, hn.
+Qed.
+
 Lemma extend_valid n raw
   (hBounds : forall i, 1 <= i <= n -> 1 <= raw i <= 1000000000)
   (hSorted : forall i j, 1 <= i -> i < j -> j <= n -> raw j < raw i) :

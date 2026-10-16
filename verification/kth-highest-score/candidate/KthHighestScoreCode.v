@@ -6,6 +6,51 @@ From stdpp Require Import numbers list.
 From Stdlib Require Import Lia Logic.FunctionalExtensionality.
 Open Scope Z_scope.
 
+(* Implementation-specific simulation vocabulary. The task specification is
+   intentionally independent of generated syntax and this oracle harness. *)
+Definition QueryProcedure :=
+  (varsfuncdef_0__query -> bool) -> (varsfuncdef_0__query -> Z) ->
+  Action (WithArrays arrayIndex2 (arrayType _ environment2)) withArraysReturnValue unit.
+
+Definition mainWithQuery : QueryProcedure ->
+  Action (WithLocalVariables arrayIndex2 (arrayType _ environment2) varsfuncdef_0__main)
+    withLocalVariablesReturnValue unit := ltac:(
+  let code := eval unfold funcdef_0__main_body in funcdef_0__main_body in
+  let code := eval pattern funcdef_0__query in code in
+  lazymatch code with ?f funcdef_0__query => exact f end).
+
+Definition generatedSearchLoop (query : QueryProcedure) :
+  Action (WithLocalVariables arrayIndex2 (arrayType _ environment2) varsfuncdef_0__main)
+    withLocalVariablesReturnValue unit := ltac:(
+  let code := eval cbv beta delta [mainWithQuery] in (mainWithQuery query) in
+  lazymatch code with context [(Done _ _ _ 17%Z >>= ?cont)] =>
+    let body := eval cbn [bind] in (Done _ _ _ 17%Z >>= cont) in exact body
+  end).
+
+Definition oracleQuery (F S : nat -> nat) : QueryProcedure :=
+  fun _ nums => Dispatch _ _ _
+    (Store _ _ arraydef_0__reply 0
+      (Z.of_nat ((if bool_decide (nums vardef_0__query_country = 70) then F else S)
+        (Z.to_nat (nums vardef_0__query_index)))))
+    (fun _ => Done _ _ _ tt).
+
+Definition kernelArrays (reply : Z) : forall name, list (arrayType _ environment2 name) :=
+  fun name => match name with
+  | arraydef_0__input => [0]
+  | arraydef_0__reply => [reply]
+  | arraydef_0__printBuffer => repeat 0 20
+  end.
+
+Definition kernelMachine reply : Machine :=
+  {| memory := kernelArrays reply; stdin := []; stdout := [] |}.
+
+Definition mainNums (n k lo hi mid j f s a : nat) : varsfuncdef_0__main -> Z :=
+  fun name => Z.of_nat (match name with
+  | vardef_0__main_n => n | vardef_0__main_k => k
+  | vardef_0__main_lo => lo | vardef_0__main_hi => hi
+  | vardef_0__main_mid => mid | vardef_0__main_j => j
+  | vardef_0__main_f => f | vardef_0__main_s => s | vardef_0__main_answer => a
+  end).
 
 (* Abstract only the query procedure in the actual compiler output. *)
 Lemma mainWithQuery_original : mainWithQuery funcdef_0__query = funcdef_0__main_body.
