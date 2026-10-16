@@ -25,17 +25,17 @@ all these reference operations, for every valid input.
 All algorithm definitions and proofs are submitted as source under
 [`candidate/`](candidate/):
 
-| File | Proof responsibility |
-| --- | --- |
-| `Bits.v` | Interval assignment and bit-count list laws |
-| `Tree.v` | Lazy assignments, cached counts, prefix queries, and construction |
-| `Threshold.v` | Thresholding commutes with a reference subarray sort |
-| `Simulation.v` | Every query, padding, and final lookup refine the reference |
-| `Search.v` | Binary search, including floor division for negative midpoints |
-| `Algorithm.v` | The complete mathematical solver |
-| `ByteIO.v` | Signed decimal input and byte output |
-| `MainIO.v` | Complete byte-stream entry point and successful execution |
-| `Candidate.v` | The actual entry point satisfies the frozen end-to-end contract |
+| File           | Proof responsibility                                              |
+| -------------- | ----------------------------------------------------------------- |
+| `Bits.v`       | Interval assignment and bit-count list laws                       |
+| `Tree.v`       | Lazy assignments, cached counts, prefix queries, and construction |
+| `Threshold.v`  | Thresholding commutes with a reference subarray sort              |
+| `Simulation.v` | Every query, padding, and final lookup refine the reference       |
+| `Search.v`     | Binary search, including floor division for negative midpoints    |
+| `Algorithm.v`  | The complete mathematical solver                                  |
+| `ByteIO.v`     | Signed decimal input and byte output                              |
+| `MainIO.v`     | Complete byte-stream entry point and successful execution         |
+| `Candidate.v`  | The actual entry point satisfies the frozen end-to-end contract   |
 
 The submitted program is the complete `Action BasicEffect` entry point, not
 just a function on decoded values. Its frozen contract requires:

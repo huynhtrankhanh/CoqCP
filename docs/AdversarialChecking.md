@@ -398,16 +398,16 @@ problem; proof helpers are submitted with the candidate. Candidates may import
 general `CoqCP` theories. Concrete program proofs are excluded from the frozen
 project libraries. See [the layout and commands](../verification/README.md).
 
-| Problem                 | Contract                                                                      |
-| ----------------------- | ----------------------------------------------------------------------------- |
-| Increment               | Total successor function                                                      |
-| Watermelon              | Existence of a division into positive even weights                            |
-| Restore Three Numbers   | Reconstruction up to permutation                                              |
-| Knapsack                | Successful generated execution and exact decimal encoding of an optimal value |
-| Disjoint Set Union      | Generated union refines the abstract model; merge-score bound and attainment  |
-| K-th Highest Score      | Successful generated search-loop refinement with truthful oracle queries      |
-| Permuted Binary Strings | Complete generated execution, exact bytes, and every flush boundary           |
-| Koxia and Bracket       | Complete generated execution and positional-mask optimum count                |
+| Problem                 | Contract                                                                         |
+| ----------------------- | -------------------------------------------------------------------------------- |
+| Increment               | Total successor function                                                         |
+| Watermelon              | Existence of a division into positive even weights                               |
+| Restore Three Numbers   | Reconstruction up to permutation                                                 |
+| Knapsack                | Successful generated execution and exact decimal encoding of an optimal value    |
+| Disjoint Set Union      | Generated union refines the abstract model; merge-score bound and attainment     |
+| K-th Highest Score      | Successful generated search-loop refinement with truthful oracle queries         |
+| Permuted Binary Strings | Complete generated execution, exact bytes, and every flush boundary              |
+| Koxia and Bracket       | Complete generated execution and positional-mask optimum count                   |
 | Sorting Subarrays       | Complete byte-stream execution, signed decimal I/O, and the final selected value |
 
 The first three contracts use no axioms. The generated execution contracts use
