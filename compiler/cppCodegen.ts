@@ -103,9 +103,7 @@ void growArray(std::vector<T>& array, uint64_t minimumLength) {
       return [...environment.arrays].map(([name, description]) => {
         const { itemTypes } = description
         const tuple =
-          'std::tuple<' +
-          itemTypes.map((x) => cppType(x)).join(', ') +
-          '>'
+          'std::tuple<' + itemTypes.map((x) => cppType(x)).join(', ') + '>'
         return (
           (growingArrays.get(module.moduleName)!.has(name)
             ? 'std::vector<' + tuple + '>& '
@@ -135,11 +133,7 @@ void growArray(std::vector<T>& array, uint64_t minimumLength) {
             ...[...variables].map(([name, value], index) => {
               const { type } = value
               localNameMap.set(name, index)
-              return (
-                cppType(type) +
-                ' local_' +
-                index
-              )
+              return cppType(type) + ' local_' + index
             }),
           ].join(', ') +
           ') {\n' +
@@ -160,11 +154,31 @@ void growArray(std::vector<T>& array, uint64_t minimumLength) {
                 }
 
                 if (instruction.type === 'float literal')
-                  return adorn('coqcp_float' + instruction.format + '::from_bits(' + instruction.bits + 'ULL)')
+                  return adorn(
+                    'coqcp_float' +
+                      instruction.format +
+                      '::from_bits(' +
+                      instruction.bits +
+                      'ULL)'
+                  )
                 if (instruction.type === 'floatOp') {
                   const op = floatInstructions[instruction.operation]
-                  const declarations = instruction.arguments.map((x, i) => 'auto float_arg_' + i + ' = ' + print(x) + '; ').join('')
-                  return adorn('([&]() { ' + declarations + 'return ' + op.cpp + '(' + instruction.arguments.map((_, i) => 'float_arg_' + i).join(', ') + '); })()')
+                  const declarations = instruction.arguments
+                    .map(
+                      (x, i) => 'auto float_arg_' + i + ' = ' + print(x) + '; '
+                    )
+                    .join('')
+                  return adorn(
+                    '([&]() { ' +
+                      declarations +
+                      'return ' +
+                      op.cpp +
+                      '(' +
+                      instruction.arguments
+                        .map((_, i) => 'float_arg_' + i)
+                        .join(', ') +
+                      '); })()'
+                  )
                 }
                 if (instruction.type === 'binaryOp') {
                   if (
@@ -404,9 +418,13 @@ void growArray(std::vector<T>& array, uint64_t minimumLength) {
                         '(' +
                         [
                           ...environmentArrays,
-                          ...[...variables.keys()].map(name => {
-                            const suppliedIndex = [...supplied.keys()].indexOf(name)
-                            return suppliedIndex < 0 ? '0' : 'workaround_' + suppliedIndex
+                          ...[...variables.keys()].map((name) => {
+                            const suppliedIndex = [...supplied.keys()].indexOf(
+                              name
+                            )
+                            return suppliedIndex < 0
+                              ? '0'
+                              : 'workaround_' + suppliedIndex
                           }),
                         ].join(', ') +
                         ');})()'
@@ -591,9 +609,13 @@ void growArray(std::vector<T>& array, uint64_t minimumLength) {
                         '(' +
                         [
                           ...environmentArrays,
-                          ...[...variables.keys()].map(name => {
-                            const suppliedIndex = [...supplied.keys()].indexOf(name)
-                            return suppliedIndex < 0 ? '0' : 'workaround_' + suppliedIndex
+                          ...[...variables.keys()].map((name) => {
+                            const suppliedIndex = [...supplied.keys()].indexOf(
+                              name
+                            )
+                            return suppliedIndex < 0
+                              ? '0'
+                              : 'workaround_' + suppliedIndex
                           }),
                         ].join(', ') +
                         ');})()'
@@ -640,9 +662,7 @@ void growArray(std::vector<T>& array, uint64_t minimumLength) {
     let string = ''
     for (const [name, { itemTypes, length }] of arrays) {
       const tuple =
-        'std::tuple<' +
-        itemTypes.map((x) => cppType(x)).join(', ') +
-        '>'
+        'std::tuple<' + itemTypes.map((x) => cppType(x)).join(', ') + '>'
       string += growingArrays.get('')!.has(name)
         ? 'std::vector<' +
           tuple +

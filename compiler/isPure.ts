@@ -2,8 +2,10 @@ import { ValueType } from './parse'
 
 const isPure = (value: ValueType): boolean => {
   switch (value.type) {
-    case 'float literal': return true
-    case 'floatOp': return false
+    case 'float literal':
+      return true
+    case 'floatOp':
+      return false
     case 'binaryOp':
       return isPure(value.left) && isPure(value.right)
     case 'break':

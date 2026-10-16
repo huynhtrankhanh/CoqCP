@@ -144,9 +144,7 @@ export const coqCodegen = (sortedModules: CoqCPAST[]): string => {
             const coqType =
               itemTypes.length === 0
                 ? 'unit'
-                : itemTypes
-                    .map(coqPrimitiveType)
-                    .join(' * ')
+                : itemTypes.map(coqPrimitiveType).join(' * ')
             return '| ' + sanitizeArray(moduleName, name) + ' => ' + coqType
           })
           .join(' ') +
@@ -165,11 +163,7 @@ export const coqCodegen = (sortedModules: CoqCPAST[]): string => {
               const value =
                 itemTypes.length === 0
                   ? 'tt'
-                  : '(' +
-                    itemTypes
-                      .map(coqZero)
-                      .join(', ') +
-                    ')'
+                  : '(' + itemTypes.map(coqZero).join(', ') + ')'
               return (
                 '| ' +
                 sanitizeArray(moduleName, name) +
@@ -278,7 +272,7 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
             switch (value.type) {
               case 'float literal':
                 return {
-                expression: `(Done _ _ _ (floatFromBits ${value.format === 32 ? 'Binary32' : 'Binary64'} ${value.bits}%Z))`,
+                  expression: `(Done _ _ _ (floatFromBits ${value.format === 32 ? 'Binary32' : 'Binary64'} ${value.bits}%Z))`,
                   type: value.format === 32 ? 'float32' : 'float64',
                 }
               case 'floatOp': {
@@ -301,10 +295,23 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                 assert(!Array.isArray(rightType))
 
                 if (isFloat(leftType)) {
-                  const op = ({add: 'Add', subtract: 'Sub', multiply: 'Mul', equal: 'Eq', noteq: 'Ne'} as Record<string, string>)[value.operator]
+                  const op = (
+                    {
+                      add: 'Add',
+                      subtract: 'Sub',
+                      multiply: 'Mul',
+                      equal: 'Eq',
+                      noteq: 'Ne',
+                    } as Record<string, string>
+                  )[value.operator]
                   assert(op !== undefined && leftType === rightType)
-                  return { expression: `(${leftExpression} >>= fun x => ${rightExpression} >>= fun y => Done _ _ _ (float${op} x y))`,
-                    type: value.operator === 'equal' || value.operator === 'noteq' ? 'bool' : leftType }
+                  return {
+                    expression: `(${leftExpression} >>= fun x => ${rightExpression} >>= fun y => Done _ _ _ (float${op} x y))`,
+                    type:
+                      value.operator === 'equal' || value.operator === 'noteq'
+                        ? 'bool'
+                        : leftType,
+                  }
                 }
                 switch (value.operator) {
                   case 'add':
@@ -489,8 +496,11 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
               case 'get': {
                 const variable = variables.get(value.name)
                 assert(variable !== undefined)
-                if (isFloat(variable.type)) return {
-                  expression: `(floatLocalGet ${floatFormat(variable.type)} ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex} (${sanitizeVariable(moduleName, functionName, value.name)}))`, type: variable.type }
+                if (isFloat(variable.type))
+                  return {
+                    expression: `(floatLocalGet ${floatFormat(variable.type)} ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex} (${sanitizeVariable(moduleName, functionName, value.name)}))`,
+                    type: variable.type,
+                  }
                 if (isNumeric(variable.type)) {
                   return {
                     expression: `(numberLocalGet ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex} (${sanitizeVariable(
@@ -516,8 +526,11 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                 const variable = variables.get(value.name)
                 assert(variable !== undefined)
                 const { expression } = dfs(value.value)
-                if (isFloat(variable.type)) return {
-                  expression: `(${expression} >>= fun x => floatLocalSet ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex} (${sanitizeVariable(moduleName, functionName, value.name)}) x)`, type: 'statement' }
+                if (isFloat(variable.type))
+                  return {
+                    expression: `(${expression} >>= fun x => floatLocalSet ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex} (${sanitizeVariable(moduleName, functionName, value.name)}) x)`,
+                    type: 'statement',
+                  }
                 if (isNumeric(variable.type)) {
                   return {
                     expression: `(${expression} >>= fun x => numberLocalSet ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex} (${sanitizeVariable(
@@ -546,9 +559,7 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                 const zero =
                   declaration.itemTypes.length === 0
                     ? 'tt'
-                    : declaration.itemTypes
-                        .map(coqZero)
-                        .join(', ')
+                    : declaration.itemTypes.map(coqZero).join(', ')
                 const { expression } = dfs(value.length)
                 return {
                   expression: `(${expression} >>= fun size => grow ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex} (${sanitizeArray(moduleName, value.name)}) size (${zero}))`,
@@ -580,7 +591,9 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                 }
               }
               case 'less': {
-                const { expression: leftExpression, type: leftType } = dfs(value.left)
+                const { expression: leftExpression, type: leftType } = dfs(
+                  value.left
+                )
                 const { expression: rightExpression } = dfs(value.right)
                 return {
                   expression: `(${leftExpression} >>= fun a => ${rightExpression} >>= fun b => Done _ _ _ ${isFloat(leftType) ? '(floatLt a b)' : '(bool_decide (Z.lt a b))'})`,
@@ -623,7 +636,11 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                     return { expression, type }
                   }
                   case 'minus': {
-                    if (isFloat(type)) return { expression: `(${expression} >>= fun x => Done _ _ _ (floatNeg x))`, type }
+                    if (isFloat(type))
+                      return {
+                        expression: `(${expression} >>= fun x => Done _ _ _ (floatNeg x))`,
+                        type,
+                      }
                     assert(isNumeric(type))
                     const bitWidth = getBitWidth(type)
                     return {

@@ -11,7 +11,8 @@ export const findDependencies = ({ procedures }: CoqCPAST) => {
       case 'floatOp':
         valueType.arguments.forEach(findDependencies)
         break
-      case 'float literal': break
+      case 'float literal':
+        break
       case 'local binder':
         // Local binders do not introduce dependencies
         break

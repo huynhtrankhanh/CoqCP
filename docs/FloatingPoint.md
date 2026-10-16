@@ -44,19 +44,19 @@ Each `fN` below is either `f32` or `f64`; `iM` is either `i32` or `i64`.
 The suffix `S` means signed and `U` unsigned. Integer arguments/results use the
 existing `int32`/`int64` types and their two's-complement bit encodings.
 
-| Instructions | Behavior |
-| --- | --- |
-| `fNAbs`, `fNNeg` | Absolute value and negation |
-| `fNCeil`, `fNFloor`, `fNTrunc`, `fNNearest` | Integral rounding; nearest breaks ties to even and preserves signed zero |
-| `fNSqrt` | Correctly rounded square root |
-| `fNAdd`, `fNSub`, `fNMul`, `fNDiv` | Arithmetic with one rounding per operation |
-| `fNMin`, `fNMax` | NaN-propagating minimum/maximum; mixed zeros produce negative/positive zero respectively |
-| `fNEq`, `fNNe`, `fNLt`, `fNLe`, `fNGt`, `fNGe` | IEEE comparisons |
-| `fNConvertIMS`, `fNConvertIMU` | Integer-to-float conversion, e.g. `f32ConvertI64U` |
-| `iMTruncFNS`, `iMTruncFNU` | Truncate toward zero, trapping on NaN, infinity, or out-of-range truncated results |
-| `iMTruncSatFNS`, `iMTruncSatFNU` | Saturating truncation; NaN becomes zero |
-| `f32DemoteF64`, `f64PromoteF32` | Format conversion; promotion is exact |
-| `f32ReinterpretI32`, `f64ReinterpretI64` | Decode integer bits as a float; every NaN encoding denotes the same abstract NaN |
+| Instructions                                   | Behavior                                                                                 |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `fNAbs`, `fNNeg`                               | Absolute value and negation                                                              |
+| `fNCeil`, `fNFloor`, `fNTrunc`, `fNNearest`    | Integral rounding; nearest breaks ties to even and preserves signed zero                 |
+| `fNSqrt`                                       | Correctly rounded square root                                                            |
+| `fNAdd`, `fNSub`, `fNMul`, `fNDiv`             | Arithmetic with one rounding per operation                                               |
+| `fNMin`, `fNMax`                               | NaN-propagating minimum/maximum; mixed zeros produce negative/positive zero respectively |
+| `fNEq`, `fNNe`, `fNLt`, `fNLe`, `fNGt`, `fNGe` | IEEE comparisons                                                                         |
+| `fNConvertIMS`, `fNConvertIMU`                 | Integer-to-float conversion, e.g. `f32ConvertI64U`                                       |
+| `iMTruncFNS`, `iMTruncFNU`                     | Truncate toward zero, trapping on NaN, infinity, or out-of-range truncated results       |
+| `iMTruncSatFNS`, `iMTruncSatFNU`               | Saturating truncation; NaN becomes zero                                                  |
+| `f32DemoteF64`, `f64PromoteF32`                | Format conversion; promotion is exact                                                    |
+| `f32ReinterpretI32`, `f64ReinterpretI64`       | Decode integer bits as a float; every NaN encoding denotes the same abstract NaN         |
 
 Examples: `f32Nearest(f32('2.5'))` is 2;
 `i32TruncF64U(f64('-0.9'))` is 0; `i32TruncF64U(f64('-1'))` traps.

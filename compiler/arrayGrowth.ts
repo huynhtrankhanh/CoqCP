@@ -18,9 +18,10 @@ export const analyzeArrayGrowth = (
   const visit = (module: string, value: ValueType): void => {
     switch (value.type) {
       case 'floatOp':
-        value.arguments.forEach(argument => visit(module, argument))
+        value.arguments.forEach((argument) => visit(module, argument))
         break
-      case 'float literal': break
+      case 'float literal':
+        break
       case 'grow':
         growing.get(module)!.add(value.name)
         visit(module, value.length)
