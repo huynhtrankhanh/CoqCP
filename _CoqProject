@@ -22,6 +22,7 @@ theories/RepeatCompare.v
 theories/BubbleSort.v
 theories/BubbleSortProperties.v
 theories/Imperative.v
+theories/FloatingPoint.v
 theories/DisjointSetUnion.v
 theories/CountingBits.v
 theories/Execution.v

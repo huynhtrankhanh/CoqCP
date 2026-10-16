@@ -79,7 +79,9 @@ environment({
 
 In the above example, we declare two arrays `fibSeq` and `anotherArray`. `fibSeq` is an array of 100 elements, each element has a type of `[int32]`. `anotherArray` is an array of 3 elements, each element has a type of `[int8, int64]`.
 
-The permitted primitive types are `int8`, `int16`, `int32`, `int64` and `bool`.
+The permitted primitive types are `int8`, `int16`, `int32`, `int64`, `bool`,
+`float32`, and `float64`. See [floating point](FloatingPoint.md) for float
+literals, Wasm operations, rounding, and NaN opacity.
 
 Here is an example of a procedure.
 

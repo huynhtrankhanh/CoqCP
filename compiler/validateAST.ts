@@ -1,3 +1,4 @@
+import { floatInstructions, isFloat } from './floatInstructions'
 import { analyzeArrayGrowth } from './arrayGrowth'
 import { PairMap } from './PairMap'
 import { consumeNever } from './consumeNever'
@@ -185,6 +186,21 @@ export const validateAST = (sortedModules: CoqCPAST[]): ValidationError[] => {
       const presentBinderType = new Map<string, 'int64' | 'int8'>()
       const dfs = (instruction: ValueType): Type => {
         switch (instruction.type) {
+          case 'float literal': return instruction.format === 32 ? 'float32' : 'float64'
+          case 'floatOp': {
+            const op = floatInstructions[instruction.operation]
+            let valid = true
+            instruction.arguments.forEach((arg, i) => {
+              const actual = dfs(arg)
+              if (actual !== op.args[i]) {
+                valid = false
+                if (actual === 'illegal') return
+                if (actual === 'statement') errors.push({ type: 'expression no statement', location: {...arg.location, moduleName} })
+                else errors.push({ type: 'instruction type mismatch', actualType1: actual, actualType2: op.args[i], location: {...arg.location, moduleName} })
+              }
+            })
+            return valid ? op.result : 'illegal'
+          }
           case 'binaryOp': {
             switch (instruction.operator) {
               case 'add':
@@ -198,7 +214,8 @@ export const validateAST = (sortedModules: CoqCPAST[]): ValidationError[] => {
               case 'shift right': {
                 const leftType = dfs(instruction.left)
                 const rightType = dfs(instruction.right)
-                if (leftType === rightType && isNumeric(leftType))
+                if (leftType === rightType && (isNumeric(leftType) ||
+                    (isFloat(leftType) && ['add','subtract','multiply'].includes(instruction.operator))))
                   return leftType
                 else {
                   if (leftType === 'illegal' || rightType === 'illegal')
@@ -244,7 +261,7 @@ export const validateAST = (sortedModules: CoqCPAST[]): ValidationError[] => {
                 const rightType = dfs(instruction.right)
                 if (
                   leftType === rightType &&
-                  (isNumeric(leftType) || leftType === 'bool')
+                  (isNumeric(leftType) || isFloat(leftType) || leftType === 'bool')
                 )
                   return 'bool'
                 else {
@@ -498,6 +515,10 @@ export const validateAST = (sortedModules: CoqCPAST[]): ValidationError[] => {
               })
               return 'illegal'
             }
+            if (isFloat(type)) {
+              errors.push({ type: 'instruction expects numeric', actualType1: type, actualType2: 'int64', location: {...instruction.location, moduleName} })
+              return 'illegal'
+            }
             return instruction.type === 'coerceInt16'
               ? 'int16'
               : instruction.type === 'coerceInt32'
@@ -562,7 +583,8 @@ export const validateAST = (sortedModules: CoqCPAST[]): ValidationError[] => {
               })
               return 'illegal'
             }
-            if (!isNumeric(leftType) || !isNumeric(rightType)) {
+            if (!(isNumeric(leftType) && isNumeric(rightType)) &&
+                !(leftType === rightType && isFloat(leftType) && (instruction.type === 'divide' || instruction.type === 'less'))) {
               errors.push({
                 type: 'instruction expects numeric',
                 location: { ...instruction.location, moduleName },
@@ -910,6 +932,11 @@ export const validateAST = (sortedModules: CoqCPAST[]): ValidationError[] => {
                 type: 'expression no statement',
                 location: { ...instruction.location, moduleName },
               })
+              return 'illegal'
+            }
+            if (isFloat(valueType)) {
+              if (operator === 'minus' || operator === 'plus') return valueType
+              errors.push({ type: 'unary operator expects numeric', location: {...instruction.location, moduleName} })
               return 'illegal'
             }
             if (isNumeric(valueType)) {

@@ -1,3 +1,11 @@
+import {
+  coqType as coqPrimitiveType,
+  coqZero,
+  floatFormat,
+  floatInstructions,
+  isFloat,
+  usesFloats,
+} from './floatInstructions'
 import { PairMap } from './PairMap'
 import { assert } from './assert'
 import { CoqCPAST, PrimitiveType, ValueType } from './parse'
@@ -113,14 +121,21 @@ export const coqCodegen = (sortedModules: CoqCPAST[]): string => {
   let code =
     'From CoqCP Require Import Options Imperative.\nFrom stdpp Require Import numbers list strings.\nRequire Import Stdlib.Strings.Ascii.\nOpen Scope type_scope.\n'
 
+  if (usesFloats(sortedModules))
+    code += 'From CoqCP Require Import FloatingPoint.\n'
+
   for (const [moduleIndex, module] of sortedModules.entries()) {
     const { environment, procedures, moduleName } = module
     const arrayIndex = 'arrayIndex' + moduleIndex
 
     const environmentCode = (() => {
       if (environment === null || environment.arrays.size === 0) {
-        return `Definition environment${moduleIndex} : Environment False := {| arrayType := fun _ => False; arrays := fun _ => [] |}.
+        return (
+          generateInductive(arrayIndex, []) +
+          `Definition environment${moduleIndex} : Environment ${arrayIndex} := {| arrayType := fun _ => False; arrays := fun _ => [] |}.
+#[export] Instance arrayIndexEqualityDecidable${moduleIndex} : EqDecision ${arrayIndex} := ltac:(solve_decision).
 `
+        )
       }
       const arrayTypeFunction =
         'fun name => match name with ' +
@@ -130,7 +145,7 @@ export const coqCodegen = (sortedModules: CoqCPAST[]): string => {
               itemTypes.length === 0
                 ? 'unit'
                 : itemTypes
-                    .map((x) => (x === 'bool' ? 'bool' : 'Z'))
+                    .map(coqPrimitiveType)
                     .join(' * ')
             return '| ' + sanitizeArray(moduleName, name) + ' => ' + coqType
           })
@@ -152,7 +167,7 @@ export const coqCodegen = (sortedModules: CoqCPAST[]): string => {
                   ? 'tt'
                   : '(' +
                     itemTypes
-                      .map((x) => (x === 'bool' ? 'false' : '0%Z'))
+                      .map(coqZero)
                       .join(', ') +
                     ')'
               return (
@@ -261,6 +276,20 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
             }
 
             switch (value.type) {
+              case 'float literal':
+                return {
+                expression: `(Done _ _ _ (floatFromBits ${value.format === 32 ? 'Binary32' : 'Binary64'} ${value.bits}%Z))`,
+                  type: value.format === 32 ? 'float32' : 'float64',
+                }
+              case 'floatOp': {
+                const op = floatInstructions[value.operation]
+                const state = `${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex}`
+                let expression = `(${op.coq.replace('$STATE', state)} ${value.arguments.map((_, i) => 'float_arg_' + i).join(' ')})`
+                if (!op.trap) expression = `(Done _ _ _ ${expression})`
+                for (let i = value.arguments.length - 1; i >= 0; i--)
+                  expression = `(${dfs(value.arguments[i]).expression} >>= fun float_arg_${i} => ${expression})`
+                return { expression, type: op.result }
+              }
               case 'binaryOp': {
                 const { expression: leftExpression, type: leftType } = dfs(
                   value.left
@@ -271,6 +300,12 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                 assert(!Array.isArray(leftType))
                 assert(!Array.isArray(rightType))
 
+                if (isFloat(leftType)) {
+                  const op = ({add: 'Add', subtract: 'Sub', multiply: 'Mul', equal: 'Eq', noteq: 'Ne'} as Record<string, string>)[value.operator]
+                  assert(op !== undefined && leftType === rightType)
+                  return { expression: `(${leftExpression} >>= fun x => ${rightExpression} >>= fun y => Done _ _ _ (float${op} x y))`,
+                    type: value.operator === 'equal' || value.operator === 'noteq' ? 'bool' : leftType }
+                }
                 switch (value.operator) {
                   case 'add':
                   case 'subtract':
@@ -352,6 +387,12 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                   value.right
                 )
                 assert(leftType === rightType)
+                if (isFloat(leftType)) {
+                  return {
+                    expression: `(${leftExpression} >>= fun x => ${rightExpression} >>= fun y => Done _ _ _ (floatDiv x y))`,
+                    type: leftType,
+                  }
+                }
                 assert(isNumeric(leftType))
                 return {
                   expression: `(divIntUnsigned ${leftExpression} ${rightExpression})`,
@@ -448,6 +489,8 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
               case 'get': {
                 const variable = variables.get(value.name)
                 assert(variable !== undefined)
+                if (isFloat(variable.type)) return {
+                  expression: `(floatLocalGet ${floatFormat(variable.type)} ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex} (${sanitizeVariable(moduleName, functionName, value.name)}))`, type: variable.type }
                 if (isNumeric(variable.type)) {
                   return {
                     expression: `(numberLocalGet ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex} (${sanitizeVariable(
@@ -473,6 +516,8 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                 const variable = variables.get(value.name)
                 assert(variable !== undefined)
                 const { expression } = dfs(value.value)
+                if (isFloat(variable.type)) return {
+                  expression: `(${expression} >>= fun x => floatLocalSet ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex} (${sanitizeVariable(moduleName, functionName, value.name)}) x)`, type: 'statement' }
                 if (isNumeric(variable.type)) {
                   return {
                     expression: `(${expression} >>= fun x => numberLocalSet ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex} (${sanitizeVariable(
@@ -502,7 +547,7 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                   declaration.itemTypes.length === 0
                     ? 'tt'
                     : declaration.itemTypes
-                        .map((type) => (type === 'bool' ? 'false' : '0%Z'))
+                        .map(coqZero)
                         .join(', ')
                 const { expression } = dfs(value.length)
                 return {
@@ -535,10 +580,10 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                 }
               }
               case 'less': {
-                const { expression: leftExpression } = dfs(value.left)
+                const { expression: leftExpression, type: leftType } = dfs(value.left)
                 const { expression: rightExpression } = dfs(value.right)
                 return {
-                  expression: `(${leftExpression} >>= fun a => ${rightExpression} >>= fun b => Done _ _ _ (bool_decide (Z.lt a b)))`,
+                  expression: `(${leftExpression} >>= fun a => ${rightExpression} >>= fun b => Done _ _ _ ${isFloat(leftType) ? '(floatLt a b)' : '(bool_decide (Z.lt a b))'})`,
                   type: 'bool',
                 }
               }
@@ -578,6 +623,7 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                     return { expression, type }
                   }
                   case 'minus': {
+                    if (isFloat(type)) return { expression: `(${expression} >>= fun x => Done _ _ _ (floatNeg x))`, type }
                     assert(isNumeric(type))
                     const bitWidth = getBitWidth(type)
                     return {
@@ -634,14 +680,14 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                 let index = 0
                 for (const [name, value] of presetVariables.entries()) {
                   const { expression, type } = dfs(value)
-                  assert(isNumeric(type) || type === 'bool')
+                  assert(isNumeric(type) || isFloat(type) || type === 'bool')
                   prepare += `${expression} >>= fun preset${index} => `
-                  if (isNumeric(type)) {
+                  if (isNumeric(type) || isFloat(type)) {
                     numberMap = `(${numberMap} >>= fun x => Done _ _ _ (update x (${sanitizeVariable(
                       moduleName,
                       procedure,
                       name
-                    )}) preset${index}))`
+                    )}) ${isFloat(type) ? `(floatEncode preset${index})` : `preset${index}`}))`
                   } else {
                     booleanMap = `(${booleanMap} >>= fun x => Done _ _ _ (update x (${sanitizeVariable(
                       moduleName,
@@ -745,14 +791,14 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                 let index = 0
                 for (const [name, value] of presetVariables.entries()) {
                   const { expression, type } = dfs(value)
-                  assert(isNumeric(type) || type === 'bool')
+                  assert(isNumeric(type) || isFloat(type) || type === 'bool')
                   prepare += `${expression} >>= fun preset${index} => `
-                  if (isNumeric(type)) {
+                  if (isNumeric(type) || isFloat(type)) {
                     numberMap = `(${numberMap} >>= fun x => Done _ _ _ (update x (${sanitizeVariable(
                       foreignModule,
                       procedure,
                       name
-                    )}) preset${index}))`
+                    )}) ${isFloat(type) ? `(floatEncode preset${index})` : `preset${index}`}))`
                   } else {
                     booleanMap = `(${booleanMap} >>= fun x => Done _ _ _ (update x (${sanitizeVariable(
                       foreignModule,

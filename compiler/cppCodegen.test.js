@@ -87,7 +87,7 @@ int main() {
     binaryOp([&]() { return toSigned(readChar()); }, [&]() { return toSigned(readChar()); }, [&](auto a, auto b) { return a / b; });
     procedure_0(environment_0, environment_1, environment_2, uint64_t(100));
     procedure_0(environment_0, environment_1, environment_2, 0);
-    ([&]() {auto workaround_0 = readChar(); auto workaround_1 = 0; auto workaround_2 = readChar(); procedure_1(environment_0, environment_1, environment_2, workaround_0, workaround_1, workaround_2);})();
+    ([&]() {auto workaround_0 = readChar(); auto workaround_1 = readChar(); procedure_1(environment_0, environment_1, environment_2, workaround_0, 0, workaround_1);})();
     procedure_1(environment_0, environment_1, environment_2, uint8_t(uint64_t(0)), 0, uint8_t(uint64_t(0)));
     if ((local_0 == uint64_t(100))) {
       writeChar(uint64_t(32));

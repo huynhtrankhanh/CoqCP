@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - '**.v'
+      - 'compiler/**'
       - '_CoqProject'
       - 'coqcp-toolchain.opam'
       - 'tools/install-toolchain.sh'
@@ -49,3 +50,15 @@ jobs:
           exit 1
         fi
         printf '%s\n' "$s" | python3 tools/adversarial/context_policy.py
+
+    - name: Set up Node.js for compiler checks
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+
+    - name: Check both compiler backends and native Wasm float agreement
+      run: |
+        npm --prefix compiler ci
+        npm --prefix compiler run typecheck
+        npm --prefix compiler run build
+        npm --prefix compiler test

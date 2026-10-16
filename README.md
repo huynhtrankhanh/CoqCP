@@ -21,6 +21,7 @@ Note: Whenever you create a new file, remember to import `Options` with the `Fro
 Documentation:
 
 - [Internal imperative language](docs/InternalImperativeLanguage.md)
+- [Binary32 and binary64 floating point](docs/FloatingPoint.md)
 - [Proof coverage and verification commands](docs/ProofCoverage.md)
 - [End-to-end execution and interactive protocol contracts](docs/EndToEndVerification.md)
 - [Adversarial checking of AI-generated programs and proofs](docs/AdversarialChecking.md)

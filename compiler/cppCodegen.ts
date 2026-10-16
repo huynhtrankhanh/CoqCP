@@ -1,3 +1,5 @@
+import { cppType, floatInstructions, usesFloats } from './floatInstructions'
+import { floatRuntime } from './floatRuntime'
 import { analyzeArrayGrowth } from './arrayGrowth'
 import { PairMap } from './PairMap'
 import { assert } from './assert'
@@ -63,6 +65,7 @@ void flushSTDOUT() {
 })()
 
 export const cppCodegen = (sortedModules: CoqCPAST[]): string => {
+  const hasFloats = usesFloats(sortedModules)
   const growingArrays = analyzeArrayGrowth(sortedModules)
   const hasGrowth = [...growingArrays.values()].some(
     (arrays) => arrays.size > 0
@@ -101,7 +104,7 @@ void growArray(std::vector<T>& array, uint64_t minimumLength) {
         const { itemTypes } = description
         const tuple =
           'std::tuple<' +
-          itemTypes.map((x) => (x === 'bool' ? x : 'u' + x + '_t')).join(', ') +
+          itemTypes.map((x) => cppType(x)).join(', ') +
           '>'
         return (
           (growingArrays.get(module.moduleName)!.has(name)
@@ -133,7 +136,7 @@ void growArray(std::vector<T>& array, uint64_t minimumLength) {
               const { type } = value
               localNameMap.set(name, index)
               return (
-                (type === 'bool' ? 'bool' : 'u' + type + '_t') +
+                cppType(type) +
                 ' local_' +
                 index
               )
@@ -156,6 +159,13 @@ void growArray(std::vector<T>& array, uint64_t minimumLength) {
                   return indent.repeat(state.indentationLevel) + x + ';\n'
                 }
 
+                if (instruction.type === 'float literal')
+                  return adorn('coqcp_float' + instruction.format + '::from_bits(' + instruction.bits + 'ULL)')
+                if (instruction.type === 'floatOp') {
+                  const op = floatInstructions[instruction.operation]
+                  const declarations = instruction.arguments.map((x, i) => 'auto float_arg_' + i + ' = ' + print(x) + '; ').join('')
+                  return adorn('([&]() { ' + declarations + 'return ' + op.cpp + '(' + instruction.arguments.map((_, i) => 'float_arg_' + i).join(', ') + '); })()')
+                }
                 if (instruction.type === 'binaryOp') {
                   if (
                     instruction.operator === 'boolean and' ||
@@ -383,10 +393,10 @@ void growArray(std::vector<T>& array, uint64_t minimumLength) {
                     // emit workaround code
                     return adorn(
                       '([&]() {' +
-                        argumentList
+                        [...supplied.values()]
                           .map(
                             (value, index) =>
-                              `auto workaround_${index} = ${value}; `
+                              `auto workaround_${index} = ${print(value)}; `
                           )
                           .join('') +
                         'procedure_' +
@@ -394,9 +404,10 @@ void growArray(std::vector<T>& array, uint64_t minimumLength) {
                         '(' +
                         [
                           ...environmentArrays,
-                          ...argumentList.map(
-                            (_, index) => 'workaround_' + index
-                          ),
+                          ...[...variables.keys()].map(name => {
+                            const suppliedIndex = [...supplied.keys()].indexOf(name)
+                            return suppliedIndex < 0 ? '0' : 'workaround_' + suppliedIndex
+                          }),
                         ].join(', ') +
                         ');})()'
                     )
@@ -569,10 +580,10 @@ void growArray(std::vector<T>& array, uint64_t minimumLength) {
                     // emit workaround code
                     return adorn(
                       '([&]() {' +
-                        argumentList
+                        [...supplied.values()]
                           .map(
                             (value, index) =>
-                              `auto workaround_${index} = ${value}; `
+                              `auto workaround_${index} = ${print(value)}; `
                           )
                           .join('') +
                         'procedure_' +
@@ -580,9 +591,10 @@ void growArray(std::vector<T>& array, uint64_t minimumLength) {
                         '(' +
                         [
                           ...environmentArrays,
-                          ...argumentList.map(
-                            (_, index) => 'workaround_' + index
-                          ),
+                          ...[...variables.keys()].map(name => {
+                            const suppliedIndex = [...supplied.keys()].indexOf(name)
+                            return suppliedIndex < 0 ? '0' : 'workaround_' + suppliedIndex
+                          }),
                         ].join(', ') +
                         ');})()'
                     )
@@ -629,7 +641,7 @@ void growArray(std::vector<T>& array, uint64_t minimumLength) {
     for (const [name, { itemTypes, length }] of arrays) {
       const tuple =
         'std::tuple<' +
-        itemTypes.map((x) => (x === 'bool' ? x : 'u' + x + '_t')).join(', ') +
+        itemTypes.map((x) => cppType(x)).join(', ') +
         '>'
       string += growingArrays.get('')!.has(name)
         ? 'std::vector<' +
@@ -671,10 +683,12 @@ void growArray(std::vector<T>& array, uint64_t minimumLength) {
   })()
 
   return (
+    (hasFloats ? floatRuntime : '') +
     preamble +
     growthPreamble +
     mainModuleEnvironmentCode +
     'int main() {\n' +
+    (hasFloats ? '  coqcp_float_environment float_environment;\n' : '') +
     indent +
     'std::cin.tie(0)->sync_with_stdio(0);\n' +
     joined +

@@ -1,7 +1,8 @@
+import { floatInstructions, floatLiteralBits } from './floatInstructions'
 import acorn, { ExtendNode } from 'acorn'
 import * as ESTree from 'estree'
 
-export type PrimitiveType = 'bool' | 'int8' | 'int16' | 'int32' | 'int64'
+export type PrimitiveType = 'bool' | 'int8' | 'int16' | 'int32' | 'int64' | 'float32' | 'float64'
 
 export interface ArrayDeclaration {
   itemTypes: PrimitiveType[]
@@ -70,6 +71,8 @@ export interface UnaryOperationInstruction {
 }
 
 export type Instruction = (
+  | { type: 'float literal'; format: 32 | 64; bits: string }
+  | { type: 'floatOp'; operation: string; arguments: ValueType[] }
   | { type: 'get'; name: string }
   | {
       type: 'set'
@@ -292,7 +295,7 @@ export class CoqCPASTTransformer {
                 itemType.name !== 'int16' &&
                 itemType.name !== 'int32' &&
                 itemType.name !== 'int64' &&
-                itemType.name !== 'bool')
+                itemType.name !== 'bool' && itemType.name !== 'float32' && itemType.name !== 'float64')
             ) {
               throw new ParseError(
                 'invalid array item type. range: ' +
@@ -410,7 +413,7 @@ export class CoqCPASTTransformer {
             declaredType !== 'int16' &&
             declaredType !== 'int32' &&
             declaredType !== 'int64' &&
-            declaredType !== 'bool'
+            declaredType !== 'bool' && declaredType !== 'float32' && declaredType !== 'float64'
           )
             throw new ParseError(
               'invalid variable type. ' + formatLocation(property.value.loc)
@@ -648,6 +651,22 @@ export class CoqCPASTTransformer {
       }
     }
   ): Instruction {
+    if (name === 'f32' || name === 'f64') {
+      if (args.length !== 1 || args[0].type !== 'Literal' ||
+          (typeof args[0].value !== 'string' && typeof args[0].value !== 'number'))
+        throw new ParseError(name + ' expects one decimal/hexadecimal string or numeric literal. ' + formatLocation(location))
+      const format = name === 'f32' ? 32 : 64
+      try {
+        return { type: 'float literal', format,
+          bits: floatLiteralBits(format, typeof args[0].value === 'string' ? args[0].value : args[0].raw!), location }
+      } catch (error) { throw new ParseError(String(error) + '. ' + formatLocation(location)) }
+    }
+    const floatInstruction = floatInstructions[name]
+    if (floatInstruction !== undefined) {
+      if (args.length !== floatInstruction.args.length)
+        throw new ParseError(name + ' expects ' + floatInstruction.args.length + ' arguments. ' + formatLocation(location))
+      return { type: 'floatOp', operation: name, arguments: args.map(x => this.processNode(x)), location }
+    }
     let instruction: Instruction
 
     switch (name) {

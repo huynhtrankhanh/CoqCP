@@ -8,6 +8,10 @@ import { ValidationError } from './validateAST'
 export const findDependencies = ({ procedures }: CoqCPAST) => {
   function findDependencies(valueType: ValueType): void {
     switch (valueType.type) {
+      case 'floatOp':
+        valueType.arguments.forEach(findDependencies)
+        break
+      case 'float literal': break
       case 'local binder':
         // Local binders do not introduce dependencies
         break
