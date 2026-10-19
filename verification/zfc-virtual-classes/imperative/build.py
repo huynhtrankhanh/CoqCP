@@ -55,7 +55,7 @@ def main():
         '  (funcdef_0__main (fun x => match x with end) (fun x => match x with end))\n'
         '  (arrays _ environment1) capacity.\n')
     run([args.rocq, 'compile', *flags, code / 'NativeContract.v'])
-    proof_modules = ['Index', 'Overflow', 'Lift', 'ArrayFacts', 'SipHash', 'HashScan', 'InternTail', 'HashTable',
+    proof_modules = ['Index', 'Overflow', 'Lift', 'ArrayFacts', 'SipHash', 'HashScan', 'InternTail', 'HashTable', 'Rehash',
                      'Stack', 'PrintingFrame', 'SipHashVector']
     for name in proof_modules:
         source = proofs / f'{name}.v'
@@ -71,7 +71,10 @@ def main():
                'HashScanExecution.scan_loop_checked', 'HashScanExecution.scan_loop_complete',
                'InternTailExecution.after_scan_found', 'InternTailExecution.after_scan_full',
                'InternTailExecution.after_scan_fresh', 'InternTailExecution.append_table_valid',
-               'HashTableInvariant.append_indexed', 'HashTableInvariant.scan_miss_absent']
+               'HashTableInvariant.append_indexed', 'HashTableInvariant.scan_miss_absent',
+               'HashTableInvariant.append_unique', 'HashTableInvariant.canonical_lookup',
+               'RehashExecution.generated_relink', 'RehashExecution.relink_indexed',
+               'RehashExecution.generated_relink_indexed']
     (code / 'Audit.v').write_text(
         'From CoqCP Require Import Options TapeEnd.\n'
         'From ImperativeZFC Require Import ProofChecker.\n'
@@ -90,7 +93,7 @@ def main():
                         'CoqCP.TapeEnd', 'ImperativeZFC.NativeContract', 'NativeProof.Lift',
                         'NativeProof.Stack', 'NativeProof.PrintingFrame', 'NativeProof.SipHashVector',
                         'NativeProof.SipHash', 'NativeProof.HashScan',
-                        'NativeProof.InternTail', 'NativeProof.HashTable'],
+                        'NativeProof.InternTail', 'NativeProof.HashTable', 'NativeProof.Rehash'],
                        cwd=repo, check=True, stdout=log, stderr=subprocess.STDOUT)
     with (out / 'cpp-build.log').open('w') as log:
         subprocess.run(['g++', '-std=c++20', '-O2', str(out / 'checker.cpp'),
@@ -112,10 +115,12 @@ def main():
             'collision-chain scan termination, exact matches, and reachable-entry completeness',
             'generated interner insertion branch, immutable earlier IDs and descending links',
             'bucket reachability preserved by insertion; misses imply freshness without hash injectivity',
+            'unique formula IDs preserved; canonical lookup returns the original ID',
+            'generated rehash iteration executes SipHash and preserves processed-entry reachability',
         ],
         'command_loop': 'tapeEnd (EOF, quit, or fatal error)',
         'missing_obligations': ['generated-main end-to-end execution refinement',
-                                'native hash-table rehashing and full interner composition/representation invariants',
+                                'complete native rehash loop and full interner composition/representation invariants',
                                 'native schema evaluator refinement'],
         'adversarial_acceptance': False, 'sha256': artifacts,
     }, indent=2) + '\n')

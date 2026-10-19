@@ -122,4 +122,147 @@ Proof.
   reflexivity.
 Qed.
 End Composition.
+
+Definition hashed_entry (s : Machine) index :=
+  let '(x,y,z) := tuple_at s index in hash_state s x y z.
+Definition entry_bucket (s : Machine) index := Z.to_nat (meta_value (hashed_entry s index) 21).
+Lemma hash_meta_length s x y z :
+  length (memory (hash_state s x y z) arraydef_0__meta) = length (memory s arraydef_0__meta).
+Proof. unfold hash_state. rewrite !store_meta_length, hash_work_other by discriminate. reflexivity. Qed.
+
+Theorem generated_relink (f : Frame) total remaining index :
+  total - Z.of_nat remaining - 1 = Z.of_nat index -> Z.of_nat (S index) <= maximum ->
+  (28 < length (memory (machine f) arraydef_0__meta))%nat ->
+  (0 < length (memory (machine f) arraydef_0__sipState))%nat ->
+  0 < meta_value (machine f) 20 ->
+  meta_value (machine f) 20 <= Z.of_nat (length (memory (machine f) arraydef_0__formulaBuckets)) ->
+  (index < length (memory (machine f) arraydef_0__formulas))%nat ->
+  (index < length (memory (machine f) arraydef_0__formulaLinks))%nat ->
+  execLocal (relink_body funcdef_0__formulaHash total remaining) f =
+    Some (KeepGoing,relink_frame f (hashed_entry (machine f) index) index (entry_bucket (machine f) index)).
+Proof.
+  intros Hindex Hlimit Hmeta Hsip Hpositive Hcapacity Hformula Hlinks.
+  unfold entry_bucket, hashed_entry. destruct (tuple_at (machine f) index) as [[x y] z] eqn:Hentry.
+  assert (Hbounds : 0 <= meta_value (hash_state (machine f) x y z) 21 < meta_value (machine f) 20).
+  { rewrite hash_bucket by assumption. now apply Z.mod_pos_bound. }
+  apply (relink_composition funcdef_0__formulaHash f total remaining index x y z).
+  - exact Hindex.
+  - exact Hlimit.
+  - exact Hformula.
+  - exact Hentry.
+  - apply generated_hash; assumption.
+  - rewrite hash_meta_length. lia.
+  - rewrite Z2Nat.id by lia. reflexivity.
+  - rewrite hash_preserves_array by discriminate. exact Hlinks.
+  - rewrite hash_preserves_array by discriminate.
+    pose proof (Z2Nat.id (meta_value (hash_state (machine f) x y z) 21) ltac:(lia)). lia.
+Qed.
+
+Lemma relink_links s i bucket : memory (relink_state s i bucket) arraydef_0__formulaLinks =
+  <[i := head_at s bucket]> (memory s arraydef_0__formulaLinks).
+Proof. unfold relink_state. cbn [withMemory memory]. now repeat first [rewrite modify_other by discriminate |rewrite modify_same]. Qed.
+Lemma relink_buckets s i bucket : memory (relink_state s i bucket) arraydef_0__formulaBuckets =
+  <[bucket := Z.of_nat (S i)]> (memory s arraydef_0__formulaBuckets).
+Proof. unfold relink_state. cbn [withMemory memory]. now repeat first [rewrite modify_other by discriminate |rewrite modify_same]. Qed.
+Lemma relink_other s i bucket name : name <> arraydef_0__formulaLinks -> name <> arraydef_0__formulaBuckets ->
+  memory (relink_state s i bucket) name = memory s name.
+Proof. intros. unfold relink_state. cbn [withMemory memory]. now rewrite !modify_other by assumption. Qed.
+Lemma relink_io s i bucket : stdin (relink_state s i bucket) = stdin s /\
+  stdout (relink_state s i bucket) = stdout s.
+Proof. split; reflexivity. Qed.
+Lemma insert_nth_identity {A} (xs : list A) i default : <[i := List.nth i xs default]> xs = xs.
+Proof. induction xs as [|x xs IH] in i |- *; destruct i; cbn; try reflexivity. now rewrite IH. Qed.
+
+Lemma indexed_preserved s t n bucket_of :
+  memory t arraydef_0__formulas = memory s arraydef_0__formulas ->
+  memory t arraydef_0__formulaLinks = memory s arraydef_0__formulaLinks ->
+  memory t arraydef_0__formulaBuckets = memory s arraydef_0__formulaBuckets ->
+  indexed s n bucket_of -> indexed t n bucket_of.
+Proof.
+  intros Hformula Hlinks Hbucket [Htable [Hheads Hindexed]].
+  split; [now apply (HashScanExecution.table_valid_preserved s)|]. split.
+  - intros b Hb. rewrite Hbucket in Hb. unfold head_at. rewrite Hbucket. now apply Hheads.
+  - intros i Hi. destruct (Hindexed i Hi) as [Hrange Hchain].
+    unfold tuple_at. rewrite Hformula. split; [now rewrite Hbucket|].
+    unfold head_at. rewrite Hbucket. now apply (HashScanExecution.in_chain_preserved s).
+Qed.
+
+Theorem relink_indexed s n bucket_of :
+  indexed s n bucket_of ->
+  (n < length (memory s arraydef_0__formulas))%nat ->
+  (n < length (memory s arraydef_0__formulaLinks))%nat ->
+  (bucket_of (tuple_at s n) < length (memory s arraydef_0__formulaBuckets))%nat ->
+  indexed (relink_state s n (bucket_of (tuple_at s n))) (S n) bucket_of.
+Proof.
+  intros Hindexed Hformulas Hlinks Hbucket.
+  apply (indexed_preserved (append_state s n (bucket_of (tuple_at s n)) (tuple_at s n))).
+  - rewrite relink_other by discriminate. rewrite append_formulas, growList_no_shrink by lia.
+    unfold tuple_at. now rewrite insert_nth_identity.
+  - rewrite relink_links, append_links, growList_no_shrink by lia. reflexivity.
+  - rewrite relink_buckets, append_buckets. reflexivity.
+  - now apply append_indexed.
+Qed.
+
+Definition keyed_bucket (s : Machine) (tuple : Z * Z * Z) :=
+  let '(x,y,z) := tuple in
+  Z.to_nat (siphash24 (meta_value s 26) (meta_value s 27) x y z mod meta_value s 20).
+Lemma entry_bucket_correct s index :
+  (28 < length (memory s arraydef_0__meta))%nat ->
+  (0 < length (memory s arraydef_0__sipState))%nat ->
+  entry_bucket s index = keyed_bucket s (tuple_at s index).
+Proof.
+  intros Hmeta Hsip. unfold entry_bucket, hashed_entry, keyed_bucket.
+  destruct (tuple_at s index) as [[x y] z]. now rewrite hash_bucket.
+Qed.
+Lemma hashed_indexed s n bucket_of : indexed s n bucket_of ->
+  indexed (hashed_entry s n) n bucket_of.
+Proof.
+  intro H. unfold hashed_entry. destruct (tuple_at s n) as [[x y] z].
+  apply (indexed_preserved s); [| | |exact H]; now apply hash_preserves_array.
+Qed.
+
+Theorem generated_relink_indexed (f : Frame) total remaining index :
+  total - Z.of_nat remaining - 1 = Z.of_nat index -> Z.of_nat (S index) <= maximum ->
+  (28 < length (memory (machine f) arraydef_0__meta))%nat ->
+  (0 < length (memory (machine f) arraydef_0__sipState))%nat ->
+  0 < meta_value (machine f) 20 ->
+  meta_value (machine f) 20 <= Z.of_nat (length (memory (machine f) arraydef_0__formulaBuckets)) ->
+  (index < length (memory (machine f) arraydef_0__formulas))%nat ->
+  (index < length (memory (machine f) arraydef_0__formulaLinks))%nat ->
+  indexed (machine f) index (keyed_bucket (machine f)) ->
+  exists final, execLocal (relink_body funcdef_0__formulaHash total remaining) f = Some (KeepGoing,final) /\
+    indexed (machine final) (S index) (keyed_bucket (machine f)) /\
+    memory (machine final) arraydef_0__formulas = memory (machine f) arraydef_0__formulas.
+Proof.
+  intros Hindex Hlimit Hmeta Hsip Hpositive Hcapacity Hformulas Hlinks Hindexed.
+  exists (relink_frame f (hashed_entry (machine f) index) index (entry_bucket (machine f) index)).
+  split; [now apply generated_relink|].
+  assert (Hformula : memory (hashed_entry (machine f) index) arraydef_0__formulas =
+    memory (machine f) arraydef_0__formulas).
+  { unfold hashed_entry. destruct (tuple_at (machine f) index) as [[x y] z].
+    now apply hash_preserves_array. }
+  assert (Hlink : memory (hashed_entry (machine f) index) arraydef_0__formulaLinks =
+    memory (machine f) arraydef_0__formulaLinks).
+  { unfold hashed_entry. destruct (tuple_at (machine f) index) as [[x y] z].
+    now apply hash_preserves_array. }
+  assert (Hbucket : memory (hashed_entry (machine f) index) arraydef_0__formulaBuckets =
+    memory (machine f) arraydef_0__formulaBuckets).
+  { unfold hashed_entry. destruct (tuple_at (machine f) index) as [[x y] z].
+    now apply hash_preserves_array. }
+  cbn [relink_frame machine setMachine setNum]. split.
+  - rewrite entry_bucket_correct by assumption.
+    assert (Htuple : tuple_at (hashed_entry (machine f) index) index = tuple_at (machine f) index).
+    { unfold tuple_at. now rewrite Hformula. }
+    rewrite <- Htuple. apply relink_indexed.
+    + now apply hashed_indexed.
+    + now rewrite Hformula.
+    + now rewrite Hlink.
+    + rewrite Htuple, Hbucket. unfold keyed_bucket.
+      destruct (tuple_at (machine f) index) as [[x y] z].
+      pose proof (Z.mod_pos_bound (siphash24 (meta_value (machine f) 26) (meta_value (machine f) 27) x y z)
+        (meta_value (machine f) 20) Hpositive) as Hbounds.
+      pose proof (Z2Nat.id (siphash24 (meta_value (machine f) 26) (meta_value (machine f) 27) x y z
+        mod meta_value (machine f) 20) ltac:(lia)). lia.
+  - rewrite relink_other by discriminate. exact Hformula.
+Qed.
 End RehashExecution.
