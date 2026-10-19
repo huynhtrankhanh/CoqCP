@@ -1,4 +1,5 @@
-From CoqCP Require Import Options SetTheory.
+From CoqCP Require Import Options.
+From Trusted Require Import SetTheory.
 From Stdlib Require Import Lists.List Arith.PeanoNat Lia.
 From Submission Require Import Semantics InnerModels StableSets.
 Import ListNotations.

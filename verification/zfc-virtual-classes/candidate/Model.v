@@ -1,4 +1,5 @@
-From CoqCP Require Import Options SetTheory.
+From CoqCP Require Import Options.
+From Trusted Require Import SetTheory.
 From Submission Require Import Semantics StableSets.
 
 (* Checked progress toward an outright consistency proof. This file validates

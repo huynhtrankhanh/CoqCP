@@ -34,8 +34,6 @@ theories/DecimalEncoding.v
 theories/Optimality.v
 theories/ArrayExecution.v
 theories/UnionFindModel.v
-theories/SetTheory.v
-theories/VirtualClasses.v
 
 -R generated-coq/ Generated
 generated-coq/DisjointSetUnion.v

@@ -343,7 +343,23 @@ def file_manifest(directory):
             if path.is_file() and path != directory / "manifest.json"}
 
 
-def prepare(spec, bundle, runtime, sandbox, allowed):
+def specification_sources(spec, dependencies):
+    # Every dependency is evaluator-selected, adjacent to Spec.v, and
+    # frozen with it. Candidate sources are never accepted as dependencies.
+    spec = Path(spec).resolve()
+    sources = {"Spec.v": read_regular(spec, 8 * 1024**2)}
+    for candidate in dependencies:
+        candidate = Path(candidate)
+        if (candidate.is_symlink() or candidate.resolve().parent != spec.parent
+                or not NAME.fullmatch(candidate.name) or candidate.name in sources):
+            raise Rejected("Specification dependencies must be distinct local .v files")
+        sources[candidate.name] = read_regular(candidate, 8 * 1024**2)
+    if sum(map(len, sources.values())) > 8 * 1024**2:
+        raise Rejected("Specification source files exceed 8 MiB in total")
+    return sources
+
+
+def prepare(spec, bundle, runtime, sandbox, allowed, spec_dependencies=()):
     if not set(allowed).issubset(trusted_axioms()):
         raise Rejected("Axiom policy exceeds the evaluator-owned CI trust set")
     bundle.parent.mkdir(parents=True, exist_ok=True)
@@ -351,13 +367,16 @@ def prepare(spec, bundle, runtime, sandbox, allowed):
     try:
         snapshot_libraries(bundle)
         (bundle / "spec").mkdir()
-        source = read_regular(spec, 8 * 1024**2)
+        sources = specification_sources(spec, spec_dependencies)
         with tempfile.TemporaryDirectory(prefix="spec-input-") as temporary:
             inputs = Path(temporary)
-            (inputs / "Spec.v").write_bytes(source)
-            compiled = compile_sources(inputs, ["Spec.v"], "Trusted", bundle, runtime, sandbox)
-        (bundle / "spec/Spec.v").write_bytes(source)
-        (bundle / "spec/Spec.vo").write_bytes(compiled["Spec.vo"])
+            for name, data in sources.items():
+                (inputs / name).write_bytes(data)
+            compiled = compile_sources(inputs, list(sources), "Trusted", bundle, runtime, sandbox)
+        for name, data in sources.items():
+            (bundle / "spec" / name).write_bytes(data)
+            (bundle / "spec" / Path(name).with_suffix(".vo")).write_bytes(
+                compiled[Path(name).with_suffix(".vo").name])
         policy = kernel_check(bundle, None, runtime, sandbox, allowed, spec_only=True)
         manifest = dict(format=1, toolchain=runtime, allowed_axioms=sorted(set(allowed)),
                         ci_trusted_axioms=trusted_axioms(),
@@ -461,6 +480,8 @@ def main():
     build_parser = sub.add_parser("build", help="Build the standalone compiler and kernel gate")
     freeze = sub.add_parser("prepare", help="Freeze an evaluator-controlled Spec.v and its policy")
     freeze.add_argument("--spec", type=Path, required=True)
+    freeze.add_argument("--spec-dependency", type=Path, action="append", default=[],
+                        help="Evaluator-owned .v file beside Spec.v (repeatable; frozen into Trusted)")
     freeze.add_argument("--bundle", type=Path, required=True)
     freeze.add_argument("--axiom-policy", choices=["none", "ci"], default="none",
                         help="No axioms (default), or exactly the set already trusted by project CI")
@@ -491,7 +512,8 @@ def main():
                                cache_directory=None if args.no_cache else args.cache)
         if args.action == "prepare":
             allowed = trusted_axioms() if args.axiom_policy == "ci" else []
-            spec_id = prepare(args.spec.resolve(), args.bundle.absolute(), runtime, sandbox, allowed)
+            spec_id = prepare(args.spec.resolve(), args.bundle.absolute(), runtime, sandbox,
+                              allowed, [path.resolve() for path in args.spec_dependency])
             print(json.dumps({"status": "prepared", "spec_id": spec_id, "bundle": str(args.bundle.absolute())}))
             return 0
         report = evaluate(args.bundle.absolute(), args.spec_id, args.submission.absolute(),

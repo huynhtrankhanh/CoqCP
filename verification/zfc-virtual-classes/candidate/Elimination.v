@@ -1,4 +1,5 @@
-From CoqCP Require Import Options SetTheory VirtualClasses.
+From CoqCP Require Import Options.
+From Trusted Require Import SetTheory VirtualClasses.
 Import SetTheory VirtualClasses.
 
 Lemma axiom_derivable a : derives (axiom_formula a).

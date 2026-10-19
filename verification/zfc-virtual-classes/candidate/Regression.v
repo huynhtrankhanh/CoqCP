@@ -1,4 +1,5 @@
-From CoqCP Require Import Options SetTheory VirtualClasses.
+From CoqCP Require Import Options.
+From Trusted Require Import SetTheory VirtualClasses.
 From Stdlib Require Import Lists.List.
 From Submission Require Import Checker.
 Require Import Trusted.Spec.

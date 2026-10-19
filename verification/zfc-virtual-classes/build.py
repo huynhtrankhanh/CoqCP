@@ -29,9 +29,14 @@ def main():
     def compile_file(source):
         subprocess.run([args.rocq, "compile", *flags, str(source)], cwd=out, check=True)
 
-    for name in ["Options", "SetTheory", "VirtualClasses"]:
-        target = theories / f"{name}.v"
-        shutil.copy2(repo / "theories" / target.name, target)
+    target = theories / "Options.v"
+    shutil.copy2(repo / "theories" / target.name, target)
+    compile_file(target)
+    # The object theory is evaluator-owned specification material, not a
+    # shared CoqCP library or a candidate-provided proof development.
+    for name in ["SetTheory", "VirtualClasses"]:
+        target = trusted / f"{name}.v"
+        shutil.copy2(task / "spec" / target.name, target)
         compile_file(target)
     shutil.copy2(task / "spec/Spec.v", trusted / "Spec.v")
     compile_file(trusted / "Spec.v")
