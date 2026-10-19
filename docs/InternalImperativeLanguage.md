@@ -272,8 +272,12 @@ Iterates over all bytes of the UTF-8 representation of the string. `x` is of typ
 
 ```js
 tapeEnd((char) => {
-  if (char == 32) { ;('continue') }
-  if (char == 10) { ;('break') }
+  if (char == 32) {
+    ;('continue')
+  }
+  if (char == 10) {
+    ;('break')
+  }
   writeChar(coerceInt8(char))
 })
 ```

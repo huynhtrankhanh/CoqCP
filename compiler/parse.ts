@@ -863,9 +863,12 @@ export class CoqCPASTTransformer {
       case 'tapeEnd': {
         const callback = args[0]
         if (
-          args.length !== 1 || callback.type !== 'ArrowFunctionExpression' ||
-          callback.async || callback.body.type !== 'BlockStatement' ||
-          callback.params.length !== 1 || callback.params[0].type !== 'Identifier'
+          args.length !== 1 ||
+          callback.type !== 'ArrowFunctionExpression' ||
+          callback.async ||
+          callback.body.type !== 'BlockStatement' ||
+          callback.params.length !== 1 ||
+          callback.params[0].type !== 'Identifier'
         ) {
           throw new ParseError(
             'tapeEnd() expects one synchronous arrow function with one named parameter and a block body. ' +

@@ -730,11 +730,14 @@ export const validateAST = (sortedModules: CoqCPAST[]): ValidationError[] => {
           }
           case 'tapeEnd': {
             const previousLoop = hasSurroundingRangeCommand
-            const previousBinder = presentBinderType.get(instruction.loopVariable)
+            const previousBinder = presentBinderType.get(
+              instruction.loopVariable
+            )
             hasSurroundingRangeCommand = true
             presentBinderType.set(instruction.loopVariable, 'int64')
             const result = instruction.loopBody.map(dfs).includes('illegal')
-              ? 'illegal' : 'statement'
+              ? 'illegal'
+              : 'statement'
             hasSurroundingRangeCommand = previousLoop
             if (previousBinder === undefined)
               presentBinderType.delete(instruction.loopVariable)

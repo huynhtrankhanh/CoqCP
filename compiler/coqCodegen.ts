@@ -755,9 +755,15 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                 const { loopVariable, loopBody } = value
                 const previous = localBinderMap.get(loopVariable)
                 const index = binderCounter++
-                localBinderMap.set(loopVariable, { type: 'int64', number: index })
+                localBinderMap.set(loopVariable, {
+                  type: 'int64',
+                  number: index,
+                })
                 nestLevel++
-                const body = joinStatements(loopBody.map(dfs).map(liftExpression), nestLevel)
+                const body = joinStatements(
+                  loopBody.map(dfs).map(liftExpression),
+                  nestLevel
+                )
                 nestLevel--
                 if (previous === undefined) localBinderMap.delete(loopVariable)
                 else localBinderMap.set(loopVariable, previous)

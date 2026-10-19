@@ -495,19 +495,31 @@ void growArray(std::vector<T>& array, uint64_t minimumLength) {
                   localBinderMap.set(loopVariable, index)
                   const { indentationLevel } = state
                   const base = indent.repeat(indentationLevel)
-                  const result = base + `for (uint64_t binder_${index}; (binder_${index} = readChar()) != UINT64_MAX;) {\n` +
-                    loopBody.map((x) => print(x, {
-                      type: 'inside block', indentationLevel: indentationLevel + 1,
-                    })).join('') + base + '}\n'
-                  if (previous === undefined) localBinderMap.delete(loopVariable)
+                  const result =
+                    base +
+                    `for (uint64_t binder_${index}; (binder_${index} = readChar()) != UINT64_MAX;) {\n` +
+                    loopBody
+                      .map((x) =>
+                        print(x, {
+                          type: 'inside block',
+                          indentationLevel: indentationLevel + 1,
+                        })
+                      )
+                      .join('') +
+                    base +
+                    '}\n'
+                  if (previous === undefined)
+                    localBinderMap.delete(loopVariable)
                   else localBinderMap.set(loopVariable, previous)
                   return result
                 }
                 if (instruction.type === 'range') {
                   const { end, loopVariable, loopBody } = instruction
                   // A loop's bound is evaluated in its enclosing lexical scope.
-                  const endExpression = end.type === 'literal' && end.valueType === 'string'
-                    ? '' : print(end)
+                  const endExpression =
+                    end.type === 'literal' && end.valueType === 'string'
+                      ? ''
+                      : print(end)
                   const previousIndex = localBinderMap.get(loopVariable)
 
                   const index = Math.max(-1, ...localBinderMap.values()) + 1

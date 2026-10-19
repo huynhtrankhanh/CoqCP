@@ -51,21 +51,21 @@ Formula ID `0` is falsity. Other formula, class, and theorem IDs are returned
 as `OK id`. Rejected commands return `NO`. Theorem IDs are oldest first;
 `undo` permits reuse of the removed ID. All replies are flushed immediately.
 
-| Opcode and arguments | Action |
-| --- | --- |
-| `0` | Quit (`BYE`) |
-| `1 i j`, `2 i j` | Construct equality or membership formulas |
-| `3 p q`, `4 p` | Construct implication or universal quantification |
-| `5 i`, `6 p` | Construct a set-variable class or predicate abstraction |
-| `7 a b`, `8 a b` | Construct expanded class equality or membership |
-| `9 c name`, `10 name` | Bind a fresh immutable class name, or look it up |
-| `11 tag p q r` | Check an axiom witness and append its theorem |
-| `12 ci ca`, `13 c` | Check modus ponens, or generalize a theorem |
-| `14 name theorem` | Certify the named class as a set using a checked theorem |
-| `15 name` | Query `CLASS` or `SET` |
-| `16`, `17` | Undo a theorem, or reset theorem history |
-| `18 theorem formula` | Restate a theorem after exact expanded-formula comparison |
-| `19 theorem` | Return a theorem's formula ID |
+| Opcode and arguments  | Action                                                    |
+| --------------------- | --------------------------------------------------------- |
+| `0`                   | Quit (`BYE`)                                              |
+| `1 i j`, `2 i j`      | Construct equality or membership formulas                 |
+| `3 p q`, `4 p`        | Construct implication or universal quantification         |
+| `5 i`, `6 p`          | Construct a set-variable class or predicate abstraction   |
+| `7 a b`, `8 a b`      | Construct expanded class equality or membership           |
+| `9 c name`, `10 name` | Bind a fresh immutable class name, or look it up          |
+| `11 tag p q r`        | Check an axiom witness and append its theorem             |
+| `12 ci ca`, `13 c`    | Check modus ponens, or generalize a theorem               |
+| `14 name theorem`     | Certify the named class as a set using a checked theorem  |
+| `15 name`             | Query `CLASS` or `SET`                                    |
+| `16`, `17`            | Undo a theorem, or reset theorem history                  |
+| `18 theorem formula`  | Restate a theorem after exact expanded-formula comparison |
+| `19 theorem`          | Return a theorem's formula ID                             |
 
 The axiom tags, in order `0` through `17`, are K, S, DNE, universal
 instantiation, universal distribution, equality reflexivity, left membership
@@ -217,20 +217,20 @@ prints the expanded formulas in history. Empty lines and lines starting with
 All indices are arbitrary-precision nonnegative integers. Binding shifts are
 therefore not subject to machine-integer overflow.
 
-| Syntax | Meaning |
-| --- | --- |
-| `false`, `(= i j)`, `(in i j)` | Core atomic formulas |
-| `(imp p q)`, `(all p)` | Core implication and universal quantification |
-| `(not p)`, `(and p q)`, `(or p q)`, `(iff p q)`, `(exists p)` | Defined core connectives |
-| `(core p)` | A core formula used as a class-language statement |
-| `(=> p q)`, `(forall p)` | Connectives whose operands may use virtual classes |
-| `(class= a b)`, `(class-in a b)` | Class equality and membership |
-| `(set i)`, `(class p)` | A set seen as a class, or a class abstraction |
-| `(ax witness)`, `(ref i)` | An axiom instance or history reference |
-| `(mp implication-proof antecedent-proof)`, `(gen proof)` | Proof constructors |
-| `(prove statement proof)` | Submit a theorem with its certificate |
-| `(axiom witness)` | Submit an axiom instance with its canonical certificate |
-| `(expand statement)` | Display class elimination without adding a theorem |
+| Syntax                                                        | Meaning                                                 |
+| ------------------------------------------------------------- | ------------------------------------------------------- |
+| `false`, `(= i j)`, `(in i j)`                                | Core atomic formulas                                    |
+| `(imp p q)`, `(all p)`                                        | Core implication and universal quantification           |
+| `(not p)`, `(and p q)`, `(or p q)`, `(iff p q)`, `(exists p)` | Defined core connectives                                |
+| `(core p)`                                                    | A core formula used as a class-language statement       |
+| `(=> p q)`, `(forall p)`                                      | Connectives whose operands may use virtual classes      |
+| `(class= a b)`, `(class-in a b)`                              | Class equality and membership                           |
+| `(set i)`, `(class p)`                                        | A set seen as a class, or a class abstraction           |
+| `(ax witness)`, `(ref i)`                                     | An axiom instance or history reference                  |
+| `(mp implication-proof antecedent-proof)`, `(gen proof)`      | Proof constructors                                      |
+| `(prove statement proof)`                                     | Submit a theorem with its certificate                   |
+| `(axiom witness)`                                             | Submit an axiom instance with its canonical certificate |
+| `(expand statement)`                                          | Display class elimination without adding a theorem      |
 
 Core formulas can be used as statements without an explicit `core` wrapper.
 The two uses of `class` in this syntax are class abstractions, not class
@@ -283,21 +283,21 @@ non-reachability of falsity from an empty history.
 
 The candidate contains these checked developments:
 
-| File | Result |
-| --- | --- |
-| [`Elimination.v`](candidate/Elimination.v) | Proof translation in both directions, conservativity, and equiconsistency |
-| [`Checker.v`](candidate/Checker.v) | Executable certificate inference and session transitions; soundness, completeness, rollback, and exact rejection |
-| [`ClassNames.v`](candidate/ClassNames.v) | Immutable names, proof-based set certification, and set-existence proofs for set variables and bounded classes |
-| [`NamedSessions.v`](candidate/NamedSessions.v) | Safe interleaved reference sessions, the finite-budget prefix property, and the exact loop-bound product |
-| [`Arena.v`](candidate/Arena.v) | Preservation of formula meanings by interning and soundness of inference using checked arena IDs |
-| [`Regression.v`](candidate/Regression.v) | Rejection of forged MP and invalid references; nested classes, capture avoidance, parameters, undo, and reset |
-| [`Semantics.v`](candidate/Semantics.v) | Constructive negative semantics for classical first-order logic, soundness, and consistency from a model |
-| [`StableSets.v`](candidate/StableSets.v) | Set trees with stable bisimulation; extensionality, separation, unions, powersets, natural numbers, and stable membership induction |
-| [`Model.v`](candidate/Model.v) | Validation of seven ZFC axiom families in that interpretation: all except Replacement and Choice |
-| [`InnerModels.v`](candidate/InnerModels.v) | Relativization, class-restricted semantics, and the bridge from an inhabited inner model to consistency |
-| [`Constructibility.v`](candidate/Constructibility.v) | Definable subsets with finite parameters, a raw well-founded hierarchy, transitivity, nonemptiness, and pairing/union closure of its stable class |
-| [`ConstructibleModel.v`](candidate/ConstructibleModel.v) | Validation of Extensionality, Foundation, Pairing, and Union in the restricted hierarchy class |
-| [`Candidate.v`](candidate/Candidate.v) | Exported program and the proved parts of its contract |
+| File                                                     | Result                                                                                                                                            |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`Elimination.v`](candidate/Elimination.v)               | Proof translation in both directions, conservativity, and equiconsistency                                                                         |
+| [`Checker.v`](candidate/Checker.v)                       | Executable certificate inference and session transitions; soundness, completeness, rollback, and exact rejection                                  |
+| [`ClassNames.v`](candidate/ClassNames.v)                 | Immutable names, proof-based set certification, and set-existence proofs for set variables and bounded classes                                    |
+| [`NamedSessions.v`](candidate/NamedSessions.v)           | Safe interleaved reference sessions, the finite-budget prefix property, and the exact loop-bound product                                          |
+| [`Arena.v`](candidate/Arena.v)                           | Preservation of formula meanings by interning and soundness of inference using checked arena IDs                                                  |
+| [`Regression.v`](candidate/Regression.v)                 | Rejection of forged MP and invalid references; nested classes, capture avoidance, parameters, undo, and reset                                     |
+| [`Semantics.v`](candidate/Semantics.v)                   | Constructive negative semantics for classical first-order logic, soundness, and consistency from a model                                          |
+| [`StableSets.v`](candidate/StableSets.v)                 | Set trees with stable bisimulation; extensionality, separation, unions, powersets, natural numbers, and stable membership induction               |
+| [`Model.v`](candidate/Model.v)                           | Validation of seven ZFC axiom families in that interpretation: all except Replacement and Choice                                                  |
+| [`InnerModels.v`](candidate/InnerModels.v)               | Relativization, class-restricted semantics, and the bridge from an inhabited inner model to consistency                                           |
+| [`Constructibility.v`](candidate/Constructibility.v)     | Definable subsets with finite parameters, a raw well-founded hierarchy, transitivity, nonemptiness, and pairing/union closure of its stable class |
+| [`ConstructibleModel.v`](candidate/ConstructibleModel.v) | Validation of Extensionality, Foundation, Pairing, and Union in the restricted hierarchy class                                                    |
+| [`Candidate.v`](candidate/Candidate.v)                   | Exported program and the proved parts of its contract                                                                                             |
 
 `Checker.full_contract_iff` proves:
 
