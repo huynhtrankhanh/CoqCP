@@ -1,4 +1,5 @@
-From CoqCP Require Import Options SetTheory.
+From CoqCP Require Import Options.
+From Trusted Require Import SetTheory.
 From Submission Require Import Semantics InnerModels StableSets Constructibility.
 
 (* Initial axiom validations for the stable hierarchy class. These are not

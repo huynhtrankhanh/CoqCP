@@ -1,4 +1,5 @@
-From CoqCP Require Import Options SetTheory.
+From CoqCP Require Import Options.
+From Trusted Require Import SetTheory.
 
 (* A constructive negative interpretation. Classical reasoning in the object
    calculus does not require an excluded-middle axiom in Rocq: all interpreted

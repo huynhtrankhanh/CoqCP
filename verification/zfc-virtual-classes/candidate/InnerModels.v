@@ -1,4 +1,5 @@
-From CoqCP Require Import Options SetTheory.
+From CoqCP Require Import Options.
+From Trusted Require Import SetTheory.
 From Submission Require Import Semantics.
 
 (* Relativization is the bridge needed by an inner-model construction such as

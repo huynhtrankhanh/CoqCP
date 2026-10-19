@@ -39,7 +39,9 @@ def main():
              '-Q', str(proofs), 'NativeProof']
     for name in ['Options', 'Imperative', 'Execution', 'TapeEnd', 'SetTheory']:
         source = out / 'CoqCP' / f'{name}.v'
-        shutil.copy2(repo / 'theories' / source.name, source)
+        origin = (here.parent / 'spec' / source.name if name == 'SetTheory'
+                  else repo / 'theories' / source.name)
+        shutil.copy2(origin, source)
         run([args.rocq, 'compile', *flags, source])
     run([args.rocq, 'compile', *flags, code / 'ProofChecker.v'])
     proof_modules = ['Index', 'Overflow', 'Lift', 'Intern', 'Fresh',

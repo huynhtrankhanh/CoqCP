@@ -13,8 +13,11 @@ verification/<problem>/
 `spec/Spec.v` defines the inputs, mathematical answer or refinement relation,
 and `SOLUTION` signature. Keep it small and free of proof developments. It may
 import general theories and generated program definitions, but never candidate
-modules. Supporting lemmas, algorithm analysis, and execution proofs belong in
-`candidate/`, even when they establish properties of specification definitions.
+modules. Problem-specific specification dependencies must be evaluator-owned
+and frozen explicitly with repeatable `--spec-dependency` arguments, never
+compiled as shared CoqCP libraries by `_CoqProject`. Supporting lemmas,
+algorithm analysis, and execution proofs belong in `candidate/`, even when
+they establish properties of specification definitions.
 
 Candidates import the frozen specification as `Trusted.Spec`, other candidate
 helpers as `Submission.<name>`, and general libraries as `CoqCP.<name>`.

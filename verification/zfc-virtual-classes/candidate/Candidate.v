@@ -1,4 +1,5 @@
-From CoqCP Require Import Options SetTheory VirtualClasses.
+From CoqCP Require Import Options.
+From Trusted Require Import SetTheory VirtualClasses.
 From Submission Require Import Checker Elimination Regression Model ConstructibleModel ClassNames Arena NamedSessions.
 Require Import Trusted.Spec.
 

@@ -75,6 +75,34 @@ class ContextPolicyTests(unittest.TestCase):
 
 
 class ProtocolValidationTests(unittest.TestCase):
+    def test_specification_dependencies_are_explicit_and_local(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            specdir, other = root / "spec", root / "candidate"
+            specdir.mkdir()
+            other.mkdir()
+            spec = specdir / "Spec.v"
+            dependency = specdir / "SetTheory.v"
+            candidate = other / "Candidate.v"
+            spec.write_text("Definition specification := True.\n")
+            dependency.write_text("Definition witness := True.\n")
+            candidate.write_text("Axiom escape : False.\n")
+            sources = gate.specification_sources(spec, [dependency])
+            self.assertEqual(set(sources), {"Spec.v", "SetTheory.v"})
+            with self.assertRaises(gate.Rejected):
+                gate.specification_sources(spec, [candidate])
+            with self.assertRaises(gate.Rejected):
+                gate.specification_sources(spec, [dependency, dependency])
+            with self.assertRaises(gate.Rejected):
+                gate.specification_sources(spec, [spec])
+            with self.assertRaises(OSError):
+                gate.specification_sources(spec, [specdir / "Missing.v"])
+
+    def test_zfc_theories_are_not_shared_trusted_libraries(self):
+        _, sources = gate.project_layout()
+        self.assertFalse(any(source.name in {"SetTheory.v", "VirtualClasses.v"}
+                             for source in sources))
+
     class Sandbox:
         limits = dict(gate.DEFAULT_LIMITS)
 

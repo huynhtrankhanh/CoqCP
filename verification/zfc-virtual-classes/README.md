@@ -243,7 +243,7 @@ Axiom witnesses are `ext`, `found`, `pair`, `union`, `power`, `infinity`,
 
 ## Logic and class elimination
 
-[`SetTheory.v`](../../theories/SetTheory.v) defines a classical Hilbert calculus
+[`SetTheory.v`](spec/SetTheory.v) defines a classical Hilbert calculus
 with equality, membership, implication, falsity, and a de Bruijn universal
 binder. Its rules are modus ponens and generalization. Equality has reflexivity
 and substitution axioms for both membership arguments and equality.
@@ -258,7 +258,7 @@ Variable `0` denotes the nearest binder, `1` the next, and so on. In an
 abstraction `(class p)`, `0` is the element tested by its predicate. Parameters
 and binder insertion are handled by explicit simultaneous renaming.
 
-[`VirtualClasses.v`](../../theories/VirtualClasses.v) eliminates nested
+[`VirtualClasses.v`](spec/VirtualClasses.v) eliminates nested
 abstractions into the core language. Class equality is extensional equality.
 Class membership with an abstraction on its left requires an existential
 **set** witness representing that class. Thus the checker does not turn a
@@ -360,6 +360,9 @@ The local development build's `rocq check` and assumption audit passed.
 Docker/gVisor access was resolved using sudo while keeping the checker process
 non-root. The strict specification was frozen with axiom policy `none`; its ID
 is `e74dd27a11f150d1220e1fa664cc9335142241872e7da4b4999a92b877d80a12`.
+This identifier describes the earlier bundle, before the ZFC-specific
+theories were moved into frozen specification dependencies. Prepare a new
+bundle and record its new ID for subsequent adversarial checks.
 The sandbox compiled the candidate and rejected it at `kernel-and-contract`
 because `Implementation` does not satisfy `Trusted.Spec.SOLUTION`. This is
 the expected failure from the missing unconditional proof, not an acceptance.
@@ -373,6 +376,8 @@ To freeze a fresh strict specification:
 ```sh
 python3 tools/adversarial/check.py prepare \
   --spec verification/zfc-virtual-classes/spec/Spec.v \
+  --spec-dependency verification/zfc-virtual-classes/spec/SetTheory.v \
+  --spec-dependency verification/zfc-virtual-classes/spec/VirtualClasses.v \
   --bundle .verification/zfc-strict-bundle --axiom-policy none
 ```
 
