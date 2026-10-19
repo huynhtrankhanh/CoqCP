@@ -37,29 +37,29 @@ Every reply ends in LF and is flushed immediately. EOF between commands produces
 
 Formula ID `0` is falsity. Formula, class, history and schema-expression IDs occupy separate arenas. History IDs are zero based, oldest first; undo/reset permits reuse of history slots. Formula/class/schema-expression arenas remain allocated. Successful construction returns `OK id\n`. Proof operations return the appended history index. Naming operations return the captured formula/class/schema-root ID.
 
-| Request | Effect |
-| --- | --- |
-| `0` | Quit |
-| `1 i j`, `2 i j` | Construct equality or membership of set variables |
-| `3 p q`, `4 p` | Construct implication or universal quantification |
-| `5 i`, `6 p` | Construct a set-variable class or predicate abstraction |
-| `7 a b`, `8 a b` | Expand class equality or membership into a core formula |
-| `9 classID name`, `10 name` | Define a class name, or retrieve its class ID |
-| `11 tag a b c` | Check an axiom instance and append its theorem |
-| `12 implicationIndex antecedentIndex` | Modus ponens, with exact antecedent matching |
-| `13 theoremIndex` | Generalize a theorem |
-| `14 name theoremIndex` | Certify a named class as a set using a checked representing-set existence theorem |
-| `15 name` | Return `CLASS` or `SET` for a class name |
-| `16`, `17` | Undo the latest theorem, or reset active history |
-| `18 theoremIndex formulaID` | Append only if the exact formula matches |
-| `19 theoremIndex` | Return its formula ID |
-| `20 theoremIndex name` | Save an immutable theorem snapshot |
-| `21 name` | Append the theorem snapshot to current history |
-| `22 kind a b c d` | Construct a typed schema-expression node; see below |
-| `23 proofNode name` | Name a schema certificate |
-| `24 name count classID...` | Supply exactly `count` class arguments and check a schema instance |
-| `25 name` | Return `CLASS`, `THEOREM` or `SCHEMA` |
-| `26 name` | Return a schema's required argument count as `OK count` |
+| Request                               | Effect                                                                            |
+| ------------------------------------- | --------------------------------------------------------------------------------- |
+| `0`                                   | Quit                                                                              |
+| `1 i j`, `2 i j`                      | Construct equality or membership of set variables                                 |
+| `3 p q`, `4 p`                        | Construct implication or universal quantification                                 |
+| `5 i`, `6 p`                          | Construct a set-variable class or predicate abstraction                           |
+| `7 a b`, `8 a b`                      | Expand class equality or membership into a core formula                           |
+| `9 classID name`, `10 name`           | Define a class name, or retrieve its class ID                                     |
+| `11 tag a b c`                        | Check an axiom instance and append its theorem                                    |
+| `12 implicationIndex antecedentIndex` | Modus ponens, with exact antecedent matching                                      |
+| `13 theoremIndex`                     | Generalize a theorem                                                              |
+| `14 name theoremIndex`                | Certify a named class as a set using a checked representing-set existence theorem |
+| `15 name`                             | Return `CLASS` or `SET` for a class name                                          |
+| `16`, `17`                            | Undo the latest theorem, or reset active history                                  |
+| `18 theoremIndex formulaID`           | Append only if the exact formula matches                                          |
+| `19 theoremIndex`                     | Return its formula ID                                                             |
+| `20 theoremIndex name`                | Save an immutable theorem snapshot                                                |
+| `21 name`                             | Append the theorem snapshot to current history                                    |
+| `22 kind a b c d`                     | Construct a typed schema-expression node; see below                               |
+| `23 proofNode name`                   | Name a schema certificate                                                         |
+| `24 name count classID...`            | Supply exactly `count` class arguments and check a schema instance                |
+| `25 name`                             | Return `CLASS`, `THEOREM` or `SCHEMA`                                             |
+| `26 name`                             | Return a schema's required argument count as `OK count`                           |
 
 All names share one immutable namespace. A theorem name captures its formula, not a mutable history index; it remains valid after undo/reset and slot reuse. Class names, set certifications and named schemata also persist. A class cannot be used as a theorem name or vice versa. Merely naming a class does not certify that it is a set.
 
@@ -69,19 +69,19 @@ The axiom tags `0` through `17` are K, S, DNE, universal instantiation, universa
 
 Opcode `22` always consumes a kind and four numeric fields. Unused fields may be zero. Its result is a schema-expression ID. All dependencies must be earlier nodes, and their types are checked.
 
-| Kind | Fields used | Result type and meaning |
-| --- | --- | --- |
-| `0` | `a = metavariable index` | Class metavariable |
-| `1` | `a = class ID` | Literal class |
-| `2` | `a = formula ID` | Literal core formula |
-| `3` | `a = formula node` | Class abstraction |
-| `4`, `5` | `a,b = class nodes` | Formula: class equality or membership |
-| `6` | `a,b = formula nodes` | Formula: implication |
-| `7` | `a = formula node` | Formula: universal quantification |
-| `8` | `a = axiom tag; b,c,d = its arguments` | Certificate: axiom instance |
-| `9` | `a,b = certificate nodes` | Certificate: modus ponens |
-| `10` | `a = certificate node` | Certificate: generalization |
-| `11` | `a = current history index` | Certificate: immutable theorem snapshot |
+| Kind     | Fields used                            | Result type and meaning                 |
+| -------- | -------------------------------------- | --------------------------------------- |
+| `0`      | `a = metavariable index`               | Class metavariable                      |
+| `1`      | `a = class ID`                         | Literal class                           |
+| `2`      | `a = formula ID`                       | Literal core formula                    |
+| `3`      | `a = formula node`                     | Class abstraction                       |
+| `4`, `5` | `a,b = class nodes`                    | Formula: class equality or membership   |
+| `6`      | `a,b = formula nodes`                  | Formula: implication                    |
+| `7`      | `a = formula node`                     | Formula: universal quantification       |
+| `8`      | `a = axiom tag; b,c,d = its arguments` | Certificate: axiom instance             |
+| `9`      | `a,b = certificate nodes`              | Certificate: modus ponens               |
+| `10`     | `a = certificate node`                 | Certificate: generalization             |
+| `11`     | `a = current history index`            | Certificate: immutable theorem snapshot |
 
 For kind `8`, formula arguments are **schema-formula node IDs**; variable arguments remain raw indices, using the same tag convention as opcode `11`. The schema arity is one plus its largest reachable metavariable index, or zero if none occurs. Unreachable earlier nodes do not contribute. Literal classes/formulas use the de Bruijn context of their position; metavariable substitutions preserve their outside parameters by shifting them under universal quantifiers, generalization and class-abstraction binders.
 
