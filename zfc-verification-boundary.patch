@@ -1,0 +1,305 @@
+diff --git a/theories/SetTheory.v b/verification/zfc-virtual-classes/spec/SetTheory.v
+rename from theories/SetTheory.v
+rename to verification/zfc-virtual-classes/spec/SetTheory.v
+diff --git a/theories/VirtualClasses.v b/verification/zfc-virtual-classes/spec/VirtualClasses.v
+rename from theories/VirtualClasses.v
+rename to verification/zfc-virtual-classes/spec/VirtualClasses.v
+--- a/theories/VirtualClasses.v
++++ b/verification/zfc-virtual-classes/spec/VirtualClasses.v
+@@ -1,3 +1,4 @@
+-From CoqCP Require Import Options SetTheory.
++From CoqCP Require Import Options.
++From Trusted Require Import SetTheory.
+ 
+ Module VirtualClasses.
+diff --git a/_CoqProject b/_CoqProject
+--- a/_CoqProject
++++ b/_CoqProject
+@@ -36,4 +36,2 @@
+ theories/UnionFindModel.v
+-theories/SetTheory.v
+-theories/VirtualClasses.v
+ 
+diff --git a/verification/zfc-virtual-classes/spec/Spec.v b/verification/zfc-virtual-classes/spec/Spec.v
+--- a/verification/zfc-virtual-classes/spec/Spec.v
++++ b/verification/zfc-virtual-classes/spec/Spec.v
+@@ -1,2 +1,3 @@
+-From CoqCP Require Import Options SetTheory VirtualClasses.
++From CoqCP Require Import Options.
++From Trusted Require Import SetTheory VirtualClasses.
+ From Stdlib Require Import Lists.List Bool.Bool.
+diff --git a/verification/zfc-virtual-classes/candidate/Arena.v b/verification/zfc-virtual-classes/candidate/Arena.v
+--- a/verification/zfc-virtual-classes/candidate/Arena.v
++++ b/verification/zfc-virtual-classes/candidate/Arena.v
+@@ -1,2 +1,3 @@
+-From CoqCP Require Import Options SetTheory.
++From CoqCP Require Import Options.
++From Trusted Require Import SetTheory.
+ From Submission Require Import Elimination.
+diff --git a/verification/zfc-virtual-classes/candidate/Candidate.v b/verification/zfc-virtual-classes/candidate/Candidate.v
+--- a/verification/zfc-virtual-classes/candidate/Candidate.v
++++ b/verification/zfc-virtual-classes/candidate/Candidate.v
+@@ -1,2 +1,3 @@
+-From CoqCP Require Import Options SetTheory VirtualClasses.
++From CoqCP Require Import Options.
++From Trusted Require Import SetTheory VirtualClasses.
+ From Submission Require Import Checker Elimination Regression Model ConstructibleModel ClassNames Arena NamedSessions.
+diff --git a/verification/zfc-virtual-classes/candidate/Checker.v b/verification/zfc-virtual-classes/candidate/Checker.v
+--- a/verification/zfc-virtual-classes/candidate/Checker.v
++++ b/verification/zfc-virtual-classes/candidate/Checker.v
+@@ -1,2 +1,3 @@
+-From CoqCP Require Import Options SetTheory VirtualClasses.
++From CoqCP Require Import Options.
++From Trusted Require Import SetTheory VirtualClasses.
+ From Stdlib Require Import Lists.List Bool.Bool.
+diff --git a/verification/zfc-virtual-classes/candidate/ClassNames.v b/verification/zfc-virtual-classes/candidate/ClassNames.v
+--- a/verification/zfc-virtual-classes/candidate/ClassNames.v
++++ b/verification/zfc-virtual-classes/candidate/ClassNames.v
+@@ -1,2 +1,3 @@
+-From CoqCP Require Import Options SetTheory VirtualClasses.
++From CoqCP Require Import Options.
++From Trusted Require Import SetTheory VirtualClasses.
+ From Stdlib Require Import Lists.List Arith.PeanoNat.
+diff --git a/verification/zfc-virtual-classes/candidate/Constructibility.v b/verification/zfc-virtual-classes/candidate/Constructibility.v
+--- a/verification/zfc-virtual-classes/candidate/Constructibility.v
++++ b/verification/zfc-virtual-classes/candidate/Constructibility.v
+@@ -1,2 +1,3 @@
+-From CoqCP Require Import Options SetTheory.
++From CoqCP Require Import Options.
++From Trusted Require Import SetTheory.
+ From Stdlib Require Import Lists.List Arith.PeanoNat Lia.
+diff --git a/verification/zfc-virtual-classes/candidate/ConstructibleModel.v b/verification/zfc-virtual-classes/candidate/ConstructibleModel.v
+--- a/verification/zfc-virtual-classes/candidate/ConstructibleModel.v
++++ b/verification/zfc-virtual-classes/candidate/ConstructibleModel.v
+@@ -1,2 +1,3 @@
+-From CoqCP Require Import Options SetTheory.
++From CoqCP Require Import Options.
++From Trusted Require Import SetTheory.
+ From Submission Require Import Semantics InnerModels StableSets Constructibility.
+diff --git a/verification/zfc-virtual-classes/candidate/Elimination.v b/verification/zfc-virtual-classes/candidate/Elimination.v
+--- a/verification/zfc-virtual-classes/candidate/Elimination.v
++++ b/verification/zfc-virtual-classes/candidate/Elimination.v
+@@ -1,2 +1,3 @@
+-From CoqCP Require Import Options SetTheory VirtualClasses.
++From CoqCP Require Import Options.
++From Trusted Require Import SetTheory VirtualClasses.
+ Import SetTheory VirtualClasses.
+diff --git a/verification/zfc-virtual-classes/candidate/InnerModels.v b/verification/zfc-virtual-classes/candidate/InnerModels.v
+--- a/verification/zfc-virtual-classes/candidate/InnerModels.v
++++ b/verification/zfc-virtual-classes/candidate/InnerModels.v
+@@ -1,2 +1,3 @@
+-From CoqCP Require Import Options SetTheory.
++From CoqCP Require Import Options.
++From Trusted Require Import SetTheory.
+ From Submission Require Import Semantics.
+diff --git a/verification/zfc-virtual-classes/candidate/Model.v b/verification/zfc-virtual-classes/candidate/Model.v
+--- a/verification/zfc-virtual-classes/candidate/Model.v
++++ b/verification/zfc-virtual-classes/candidate/Model.v
+@@ -1,2 +1,3 @@
+-From CoqCP Require Import Options SetTheory.
++From CoqCP Require Import Options.
++From Trusted Require Import SetTheory.
+ From Submission Require Import Semantics StableSets.
+diff --git a/verification/zfc-virtual-classes/candidate/NamedSessions.v b/verification/zfc-virtual-classes/candidate/NamedSessions.v
+--- a/verification/zfc-virtual-classes/candidate/NamedSessions.v
++++ b/verification/zfc-virtual-classes/candidate/NamedSessions.v
+@@ -1,2 +1,3 @@
+-From CoqCP Require Import Options SetTheory VirtualClasses.
++From CoqCP Require Import Options.
++From Trusted Require Import SetTheory VirtualClasses.
+ From Stdlib Require Import Lists.List Arith.PeanoNat ZArith.ZArith.
+diff --git a/verification/zfc-virtual-classes/candidate/Regression.v b/verification/zfc-virtual-classes/candidate/Regression.v
+--- a/verification/zfc-virtual-classes/candidate/Regression.v
++++ b/verification/zfc-virtual-classes/candidate/Regression.v
+@@ -1,2 +1,3 @@
+-From CoqCP Require Import Options SetTheory VirtualClasses.
++From CoqCP Require Import Options.
++From Trusted Require Import SetTheory VirtualClasses.
+ From Stdlib Require Import Lists.List.
+diff --git a/verification/zfc-virtual-classes/candidate/Semantics.v b/verification/zfc-virtual-classes/candidate/Semantics.v
+--- a/verification/zfc-virtual-classes/candidate/Semantics.v
++++ b/verification/zfc-virtual-classes/candidate/Semantics.v
+@@ -1,2 +1,3 @@
+-From CoqCP Require Import Options SetTheory.
++From CoqCP Require Import Options.
++From Trusted Require Import SetTheory.
+ 
+diff --git a/verification/zfc-virtual-classes/build.py b/verification/zfc-virtual-classes/build.py
+--- a/verification/zfc-virtual-classes/build.py
++++ b/verification/zfc-virtual-classes/build.py
+@@ -31,7 +31,12 @@
+ 
+-    for name in ["Options", "SetTheory", "VirtualClasses"]:
+-        target = theories / f"{name}.v"
+-        shutil.copy2(repo / "theories" / target.name, target)
+-        compile_file(target)
+-    shutil.copy2(task / "spec/Spec.v", trusted / "Spec.v")
++    target = theories / "Options.v"
++    shutil.copy2(repo / "theories" / target.name, target)
++    compile_file(target)
++    # The object theory is evaluator-owned specification material, not a
++    # shared CoqCP library or a candidate-provided proof development.
++    for name in ["SetTheory", "VirtualClasses"]:
++        target = trusted / f"{name}.v"
++        shutil.copy2(task / "spec" / target.name, target)
++        compile_file(target)
++    shutil.copy2(task / "spec/Spec.v", trusted / "Spec.v")
+     compile_file(trusted / "Spec.v")
+diff --git a/verification/zfc-virtual-classes/imperative/build.py b/verification/zfc-virtual-classes/imperative/build.py
+--- a/verification/zfc-virtual-classes/imperative/build.py
++++ b/verification/zfc-virtual-classes/imperative/build.py
+@@ -41,3 +41,5 @@
+         source = out / 'CoqCP' / f'{name}.v'
+-        shutil.copy2(repo / 'theories' / source.name, source)
++        origin = (here.parent / 'spec' / source.name if name == 'SetTheory'
++                  else repo / 'theories' / source.name)
++        shutil.copy2(origin, source)
+         run([args.rocq, 'compile', *flags, source])
+diff --git a/verification/zfc-virtual-classes/README.md b/verification/zfc-virtual-classes/README.md
+--- a/verification/zfc-virtual-classes/README.md
++++ b/verification/zfc-virtual-classes/README.md
+@@ -245,3 +245,3 @@
+ 
+-[`SetTheory.v`](../../theories/SetTheory.v) defines a classical Hilbert calculus
++[`SetTheory.v`](spec/SetTheory.v) defines a classical Hilbert calculus
+ with equality, membership, implication, falsity, and a de Bruijn universal
+@@ -260,3 +260,3 @@
+ 
+-[`VirtualClasses.v`](../../theories/VirtualClasses.v) eliminates nested
++[`VirtualClasses.v`](spec/VirtualClasses.v) eliminates nested
+ abstractions into the core language. Class equality is extensional equality.
+@@ -362,2 +362,5 @@
+ is `e74dd27a11f150d1220e1fa664cc9335142241872e7da4b4999a92b877d80a12`.
++This identifier describes the earlier bundle, before the ZFC-specific
++theories were moved into frozen specification dependencies. Prepare a new
++bundle and record its new ID for subsequent adversarial checks.
+ The sandbox compiled the candidate and rejected it at `kernel-and-contract`
+@@ -374,4 +377,6 @@
+ python3 tools/adversarial/check.py prepare \
+-  --spec verification/zfc-virtual-classes/spec/Spec.v \
+-  --bundle .verification/zfc-strict-bundle --axiom-policy none
++  --spec verification/zfc-virtual-classes/spec/Spec.v \
++  --spec-dependency verification/zfc-virtual-classes/spec/SetTheory.v \
++  --spec-dependency verification/zfc-virtual-classes/spec/VirtualClasses.v \
++  --bundle .verification/zfc-strict-bundle --axiom-policy none
+ ```
+diff --git a/verification/README.md b/verification/README.md
+--- a/verification/README.md
++++ b/verification/README.md
+@@ -12,7 +12,10 @@
+ 
+-`spec/Spec.v` defines the inputs, mathematical answer or refinement relation,
+-and `SOLUTION` signature. Keep it small and free of proof developments. It may
+-import general theories and generated program definitions, but never candidate
+-modules. Supporting lemmas, algorithm analysis, and execution proofs belong in
+-`candidate/`, even when they establish properties of specification definitions.
++`spec/Spec.v` defines the inputs, mathematical answer or refinement relation,
++and `SOLUTION` signature. Keep it small and free of proof developments. It may
++import general theories and generated program definitions, but never candidate
++modules. Problem-specific specification dependencies must be evaluator-owned
++and frozen explicitly with repeatable `--spec-dependency` arguments, never
++compiled as shared CoqCP libraries by `_CoqProject`. Supporting lemmas,
++algorithm analysis, and execution proofs belong in `candidate/`, even when
++they establish properties of specification definitions.
+ 
+diff --git a/tools/adversarial/check.py b/tools/adversarial/check.py
+--- a/tools/adversarial/check.py
++++ b/tools/adversarial/check.py
+@@ -345,4 +345,20 @@
+ 
+-def prepare(spec, bundle, runtime, sandbox, allowed):
+-    if not set(allowed).issubset(trusted_axioms()):
++def specification_sources(spec, dependencies):
++    # Every dependency is evaluator-selected, adjacent to Spec.v, and
++    # frozen with it. Candidate sources are never accepted as dependencies.
++    spec = Path(spec).resolve()
++    sources = {"Spec.v": read_regular(spec, 8 * 1024**2)}
++    for candidate in dependencies:
++        candidate = Path(candidate)
++        if (candidate.is_symlink() or candidate.resolve().parent != spec.parent
++                or not NAME.fullmatch(candidate.name) or candidate.name in sources):
++            raise Rejected("Specification dependencies must be distinct local .v files")
++        sources[candidate.name] = read_regular(candidate, 8 * 1024**2)
++    if sum(map(len, sources.values())) > 8 * 1024**2:
++        raise Rejected("Specification source files exceed 8 MiB in total")
++    return sources
++
++
++def prepare(spec, bundle, runtime, sandbox, allowed, spec_dependencies=()):
++    if not set(allowed).issubset(trusted_axioms()):
+         raise Rejected("Axiom policy exceeds the evaluator-owned CI trust set")
+@@ -353,10 +369,13 @@
+         (bundle / "spec").mkdir()
+-        source = read_regular(spec, 8 * 1024**2)
+-        with tempfile.TemporaryDirectory(prefix="spec-input-") as temporary:
+-            inputs = Path(temporary)
+-            (inputs / "Spec.v").write_bytes(source)
+-            compiled = compile_sources(inputs, ["Spec.v"], "Trusted", bundle, runtime, sandbox)
+-        (bundle / "spec/Spec.v").write_bytes(source)
+-        (bundle / "spec/Spec.vo").write_bytes(compiled["Spec.vo"])
+-        policy = kernel_check(bundle, None, runtime, sandbox, allowed, spec_only=True)
++        sources = specification_sources(spec, spec_dependencies)
++        with tempfile.TemporaryDirectory(prefix="spec-input-") as temporary:
++            inputs = Path(temporary)
++            for name, data in sources.items():
++                (inputs / name).write_bytes(data)
++            compiled = compile_sources(inputs, list(sources), "Trusted", bundle, runtime, sandbox)
++        for name, data in sources.items():
++            (bundle / "spec" / name).write_bytes(data)
++            (bundle / "spec" / Path(name).with_suffix(".vo")).write_bytes(
++                compiled[Path(name).with_suffix(".vo").name])
++        policy = kernel_check(bundle, None, runtime, sandbox, allowed, spec_only=True)
+         manifest = dict(format=1, toolchain=runtime, allowed_axioms=sorted(set(allowed)),
+@@ -462,4 +481,6 @@
+     freeze = sub.add_parser("prepare", help="Freeze an evaluator-controlled Spec.v and its policy")
+-    freeze.add_argument("--spec", type=Path, required=True)
+-    freeze.add_argument("--bundle", type=Path, required=True)
++    freeze.add_argument("--spec", type=Path, required=True)
++    freeze.add_argument("--spec-dependency", type=Path, action="append", default=[],
++                        help="Evaluator-owned .v file beside Spec.v (repeatable; frozen into Trusted)")
++    freeze.add_argument("--bundle", type=Path, required=True)
+     freeze.add_argument("--axiom-policy", choices=["none", "ci"], default="none",
+@@ -493,3 +514,4 @@
+             allowed = trusted_axioms() if args.axiom_policy == "ci" else []
+-            spec_id = prepare(args.spec.resolve(), args.bundle.absolute(), runtime, sandbox, allowed)
++            spec_id = prepare(args.spec.resolve(), args.bundle.absolute(), runtime, sandbox,
++                              allowed, [path.resolve() for path in args.spec_dependency])
+             print(json.dumps({"status": "prepared", "spec_id": spec_id, "bundle": str(args.bundle.absolute())}))
+diff --git a/tools/adversarial/tests/test_check.py b/tools/adversarial/tests/test_check.py
+--- a/tools/adversarial/tests/test_check.py
++++ b/tools/adversarial/tests/test_check.py
+@@ -77,4 +77,32 @@
+ 
+-class ProtocolValidationTests(unittest.TestCase):
+-    class Sandbox:
++class ProtocolValidationTests(unittest.TestCase):
++    def test_specification_dependencies_are_explicit_and_local(self):
++        with tempfile.TemporaryDirectory() as temporary:
++            root = Path(temporary)
++            specdir, other = root / "spec", root / "candidate"
++            specdir.mkdir()
++            other.mkdir()
++            spec = specdir / "Spec.v"
++            dependency = specdir / "SetTheory.v"
++            candidate = other / "Candidate.v"
++            spec.write_text("Definition specification := True.\n")
++            dependency.write_text("Definition witness := True.\n")
++            candidate.write_text("Axiom escape : False.\n")
++            sources = gate.specification_sources(spec, [dependency])
++            self.assertEqual(set(sources), {"Spec.v", "SetTheory.v"})
++            with self.assertRaises(gate.Rejected):
++                gate.specification_sources(spec, [candidate])
++            with self.assertRaises(gate.Rejected):
++                gate.specification_sources(spec, [dependency, dependency])
++            with self.assertRaises(gate.Rejected):
++                gate.specification_sources(spec, [spec])
++            with self.assertRaises(OSError):
++                gate.specification_sources(spec, [specdir / "Missing.v"])
++
++    def test_zfc_theories_are_not_shared_trusted_libraries(self):
++        _, sources = gate.project_layout()
++        self.assertFalse(any(source.name in {"SetTheory.v", "VirtualClasses.v"}
++                             for source in sources))
++
++    class Sandbox:
+         limits = dict(gate.DEFAULT_LIMITS)
