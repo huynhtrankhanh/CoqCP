@@ -751,6 +751,22 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                   type: binder.type,
                 }
               }
+              case 'tapeEnd': {
+                const { loopVariable, loopBody } = value
+                const previous = localBinderMap.get(loopVariable)
+                const index = binderCounter++
+                localBinderMap.set(loopVariable, { type: 'int64', number: index })
+                nestLevel++
+                const body = joinStatements(loopBody.map(dfs).map(liftExpression), nestLevel)
+                nestLevel--
+                if (previous === undefined) localBinderMap.delete(loopVariable)
+                else localBinderMap.set(loopVariable, previous)
+                binderCounter--
+                return {
+                  expression: `(tapeEnd (fun binder_${index}_intermediate => let binder_${index} := Done (WithLocalVariables ${arrayIndex} (arrayType _ environment${moduleIndex}) ${variableIndex}) withLocalVariablesReturnValue _ binder_${index}_intermediate in dropWithinLoop (${body})))`,
+                  type: 'statement',
+                }
+              }
               case 'range': {
                 const { loopVariable, loopBody, end } = value
                 const previousBinderValue = localBinderMap.get(loopVariable)

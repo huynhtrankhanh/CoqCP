@@ -52,6 +52,7 @@ Proof.
   - apply IH.
   - destruct input; apply IH.
   - apply IH.
+  - apply IH.
 Qed.
 
 Lemma run_write bytes input output :

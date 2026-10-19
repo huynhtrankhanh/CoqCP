@@ -41,6 +41,9 @@ export const findDependencies = ({ procedures }: CoqCPAST) => {
         break
       case 'range':
         findDependencies(valueType.end)
+        valueType.loopBody.forEach(findDependencies)
+        break
+      case 'tapeEnd':
         valueType.loopBody.forEach((instruction) =>
           findDependencies(instruction)
         )

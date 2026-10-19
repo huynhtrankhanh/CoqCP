@@ -36,6 +36,7 @@ const isPure = (value: ValueType): boolean => {
     case 'local binder':
       return true
     case 'range':
+    case 'tapeEnd':
       return false
     case 'readChar':
       return false

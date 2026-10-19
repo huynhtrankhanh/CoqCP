@@ -24,6 +24,7 @@ Definition step (e : WithArrays I T) (s : Machine) : option (withArraysReturnVal
       | x :: xs => Some (x, withInput s xs)
       end
   | DoBasicEffect _ _ (WriteChar x) => Some (tt, withOutput s (stdout s ++ [x]))
+  | DoBasicEffect _ _ TapeRemaining => Some (length (stdin s), s)
   | Retrieve _ _ name index =>
       match decide (Nat.lt (Z.to_nat index) (length (memory s name))) with
       | left h => Some (nth_lt (memory s name) (Z.to_nat index) h, s)

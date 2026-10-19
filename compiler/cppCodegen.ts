@@ -485,11 +485,32 @@ void growArray(std::vector<T>& array, uint64_t minimumLength) {
                     '}\n'
                   )
                 }
+                if (instruction.type === 'tapeEnd') {
+                  if (state.type === 'not inside block')
+                    throw new Error('tapeEnd must be inside block')
+                  const { loopVariable, loopBody } = instruction
+                  const previous = localBinderMap.get(loopVariable)
+                  // Allocate a fresh name even when a nested loop shadows a binder.
+                  const index = Math.max(-1, ...localBinderMap.values()) + 1
+                  localBinderMap.set(loopVariable, index)
+                  const { indentationLevel } = state
+                  const base = indent.repeat(indentationLevel)
+                  const result = base + `for (uint64_t binder_${index}; (binder_${index} = readChar()) != UINT64_MAX;) {\n` +
+                    loopBody.map((x) => print(x, {
+                      type: 'inside block', indentationLevel: indentationLevel + 1,
+                    })).join('') + base + '}\n'
+                  if (previous === undefined) localBinderMap.delete(loopVariable)
+                  else localBinderMap.set(loopVariable, previous)
+                  return result
+                }
                 if (instruction.type === 'range') {
                   const { end, loopVariable, loopBody } = instruction
+                  // A loop's bound is evaluated in its enclosing lexical scope.
+                  const endExpression = end.type === 'literal' && end.valueType === 'string'
+                    ? '' : print(end)
                   const previousIndex = localBinderMap.get(loopVariable)
 
-                  const index = localBinderMap.size
+                  const index = Math.max(-1, ...localBinderMap.values()) + 1
                   localBinderMap.set(loopVariable, index)
 
                   if (state.type === 'not inside block') {
@@ -528,7 +549,7 @@ void growArray(std::vector<T>& array, uint64_t minimumLength) {
                       'for (uint64_t binder_' +
                       index +
                       ' = 0, loop_end = ' +
-                      print(end) +
+                      endExpression +
                       '; binder_' +
                       index +
                       ' < loop_end; binder_' +

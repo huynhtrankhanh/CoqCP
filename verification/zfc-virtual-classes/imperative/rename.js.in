@@ -1,0 +1,42 @@
+// Iterative traversal; no native recursion and no extracted Gallina kernel.
+procedure('renameIndex', {index: int64, depth: int64, mode: int64, shift: int64, arg: int64, root: int64, mapped: int64}, () => {
+  store('meta', 0, [get('index')])
+  if (!less(get('index'), get('depth'))) {
+    set('root', get('index') - get('depth'))
+    set('mapped', get('root'))
+    if (get('mode') == 0) {
+      if (less(18446744073709551615 - get('root'), get('shift'))) { store('meta', 8, [1]) }
+      set('mapped', get('root') + get('shift'))
+    }
+    if (get('mode') == 1) {
+      if (get('root') == 0) { set('mapped', get('arg')) } else { set('mapped', get('root') - 1) }
+    }
+    if (get('mode') == 2 && get('root') != 0) {
+      if (get('root') == 18446744073709551615) { store('meta', 8, [1]) }
+      set('mapped', get('root') + 1)
+    }
+    if (get('mode') == 3 || get('mode') == 4 || get('mode') == 5) {
+      if (get('root') == 0 && get('mode') != 5) { set('mapped', 2) }
+      if (get('root') == 1 && get('mode') == 4) { set('mapped', 0) }
+      if (!less(get('root'), 2)) {
+        if (get('root') == 18446744073709551615) { store('meta', 8, [1]) }
+        set('mapped', get('root') + 1)
+      }
+    }
+    if (get('mode') == 6) {
+      if (get('root') == 0) { set('mapped', get('arg')) } else {
+        if (less(18446744073709551615 - (get('root') - 1), get('shift'))) { store('meta', 8, [1]) }
+        set('mapped', get('root') - 1 + get('shift'))
+      }
+    }
+    if (less(18446744073709551615 - get('mapped'), get('depth'))) { store('meta', 8, [1]) }
+    store('meta', 0, [get('mapped') + get('depth')])
+  }
+})
+
+procedure('rename', {node: int64, mode: int64, shift: int64, arg: int64, top: int64, current: int64, depth: int64, phase: int64, tag: int64, a: int64, b: int64, left: int64, result: int64}, () => {
+  store('meta', 10, [0])
+  call('push', {node: get('node'), depth: 0})
+  RENAME_LOOP
+  if (retrieve('meta', 10)[0] != 0) { store('meta', 8, [1]) }
+})

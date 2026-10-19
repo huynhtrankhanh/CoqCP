@@ -59,7 +59,10 @@ Inductive BasicEffect :=
 | Trap
 | Flush
 | ReadChar
-| WriteChar (value : Z).
+| WriteChar (value : Z)
+(* Internal termination measure for tapeEnd on finite input. IIL programs
+   cannot inspect this value; native code reads incrementally until EOF. *)
+| TapeRemaining.
 
 #[export] Instance basicEffectEqualityDecidable : EqDecision BasicEffect := ltac:(solve_decision).
 
@@ -69,6 +72,7 @@ Definition basicEffectReturnValue (effect : BasicEffect): Type :=
   | Flush => unit
   | ReadChar => Z
   | WriteChar _ => unit
+  | TapeRemaining => nat
   end.
 
 (* Unfold lemmas for each constructor *)
@@ -88,6 +92,9 @@ Lemma unfold_WriteChar c :
   basicEffectReturnValue (WriteChar c) = unit.
 Proof. reflexivity. Qed.
 
+Lemma unfold_TapeRemaining : basicEffectReturnValue TapeRemaining = nat.
+Proof. reflexivity. Qed.
+
 (* Autorewrite database *)
 Create Rewrite HintDb basicEffectReturnValue_unfold.
 
@@ -95,6 +102,7 @@ Hint Rewrite unfold_Trap : basicEffectReturnValue_unfold.
 Hint Rewrite unfold_Flush : basicEffectReturnValue_unfold.
 Hint Rewrite unfold_ReadChar : basicEffectReturnValue_unfold.
 Hint Rewrite unfold_WriteChar : basicEffectReturnValue_unfold.
+Hint Rewrite unfold_TapeRemaining : basicEffectReturnValue_unfold.
 
 Inductive WithArrays (arrayIndex : Type) (arrayType : arrayIndex -> Type) :=
 | DoBasicEffect (effect : BasicEffect)
@@ -227,6 +235,7 @@ Hint Rewrite unfold_Trap : combined_unfold.
 Hint Rewrite unfold_Flush : combined_unfold.
 Hint Rewrite unfold_ReadChar : combined_unfold.
 Hint Rewrite unfold_WriteChar : combined_unfold.
+Hint Rewrite unfold_TapeRemaining : combined_unfold.
 
 (* To automatically rewrite using all the lemmas, use: *)
 (* autorewrite with combined_unfold. *)
@@ -364,6 +373,15 @@ Lemma pushNumberSet2 {arrayIndex arrayType variableIndex} `{EqDecision variableI
 Proof. easy. Qed.
 
 Definition readChar arrayIndex arrayType variableIndex := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue Z (DoWithArrays _ _ _ (DoBasicEffect _ _ ReadChar)) (fun x => Done _ _ Z x).
+
+Definition tapeEnd {arrayIndex arrayType variableIndex}
+  (body : Z -> Action (WithLocalVariables arrayIndex arrayType variableIndex)
+    withLocalVariablesReturnValue LoopOutcome) :=
+  Dispatch (WithLocalVariables arrayIndex arrayType variableIndex)
+    withLocalVariablesReturnValue unit (DoWithArrays _ _ _ (DoBasicEffect _ _ TapeRemaining))
+    (fun remaining => loop (S remaining) (fun _ =>
+      readChar arrayIndex arrayType variableIndex >>= fun ch =>
+      if Z.eq_dec ch (2^64 - 1) then Done _ _ _ Stop else body ch)).
 
 Definition writeChar arrayIndex arrayType variableIndex x := Dispatch (WithLocalVariables arrayIndex arrayType variableIndex) withLocalVariablesReturnValue _ (DoWithArrays _ _ _ (DoBasicEffect _ _ (WriteChar x))) (fun x => Done _ _ _ x).
 
@@ -612,11 +630,12 @@ Proof.
   induction x as [x | effect continuation IH] in captured |- *.
   - exact (Done _ _ _ captured).
   - destruct effect as [effect | arrayName index | arrayName index value | arrayName minimumLength zero].
-    + destruct effect as [| | | x].
+    + destruct effect as [| | | x |].
       * exact (Dispatch _ _ _ (DoBasicEffect _ _ Trap) (fun returnValue => IH returnValue captured)).
       * exact (Dispatch _ _ _ (DoBasicEffect _ _ Flush) (fun returnValue => IH returnValue captured)).
       * exact (Dispatch _ _ _ (DoBasicEffect _ _ ReadChar) (fun returnValue => IH returnValue captured)).
       * exact (Dispatch _ _ _ (DoBasicEffect _ _ (WriteChar x)) (fun returnValue => IH returnValue (captured ++ [x]))).
+      * exact (Dispatch _ _ _ (DoBasicEffect _ _ TapeRemaining) (fun returnValue => IH returnValue captured)).
     + exact (Dispatch _ _ _ (Retrieve _ arrayType arrayName index) (fun x => IH x captured)).
     + exact (Dispatch _ _ _ (Store _ arrayType arrayName index value) (fun x => IH x captured)).
     + exact (Dispatch _ _ _ (Grow _ arrayType arrayName minimumLength zero) (fun x => IH x captured)).
@@ -665,6 +684,7 @@ Fixpoint runIO {R} (code : Action BasicEffect basicEffectReturnValue R)
       | head :: tail => runIO (next head) tail output
       end
   | Dispatch _ _ _ (WriteChar value) next => runIO (next tt) input (output ++ [value])
+  | Dispatch _ _ _ TapeRemaining next => runIO (next (length input)) input output
   end.
 
 Definition runProgram {arrayIndex arrayType} `{EqDecision arrayIndex}

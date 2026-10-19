@@ -95,6 +95,7 @@ export type Instruction = (
       loopBody: Instruction[]
     }
   | { type: 'readChar' }
+  | { type: 'tapeEnd'; loopVariable: string; loopBody: Instruction[] }
   | { type: 'writeChar'; value: ValueType }
   | BinaryOperationInstruction
   | UnaryOperationInstruction
@@ -854,6 +855,27 @@ export class CoqCPASTTransformer {
           loopVariable,
           loopBody,
           end,
+          location,
+        }
+        break
+      }
+
+      case 'tapeEnd': {
+        const callback = args[0]
+        if (
+          args.length !== 1 || callback.type !== 'ArrowFunctionExpression' ||
+          callback.async || callback.body.type !== 'BlockStatement' ||
+          callback.params.length !== 1 || callback.params[0].type !== 'Identifier'
+        ) {
+          throw new ParseError(
+            'tapeEnd() expects one synchronous arrow function with one named parameter and a block body. ' +
+              formatLocation(location)
+          )
+        }
+        instruction = {
+          type: 'tapeEnd',
+          loopVariable: callback.params[0].name,
+          loopBody: this.transformBodyNode(callback.body),
           location,
         }
         break

@@ -37,3 +37,4 @@ Documentation:
 - [CSES 3228: Permuted Binary Strings](CSES/3228/README.md)
 - [Codeforces 1770G: Koxia and Bracket (end-to-end verified)](Codeforces/contests/1770/G/README.md)
 - [Sorting subarrays (end-to-end verified)](docs/SortingSubarrays.md)
+- [ZFC with virtual classes proof checker (incomplete consistency proof)](verification/zfc-virtual-classes/README.md)

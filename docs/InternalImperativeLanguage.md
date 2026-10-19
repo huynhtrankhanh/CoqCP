@@ -165,7 +165,7 @@ Only the `sDivide` command has overflow. All other commands use wraparound arith
 readChar()
 ```
 
-Returns an `int64`. Return value fits within `int8` range if end of file is not reached. If end of line is reached, `readChar()` returns `int64` `-1`.
+Returns an `int64` byte value from 0 through 255. At end of file, `readChar()` returns `int64` `-1` (the unsigned value `2^64 - 1`).
 
 ## Write character
 
@@ -267,6 +267,34 @@ range('Hello, World!', (x) => {
 ```
 
 Iterates over all bytes of the UTF-8 representation of the string. `x` is of type `int8`. Each byte might or might not represent a character.
+
+### Until end of input
+
+```js
+tapeEnd((char) => {
+  if (char == 32) { ;('continue') }
+  if (char == 10) { ;('break') }
+  writeChar(coerceInt8(char))
+})
+```
+
+Reads one byte before each iteration and stops at EOF. The immutable callback
+binder has type `int64`, with values from 0 through 255; the body never receives
+the EOF sentinel. `;('break')` exits the nearest loop, leaving later bytes
+unread. `;('continue')` starts its next iteration. Loops can be nested, and
+their binders have lexical scope.
+
+The body may call `readChar()`, call a procedure that reads input, or run another
+`tapeEnd`. These reads advance the same tape. The next iteration reads the next
+remaining byte, even when the body has consumed several bytes or reached EOF.
+Native execution reads incrementally and supports interactive pipes; it does
+not wait for the whole input before starting the body.
+
+For the finite-input Rocq semantics, the internal `TapeRemaining` effect supplies
+the initial unread length as a termination measure. Each iteration consumes a
+byte before running the body, and body reads only shorten the remaining tape.
+This measure imposes no fixed numeric iteration limit and is not exposed as an
+IIL instruction.
 
 ## Procedure call
 

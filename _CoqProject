@@ -26,6 +26,7 @@ theories/FloatingPoint.v
 theories/DisjointSetUnion.v
 theories/CountingBits.v
 theories/Execution.v
+theories/TapeEnd.v
 theories/DecimalDigits.v
 theories/ArrayGrowth.v
 theories/InteractiveExecution.v
@@ -33,6 +34,8 @@ theories/DecimalEncoding.v
 theories/Optimality.v
 theories/ArrayExecution.v
 theories/UnionFindModel.v
+theories/SetTheory.v
+theories/VirtualClasses.v
 
 -R generated-coq/ Generated
 generated-coq/DisjointSetUnion.v

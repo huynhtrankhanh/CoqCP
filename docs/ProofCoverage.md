@@ -4,6 +4,14 @@
 
 `theories/ArrayGrowth.v` proves length, preservation of existing elements, zero initialization, no shrinking, and execution of translated growth for the Coq runtime. The compiler performs a fixed-point analysis over growth calls and cross-module array mappings to select vector storage consistently for aliases.
 
+`theories/TapeEnd.v` proves that `tapeEnd` execution agrees with an EOF-or-break
+relation without numeric fuel. Its proof uses the fact that every successful
+body execution can only shorten the unread input, so additional reads and nested
+input loops cannot exhaust the finite-input measure prematurely. These theorems
+have no global assumptions. The compiler tests check both native execution and
+generated Rocq execution, including break/continue, body reads, nesting,
+interactive pipes, and byte values across buffer refills.
+
 `verification/disjoint-set-union/candidate/DisjointSetUnionCode.v` and `DisjointSetUnionCode2.v` preserve the ancestor, path-compression, and union proofs. `competitiveMergeRefinesModel` proves that the generated library's merge operation refines the mathematical DSU state. `DisjointSetUnionCode3.v` proves the cumulative merge-score bound. The competitive DSU input/output frontend has executable checks, but no end-to-end theorem.
 
 `verification/kth-highest-score/candidate/Candidate.v` proves the complete

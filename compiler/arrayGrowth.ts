@@ -49,6 +49,9 @@ export const analyzeArrayGrowth = (
         visit(module, value.end)
         value.loopBody.forEach((instruction) => visit(module, instruction))
         break
+      case 'tapeEnd':
+        value.loopBody.forEach((instruction) => visit(module, instruction))
+        break
       case 'store':
         visit(module, value.index)
         value.tuple.forEach((element) => visit(module, element))
