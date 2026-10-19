@@ -9,9 +9,11 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from test_checker import parse_formula
+from test_siphash import siphash
 
 BINARY = REFERENCE = None
 MAX = 2**64 - 1
+SEED = '506097522914230528 1084818905618843912\n'
 
 
 class Client:
@@ -19,6 +21,12 @@ class Client:
         self.process = subprocess.Popen([str(BINARY)], text=True, stdin=subprocess.PIPE,
                                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         self.formulas = {'false': 0}
+        if not select.select([self.process.stdout], [], [], 5)[0]:
+            raise AssertionError('Missing seed prompt')
+        if self.process.stdout.readline().strip() != 'SEED':
+            raise AssertionError('Expected SEED')
+        if self.send(SEED.strip()) != 'READY':
+            raise AssertionError('Seed rejected')
 
     def send(self, command):
         self.process.stdin.write(str(command) + '\n')
@@ -81,6 +89,84 @@ class NativeTests(unittest.TestCase):
 
     def tearDown(self):
         self.c.close()
+
+    def schema(self, kind, a=0, b=0, c=0, d=0):
+        return self.c.ok(f'22 {kind} {a} {b} {c} {d}')
+
+    def identity_schema(self, generalize=True):
+        # An unrelated, unreachable metavariable must not affect this schema.
+        self.schema(0, 999)
+        meta = self.schema(0, 0)
+        variable = self.schema(1, self.c.ok('5 0'))
+        p = self.schema(5, variable, meta)
+        pp = self.schema(6, p, p)
+        k1 = self.schema(8, 0, p, p)
+        k2 = self.schema(8, 0, p, pp)
+        s = self.schema(8, 1, p, pp, p)
+        first = self.schema(9, s, k2)
+        root = self.schema(9, first, k1)
+        return self.schema(10, root) if generalize else root
+
+    def test_named_theorem_snapshot_survives_undo_reset_and_reuse(self):
+        self.c.ok('11 5 7 0 0')
+        expected = self.c.formula(['=', '7', '7'])
+        self.assertEqual(self.c.ok('20 0 reflexive'), expected)
+        self.assertEqual(self.c.send('25 reflexive'), 'THEOREM')
+        self.c.ok('17')
+        self.c.ok('11 5 8 0 0')
+        recalled = self.c.ok('21 reflexive')
+        self.assertEqual(self.c.ok(f'19 {recalled}'), expected)
+        cls = self.c.ok('5 0')
+        self.assertEqual(self.c.send(f'9 {cls} reflexive'), 'NO')
+        self.assertEqual(self.c.send('10 reflexive'), 'NO')
+        self.assertEqual(self.c.send('15 reflexive'), 'NO')
+        self.assertEqual(self.c.send('14 reflexive 0'), 'NO')
+        self.assertEqual(self.c.send('21 missing'), 'NO')
+
+    def test_class_metavariable_identity_schema_and_binder_capture(self):
+        root = self.identity_schema()
+        self.c.ok(f'23 {root} identity')
+        self.assertEqual(self.c.send('25 identity'), 'SCHEMA')
+        self.assertEqual(self.c.ok('26 identity'), 1)
+        for cls, atom in [
+            (self.c.ok('5 5'), ['in', '0', '6']),
+            (self.c.ok(f"6 {self.c.formula(['in', '0', '1'])}"), ['in', '0', '1']),
+        ]:
+            theorem = self.c.ok(f'24 identity 1 {cls}')
+            self.assertEqual(self.c.ok(f'19 {theorem}'), self.c.formula(['all', ['imp', atom, atom]]))
+        self.c.ok('17')
+        theorem = self.c.ok(f'24 identity 1 {cls}')
+        self.assertEqual(theorem, 0)
+        self.assertEqual(self.c.ok('19 0'), self.c.formula(['all', ['imp', atom, atom]]))
+
+    def test_schema_rejection_is_atomic_and_consumes_arguments(self):
+        root = self.identity_schema(False)
+        self.c.ok(f'23 {root} identity')
+        cls = self.c.ok('5 0')
+        self.assertEqual(self.c.send(f'24 identity 2 {cls} {cls}'), 'NO')
+        self.assertEqual(self.c.send('24 identity 0'), 'NO')
+        self.assertEqual(self.c.send('24 identity 1 9999999'), 'NO')
+        self.assertEqual(self.c.send(f'24 missing 1 {cls}'), 'NO')
+        ax = self.schema(8, 5, 0)
+        invalid = self.schema(9, ax, ax)
+        self.c.ok(f'23 {invalid} invalid')
+        self.assertEqual(self.c.send('24 invalid 0'), 'NO')
+        self.assertEqual(self.c.send('19 0'), 'NO')
+        self.assertEqual(self.c.ok(f'24 identity 1 {cls}'), 0)
+
+    def test_schema_node_types_and_snapshot_certificates(self):
+        self.assertEqual(self.c.send('22 3 999 0 0 0'), 'NO')
+        self.assertEqual(self.c.send('22 0 18446744073709551615 0 0 0'), 'NO')
+        f = self.schema(2, 0)
+        self.assertEqual(self.c.send(f'23 {f} formula'), 'NO')
+        self.assertEqual(self.c.send(f'22 5 {f} {f} 0 0'), 'NO')
+        self.c.ok('11 5 9 0 0')
+        proof = self.schema(11, 0)
+        self.c.ok(f'23 {proof} snapshot')
+        self.c.ok('17')
+        self.c.ok('11 5 10 0 0')
+        result = self.c.ok('24 snapshot 0')
+        self.assertEqual(self.c.ok(f'19 {result}'), self.c.formula(['=', '9', '9']))
 
     def test_every_axiom_matches_reference(self):
         # The reference is a separate, Rocq-proved implementation. Compare full
@@ -245,13 +331,64 @@ class NativeTests(unittest.TestCase):
         self.assertEqual(self.c.send('10 ' + name + 'a'), 'ERR')
 
     def test_eof_mid_command_fails_closed(self):
-        result = subprocess.run([str(BINARY)], input='11 5', text=True,
+        result = subprocess.run([str(BINARY)], input=SEED+'11 5', text=True,
                                 capture_output=True, timeout=5, check=True)
-        self.assertEqual(result.stdout, 'ERR\n')
+        self.assertEqual(result.stdout, 'SEED\nREADY\nERR\n')
 
     def test_empty_eof(self):
-        result = subprocess.run([str(BINARY)], input='', text=True, capture_output=True, timeout=5, check=True)
-        self.assertEqual(result.stdout, '')
+        result = subprocess.run([str(BINARY)], input=SEED, text=True, capture_output=True, timeout=5, check=True)
+        self.assertEqual(result.stdout, 'SEED\nREADY\n')
+
+    def test_seed_handshake_rejects_missing_malformed_and_overflowing_words(self):
+        for seed in ['', '0', '0\n', '-1 0\n', '0 x\n', f'{MAX+1} 0\n', f'0 {MAX+1}\n']:
+            with self.subTest(seed=seed):
+                result = subprocess.run([str(BINARY)], input=seed, text=True, capture_output=True, timeout=5, check=True)
+                self.assertEqual(result.stdout, 'SEED\nERR\n')
+        result = subprocess.run([str(BINARY)], input=f'{MAX} {MAX}\n0\n', text=True, capture_output=True, timeout=5, check=True)
+        self.assertEqual(result.stdout, 'SEED\nREADY\nBYE\n')
+
+    def test_hash_resize_preserves_ids_and_duplicate_detection(self):
+        count = 12000
+        commands = [f'1 {i} {i+1}' for i in range(count)]
+        commands += [f'1 {i} {i+1}' for i in reversed(range(count))]
+        result = subprocess.run([str(BINARY)], input=SEED+'\n'.join(commands)+'\n0\n', text=True,
+                                capture_output=True, timeout=10, check=True)
+        replies = result.stdout.splitlines()
+        self.assertEqual(replies[:2], ['SEED', 'READY'])
+        self.assertEqual(replies[2:2+count], [f'OK {i+1}' for i in range(count)])
+        self.assertEqual(replies[2+count:-1], [f'OK {i+1}' for i in reversed(range(count))])
+        self.assertEqual(replies[-1], 'BYE')
+
+    def test_hash_bucket_collisions_compare_full_formula_tuples(self):
+        key = tuple(map(int, SEED.split()))
+        buckets = {}
+        # Find a real collision for this seed, without depending on native IDs.
+        for i in range(1025):
+            words = (1, i, i + 1)
+            bucket = siphash(key, words) % 1024
+            if bucket in buckets:
+                first, second = buckets[bucket], words
+                break
+            buckets[bucket] = words
+        else:
+            self.fail('Pigeonhole principle violated')
+        ids = [self.c.ok(f'1 {a} {b}') for _, a, b in [first, second]]
+        self.assertNotEqual(*ids)
+        # Revisit the older entry behind the newer bucket head, then the head.
+        for words, expected in zip([first, second, first], [*ids, ids[0]]):
+            _, a, b = words
+            self.assertEqual(self.c.ok(f'1 {a} {b}'), expected)
+
+    def test_seed_changes_hash_layout_without_changing_protocol_ids(self):
+        commands = ''.join(f'1 {i} {i+1}\n' for i in range(1500))
+        commands += '1 1 2\n1 1499 1500\n0\n'
+        outputs = []
+        for seed in ['0 0\n', SEED, f'{MAX} {MAX}\n']:
+            result = subprocess.run([str(BINARY)], input=seed+commands, text=True,
+                                    capture_output=True, timeout=5, check=True)
+            outputs.append(result.stdout)
+        self.assertEqual(outputs[0], outputs[1])
+        self.assertEqual(outputs[1], outputs[2])
 
 
 if __name__ == '__main__':

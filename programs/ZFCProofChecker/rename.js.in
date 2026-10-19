@@ -34,9 +34,9 @@ procedure('renameIndex', {index: int64, depth: int64, mode: int64, shift: int64,
   }
 })
 
-procedure('rename', {node: int64, mode: int64, shift: int64, arg: int64, top: int64, current: int64, depth: int64, phase: int64, tag: int64, a: int64, b: int64, left: int64, result: int64}, () => {
+procedure('rename', {node: int64, mode: int64, shift: int64, arg: int64, initialDepth: int64, top: int64, current: int64, depth: int64, phase: int64, tag: int64, a: int64, b: int64, left: int64, result: int64}, () => {
   store('meta', 10, [0])
-  call('push', {node: get('node'), depth: 0})
+  call('push', {node: get('node'), depth: get('initialDepth')})
   RENAME_LOOP
   if (retrieve('meta', 10)[0] != 0) { store('meta', 8, [1]) }
 })

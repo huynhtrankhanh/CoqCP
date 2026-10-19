@@ -2,7 +2,7 @@ From CoqCP Require Import Options.
 From Trusted Require Import SetTheory VirtualClasses.
 From Stdlib Require Import Lists.List Arith.PeanoNat.
 From Submission Require Import Checker.
-Require Import Trusted.Spec.
+Require Import Trusted.Reference.
 Import ListNotations SetTheory VirtualClasses.
 
 Module ClassNames.
@@ -50,7 +50,7 @@ Inductive command :=
 | define_class (n : name) (c : class)
 | certify_set (n : name) (c : certificate).
 
-Definition step (theorems : Trusted.Spec.state) (r : registry) (cmd : command) :=
+Definition step (theorems : Trusted.Reference.state) (r : registry) (cmd : command) :=
   match cmd with
   | define_class n c =>
       match lookup n (definitions r) with
@@ -84,7 +84,7 @@ Proof.
   - exact Hn.
 Qed.
 
-Theorem step_safe theorems r cmd : Trusted.Spec.safe theorems -> safe r ->
+Theorem step_safe theorems r cmd : Trusted.Reference.safe theorems -> safe r ->
   safe (snd (step theorems r cmd)).
 Proof.
   intros Hproofs Hr. destruct cmd as [n cls | n cert]; cbn [step].

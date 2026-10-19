@@ -45,6 +45,7 @@ generated-coq/FenwickTree.v
 generated-coq/KthHighestScore.v
 generated-coq/PermutedBinaryStrings.v
 generated-coq/KoxiaAndBracket.v
+generated-coq/ZFCProofChecker.v
 
 -R programs/llmGeneratedCode/ GeneratedExamples
 programs/llmGeneratedCode/BubbleSort.v

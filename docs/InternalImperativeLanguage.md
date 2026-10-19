@@ -272,10 +272,10 @@ Iterates over all bytes of the UTF-8 representation of the string. `x` is of typ
 
 ```js
 tapeEnd((char) => {
-  if (char == 32) {
+  if (char == coerceInt8(32)) {
     ;('continue')
   }
-  if (char == 10) {
+  if (char == coerceInt8(10)) {
     ;('break')
   }
   writeChar(coerceInt8(char))
@@ -283,7 +283,7 @@ tapeEnd((char) => {
 ```
 
 Reads one byte before each iteration and stops at EOF. The immutable callback
-binder has type `int64`, with values from 0 through 255; the body never receives
+binder has type `int8`, with values from 0 through 255; the body never receives
 the EOF sentinel. `;('break')` exits the nearest loop, leaving later bytes
 unread. `;('continue')` starts its next iteration. Loops can be nested, and
 their binders have lexical scope.

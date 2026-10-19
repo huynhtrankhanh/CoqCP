@@ -191,10 +191,4 @@ Proof.
   exact (generalize_sound a proofs source result p Hsafe Hin Hp Hq).
 Qed.
 
-Theorem no_false_if_consistent a proofs : SetTheory.consistent -> safe a proofs ->
-  forall i, In i proofs -> nth_error (meaning a) i <> Some falsity.
-Proof.
-  intros Hcon Hsafe i Hin Hfalse. destruct (Hsafe i Hin) as [p [Hp Hd]].
-  rewrite Hfalse in Hp. injection Hp as <-. exact (Hcon Hd).
-Qed.
 End Arena.

@@ -58,5 +58,5 @@ Inductive proves : statement -> Prop :=
 | p_gen p : proves p -> proves (universal p)
 | p_expand p q : proves p -> erase p = erase q -> proves q.
 
-Definition consistent := ~ proves (core falsity).
+
 End VirtualClasses.

@@ -1,6 +1,6 @@
 From CoqCP Require Import Options Imperative Execution.
 From ImperativeZFC Require Import ProofChecker.
-From NativeProof Require Import Index Overflow Fresh Representation.
+From NativeProof Require Import Index Overflow ArrayFacts.
 From stdpp Require Import numbers list.
 From Stdlib Require Import ZArith.ZArith Lia.
 Open Scope Z_scope.
@@ -101,8 +101,8 @@ Proof.
   - exists (store_meta s 8 1). split.
     + apply generated_push_full; [exact Hmeta |exact (eq_trans Htop Heq)].
     + split.
-      * rewrite NativeRepresentation.full_flag by lia. discriminate.
-      * intros _. apply NativeRepresentation.full_flag. lia.
+      * rewrite ArrayFacts.full_flag by lia. discriminate.
+      * intros _. apply ArrayFacts.full_flag. lia.
   - exists (push_state s top (ns vardef_0__push_node) (ns vardef_0__push_depth)).
     split; [apply generated_push; try assumption; lia |].
     split; [intros; split; [lia |reflexivity] |contradiction].
@@ -143,7 +143,7 @@ Lemma push_preserves_previous s top node depth index :
     List.nth index (memory s arraydef_0__frames) (0,0,0,0).
 Proof.
   intros Hlength Hindex. rewrite push_frames.
-  rewrite NativeRepresentation.nth_insert_other by lia.
+  rewrite ArrayFacts.nth_insert_other by lia.
   unfold growList. apply app_nth1. lia.
 Qed.
 
@@ -156,7 +156,7 @@ Proof. intro H. rewrite push_metadata. now apply OverflowExecution.nth_insert_sa
 Lemma push_flag s top node depth :
   List.nth 8 (memory (push_state s top node depth) arraydef_0__meta) 0 =
     List.nth 8 (memory s arraydef_0__meta) 0.
-Proof. rewrite push_metadata. now apply NativeRepresentation.nth_insert_other. Qed.
+Proof. rewrite push_metadata. now apply ArrayFacts.nth_insert_other. Qed.
 
 Lemma push_other s top node depth name :
   name <> arraydef_0__meta -> name <> arraydef_0__frames ->

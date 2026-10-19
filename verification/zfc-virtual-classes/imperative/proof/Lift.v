@@ -1,4 +1,5 @@
-From CoqCP Require Import Options SetTheory Imperative Execution.
+From CoqCP Require Import Options Imperative Execution.
+From Trusted Require Import SetTheory.
 From ImperativeZFC Require Import ProofChecker.
 From NativeProof Require Import Index Overflow.
 From Stdlib Require Import Arith.PeanoNat ZArith.ZArith Lia.

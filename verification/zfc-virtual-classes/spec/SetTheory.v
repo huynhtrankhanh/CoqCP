@@ -107,7 +107,7 @@ Inductive derives : formula -> Prop :=
 | d_mp p q : derives (implies p q) -> derives p -> derives q
 | d_gen p : derives p -> derives (all p).
 
-Definition consistent := ~ derives falsity.
+
 
 (* Finite, explicit schema witnesses for an executable proof checker. *)
 Inductive axiom : Type :=

@@ -2,7 +2,7 @@ From CoqCP Require Import Options.
 From Trusted Require Import SetTheory VirtualClasses.
 From Stdlib Require Import Lists.List.
 From Submission Require Import Checker.
-Require Import Trusted.Spec.
+Require Import Trusted.Reference.
 Import ListNotations SetTheory VirtualClasses.
 
 Example empty_reference_rejected :

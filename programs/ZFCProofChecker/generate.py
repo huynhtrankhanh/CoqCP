@@ -154,28 +154,13 @@ if (retrieve('meta', 2)[0] == {MAX}) {{ store('meta', 8, [1]) }} else {{
     case(9, ['a'], read_name() + """
 if (retrieve('meta', 8)[0] == 0) {
   if (!less(get('a'), retrieve('meta', 2)[0])) { call('no', {}) } else {
-  call('lookup', {})
-  if (retrieve('meta', 0)[0] != 18446744073709551615) { call('no', {}) } else {
-    if (retrieve('meta', 4)[0] == 18446744073709551615 || less(18446744073709551615 - retrieve('meta', 5)[0], retrieve('meta', 6)[0])) {
-      store('meta', 8, [1])
-    } else {
-      grow('names', retrieve('meta', 5)[0] + retrieve('meta', 6)[0])
-      range(retrieve('meta', 6)[0], (i) => {
-        store('names', retrieve('meta', 5)[0] + i, [retrieve('token', i)[0]])
-      })
-      grow('bindings', retrieve('meta', 4)[0] + 1)
-      store('bindings', retrieve('meta', 4)[0], [retrieve('meta', 5)[0], retrieve('meta', 6)[0], get('a'), 0])
-      store('meta', 5, [retrieve('meta', 5)[0] + retrieve('meta', 6)[0]])
-      call('ok', {value: get('a')})
-      store('meta', 4, [retrieve('meta', 4)[0] + 1])
-    }
-  }
+    call('bindName', {value: get('a'), kind: 0})
   }
 }""")
     case(10, [], read_name() + """
 if (retrieve('meta', 8)[0] == 0) {
   call('lookup', {})
-  if (retrieve('meta', 0)[0] == 18446744073709551615) { call('no', {}) } else {
+  if (retrieve('meta', 0)[0] == 18446744073709551615 || retrieve('bindings', retrieve('meta', 0)[0])[4] != 0) { call('no', {}) } else {
     call('ok', {value: retrieve('bindings', retrieve('meta', 0)[0])[2]})
   }
 }""")
@@ -194,11 +179,11 @@ if (retrieve('meta', 8)[0] == 0) {
   set('binding', retrieve('meta', 0)[0])
 """ + read_argument('a') + """
   if (retrieve('meta', 8)[0] == 0) {
-    if (get('binding') != 18446744073709551615 && less(get('a'), retrieve('meta', 3)[0])) {
+    if (get('binding') != 18446744073709551615 && retrieve('bindings', get('binding'))[4] == 0 && less(get('a'), retrieve('meta', 3)[0])) {
       call('setness', {cls: retrieve('bindings', get('binding'))[2]})
       if (retrieve('meta', 8)[0] == 0) {
         if (retrieve('meta', 0)[0] == retrieve('theorems', get('a'))[0]) {
-          store('bindings', get('binding'), [retrieve('bindings', get('binding'))[0], retrieve('bindings', get('binding'))[1], retrieve('bindings', get('binding'))[2], 1])
+          store('bindings', get('binding'), [retrieve('bindings', get('binding'))[0], retrieve('bindings', get('binding'))[1], retrieve('bindings', get('binding'))[2], 1, 0])
           call('ok', {value: retrieve('bindings', get('binding'))[2]})
         } else { call('no', {}) }
       }
@@ -208,7 +193,7 @@ if (retrieve('meta', 8)[0] == 0) {
     case(15, [], read_name() + """
 if (retrieve('meta', 8)[0] == 0) {
   call('lookup', {})
-  if (retrieve('meta', 0)[0] == 18446744073709551615) { call('no', {}) } else {
+  if (retrieve('meta', 0)[0] == 18446744073709551615 || retrieve('bindings', retrieve('meta', 0)[0])[4] != 0) { call('no', {}) } else {
     if (retrieve('bindings', retrieve('meta', 0)[0])[3] == 1) {
       range('SET\\n', (c) => { writeChar(c) })
     } else { range('CLASS\\n', (c) => { writeChar(c) }) }
@@ -227,6 +212,79 @@ if (retrieve('theorems', get('a'))[0] == get('b')) {
 } else { call('no', {}) }
 """, theorem('a') + ' && ' + formula('b'))
     case(19, ['a'], "call('ok', {value: retrieve('theorems', get('a'))[0]})", theorem('a'))
+    case(20, ['a'], read_name() + """
+if (retrieve('meta', 8)[0] == 0) {
+  if (less(get('a'), retrieve('meta', 3)[0])) {
+    call('bindName', {value: retrieve('theorems', get('a'))[0], kind: 1})
+  } else { call('no', {}) }
+}""")
+    case(21, [], read_name() + """
+if (retrieve('meta', 8)[0] == 0) {
+  call('lookup', {})
+  if (retrieve('meta', 0)[0] == 18446744073709551615 || retrieve('bindings', retrieve('meta', 0)[0])[4] != 1) {
+    call('no', {})
+  } else { call('appendTheorem', {node: retrieve('bindings', retrieve('meta', 0)[0])[2]}) }
+}""")
+    case(22, ['tag', 'a', 'b', 'c', 'node'], "call('schemaNode', {kind: get('tag'), a: get('a'), b: get('b'), c: get('c'), d: get('node')})")
+    case(23, ['a'], read_name() + """
+if (retrieve('meta', 8)[0] == 0) {
+  if (less(get('a'), retrieve('meta', 16)[0]) && retrieve('schemaNodes', get('a'))[5] == 2) {
+    call('bindName', {value: get('a'), kind: 2})
+  } else { call('no', {}) }
+}""")
+    case(24, [], read_name() + """
+if (retrieve('meta', 8)[0] == 0) {
+  call('lookup', {})
+  set('binding', retrieve('meta', 0)[0])
+""" + read_argument('a') + """
+  store('meta', 18, [1])
+  range(get('a'), (i) => {
+""" + read_argument('b') + """
+    if (retrieve('meta', 8)[0] != 0) { ;('break') }
+    if (!less(get('b'), retrieve('meta', 2)[0])) { store('meta', 18, [0]) }
+    grow('schemaArguments', i + 1)
+    store('schemaArguments', i, [get('b')])
+  })
+  if (retrieve('meta', 8)[0] == 0) {
+    if (get('binding') == 18446744073709551615 || retrieve('bindings', get('binding'))[4] != 2) {
+      call('no', {})
+    } else {
+      set('node', retrieve('bindings', get('binding'))[2])
+      if (get('a') != retrieve('schemaNodes', get('node'))[6] || retrieve('meta', 18)[0] == 0) {
+        call('no', {})
+      } else {
+        call('schemaInstance', {root: get('node')})
+        if (retrieve('meta', 8)[0] == 0) {
+          if (retrieve('meta', 18)[0] == 0) { call('no', {}) } else {
+            call('appendTheorem', {node: retrieve('meta', 0)[0]})
+          }
+        }
+      }
+    }
+  }
+}""")
+    for op in [25, 26]:
+        response = """
+    if (retrieve('bindings', retrieve('meta', 0)[0])[4] == 0) {
+      range('CLASS\\n', (c) => { writeChar(c) })
+    }
+    if (retrieve('bindings', retrieve('meta', 0)[0])[4] == 1) {
+      range('THEOREM\\n', (c) => { writeChar(c) })
+    }
+    if (retrieve('bindings', retrieve('meta', 0)[0])[4] == 2) {
+      range('SCHEMA\\n', (c) => { writeChar(c) })
+    }
+    ;('flush')
+""" if op == 25 else """
+    if (retrieve('bindings', retrieve('meta', 0)[0])[4] != 2) { call('no', {}) } else {
+      call('ok', {value: retrieve('schemaNodes', retrieve('bindings', retrieve('meta', 0)[0])[2])[6]})
+    }
+"""
+        case(op, [], read_name() + """
+if (retrieve('meta', 8)[0] == 0) {
+  call('lookup', {})
+  if (retrieve('meta', 0)[0] == 18446744073709551615) { call('no', {}) } else {
+""" + response + "\n}}")
     return procedure('command', dict(op='int64', a='int64', b='int64', c='int64',
                                     tag='int64', node='int64', binding='int64'), """
 call('readNat', {})
@@ -236,7 +294,7 @@ if (retrieve('meta', 14)[0] == 0) {
     store('meta', 9, [1])
   } else { store('meta', 8, [1]) }
 } else {
-  if (less(19, get('op'))) { store('meta', 8, [1]) }
+  if (less(26, get('op'))) { store('meta', 8, [1]) }
 """ + '\n'.join(parts) + "\n}\n" + """
 if (retrieve('meta', 8)[0] != 0) {
   range('ERR\\n', (c) => { writeChar(c) })
@@ -301,13 +359,35 @@ if (retrieve('classes', get('cls'))[0] == 0) {
   set('body', retrieve('meta', 0)[0])
 """ + "\n".join(abstraction.lines) + f"\nstore('meta', 0, [{av}])\n}}"))
     parts.append(axiom_builder())
+    parts.append((HERE / 'schemata.js.in').read_text())
     parts.append(commands())
     parts.append(procedure("main", {}, """
-grow('formulas', 1)
-store('formulas', 0, [0, 0, 0])
-store('meta', 1, [1])
-""" + loop256("call('command', {})", "retrieve('meta', 9)[0] != 0")))
-    (HERE / "ProofChecker.js").write_text("// Generated by generate.py from the adjacent source templates.\n" + "\n".join(parts))
+range('SEED\\n', (c) => { writeChar(c) })
+;('flush')
+call('readNat', {})
+if (retrieve('meta', 14)[0] == 0) { store('meta', 8, [1]) } else {
+  store('meta', 26, [retrieve('meta', 11)[0]])
+  call('readNat', {})
+  if (retrieve('meta', 14)[0] == 0) { store('meta', 8, [1]) } else {
+    store('meta', 27, [retrieve('meta', 11)[0]])
+  }
+}
+if (retrieve('meta', 8)[0] != 0) {
+  range('ERR\\n', (c) => { writeChar(c) })
+  ;('flush')
+} else {
+  store('meta', 20, [1024])
+  call('intern', {tag: 0, a: 0, b: 0})
+  range('READY\\n', (c) => { writeChar(c) })
+  ;('flush')
+  tapeEnd((ch) => {
+    store('meta', 15, [coerceInt64(ch) + 1])
+    call('command', {})
+    if (retrieve('meta', 9)[0] != 0) { ;('break') }
+  })
+}
+"""))
+    (HERE.parent / "ZFCProofChecker.js").write_text("// Generated by generate.py from the adjacent source templates.\n" + "\n".join(parts))
 
 
 if __name__ == "__main__":

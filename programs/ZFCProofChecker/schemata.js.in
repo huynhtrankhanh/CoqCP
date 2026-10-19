@@ -1,0 +1,181 @@
+// Types: 0 class, 1 formula, 2 certificate. All dependencies precede a node.
+procedure('schemaCheck', {node: int64, type: int64}, () => {
+  if (!less(get('node'), retrieve('meta', 16)[0])) { store('meta', 18, [0]) } else {
+    if (retrieve('schemaNodes', get('node'))[5] != get('type')) { store('meta', 18, [0]) }
+    if (less(retrieve('meta', 19)[0], retrieve('schemaNodes', get('node'))[6])) {
+      store('meta', 19, [retrieve('schemaNodes', get('node'))[6]])
+    }
+  }
+})
+
+procedure('schemaNode', {kind: int64, a: int64, b: int64, c: int64, d: int64, type: int64}, () => {
+  store('meta', 18, [1])
+  store('meta', 19, [0])
+  set('type', 0)
+  if (less(11, get('kind'))) { store('meta', 18, [0]) }
+  if (get('kind') == 0) {
+    if (get('a') == 18446744073709551615) { store('meta', 18, [0]) } else { store('meta', 19, [get('a') + 1]) }
+  }
+  if (get('kind') == 1 && !less(get('a'), retrieve('meta', 2)[0])) { store('meta', 18, [0]) }
+  if (get('kind') == 2) {
+    set('type', 1)
+    if (!less(get('a'), retrieve('meta', 1)[0])) { store('meta', 18, [0]) }
+  }
+  if (get('kind') == 3) { call('schemaCheck', {node: get('a'), type: 1}) }
+  if (get('kind') == 4 || get('kind') == 5) {
+    set('type', 1)
+    call('schemaCheck', {node: get('a'), type: 0})
+    call('schemaCheck', {node: get('b'), type: 0})
+  }
+  if (get('kind') == 6 || get('kind') == 7) {
+    set('type', 1)
+    call('schemaCheck', {node: get('a'), type: 1})
+    if (get('kind') == 6) { call('schemaCheck', {node: get('b'), type: 1}) }
+  }
+  if (get('kind') == 8) {
+    set('type', 2)
+    if (less(17, get('a'))) { store('meta', 18, [0]) }
+    if (get('a') == 0 || get('a') == 1 || get('a') == 2 || get('a') == 3 || get('a') == 4 || get('a') == 15 || get('a') == 16) {
+      call('schemaCheck', {node: get('b'), type: 1})
+    }
+    if (get('a') == 0 || get('a') == 1 || get('a') == 4) { call('schemaCheck', {node: get('c'), type: 1}) }
+    if (get('a') == 1) { call('schemaCheck', {node: get('d'), type: 1}) }
+  }
+  if (get('kind') == 9 || get('kind') == 10) {
+    set('type', 2)
+    call('schemaCheck', {node: get('a'), type: 2})
+    if (get('kind') == 9) { call('schemaCheck', {node: get('b'), type: 2}) }
+  }
+  if (get('kind') == 11) {
+    set('type', 2)
+    if (!less(get('a'), retrieve('meta', 3)[0])) { store('meta', 18, [0]) } else {
+      set('a', retrieve('theorems', get('a'))[0])
+    }
+  }
+  if (retrieve('meta', 18)[0] == 0) { call('no', {}) } else {
+    if (retrieve('meta', 16)[0] == 18446744073709551615) { store('meta', 8, [1]) } else {
+      grow('schemaNodes', retrieve('meta', 16)[0] + 1)
+      store('schemaNodes', retrieve('meta', 16)[0], [get('kind'), get('a'), get('b'), get('c'), get('d'), get('type'), retrieve('meta', 19)[0]])
+      call('ok', {value: retrieve('meta', 16)[0]})
+      store('meta', 16, [retrieve('meta', 16)[0] + 1])
+    }
+  }
+})
+
+procedure('schemaClass', {kind: int64, value: int64}, () => {
+  if (retrieve('meta', 2)[0] == 18446744073709551615) { store('meta', 8, [1]) } else {
+    grow('classes', retrieve('meta', 2)[0] + 1)
+    store('classes', retrieve('meta', 2)[0], [get('kind'), get('value')])
+    store('meta', 0, [retrieve('meta', 2)[0]])
+    store('meta', 2, [retrieve('meta', 2)[0] + 1])
+  }
+})
+
+procedure('schemaShiftClass', {cls: int64, depth: int64, value: int64}, () => {
+  store('meta', 0, [get('cls')])
+  if (get('depth') != 0) {
+    set('value', retrieve('classes', get('cls'))[1])
+    if (retrieve('classes', get('cls'))[0] == 0) {
+      if (less(18446744073709551615 - get('value'), get('depth'))) { store('meta', 8, [1]) } else {
+        call('schemaClass', {kind: 0, value: get('value') + get('depth')})
+      }
+    } else {
+      call('rename', {node: get('value'), mode: 0, shift: get('depth'), initialDepth: 1})
+      if (retrieve('meta', 8)[0] == 0) { call('schemaClass', {kind: 1, value: retrieve('meta', 0)[0]}) }
+    }
+  }
+})
+
+procedure('schemaMark', {node: int64, depth: int64, width: int64}, () => {
+  store('schemaMarks', get('node') * get('width') + get('depth'), [coerceInt8(1)])
+})
+
+// Evaluate only reachable (expression, binder-depth) pairs. Children have lower
+// IDs, so both dependency marking and evaluation have finite polynomial loops.
+procedure('schemaInstance', {root: int64, width: int64, size: int64, node: int64, depth: int64, key: int64, kind: int64, a: int64, b: int64, c: int64, d: int64, va: int64, vb: int64, vc: int64}, () => {
+  set('width', get('root') + 1)
+  if (less(divide(18446744073709551615, get('width')), get('width'))) { store('meta', 8, [1]) } else {
+    set('size', get('width') * get('width'))
+    grow('schemaMarks', get('size'))
+    grow('schemaValues', get('size'))
+    range(get('size'), (i) => { store('schemaMarks', i, [coerceInt8(0)]) })
+    call('schemaMark', {node: get('root'), depth: 0, width: get('width')})
+    range(get('width'), (reverse) => {
+      set('node', get('root') - reverse)
+      range(get('width'), (depth) => {
+        set('key', get('node') * get('width') + depth)
+        if (retrieve('schemaMarks', get('key'))[0] != coerceInt8(0)) {
+          set('kind', retrieve('schemaNodes', get('node'))[0])
+          set('a', retrieve('schemaNodes', get('node'))[1])
+          set('b', retrieve('schemaNodes', get('node'))[2])
+          set('c', retrieve('schemaNodes', get('node'))[3])
+          set('d', retrieve('schemaNodes', get('node'))[4])
+          if (get('kind') == 3 || get('kind') == 7 || get('kind') == 10) {
+            call('schemaMark', {node: get('a'), depth: depth + 1, width: get('width')})
+          }
+          if (get('kind') == 4 || get('kind') == 5 || get('kind') == 6 || get('kind') == 9) {
+            call('schemaMark', {node: get('a'), depth: depth, width: get('width')})
+            call('schemaMark', {node: get('b'), depth: depth, width: get('width')})
+          }
+          if (get('kind') == 8) {
+            if (get('a') == 0 || get('a') == 1 || get('a') == 2 || get('a') == 3 || get('a') == 4 || get('a') == 15 || get('a') == 16) {
+              call('schemaMark', {node: get('b'), depth: depth, width: get('width')})
+            }
+            if (get('a') == 0 || get('a') == 1 || get('a') == 4) { call('schemaMark', {node: get('c'), depth: depth, width: get('width')}) }
+            if (get('a') == 1) { call('schemaMark', {node: get('d'), depth: depth, width: get('width')}) }
+          }
+        }
+      })
+    })
+    range(get('width'), (node) => {
+      if (retrieve('meta', 18)[0] == 0 || retrieve('meta', 8)[0] != 0) { ;('break') }
+      range(get('width'), (depth) => {
+        if (retrieve('meta', 18)[0] == 0 || retrieve('meta', 8)[0] != 0) { ;('break') }
+        set('key', node * get('width') + depth)
+        if (retrieve('schemaMarks', get('key'))[0] != coerceInt8(0)) {
+          set('kind', retrieve('schemaNodes', node)[0])
+          set('a', retrieve('schemaNodes', node)[1])
+          set('b', retrieve('schemaNodes', node)[2])
+          set('c', retrieve('schemaNodes', node)[3])
+          set('d', retrieve('schemaNodes', node)[4])
+          if (get('kind') == 0) { call('schemaShiftClass', {cls: retrieve('schemaArguments', get('a'))[0], depth: depth}) }
+          if (get('kind') == 1 || get('kind') == 2 || get('kind') == 11) { store('meta', 0, [get('a')]) }
+          if (get('kind') == 3) {
+            call('schemaClass', {kind: 1, value: retrieve('schemaValues', get('a') * get('width') + depth + 1)[0]})
+          }
+          if (get('kind') == 4 || get('kind') == 5 || get('kind') == 6 || get('kind') == 9) {
+            set('va', retrieve('schemaValues', get('a') * get('width') + depth)[0])
+            set('vb', retrieve('schemaValues', get('b') * get('width') + depth)[0])
+            if (get('kind') == 4) { call('classEqual', {a: get('va'), b: get('vb')}) }
+            if (get('kind') == 5) { call('classMember', {a: get('va'), b: get('vb')}) }
+            if (get('kind') == 6) { call('intern', {tag: 3, a: get('va'), b: get('vb')}) }
+            if (get('kind') == 9) {
+              if (retrieve('formulas', get('va'))[0] == 3 && retrieve('formulas', get('va'))[1] == get('vb')) {
+                store('meta', 0, [retrieve('formulas', get('va'))[2]])
+              } else { store('meta', 18, [0]) }
+            }
+          }
+          if (get('kind') == 7 || get('kind') == 10) {
+            call('intern', {tag: 4, a: retrieve('schemaValues', get('a') * get('width') + depth + 1)[0], b: 0})
+          }
+          if (get('kind') == 8) {
+            set('va', get('b'))
+            set('vb', get('c'))
+            set('vc', get('d'))
+            if (get('a') == 0 || get('a') == 1 || get('a') == 2 || get('a') == 3 || get('a') == 4 || get('a') == 15 || get('a') == 16) {
+              set('va', retrieve('schemaValues', get('b') * get('width') + depth)[0])
+            }
+            if (get('a') == 0 || get('a') == 1 || get('a') == 4) { set('vb', retrieve('schemaValues', get('c') * get('width') + depth)[0]) }
+            if (get('a') == 1) { set('vc', retrieve('schemaValues', get('d') * get('width') + depth)[0]) }
+            call('axiom', {tag: get('a'), p: get('va'), q: get('vb'), r: get('vc')})
+            if (retrieve('meta', 13)[0] == 0) { store('meta', 18, [0]) }
+          }
+          store('schemaValues', get('key'), [retrieve('meta', 0)[0]])
+        }
+      })
+    })
+    if (retrieve('meta', 8)[0] == 0 && retrieve('meta', 18)[0] != 0) {
+      store('meta', 0, [retrieve('schemaValues', get('root') * get('width'))[0]])
+    }
+  }
+})

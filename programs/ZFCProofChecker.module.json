@@ -1,0 +1,6 @@
+{
+  "type": "competitive",
+  "inputs": ["ZFCProofChecker.js", "IO/PrintInt64.js"],
+  "coqOutput": "../generated-coq/ZFCProofChecker.v",
+  "cppOutput": "../generated-cpp/ZFCProofChecker.cpp"
+}

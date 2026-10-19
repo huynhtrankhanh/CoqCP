@@ -734,7 +734,7 @@ export const validateAST = (sortedModules: CoqCPAST[]): ValidationError[] => {
               instruction.loopVariable
             )
             hasSurroundingRangeCommand = true
-            presentBinderType.set(instruction.loopVariable, 'int64')
+            presentBinderType.set(instruction.loopVariable, 'int8')
             const result = instruction.loopBody.map(dfs).includes('illegal')
               ? 'illegal'
               : 'statement'

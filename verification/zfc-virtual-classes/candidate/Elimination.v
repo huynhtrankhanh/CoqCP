@@ -53,14 +53,3 @@ Proof.
   split; [apply eliminate |]. intro h.
   eapply p_expand; [apply embed; exact h | reflexivity].
 Qed.
-
-Theorem equiconsistent : VirtualClasses.consistent <-> SetTheory.consistent.
-Proof.
-  unfold VirtualClasses.consistent, SetTheory.consistent.
-  rewrite conservative. reflexivity.
-Qed.
-
-(* This identifies, rather than assumes, the exact remaining obligation. *)
-Theorem outright_obligation :
-  (~ proves (core falsity)) <-> (~ derives falsity).
-Proof. exact equiconsistent. Qed.

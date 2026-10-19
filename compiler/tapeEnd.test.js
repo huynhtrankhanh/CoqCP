@@ -43,8 +43,8 @@ test.each([
 })
 
 test('validates lexical binders and limits loop control to loop bodies', () => {
-  modules(`procedure('main', {x: int64}, () => {
-    tapeEnd(c => { set('x', c); if (c == 0) { ;('continue') }; ;('break') })
+  modules(`procedure('main', {x: int8}, () => {
+    tapeEnd(c => { set('x', c); if (c == coerceInt8(0)) { ;('continue') }; ;('break') })
   })`)
   for (const body of [
     `tapeEnd(c => {}); set('x', c)`,
@@ -76,12 +76,31 @@ test('does not expose the internal remaining-tape measure to IIL', () => {
   expect(cpp).toContain('!= UINT64_MAX')
 })
 
+test('tapeEnd binds int8 and requires explicit widening to int64', () => {
+  modules(`procedure('main', {byte: int8, word: int64}, () => {
+    tapeEnd(c => {
+      writeChar(c)
+      set('byte', c)
+      set('word', coerceInt64(c))
+    })
+  })`)
+  expect(
+    validateAST(
+      sortModules([
+        parse(`procedure('main', {word: int64}, () => {
+    tapeEnd(c => { set('word', c) })
+  })`),
+      ])
+    )
+  ).not.toEqual([])
+})
+
 test('break, continue and body reads share the same cursor', async () => {
   await withCpp(
     `procedure('main', {}, () => {
     tapeEnd(c => {
-      if (c == 35) { ;('continue') }
-      if (c == 33) { ;('break') }
+      if (c == coerceInt8(35)) { ;('continue') }
+      if (c == coerceInt8(33)) { ;('break') }
       writeChar(coerceInt8(c))
       writeChar(coerceInt8(readChar()))
     })
@@ -164,7 +183,7 @@ test('a shadowing numeric loop evaluates its bound using the outer tape binder',
   await withCpp(
     `procedure('main', {}, () => {
     tapeEnd(c => {
-      range(c, c => { writeChar(coerceInt8(c + 48)) })
+      range(coerceInt64(c), c => { writeChar(coerceInt8(c + 48)) })
       ;('break')
     })
   })`,
@@ -179,7 +198,7 @@ test('a shadowing numeric loop evaluates its bound using the outer tape binder',
 test('preserves every byte across multiple input buffer refills', async () => {
   await withCpp(
     `procedure('main', {}, () => {
-    tapeEnd(c => { writeChar(coerceInt8(c)) })
+    tapeEnd(c => { writeChar(c) })
   })`,
     (binary) => {
       const input = Buffer.alloc(3 * (1 << 16) + 17)
@@ -195,7 +214,7 @@ test('flushes and breaks without waiting for EOF on an open pipe', async () => {
   await withCpp(
     `procedure('main', {}, () => {
     tapeEnd(c => {
-      if (c == 10) { ;('break') }
+      if (c == coerceInt8(10)) { ;('break') }
       writeChar(coerceInt8(c))
       ;('flush')
     })
@@ -234,8 +253,8 @@ test('flushes and breaks without waiting for EOF on an open pipe', async () => {
 test('generated Rocq executes the same break/continue and extra-read program', () => {
   const source = `procedure('main', {}, () => {
     tapeEnd(c => {
-      if (c == 35) { ;('continue') }
-      if (c == 33) { ;('break') }
+      if (c == coerceInt8(35)) { ;('continue') }
+      if (c == coerceInt8(33)) { ;('break') }
       writeChar(coerceInt8(c))
       writeChar(coerceInt8(readChar()))
     })

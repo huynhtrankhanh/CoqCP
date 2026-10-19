@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """Build CoqCP source to native C++ and independently recheck generated Rocq.
 
-This is a development build. Neither main's refinement nor unconditional ZFC
-consistency is claimed by successfully typechecking its generated definition.
+This is a development build. Main's execution refinement is not implied by typechecking its generated definition.
 """
 import argparse
 import hashlib
@@ -30,82 +29,49 @@ def main():
     def run(command):
         subprocess.run(list(map(str, command)), cwd=repo, check=True)
 
-    run([sys.executable, here / 'generate.py'])
-    shutil.copy2(here / 'ProofChecker.js', out / 'ProofChecker.js')
+    run([sys.executable, repo / 'programs/ZFCProofChecker/generate.py'])
+    shutil.copy2(repo / 'programs/ZFCProofChecker.js', out / 'ProofChecker.js')
     run(['node', repo / 'compiler/dist/cli.js', code / 'ProofChecker.v',
          out / 'checker.cpp', out / 'ProofChecker.js', repo / 'programs/IO/PrintInt64.js'])
     (out / 'CoqCP').mkdir()
+    (out / 'Trusted').mkdir()
     flags = ['-q', '-Q', str(out / 'CoqCP'), 'CoqCP', '-Q', str(code), 'ImperativeZFC',
-             '-Q', str(proofs), 'NativeProof']
-    for name in ['Options', 'Imperative', 'Execution', 'TapeEnd', 'SetTheory']:
+             '-Q', str(proofs), 'NativeProof', '-Q', str(out / 'Trusted'), 'Trusted']
+    for name in ['Options', 'Imperative', 'Execution', 'TapeEnd', 'InteractiveExecution', 'DecimalEncoding']:
         source = out / 'CoqCP' / f'{name}.v'
-        origin = (here.parent / 'spec' / source.name if name == 'SetTheory'
-                  else repo / 'theories' / source.name)
+        origin = repo / 'theories' / source.name
         shutil.copy2(origin, source)
         run([args.rocq, 'compile', *flags, source])
+    for name in ['SetTheory', 'VirtualClasses', 'Schemata', 'Protocol', 'Spec']:
+        source = out / 'Trusted' / f'{name}.v'
+        shutil.copy2(here.parent / 'spec' / source.name, source)
+        run([args.rocq, 'compile', *flags, source])
     run([args.rocq, 'compile', *flags, code / 'ProofChecker.v'])
-    proof_modules = ['Index', 'Overflow', 'Lift', 'Intern', 'Fresh',
-                     'Representation', 'Canonical', 'Stack', 'PrintingFrame',
-                     'Append', 'Inference', 'ModusPonens', 'InternFrame', 'Generalization', 'State']
+    (code / 'NativeContract.v').write_text(
+        'From CoqCP Require Import Options Imperative Execution.\n'
+        'From Trusted Require Import Spec.\n'
+        'From ImperativeZFC Require Import ProofChecker.\n'
+        'Definition native_contract capacity := Trusted.Spec.required\n'
+        '  (funcdef_0__main (fun x => match x with end) (fun x => match x with end))\n'
+        '  (arrays _ environment1) capacity.\n')
+    run([args.rocq, 'compile', *flags, code / 'NativeContract.v'])
+    proof_modules = ['Index', 'Overflow', 'Lift', 'ArrayFacts', 'SipHash', 'HashScan', 'InternTail', 'HashTable',
+                     'Stack', 'PrintingFrame', 'SipHashVector']
     for name in proof_modules:
         source = proofs / f'{name}.v'
         shutil.copy2(here / 'proof' / source.name, source)
         run([args.rocq, 'compile', *flags, source])
-    audited = [
-        'funcdef_0__main',
-        'step_input_length',
-        'execLocal_input_length',
-        'tape_loop_sound',
-        'tape_loop_complete',
-        'tapeEnd_execution',
-        'IndexExecution.index_execution',
-        'OverflowExecution.overflow_rejected',
-        'IndexSemantics.generated_index_correct',
-        'IndexSemantics.generated_checked_index',
-        'InternExecution.intern_existing',
-        'FreshExecution.generated_intern_correct',
-        'FreshExecution.fresh_formulas',
-        'FreshExecution.fresh_metadata',
-        'NativeRepresentation.generated_intern_history',
-        'NativeRepresentation.intern_output_ready',
-        'CanonicalArena.decode_injective',
-        'CanonicalArena.generated_intern_canonical',
-        'StackExecution.generated_checked_push',
-        'StackExecution.push_preserves_previous',
-        'PrintingFrame.translated_print_preserves',
-        'PrintingFrame.generated_ok_preserves',
-        'AppendExecution.generated_append_fits',
-        'AppendExecution.generated_append_safe',
-        'AppendExecution.generated_append_fits_post',
-        'NativeInference.append_modus_ponens',
-        'NativeInference.append_generalization',
-        'NativeInference.append_axiom',
-        'CanonicalArena.formula_id_equality',
-        'CanonicalArena.decode_implication',
-        'ModusPonensExecution.generated_no_preserves',
-        'ModusPonensExecution.generated_mp_branch',
-        'ModusPonensExecution.generated_modus_ponens_safe',
-        'ModusPonensExecution.generated_modus_ponens_accepts',
-        'InternFrame.intern_output_frame',
-        'InternFrame.intern_output_history_ready',
-        'InternFrame.intern_output_failed',
-        'GeneralizationExecution.generated_generalize_step',
-        'GeneralizationExecution.generated_append_formula_frame',
-        'GeneralizationExecution.generated_generalization_safe',
-        'GeneralizationExecution.generated_generalization_post',
-        'NativeState.represented_formula_unique',
-        'NativeState.represents_unique',
-        'NativeState.append_post_ready',
-        'NativeState.append_post_history_ready',
-        'NativeState.append_post_canonical',
-        'NativeState.append_post_words',
-        'NativeState.generated_append_accepted',
-        'NativeState.generated_append_session',
-        'NativeState.generated_intern_session',
-        'NativeState.generated_generalization_session',
-        'NativeState.session_memory_frame',
-        'NativeState.generated_modus_ponens_session',
-    ]
+    audited = ['funcdef_0__main', 'tapeEnd_execution',
+               'IndexExecution.index_execution', 'OverflowExecution.overflow_rejected',
+               'IndexSemantics.generated_index_correct', 'IndexSemantics.generated_checked_index',
+               'StackExecution.generated_checked_push', 'PrintingFrame.generated_ok_preserves',
+               'SipHashVector.official_vector_24',
+               'SipHashExecution.generated_round', 'SipHashExecution.generated_word',
+               'SipHashExecution.generated_hash_correct',
+               'HashScanExecution.scan_loop_checked', 'HashScanExecution.scan_loop_complete',
+               'InternTailExecution.after_scan_found', 'InternTailExecution.after_scan_full',
+               'InternTailExecution.after_scan_fresh', 'InternTailExecution.append_table_valid',
+               'HashTableInvariant.append_indexed', 'HashTableInvariant.scan_miss_absent']
     (code / 'Audit.v').write_text(
         'From CoqCP Require Import Options TapeEnd.\n'
         'From ImperativeZFC Require Import ProofChecker.\n'
@@ -121,9 +87,10 @@ def main():
                            + result.stdout)
     with (out / 'kernel.log').open('w') as log:
         subprocess.run([args.rocq, 'check', '-silent', *flags[1:],
-                        'CoqCP.TapeEnd', 'ImperativeZFC.ProofChecker', 'NativeProof.Lift',
-                        'NativeProof.Stack', 'NativeProof.ModusPonens',
-                        'NativeProof.Generalization', 'NativeProof.State'],
+                        'CoqCP.TapeEnd', 'ImperativeZFC.NativeContract', 'NativeProof.Lift',
+                        'NativeProof.Stack', 'NativeProof.PrintingFrame', 'NativeProof.SipHashVector',
+                        'NativeProof.SipHash', 'NativeProof.HashScan',
+                        'NativeProof.InternTail', 'NativeProof.HashTable'],
                        cwd=repo, check=True, stdout=log, stderr=subprocess.STDOUT)
     with (out / 'cpp-build.log').open('w') as log:
         subprocess.run(['g++', '-std=c++20', '-O2', str(out / 'checker.cpp'),
@@ -136,27 +103,24 @@ def main():
         'status': 'incomplete', 'implementation': 'CoqCP imperative DSL to C++',
         'generated_rocq_kernel_recheck': 'passed', 'main_global_assumptions': [],
         'proved_generated_execution': [
-            'total index substitution in all seven modes with mandatory overflow rejection',
-            'de Bruijn renaming under binders and preservation of other arrays and I/O',
-            'formula interning: first existing node, fresh append, or full-arena rejection',
-            'formula denotations and theorem history preserved by native interning',
-            'canonical formula IDs preserved by native interning',
-            'explicit traversal-stack push with counter overflow rejection and frame preservation',
-            'native OK formatter preserves every array except its print buffer',
-            'native theorem append preserves derivability and implements exact history updates',
-            'native append is sound for axiom, modus ponens, and generalization ID conditions',
-            'native modus ponens executes sound append or rejection and recognizes canonical matches',
-            'native generalization preserves derivability and appends the quantified source theorem',
-            'native interning, append, and generalization preserve the composed session invariants',
-            'native modus ponens preserves the composed session invariants on acceptance and rejection',
-            'tapeEnd finite-input execution equals an EOF-or-break relation without numeric fuel',
+            'checked index substitution and overflow rejection',
+            'explicit traversal stack push',
+            'formatter memory preservation',
+            'tapeEnd finite-input semantics',
+            'SipHash-2-4 published 24-byte test vector',
+            'general SipHash-2-4 execution, digest, bucket bounds and memory preservation',
+            'collision-chain scan termination, exact matches, and reachable-entry completeness',
+            'generated interner insertion branch, immutable earlier IDs and descending links',
+            'bucket reachability preserved by insertion; misses imply freshness without hash injectivity',
         ],
-        'maximum_command_iterations': str(2**256),
-        'missing_obligations': ['generated-main execution refinement', 'SetTheory.consistent'],
+        'command_loop': 'tapeEnd (EOF, quit, or fatal error)',
+        'missing_obligations': ['generated-main end-to-end execution refinement',
+                                'native hash-table rehashing and full interner composition/representation invariants',
+                                'native schema evaluator refinement'],
         'adversarial_acceptance': False, 'sha256': artifacts,
     }, indent=2) + '\n')
     print(out / 'zfc-checker')
-    print('INCOMPLETE: generated definition rechecked; main refinement and Con(ZFC) unproved.')
+    print('INCOMPLETE: generated definition rechecked; native end-to-end refinement remains open.')
 
 
 if __name__ == '__main__':

@@ -1,0 +1,19 @@
+0 0
+5 0
+22 0 0 0 0 0
+22 1 0 0 0 0
+22 5 1 0 0 0
+22 6 2 2 0 0
+22 8 0 2 2 0
+22 8 0 2 3 0
+22 8 1 2 3 2
+22 9 6 5 0 0
+22 9 7 4 0 0
+22 10 8 0 0 0
+23 9 identity
+26 identity
+24 identity 1 0
+20 0 self_membership_identity
+17
+21 self_membership_identity
+0

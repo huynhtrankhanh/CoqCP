@@ -13,6 +13,11 @@ const examples = [
   ['DisjointSetUnion', '3\n0 1\n1 2\n0 2\n', '2\n3\n3\n'],
   ['MajorityElement', '5\n1 2 2 2 3\n', '2\n'],
   ['SimpleProgram', '', 'The number is 2'],
+  [
+    'ZFCProofChecker',
+    '0 0\n11 5 0 0 0\n20 0 refl\n17\n21 refl\n19 0\n0\n',
+    'SEED\nREADY\nOK 0\nOK 1\nOK 0\nOK 0\nOK 1\nBYE\n',
+  ],
   ['FenwickTree', '3 3\n1 2 3\n2 1 3\n1 2 5\n2 1 3\n', '6\n9\n'],
   ['llmGeneratedCode/BubbleSort', '4\n4 2 3 1\n', '1\n2\n3\n4\n'],
   ['llmGeneratedCode/MaxElement', '4\n3 9 2 5\n', '9\n'],

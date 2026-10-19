@@ -497,7 +497,10 @@ void growArray(std::vector<T>& array, uint64_t minimumLength) {
                   const base = indent.repeat(indentationLevel)
                   const result =
                     base +
-                    `for (uint64_t binder_${index}; (binder_${index} = readChar()) != UINT64_MAX;) {\n` +
+                    `for (uint64_t tape_byte_${index}; (tape_byte_${index} = readChar()) != UINT64_MAX;) {\n` +
+                    base +
+                    indent +
+                    `const uint8_t binder_${index} = static_cast<uint8_t>(tape_byte_${index});\n` +
                     loopBody
                       .map((x) =>
                         print(x, {

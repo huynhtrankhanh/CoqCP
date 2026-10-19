@@ -756,7 +756,7 @@ Proof. simpl. repeat destruct name. all: solve_decision. Defined.
                 const previous = localBinderMap.get(loopVariable)
                 const index = binderCounter++
                 localBinderMap.set(loopVariable, {
-                  type: 'int64',
+                  type: 'int8',
                   number: index,
                 })
                 nestLevel++

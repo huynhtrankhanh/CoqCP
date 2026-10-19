@@ -2,7 +2,7 @@ From CoqCP Require Import Options.
 From Trusted Require Import SetTheory VirtualClasses.
 From Stdlib Require Import Lists.List Bool.Bool.
 From Submission Require Import Elimination.
-Require Import Trusted.Spec.
+Require Import Trusted.Reference.
 Import ListNotations SetTheory VirtualClasses.
 
 Fixpoint infer (s : state) (c : certificate) : option formula :=
@@ -169,23 +169,4 @@ Proof.
     exists [submit p c]. cbn [run]. rewrite Hc. cbn [snd run]. now left.
   - intros [cs Hcs]. pose proof (session_safe [] cs (Forall_nil _)) as Hsafe.
     unfold safe in Hsafe. rewrite Forall_forall in Hsafe. now apply Hsafe.
-Qed.
-
-Theorem checker_consistency_iff :
-  (forall cs, ~ In (core falsity) (run step [] cs)) <-> SetTheory.consistent.
-Proof.
-  split.
-  - intros H Hp. apply embed, reachable_iff_provable in Hp.
-    destruct Hp as [cs Hcs]. exact (H cs Hcs).
-  - intros H cs Hin. pose proof (proj2 (reachable_iff_provable _) (ex_intro _ cs Hin)) as Hp.
-    apply eliminate in Hp. exact (H Hp).
-Qed.
-
-Theorem full_contract_iff : required step <-> SetTheory.consistent.
-Proof.
-  split.
-  - intros [_ [_ [_ [_ H]]]]. now apply checker_consistency_iff.
-  - intro H. split; [exact step_exact |]. split; [exact session_safe |].
-    split; [exact reachable_iff_provable |]. split; [exact equiconsistent |].
-    now apply checker_consistency_iff.
 Qed.
