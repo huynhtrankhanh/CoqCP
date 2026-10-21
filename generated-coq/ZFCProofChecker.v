@@ -63,6 +63,8 @@ Inductive arrayIndex1 :=
 | arraydef_0__classes
 | arraydef_0__theorems
 | arraydef_0__frames
+| arraydef_0__renameMemo
+| arraydef_0__renameMemoScratch
 | arraydef_0__bindings
 | arraydef_0__schemaNodes
 | arraydef_0__schemaValues
@@ -72,7 +74,7 @@ Inductive arrayIndex1 :=
 | arraydef_0__token
 | arraydef_0__printBuffer.
 
-Definition environment1 : Environment arrayIndex1 := {| arrayType := fun name => match name with | arraydef_0__meta => Z | arraydef_0__sipState => Z * Z * Z * Z | arraydef_0__formulaBuckets => Z | arraydef_0__formulaLinks => Z | arraydef_0__formulas => Z * Z * Z | arraydef_0__classes => Z * Z | arraydef_0__theorems => Z | arraydef_0__frames => Z * Z * Z * Z | arraydef_0__bindings => Z * Z * Z * Z * Z | arraydef_0__schemaNodes => Z * Z * Z * Z * Z * Z * Z | arraydef_0__schemaValues => Z | arraydef_0__schemaMarks => Z | arraydef_0__schemaArguments => Z | arraydef_0__names => Z | arraydef_0__token => Z | arraydef_0__printBuffer => Z end; arrays := fun name => match name with | arraydef_0__meta => repeat (0%Z) 32 | arraydef_0__sipState => repeat (0%Z, 0%Z, 0%Z, 0%Z) 1 | arraydef_0__formulaBuckets => repeat (0%Z) 1024 | arraydef_0__formulaLinks => repeat (0%Z) 0 | arraydef_0__formulas => repeat (0%Z, 0%Z, 0%Z) 0 | arraydef_0__classes => repeat (0%Z, 0%Z) 0 | arraydef_0__theorems => repeat (0%Z) 0 | arraydef_0__frames => repeat (0%Z, 0%Z, 0%Z, 0%Z) 0 | arraydef_0__bindings => repeat (0%Z, 0%Z, 0%Z, 0%Z, 0%Z) 0 | arraydef_0__schemaNodes => repeat (0%Z, 0%Z, 0%Z, 0%Z, 0%Z, 0%Z, 0%Z) 0 | arraydef_0__schemaValues => repeat (0%Z) 0 | arraydef_0__schemaMarks => repeat (0%Z) 0 | arraydef_0__schemaArguments => repeat (0%Z) 0 | arraydef_0__names => repeat (0%Z) 0 | arraydef_0__token => repeat (0%Z) 1024 | arraydef_0__printBuffer => repeat (0%Z) 20 end |}.
+Definition environment1 : Environment arrayIndex1 := {| arrayType := fun name => match name with | arraydef_0__meta => Z | arraydef_0__sipState => Z * Z * Z * Z | arraydef_0__formulaBuckets => Z | arraydef_0__formulaLinks => Z | arraydef_0__formulas => Z * Z * Z | arraydef_0__classes => Z * Z | arraydef_0__theorems => Z | arraydef_0__frames => Z * Z * Z * Z | arraydef_0__renameMemo => Z * Z * Z * Z | arraydef_0__renameMemoScratch => Z * Z * Z * Z | arraydef_0__bindings => Z * Z * Z * Z * Z | arraydef_0__schemaNodes => Z * Z * Z * Z * Z * Z * Z | arraydef_0__schemaValues => Z | arraydef_0__schemaMarks => Z | arraydef_0__schemaArguments => Z | arraydef_0__names => Z | arraydef_0__token => Z | arraydef_0__printBuffer => Z end; arrays := fun name => match name with | arraydef_0__meta => repeat (0%Z) 32 | arraydef_0__sipState => repeat (0%Z, 0%Z, 0%Z, 0%Z) 1 | arraydef_0__formulaBuckets => repeat (0%Z) 1024 | arraydef_0__formulaLinks => repeat (0%Z) 0 | arraydef_0__formulas => repeat (0%Z, 0%Z, 0%Z) 0 | arraydef_0__classes => repeat (0%Z, 0%Z) 0 | arraydef_0__theorems => repeat (0%Z) 0 | arraydef_0__frames => repeat (0%Z, 0%Z, 0%Z, 0%Z) 0 | arraydef_0__renameMemo => repeat (0%Z, 0%Z, 0%Z, 0%Z) 0 | arraydef_0__renameMemoScratch => repeat (0%Z, 0%Z, 0%Z, 0%Z) 0 | arraydef_0__bindings => repeat (0%Z, 0%Z, 0%Z, 0%Z, 0%Z) 0 | arraydef_0__schemaNodes => repeat (0%Z, 0%Z, 0%Z, 0%Z, 0%Z, 0%Z, 0%Z) 0 | arraydef_0__schemaValues => repeat (0%Z) 0 | arraydef_0__schemaMarks => repeat (0%Z) 0 | arraydef_0__schemaArguments => repeat (0%Z) 0 | arraydef_0__names => repeat (0%Z) 0 | arraydef_0__token => repeat (0%Z) 1024 | arraydef_0__printBuffer => repeat (0%Z) 20 end |}.
 
 #[export] Instance arrayIndexEqualityDecidable1 : EqDecision arrayIndex1 := ltac:(solve_decision).
 #[export] Instance arrayTypeEqualityDecidable1 name : EqDecision (arrayType _ environment1 name).
@@ -567,8 +569,153 @@ fun _ => ((((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0
 )) >>=
 fun _ => Done _ _ _ tt).
 Definition funcdef_0__renameIndex (bools : varsfuncdef_0__renameIndex -> bool) (numbers : varsfuncdef_0__renameIndex -> Z) : Action (WithArrays _ (arrayType _ environment1)) withArraysReturnValue unit := eliminateLocalVariables bools numbers funcdef_0__renameIndex_body.
+Inductive varsfuncdef_0__renameCacheGet :=
+| vardef_0__renameCacheGet_node
+| vardef_0__renameCacheGet_depth
+| vardef_0__renameCacheGet_slot
+| vardef_0__renameCacheGet_size.
+#[export] Instance variableIndexEqualityDecidablevarsfuncdef_0__renameCacheGet : EqDecision varsfuncdef_0__renameCacheGet := ltac:(solve_decision).
+Definition funcdef_0__renameCacheGet_body : Action (WithLocalVariables arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGet) withLocalVariablesReturnValue unit := (((Done _ _ _ 31%Z) >>= fun x => ((Done _ _ _ 18446744073709551615%Z) >>= fun tuple_element_0 => Done _ _ _ (tuple_element_0)) >>= fun y => store arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGet (arraydef_0__meta) x y) >>=
+fun _ => (((Done _ _ _ 29%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGet (arraydef_0__meta) x) >>= fun x => numberLocalSet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGet (vardef_0__renameCacheGet_size) x) >>=
+fun _ => ((Done _ _ _ 5%Z) >>= fun preset0 => (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGet (vardef_0__renameCacheGet_node)) >>= fun preset1 => (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGet (vardef_0__renameCacheGet_depth)) >>= fun preset2 => ((((Done _ _ _ (fun x => 0%Z)) >>= fun x => Done _ _ _ (update x (vardef_0__formulaHash_tag) preset0)) >>= fun x => Done _ _ _ (update x (vardef_0__formulaHash_a) preset1)) >>= fun x => Done _ _ _ (update x (vardef_0__formulaHash_b) preset2)) >>= fun x => (Done _ _ _ (fun x => false)) >>= fun y => liftToWithLocalVariables (funcdef_0__formulaHash y x)) >>=
+fun _ => ((modIntUnsigned ((Done _ _ _ 28%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGet (arraydef_0__meta) x) (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGet (vardef_0__renameCacheGet_size))) >>= fun x => numberLocalSet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGet (vardef_0__renameCacheGet_slot) x) >>=
+fun _ => ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGet (vardef_0__renameCacheGet_size)) >>= fun x => loop (Z.to_nat x) (fun binder_0_intermediate => let binder_0 := Done (WithLocalVariables arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGet) withLocalVariablesReturnValue _ (Z.sub (Z.sub x (Z.of_nat binder_0_intermediate)) 1%Z) in dropWithinLoop ((
+  ((liftToWithinLoop ((((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGet (vardef_0__renameCacheGet_slot)) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGet (arraydef_0__renameMemo) x) >>= (fun element_tuple => Done _ _ _ ((snd (element_tuple))))) >>= fun x => (Done _ _ _ 0%Z) >>= fun y => Done _ _ _ (bool_decide (x = y)))) >>= fun x => if x then (
+    (break arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGet) >>=
+    fun _ => Done _ _ _ tt
+  ) else (
+    Done _ _ _ tt
+  )) >>=
+  fun _ => ((liftToWithinLoop (shortCircuitAnd ((((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGet (vardef_0__renameCacheGet_slot)) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGet (arraydef_0__renameMemo) x) >>= (fun element_tuple => Done _ _ _ (fst (fst (fst (element_tuple)))))) >>= fun x => (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGet (vardef_0__renameCacheGet_node)) >>= fun y => Done _ _ _ (bool_decide (x = y))) ((((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGet (vardef_0__renameCacheGet_slot)) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGet (arraydef_0__renameMemo) x) >>= (fun element_tuple => Done _ _ _ ((snd (fst (fst (element_tuple))))))) >>= fun x => (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGet (vardef_0__renameCacheGet_depth)) >>= fun y => Done _ _ _ (bool_decide (x = y))))) >>= fun x => if x then (
+    (liftToWithinLoop ((Done _ _ _ 31%Z) >>= fun x => ((((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGet (vardef_0__renameCacheGet_slot)) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGet (arraydef_0__renameMemo) x) >>= (fun element_tuple => Done _ _ _ ((snd (fst (element_tuple)))))) >>= fun tuple_element_0 => Done _ _ _ (tuple_element_0)) >>= fun y => store arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGet (arraydef_0__meta) x y)) >>=
+    fun _ => (break arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGet) >>=
+    fun _ => Done _ _ _ tt
+  ) else (
+    Done _ _ _ tt
+  )) >>=
+  fun _ => (liftToWithinLoop ((modIntUnsigned (addInt 64 (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGet (vardef_0__renameCacheGet_slot)) (Done _ _ _ 1%Z)) (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGet (vardef_0__renameCacheGet_size))) >>= fun x => numberLocalSet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGet (vardef_0__renameCacheGet_slot) x)) >>=
+  fun _ => Done _ _ _ tt
+)))) >>=
+fun _ => Done _ _ _ tt).
+Definition funcdef_0__renameCacheGet (bools : varsfuncdef_0__renameCacheGet -> bool) (numbers : varsfuncdef_0__renameCacheGet -> Z) : Action (WithArrays _ (arrayType _ environment1)) withArraysReturnValue unit := eliminateLocalVariables bools numbers funcdef_0__renameCacheGet_body.
+Inductive varsfuncdef_0__renameCacheGrow :=
+| vardef_0__renameCacheGrow_oldSize
+| vardef_0__renameCacheGrow_size
+| vardef_0__renameCacheGrow_slot
+| vardef_0__renameCacheGrow_placed.
+#[export] Instance variableIndexEqualityDecidablevarsfuncdef_0__renameCacheGrow : EqDecision varsfuncdef_0__renameCacheGrow := ltac:(solve_decision).
+Definition funcdef_0__renameCacheGrow_body : Action (WithLocalVariables arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow) withLocalVariablesReturnValue unit := ((((Done _ _ _ 29%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow (arraydef_0__meta) x) >>= fun x => numberLocalSet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow (vardef_0__renameCacheGrow_oldSize) x) >>=
+fun _ => (((Done _ _ _ 9223372036854775807%Z) >>= fun a => (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow (vardef_0__renameCacheGrow_oldSize)) >>= fun b => Done _ _ _ (bool_decide (Z.lt a b))) >>= fun x => if x then (
+  ((Done _ _ _ 8%Z) >>= fun x => ((Done _ _ _ 1%Z) >>= fun tuple_element_0 => Done _ _ _ (tuple_element_0)) >>= fun y => store arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow (arraydef_0__meta) x y) >>=
+  fun _ => Done _ _ _ tt
+) else (
+  ((multInt 64 (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow (vardef_0__renameCacheGrow_oldSize)) (Done _ _ _ 2%Z)) >>= fun x => numberLocalSet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow (vardef_0__renameCacheGrow_size) x) >>=
+  fun _ => ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow (vardef_0__renameCacheGrow_size)) >>= fun size => grow arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow (arraydef_0__renameMemoScratch) size (0%Z, 0%Z, 0%Z, 0%Z)) >>=
+  fun _ => ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow (vardef_0__renameCacheGrow_size)) >>= fun x => loop (Z.to_nat x) (fun binder_0_intermediate => let binder_0 := Done (WithLocalVariables arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow) withLocalVariablesReturnValue _ (Z.sub (Z.sub x (Z.of_nat binder_0_intermediate)) 1%Z) in dropWithinLoop ((
+    (liftToWithinLoop (binder_0 >>= fun x => ((Done _ _ _ 0%Z) >>= fun tuple_element_0 => ((Done _ _ _ 0%Z) >>= fun tuple_element_1 => ((Done _ _ _ 0%Z) >>= fun tuple_element_2 => ((Done _ _ _ 0%Z) >>= fun tuple_element_3 => Done _ _ _ (tuple_element_0, tuple_element_1, tuple_element_2, tuple_element_3))))) >>= fun y => store arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow (arraydef_0__renameMemoScratch) x y)) >>=
+    fun _ => Done _ _ _ tt
+  )))) >>=
+  fun _ => ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow (vardef_0__renameCacheGrow_oldSize)) >>= fun x => loop (Z.to_nat x) (fun binder_0_intermediate => let binder_0 := Done (WithLocalVariables arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow) withLocalVariablesReturnValue _ (Z.sub (Z.sub x (Z.of_nat binder_0_intermediate)) 1%Z) in dropWithinLoop ((
+    ((liftToWithinLoop (((binder_0 >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow (arraydef_0__renameMemo) x) >>= (fun element_tuple => Done _ _ _ ((snd (element_tuple))))) >>= fun x => (Done _ _ _ 0%Z) >>= fun y => Done _ _ _ (bool_decide (x <> y)))) >>= fun x => if x then (
+      (liftToWithinLoop ((Done _ _ _ 5%Z) >>= fun preset0 => ((binder_0 >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow (arraydef_0__renameMemo) x) >>= (fun element_tuple => Done _ _ _ (fst (fst (fst (element_tuple)))))) >>= fun preset1 => ((binder_0 >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow (arraydef_0__renameMemo) x) >>= (fun element_tuple => Done _ _ _ ((snd (fst (fst (element_tuple))))))) >>= fun preset2 => ((((Done _ _ _ (fun x => 0%Z)) >>= fun x => Done _ _ _ (update x (vardef_0__formulaHash_tag) preset0)) >>= fun x => Done _ _ _ (update x (vardef_0__formulaHash_a) preset1)) >>= fun x => Done _ _ _ (update x (vardef_0__formulaHash_b) preset2)) >>= fun x => (Done _ _ _ (fun x => false)) >>= fun y => liftToWithLocalVariables (funcdef_0__formulaHash y x))) >>=
+      fun _ => (liftToWithinLoop ((modIntUnsigned ((Done _ _ _ 28%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow (arraydef_0__meta) x) (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow (vardef_0__renameCacheGrow_size))) >>= fun x => numberLocalSet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow (vardef_0__renameCacheGrow_slot) x)) >>=
+      fun _ => (liftToWithinLoop ((Done _ _ _ 0%Z) >>= fun x => numberLocalSet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow (vardef_0__renameCacheGrow_placed) x)) >>=
+      fun _ => (liftToWithinLoop ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow (vardef_0__renameCacheGrow_size)) >>= fun x => loop (Z.to_nat x) (fun binder_1_intermediate => let binder_1 := Done (WithLocalVariables arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow) withLocalVariablesReturnValue _ (Z.sub (Z.sub x (Z.of_nat binder_1_intermediate)) 1%Z) in dropWithinLoop ((
+        ((liftToWithinLoop ((((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow (vardef_0__renameCacheGrow_slot)) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow (arraydef_0__renameMemoScratch) x) >>= (fun element_tuple => Done _ _ _ ((snd (element_tuple))))) >>= fun x => (Done _ _ _ 0%Z) >>= fun y => Done _ _ _ (bool_decide (x = y)))) >>= fun x => if x then (
+          (liftToWithinLoop ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow (vardef_0__renameCacheGrow_slot)) >>= fun x => (((binder_0 >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow (arraydef_0__renameMemo) x) >>= (fun element_tuple => Done _ _ _ (fst (fst (fst (element_tuple)))))) >>= fun tuple_element_0 => (((binder_0 >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow (arraydef_0__renameMemo) x) >>= (fun element_tuple => Done _ _ _ ((snd (fst (fst (element_tuple))))))) >>= fun tuple_element_1 => (((binder_0 >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow (arraydef_0__renameMemo) x) >>= (fun element_tuple => Done _ _ _ ((snd (fst (element_tuple)))))) >>= fun tuple_element_2 => ((Done _ _ _ 1%Z) >>= fun tuple_element_3 => Done _ _ _ (tuple_element_0, tuple_element_1, tuple_element_2, tuple_element_3))))) >>= fun y => store arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow (arraydef_0__renameMemoScratch) x y)) >>=
+          fun _ => (liftToWithinLoop ((Done _ _ _ 1%Z) >>= fun x => numberLocalSet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow (vardef_0__renameCacheGrow_placed) x)) >>=
+          fun _ => (break arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow) >>=
+          fun _ => Done _ _ _ tt
+        ) else (
+          Done _ _ _ tt
+        )) >>=
+        fun _ => (liftToWithinLoop ((modIntUnsigned (addInt 64 (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow (vardef_0__renameCacheGrow_slot)) (Done _ _ _ 1%Z)) (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow (vardef_0__renameCacheGrow_size))) >>= fun x => numberLocalSet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow (vardef_0__renameCacheGrow_slot) x)) >>=
+        fun _ => Done _ _ _ tt
+      ))))) >>=
+      fun _ => ((liftToWithinLoop ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow (vardef_0__renameCacheGrow_placed)) >>= fun x => (Done _ _ _ 0%Z) >>= fun y => Done _ _ _ (bool_decide (x = y)))) >>= fun x => if x then (
+        (liftToWithinLoop ((Done _ _ _ 8%Z) >>= fun x => ((Done _ _ _ 1%Z) >>= fun tuple_element_0 => Done _ _ _ (tuple_element_0)) >>= fun y => store arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow (arraydef_0__meta) x y)) >>=
+        fun _ => Done _ _ _ tt
+      ) else (
+        Done _ _ _ tt
+      )) >>=
+      fun _ => Done _ _ _ tt
+    ) else (
+      Done _ _ _ tt
+    )) >>=
+    fun _ => Done _ _ _ tt
+  )))) >>=
+  fun _ => ((((Done _ _ _ 8%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow (arraydef_0__meta) x) >>= fun x => (Done _ _ _ 0%Z) >>= fun y => Done _ _ _ (bool_decide (x = y))) >>= fun x => if x then (
+    ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow (vardef_0__renameCacheGrow_size)) >>= fun size => grow arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow (arraydef_0__renameMemo) size (0%Z, 0%Z, 0%Z, 0%Z)) >>=
+    fun _ => ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow (vardef_0__renameCacheGrow_size)) >>= fun x => loop (Z.to_nat x) (fun binder_0_intermediate => let binder_0 := Done (WithLocalVariables arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow) withLocalVariablesReturnValue _ (Z.sub (Z.sub x (Z.of_nat binder_0_intermediate)) 1%Z) in dropWithinLoop ((
+      (liftToWithinLoop (binder_0 >>= fun x => (((binder_0 >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow (arraydef_0__renameMemoScratch) x) >>= (fun element_tuple => Done _ _ _ (fst (fst (fst (element_tuple)))))) >>= fun tuple_element_0 => (((binder_0 >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow (arraydef_0__renameMemoScratch) x) >>= (fun element_tuple => Done _ _ _ ((snd (fst (fst (element_tuple))))))) >>= fun tuple_element_1 => (((binder_0 >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow (arraydef_0__renameMemoScratch) x) >>= (fun element_tuple => Done _ _ _ ((snd (fst (element_tuple)))))) >>= fun tuple_element_2 => (((binder_0 >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow (arraydef_0__renameMemoScratch) x) >>= (fun element_tuple => Done _ _ _ ((snd (element_tuple))))) >>= fun tuple_element_3 => Done _ _ _ (tuple_element_0, tuple_element_1, tuple_element_2, tuple_element_3))))) >>= fun y => store arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow (arraydef_0__renameMemo) x y)) >>=
+      fun _ => Done _ _ _ tt
+    )))) >>=
+    fun _ => ((Done _ _ _ 29%Z) >>= fun x => ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow (vardef_0__renameCacheGrow_size)) >>= fun tuple_element_0 => Done _ _ _ (tuple_element_0)) >>= fun y => store arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCacheGrow (arraydef_0__meta) x y) >>=
+    fun _ => Done _ _ _ tt
+  ) else (
+    Done _ _ _ tt
+  )) >>=
+  fun _ => Done _ _ _ tt
+)) >>=
+fun _ => Done _ _ _ tt).
+Definition funcdef_0__renameCacheGrow (bools : varsfuncdef_0__renameCacheGrow -> bool) (numbers : varsfuncdef_0__renameCacheGrow -> Z) : Action (WithArrays _ (arrayType _ environment1)) withArraysReturnValue unit := eliminateLocalVariables bools numbers funcdef_0__renameCacheGrow_body.
+Inductive varsfuncdef_0__renameCachePut :=
+| vardef_0__renameCachePut_node
+| vardef_0__renameCachePut_depth
+| vardef_0__renameCachePut_value
+| vardef_0__renameCachePut_size
+| vardef_0__renameCachePut_slot
+| vardef_0__renameCachePut_placed.
+#[export] Instance variableIndexEqualityDecidablevarsfuncdef_0__renameCachePut : EqDecision varsfuncdef_0__renameCachePut := ltac:(solve_decision).
+Definition funcdef_0__renameCachePut_body : Action (WithLocalVariables arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCachePut) withLocalVariablesReturnValue unit := ((((((Done _ _ _ 30%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCachePut (arraydef_0__meta) x) >>= fun a => (divIntUnsigned ((Done _ _ _ 29%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCachePut (arraydef_0__meta) x) (Done _ _ _ 2%Z)) >>= fun b => Done _ _ _ (bool_decide (Z.lt a b))) >>= fun x => Done _ _ _ (negb x)) >>= fun x => if x then (
+  ((Done _ _ _ (fun x => 0%Z)) >>= fun x => (Done _ _ _ (fun x => false)) >>= fun y => liftToWithLocalVariables (funcdef_0__renameCacheGrow y x)) >>=
+  fun _ => Done _ _ _ tt
+) else (
+  Done _ _ _ tt
+)) >>=
+fun _ => ((((Done _ _ _ 8%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCachePut (arraydef_0__meta) x) >>= fun x => (Done _ _ _ 0%Z) >>= fun y => Done _ _ _ (bool_decide (x = y))) >>= fun x => if x then (
+  (((Done _ _ _ 29%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCachePut (arraydef_0__meta) x) >>= fun x => numberLocalSet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCachePut (vardef_0__renameCachePut_size) x) >>=
+  fun _ => ((Done _ _ _ 5%Z) >>= fun preset0 => (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCachePut (vardef_0__renameCachePut_node)) >>= fun preset1 => (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCachePut (vardef_0__renameCachePut_depth)) >>= fun preset2 => ((((Done _ _ _ (fun x => 0%Z)) >>= fun x => Done _ _ _ (update x (vardef_0__formulaHash_tag) preset0)) >>= fun x => Done _ _ _ (update x (vardef_0__formulaHash_a) preset1)) >>= fun x => Done _ _ _ (update x (vardef_0__formulaHash_b) preset2)) >>= fun x => (Done _ _ _ (fun x => false)) >>= fun y => liftToWithLocalVariables (funcdef_0__formulaHash y x)) >>=
+  fun _ => ((modIntUnsigned ((Done _ _ _ 28%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCachePut (arraydef_0__meta) x) (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCachePut (vardef_0__renameCachePut_size))) >>= fun x => numberLocalSet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCachePut (vardef_0__renameCachePut_slot) x) >>=
+  fun _ => ((Done _ _ _ 0%Z) >>= fun x => numberLocalSet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCachePut (vardef_0__renameCachePut_placed) x) >>=
+  fun _ => ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCachePut (vardef_0__renameCachePut_size)) >>= fun x => loop (Z.to_nat x) (fun binder_0_intermediate => let binder_0 := Done (WithLocalVariables arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCachePut) withLocalVariablesReturnValue _ (Z.sub (Z.sub x (Z.of_nat binder_0_intermediate)) 1%Z) in dropWithinLoop ((
+    ((liftToWithinLoop ((((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCachePut (vardef_0__renameCachePut_slot)) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCachePut (arraydef_0__renameMemo) x) >>= (fun element_tuple => Done _ _ _ ((snd (element_tuple))))) >>= fun x => (Done _ _ _ 0%Z) >>= fun y => Done _ _ _ (bool_decide (x = y)))) >>= fun x => if x then (
+      (liftToWithinLoop ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCachePut (vardef_0__renameCachePut_slot)) >>= fun x => ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCachePut (vardef_0__renameCachePut_node)) >>= fun tuple_element_0 => ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCachePut (vardef_0__renameCachePut_depth)) >>= fun tuple_element_1 => ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCachePut (vardef_0__renameCachePut_value)) >>= fun tuple_element_2 => ((Done _ _ _ 1%Z) >>= fun tuple_element_3 => Done _ _ _ (tuple_element_0, tuple_element_1, tuple_element_2, tuple_element_3))))) >>= fun y => store arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCachePut (arraydef_0__renameMemo) x y)) >>=
+      fun _ => (liftToWithinLoop ((Done _ _ _ 30%Z) >>= fun x => ((addInt 64 ((Done _ _ _ 30%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCachePut (arraydef_0__meta) x) (Done _ _ _ 1%Z)) >>= fun tuple_element_0 => Done _ _ _ (tuple_element_0)) >>= fun y => store arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCachePut (arraydef_0__meta) x y)) >>=
+      fun _ => (liftToWithinLoop ((Done _ _ _ 1%Z) >>= fun x => numberLocalSet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCachePut (vardef_0__renameCachePut_placed) x)) >>=
+      fun _ => (break arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCachePut) >>=
+      fun _ => Done _ _ _ tt
+    ) else (
+      Done _ _ _ tt
+    )) >>=
+    fun _ => ((liftToWithinLoop (shortCircuitAnd ((((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCachePut (vardef_0__renameCachePut_slot)) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCachePut (arraydef_0__renameMemo) x) >>= (fun element_tuple => Done _ _ _ (fst (fst (fst (element_tuple)))))) >>= fun x => (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCachePut (vardef_0__renameCachePut_node)) >>= fun y => Done _ _ _ (bool_decide (x = y))) ((((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCachePut (vardef_0__renameCachePut_slot)) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCachePut (arraydef_0__renameMemo) x) >>= (fun element_tuple => Done _ _ _ ((snd (fst (fst (element_tuple))))))) >>= fun x => (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCachePut (vardef_0__renameCachePut_depth)) >>= fun y => Done _ _ _ (bool_decide (x = y))))) >>= fun x => if x then (
+      (liftToWithinLoop ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCachePut (vardef_0__renameCachePut_slot)) >>= fun x => ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCachePut (vardef_0__renameCachePut_node)) >>= fun tuple_element_0 => ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCachePut (vardef_0__renameCachePut_depth)) >>= fun tuple_element_1 => ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCachePut (vardef_0__renameCachePut_value)) >>= fun tuple_element_2 => ((Done _ _ _ 1%Z) >>= fun tuple_element_3 => Done _ _ _ (tuple_element_0, tuple_element_1, tuple_element_2, tuple_element_3))))) >>= fun y => store arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCachePut (arraydef_0__renameMemo) x y)) >>=
+      fun _ => (liftToWithinLoop ((Done _ _ _ 1%Z) >>= fun x => numberLocalSet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCachePut (vardef_0__renameCachePut_placed) x)) >>=
+      fun _ => (break arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCachePut) >>=
+      fun _ => Done _ _ _ tt
+    ) else (
+      Done _ _ _ tt
+    )) >>=
+    fun _ => (liftToWithinLoop ((modIntUnsigned (addInt 64 (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCachePut (vardef_0__renameCachePut_slot)) (Done _ _ _ 1%Z)) (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCachePut (vardef_0__renameCachePut_size))) >>= fun x => numberLocalSet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCachePut (vardef_0__renameCachePut_slot) x)) >>=
+    fun _ => Done _ _ _ tt
+  )))) >>=
+  fun _ => (((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCachePut (vardef_0__renameCachePut_placed)) >>= fun x => (Done _ _ _ 0%Z) >>= fun y => Done _ _ _ (bool_decide (x = y))) >>= fun x => if x then (
+    ((Done _ _ _ 8%Z) >>= fun x => ((Done _ _ _ 1%Z) >>= fun tuple_element_0 => Done _ _ _ (tuple_element_0)) >>= fun y => store arrayIndex1 (arrayType _ environment1) varsfuncdef_0__renameCachePut (arraydef_0__meta) x y) >>=
+    fun _ => Done _ _ _ tt
+  ) else (
+    Done _ _ _ tt
+  )) >>=
+  fun _ => Done _ _ _ tt
+) else (
+  Done _ _ _ tt
+)) >>=
+fun _ => Done _ _ _ tt).
+Definition funcdef_0__renameCachePut (bools : varsfuncdef_0__renameCachePut -> bool) (numbers : varsfuncdef_0__renameCachePut -> Z) : Action (WithArrays _ (arrayType _ environment1)) withArraysReturnValue unit := eliminateLocalVariables bools numbers funcdef_0__renameCachePut_body.
 Inductive varsfuncdef_0__rename :=
 | vardef_0__rename_node
+| vardef_0__rename_width
+| vardef_0__rename_pairs
+| vardef_0__rename_budget
 | vardef_0__rename_mode
 | vardef_0__rename_shift
 | vardef_0__rename_arg
@@ -584,151 +731,148 @@ Inductive varsfuncdef_0__rename :=
 | vardef_0__rename_result.
 #[export] Instance variableIndexEqualityDecidablevarsfuncdef_0__rename : EqDecision varsfuncdef_0__rename := ltac:(solve_decision).
 Definition funcdef_0__rename_body : Action (WithLocalVariables arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename) withLocalVariablesReturnValue unit := (((Done _ _ _ 10%Z) >>= fun x => ((Done _ _ _ 0%Z) >>= fun tuple_element_0 => Done _ _ _ (tuple_element_0)) >>= fun y => store arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x y) >>=
-fun _ => ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_node)) >>= fun preset0 => (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_initialDepth)) >>= fun preset1 => (((Done _ _ _ (fun x => 0%Z)) >>= fun x => Done _ _ _ (update x (vardef_0__push_node) preset0)) >>= fun x => Done _ _ _ (update x (vardef_0__push_depth) preset1)) >>= fun x => (Done _ _ _ (fun x => false)) >>= fun y => liftToWithLocalVariables (funcdef_0__push y x)) >>=
-fun _ => ((Done _ _ _ 4294967296%Z) >>= fun x => loop (Z.to_nat x) (fun binder_0_intermediate => let binder_0 := Done (WithLocalVariables arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename) withLocalVariablesReturnValue _ (Z.sub (Z.sub x (Z.of_nat binder_0_intermediate)) 1%Z) in dropWithinLoop ((
-  ((liftToWithinLoop (shortCircuitOr (((Done _ _ _ 10%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x) >>= fun x => (Done _ _ _ 0%Z) >>= fun y => Done _ _ _ (bool_decide (x = y))) (((Done _ _ _ 8%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x) >>= fun x => (Done _ _ _ 0%Z) >>= fun y => Done _ _ _ (bool_decide (x <> y))))) >>= fun x => if x then (
-    (break arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename) >>=
+fun _ => ((Done _ _ _ 29%Z) >>= fun x => ((Done _ _ _ 16%Z) >>= fun tuple_element_0 => Done _ _ _ (tuple_element_0)) >>= fun y => store arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x y) >>=
+fun _ => ((Done _ _ _ 30%Z) >>= fun x => ((Done _ _ _ 0%Z) >>= fun tuple_element_0 => Done _ _ _ (tuple_element_0)) >>= fun y => store arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x y) >>=
+fun _ => ((Done _ _ _ 16%Z) >>= fun size => grow arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__renameMemo) size (0%Z, 0%Z, 0%Z, 0%Z)) >>=
+fun _ => ((Done _ _ _ 16%Z) >>= fun x => loop (Z.to_nat x) (fun binder_0_intermediate => let binder_0 := Done (WithLocalVariables arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename) withLocalVariablesReturnValue _ (Z.sub (Z.sub x (Z.of_nat binder_0_intermediate)) 1%Z) in dropWithinLoop ((
+  (liftToWithinLoop (binder_0 >>= fun x => ((Done _ _ _ 0%Z) >>= fun tuple_element_0 => ((Done _ _ _ 0%Z) >>= fun tuple_element_1 => ((Done _ _ _ 0%Z) >>= fun tuple_element_2 => ((Done _ _ _ 0%Z) >>= fun tuple_element_3 => Done _ _ _ (tuple_element_0, tuple_element_1, tuple_element_2, tuple_element_3))))) >>= fun y => store arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__renameMemo) x y)) >>=
+  fun _ => Done _ _ _ tt
+)))) >>=
+fun _ => (((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_node)) >>= fun x => (Done _ _ _ 18446744073709551615%Z) >>= fun y => Done _ _ _ (bool_decide (x = y))) >>= fun x => if x then (
+  ((Done _ _ _ 8%Z) >>= fun x => ((Done _ _ _ 1%Z) >>= fun tuple_element_0 => Done _ _ _ (tuple_element_0)) >>= fun y => store arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x y) >>=
+  fun _ => Done _ _ _ tt
+) else (
+  ((addInt 64 (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_node)) (Done _ _ _ 1%Z)) >>= fun x => numberLocalSet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_width) x) >>=
+  fun _ => (((divIntUnsigned (Done _ _ _ 18446744073709551615%Z) (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_width))) >>= fun a => (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_width)) >>= fun b => Done _ _ _ (bool_decide (Z.lt a b))) >>= fun x => if x then (
+    ((Done _ _ _ 8%Z) >>= fun x => ((Done _ _ _ 1%Z) >>= fun tuple_element_0 => Done _ _ _ (tuple_element_0)) >>= fun y => store arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x y) >>=
     fun _ => Done _ _ _ tt
   ) else (
-    Done _ _ _ tt
-  )) >>=
-  fun _ => (liftToWithinLoop ((Done _ _ _ 4294967296%Z) >>= fun x => loop (Z.to_nat x) (fun binder_1_intermediate => let binder_1 := Done (WithLocalVariables arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename) withLocalVariablesReturnValue _ (Z.sub (Z.sub x (Z.of_nat binder_1_intermediate)) 1%Z) in dropWithinLoop ((
-    ((liftToWithinLoop (shortCircuitOr (((Done _ _ _ 10%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x) >>= fun x => (Done _ _ _ 0%Z) >>= fun y => Done _ _ _ (bool_decide (x = y))) (((Done _ _ _ 8%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x) >>= fun x => (Done _ _ _ 0%Z) >>= fun y => Done _ _ _ (bool_decide (x <> y))))) >>= fun x => if x then (
-      (break arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename) >>=
+    ((multInt 64 (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_width)) (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_width))) >>= fun x => numberLocalSet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_pairs) x) >>=
+    fun _ => (((divIntUnsigned (Done _ _ _ 18446744073709551614%Z) (Done _ _ _ 5%Z)) >>= fun a => (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_pairs)) >>= fun b => Done _ _ _ (bool_decide (Z.lt a b))) >>= fun x => if x then (
+      ((Done _ _ _ 8%Z) >>= fun x => ((Done _ _ _ 1%Z) >>= fun tuple_element_0 => Done _ _ _ (tuple_element_0)) >>= fun y => store arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x y) >>=
       fun _ => Done _ _ _ tt
     ) else (
-      Done _ _ _ tt
-    )) >>=
-    fun _ => (liftToWithinLoop ((Done _ _ _ 4294967296%Z) >>= fun x => loop (Z.to_nat x) (fun binder_2_intermediate => let binder_2 := Done (WithLocalVariables arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename) withLocalVariablesReturnValue _ (Z.sub (Z.sub x (Z.of_nat binder_2_intermediate)) 1%Z) in dropWithinLoop ((
-      ((liftToWithinLoop (shortCircuitOr (((Done _ _ _ 10%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x) >>= fun x => (Done _ _ _ 0%Z) >>= fun y => Done _ _ _ (bool_decide (x = y))) (((Done _ _ _ 8%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x) >>= fun x => (Done _ _ _ 0%Z) >>= fun y => Done _ _ _ (bool_decide (x <> y))))) >>= fun x => if x then (
-        (break arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename) >>=
-        fun _ => Done _ _ _ tt
-      ) else (
-        Done _ _ _ tt
-      )) >>=
-      fun _ => (liftToWithinLoop ((Done _ _ _ 4294967296%Z) >>= fun x => loop (Z.to_nat x) (fun binder_3_intermediate => let binder_3 := Done (WithLocalVariables arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename) withLocalVariablesReturnValue _ (Z.sub (Z.sub x (Z.of_nat binder_3_intermediate)) 1%Z) in dropWithinLoop ((
+      ((addInt 64 (multInt 64 (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_pairs)) (Done _ _ _ 5%Z)) (Done _ _ _ 1%Z)) >>= fun x => numberLocalSet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_budget) x) >>=
+      fun _ => ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_node)) >>= fun preset0 => (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_initialDepth)) >>= fun preset1 => (((Done _ _ _ (fun x => 0%Z)) >>= fun x => Done _ _ _ (update x (vardef_0__push_node) preset0)) >>= fun x => Done _ _ _ (update x (vardef_0__push_depth) preset1)) >>= fun x => (Done _ _ _ (fun x => false)) >>= fun y => liftToWithLocalVariables (funcdef_0__push y x)) >>=
+      fun _ => ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_budget)) >>= fun x => loop (Z.to_nat x) (fun binder_0_intermediate => let binder_0 := Done (WithLocalVariables arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename) withLocalVariablesReturnValue _ (Z.sub (Z.sub x (Z.of_nat binder_0_intermediate)) 1%Z) in dropWithinLoop ((
         ((liftToWithinLoop (shortCircuitOr (((Done _ _ _ 10%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x) >>= fun x => (Done _ _ _ 0%Z) >>= fun y => Done _ _ _ (bool_decide (x = y))) (((Done _ _ _ 8%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x) >>= fun x => (Done _ _ _ 0%Z) >>= fun y => Done _ _ _ (bool_decide (x <> y))))) >>= fun x => if x then (
           (break arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename) >>=
           fun _ => Done _ _ _ tt
         ) else (
           Done _ _ _ tt
         )) >>=
-        fun _ => (liftToWithinLoop ((Done _ _ _ 4294967296%Z) >>= fun x => loop (Z.to_nat x) (fun binder_4_intermediate => let binder_4 := Done (WithLocalVariables arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename) withLocalVariablesReturnValue _ (Z.sub (Z.sub x (Z.of_nat binder_4_intermediate)) 1%Z) in dropWithinLoop ((
-          ((liftToWithinLoop (shortCircuitOr (((Done _ _ _ 10%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x) >>= fun x => (Done _ _ _ 0%Z) >>= fun y => Done _ _ _ (bool_decide (x = y))) (((Done _ _ _ 8%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x) >>= fun x => (Done _ _ _ 0%Z) >>= fun y => Done _ _ _ (bool_decide (x <> y))))) >>= fun x => if x then (
-            (break arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename) >>=
+        fun _ => (liftToWithinLoop ((subInt 64 ((Done _ _ _ 10%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x) (Done _ _ _ 1%Z)) >>= fun x => numberLocalSet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_top) x)) >>=
+        fun _ => (liftToWithinLoop ((((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_top)) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__frames) x) >>= (fun element_tuple => Done _ _ _ (fst (fst (fst (element_tuple)))))) >>= fun x => numberLocalSet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_current) x)) >>=
+        fun _ => (liftToWithinLoop ((((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_top)) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__frames) x) >>= (fun element_tuple => Done _ _ _ ((snd (fst (fst (element_tuple))))))) >>= fun x => numberLocalSet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_depth) x)) >>=
+        fun _ => (liftToWithinLoop ((((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_top)) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__frames) x) >>= (fun element_tuple => Done _ _ _ ((snd (fst (element_tuple)))))) >>= fun x => numberLocalSet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_phase) x)) >>=
+        fun _ => (liftToWithinLoop ((((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_top)) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__frames) x) >>= (fun element_tuple => Done _ _ _ ((snd (element_tuple))))) >>= fun x => numberLocalSet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_left) x)) >>=
+        fun _ => (liftToWithinLoop ((((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_current)) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__formulas) x) >>= (fun element_tuple => Done _ _ _ (fst (fst (element_tuple))))) >>= fun x => numberLocalSet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_tag) x)) >>=
+        fun _ => (liftToWithinLoop ((((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_current)) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__formulas) x) >>= (fun element_tuple => Done _ _ _ ((snd (fst (element_tuple)))))) >>= fun x => numberLocalSet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_a) x)) >>=
+        fun _ => (liftToWithinLoop ((((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_current)) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__formulas) x) >>= (fun element_tuple => Done _ _ _ ((snd (element_tuple))))) >>= fun x => numberLocalSet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_b) x)) >>=
+        fun _ => ((liftToWithinLoop ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_phase)) >>= fun x => (Done _ _ _ 0%Z) >>= fun y => Done _ _ _ (bool_decide (x = y)))) >>= fun x => if x then (
+          (liftToWithinLoop ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_current)) >>= fun preset0 => (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_depth)) >>= fun preset1 => (((Done _ _ _ (fun x => 0%Z)) >>= fun x => Done _ _ _ (update x (vardef_0__renameCacheGet_node) preset0)) >>= fun x => Done _ _ _ (update x (vardef_0__renameCacheGet_depth) preset1)) >>= fun x => (Done _ _ _ (fun x => false)) >>= fun y => liftToWithLocalVariables (funcdef_0__renameCacheGet y x))) >>=
+          fun _ => ((liftToWithinLoop (((Done _ _ _ 31%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x) >>= fun x => (Done _ _ _ 18446744073709551615%Z) >>= fun y => Done _ _ _ (bool_decide (x <> y)))) >>= fun x => if x then (
+            (liftToWithinLoop ((Done _ _ _ 0%Z) >>= fun x => (((Done _ _ _ 31%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x) >>= fun tuple_element_0 => Done _ _ _ (tuple_element_0)) >>= fun y => store arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x y)) >>=
+            fun _ => (liftToWithinLoop ((Done _ _ _ 10%Z) >>= fun x => ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_top)) >>= fun tuple_element_0 => Done _ _ _ (tuple_element_0)) >>= fun y => store arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x y)) >>=
             fun _ => Done _ _ _ tt
           ) else (
-            Done _ _ _ tt
-          )) >>=
-          fun _ => (liftToWithinLoop ((Done _ _ _ 4294967296%Z) >>= fun x => loop (Z.to_nat x) (fun binder_5_intermediate => let binder_5 := Done (WithLocalVariables arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename) withLocalVariablesReturnValue _ (Z.sub (Z.sub x (Z.of_nat binder_5_intermediate)) 1%Z) in dropWithinLoop ((
-            ((liftToWithinLoop (shortCircuitOr (((Done _ _ _ 10%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x) >>= fun x => (Done _ _ _ 0%Z) >>= fun y => Done _ _ _ (bool_decide (x = y))) (((Done _ _ _ 8%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x) >>= fun x => (Done _ _ _ 0%Z) >>= fun y => Done _ _ _ (bool_decide (x <> y))))) >>= fun x => if x then (
-              (break arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename) >>=
-              fun _ => Done _ _ _ tt
-            ) else (
-              Done _ _ _ tt
-            )) >>=
-            fun _ => (liftToWithinLoop ((Done _ _ _ 4294967296%Z) >>= fun x => loop (Z.to_nat x) (fun binder_6_intermediate => let binder_6 := Done (WithLocalVariables arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename) withLocalVariablesReturnValue _ (Z.sub (Z.sub x (Z.of_nat binder_6_intermediate)) 1%Z) in dropWithinLoop ((
-              ((liftToWithinLoop (shortCircuitOr (((Done _ _ _ 10%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x) >>= fun x => (Done _ _ _ 0%Z) >>= fun y => Done _ _ _ (bool_decide (x = y))) (((Done _ _ _ 8%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x) >>= fun x => (Done _ _ _ 0%Z) >>= fun y => Done _ _ _ (bool_decide (x <> y))))) >>= fun x => if x then (
-                (break arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename) >>=
+            ((liftToWithinLoop ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_tag)) >>= fun x => (Done _ _ _ 0%Z) >>= fun y => Done _ _ _ (bool_decide (x = y)))) >>= fun x => if x then (
+              (liftToWithinLoop ((Done _ _ _ 0%Z) >>= fun x => ((Done _ _ _ 0%Z) >>= fun tuple_element_0 => Done _ _ _ (tuple_element_0)) >>= fun y => store arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x y)) >>=
+              fun _ => (liftToWithinLoop ((Done _ _ _ 10%Z) >>= fun x => ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_top)) >>= fun tuple_element_0 => Done _ _ _ (tuple_element_0)) >>= fun y => store arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x y)) >>=
+              fun _ => ((liftToWithinLoop (((Done _ _ _ 8%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x) >>= fun x => (Done _ _ _ 0%Z) >>= fun y => Done _ _ _ (bool_decide (x = y)))) >>= fun x => if x then (
+                (liftToWithinLoop ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_current)) >>= fun preset0 => (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_depth)) >>= fun preset1 => ((Done _ _ _ 0%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x) >>= fun preset2 => ((((Done _ _ _ (fun x => 0%Z)) >>= fun x => Done _ _ _ (update x (vardef_0__renameCachePut_node) preset0)) >>= fun x => Done _ _ _ (update x (vardef_0__renameCachePut_depth) preset1)) >>= fun x => Done _ _ _ (update x (vardef_0__renameCachePut_value) preset2)) >>= fun x => (Done _ _ _ (fun x => false)) >>= fun y => liftToWithLocalVariables (funcdef_0__renameCachePut y x))) >>=
                 fun _ => Done _ _ _ tt
               ) else (
                 Done _ _ _ tt
               )) >>=
-              fun _ => (liftToWithinLoop ((Done _ _ _ 4294967296%Z) >>= fun x => loop (Z.to_nat x) (fun binder_7_intermediate => let binder_7 := Done (WithLocalVariables arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename) withLocalVariablesReturnValue _ (Z.sub (Z.sub x (Z.of_nat binder_7_intermediate)) 1%Z) in dropWithinLoop ((
-                ((liftToWithinLoop (shortCircuitOr (((Done _ _ _ 10%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x) >>= fun x => (Done _ _ _ 0%Z) >>= fun y => Done _ _ _ (bool_decide (x = y))) (((Done _ _ _ 8%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x) >>= fun x => (Done _ _ _ 0%Z) >>= fun y => Done _ _ _ (bool_decide (x <> y))))) >>= fun x => if x then (
-                  (break arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename) >>=
-                  fun _ => Done _ _ _ tt
-                ) else (
-                  Done _ _ _ tt
-                )) >>=
-                fun _ => (liftToWithinLoop ((subInt 64 ((Done _ _ _ 10%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x) (Done _ _ _ 1%Z)) >>= fun x => numberLocalSet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_top) x)) >>=
-                fun _ => (liftToWithinLoop ((((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_top)) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__frames) x) >>= (fun element_tuple => Done _ _ _ (fst (fst (fst (element_tuple)))))) >>= fun x => numberLocalSet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_current) x)) >>=
-                fun _ => (liftToWithinLoop ((((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_top)) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__frames) x) >>= (fun element_tuple => Done _ _ _ ((snd (fst (fst (element_tuple))))))) >>= fun x => numberLocalSet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_depth) x)) >>=
-                fun _ => (liftToWithinLoop ((((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_top)) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__frames) x) >>= (fun element_tuple => Done _ _ _ ((snd (fst (element_tuple)))))) >>= fun x => numberLocalSet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_phase) x)) >>=
-                fun _ => (liftToWithinLoop ((((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_top)) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__frames) x) >>= (fun element_tuple => Done _ _ _ ((snd (element_tuple))))) >>= fun x => numberLocalSet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_left) x)) >>=
-                fun _ => (liftToWithinLoop ((((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_current)) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__formulas) x) >>= (fun element_tuple => Done _ _ _ (fst (fst (element_tuple))))) >>= fun x => numberLocalSet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_tag) x)) >>=
-                fun _ => (liftToWithinLoop ((((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_current)) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__formulas) x) >>= (fun element_tuple => Done _ _ _ ((snd (fst (element_tuple)))))) >>= fun x => numberLocalSet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_a) x)) >>=
-                fun _ => (liftToWithinLoop ((((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_current)) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__formulas) x) >>= (fun element_tuple => Done _ _ _ ((snd (element_tuple))))) >>= fun x => numberLocalSet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_b) x)) >>=
-                fun _ => ((liftToWithinLoop ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_phase)) >>= fun x => (Done _ _ _ 0%Z) >>= fun y => Done _ _ _ (bool_decide (x = y)))) >>= fun x => if x then (
-                  ((liftToWithinLoop ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_tag)) >>= fun x => (Done _ _ _ 0%Z) >>= fun y => Done _ _ _ (bool_decide (x = y)))) >>= fun x => if x then (
-                    (liftToWithinLoop ((Done _ _ _ 0%Z) >>= fun x => ((Done _ _ _ 0%Z) >>= fun tuple_element_0 => Done _ _ _ (tuple_element_0)) >>= fun y => store arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x y)) >>=
-                    fun _ => (liftToWithinLoop ((Done _ _ _ 10%Z) >>= fun x => ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_top)) >>= fun tuple_element_0 => Done _ _ _ (tuple_element_0)) >>= fun y => store arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x y)) >>=
-                    fun _ => Done _ _ _ tt
-                  ) else (
-                    Done _ _ _ tt
-                  )) >>=
-                  fun _ => ((liftToWithinLoop (shortCircuitOr ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_tag)) >>= fun x => (Done _ _ _ 1%Z) >>= fun y => Done _ _ _ (bool_decide (x = y))) ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_tag)) >>= fun x => (Done _ _ _ 2%Z) >>= fun y => Done _ _ _ (bool_decide (x = y))))) >>= fun x => if x then (
-                    (liftToWithinLoop ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_a)) >>= fun preset0 => (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_depth)) >>= fun preset1 => (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_mode)) >>= fun preset2 => (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_shift)) >>= fun preset3 => (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_arg)) >>= fun preset4 => ((((((Done _ _ _ (fun x => 0%Z)) >>= fun x => Done _ _ _ (update x (vardef_0__renameIndex_index) preset0)) >>= fun x => Done _ _ _ (update x (vardef_0__renameIndex_depth) preset1)) >>= fun x => Done _ _ _ (update x (vardef_0__renameIndex_mode) preset2)) >>= fun x => Done _ _ _ (update x (vardef_0__renameIndex_shift) preset3)) >>= fun x => Done _ _ _ (update x (vardef_0__renameIndex_arg) preset4)) >>= fun x => (Done _ _ _ (fun x => false)) >>= fun y => liftToWithLocalVariables (funcdef_0__renameIndex y x))) >>=
-                    fun _ => (liftToWithinLoop (((Done _ _ _ 0%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x) >>= fun x => numberLocalSet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_a) x)) >>=
-                    fun _ => (liftToWithinLoop ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_b)) >>= fun preset0 => (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_depth)) >>= fun preset1 => (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_mode)) >>= fun preset2 => (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_shift)) >>= fun preset3 => (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_arg)) >>= fun preset4 => ((((((Done _ _ _ (fun x => 0%Z)) >>= fun x => Done _ _ _ (update x (vardef_0__renameIndex_index) preset0)) >>= fun x => Done _ _ _ (update x (vardef_0__renameIndex_depth) preset1)) >>= fun x => Done _ _ _ (update x (vardef_0__renameIndex_mode) preset2)) >>= fun x => Done _ _ _ (update x (vardef_0__renameIndex_shift) preset3)) >>= fun x => Done _ _ _ (update x (vardef_0__renameIndex_arg) preset4)) >>= fun x => (Done _ _ _ (fun x => false)) >>= fun y => liftToWithLocalVariables (funcdef_0__renameIndex y x))) >>=
-                    fun _ => (liftToWithinLoop (((Done _ _ _ 0%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x) >>= fun x => numberLocalSet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_b) x)) >>=
-                    fun _ => (liftToWithinLoop ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_tag)) >>= fun preset0 => (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_a)) >>= fun preset1 => (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_b)) >>= fun preset2 => ((((Done _ _ _ (fun x => 0%Z)) >>= fun x => Done _ _ _ (update x (vardef_0__intern_tag) preset0)) >>= fun x => Done _ _ _ (update x (vardef_0__intern_a) preset1)) >>= fun x => Done _ _ _ (update x (vardef_0__intern_b) preset2)) >>= fun x => (Done _ _ _ (fun x => false)) >>= fun y => liftToWithLocalVariables (funcdef_0__intern y x))) >>=
-                    fun _ => (liftToWithinLoop ((Done _ _ _ 10%Z) >>= fun x => ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_top)) >>= fun tuple_element_0 => Done _ _ _ (tuple_element_0)) >>= fun y => store arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x y)) >>=
-                    fun _ => Done _ _ _ tt
-                  ) else (
-                    Done _ _ _ tt
-                  )) >>=
-                  fun _ => ((liftToWithinLoop ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_tag)) >>= fun x => (Done _ _ _ 3%Z) >>= fun y => Done _ _ _ (bool_decide (x = y)))) >>= fun x => if x then (
-                    (liftToWithinLoop ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_top)) >>= fun x => ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_current)) >>= fun tuple_element_0 => ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_depth)) >>= fun tuple_element_1 => ((Done _ _ _ 1%Z) >>= fun tuple_element_2 => ((Done _ _ _ 0%Z) >>= fun tuple_element_3 => Done _ _ _ (tuple_element_0, tuple_element_1, tuple_element_2, tuple_element_3))))) >>= fun y => store arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__frames) x y)) >>=
-                    fun _ => (liftToWithinLoop ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_a)) >>= fun preset0 => (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_depth)) >>= fun preset1 => (((Done _ _ _ (fun x => 0%Z)) >>= fun x => Done _ _ _ (update x (vardef_0__push_node) preset0)) >>= fun x => Done _ _ _ (update x (vardef_0__push_depth) preset1)) >>= fun x => (Done _ _ _ (fun x => false)) >>= fun y => liftToWithLocalVariables (funcdef_0__push y x))) >>=
-                    fun _ => Done _ _ _ tt
-                  ) else (
-                    Done _ _ _ tt
-                  )) >>=
-                  fun _ => ((liftToWithinLoop ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_tag)) >>= fun x => (Done _ _ _ 4%Z) >>= fun y => Done _ _ _ (bool_decide (x = y)))) >>= fun x => if x then (
-                    ((liftToWithinLoop ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_depth)) >>= fun x => (Done _ _ _ 18446744073709551615%Z) >>= fun y => Done _ _ _ (bool_decide (x = y)))) >>= fun x => if x then (
-                      (liftToWithinLoop ((Done _ _ _ 8%Z) >>= fun x => ((Done _ _ _ 1%Z) >>= fun tuple_element_0 => Done _ _ _ (tuple_element_0)) >>= fun y => store arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x y)) >>=
-                      fun _ => Done _ _ _ tt
-                    ) else (
-                      (liftToWithinLoop ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_top)) >>= fun x => ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_current)) >>= fun tuple_element_0 => ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_depth)) >>= fun tuple_element_1 => ((Done _ _ _ 3%Z) >>= fun tuple_element_2 => ((Done _ _ _ 0%Z) >>= fun tuple_element_3 => Done _ _ _ (tuple_element_0, tuple_element_1, tuple_element_2, tuple_element_3))))) >>= fun y => store arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__frames) x y)) >>=
-                      fun _ => (liftToWithinLoop ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_a)) >>= fun preset0 => (addInt 64 (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_depth)) (Done _ _ _ 1%Z)) >>= fun preset1 => (((Done _ _ _ (fun x => 0%Z)) >>= fun x => Done _ _ _ (update x (vardef_0__push_node) preset0)) >>= fun x => Done _ _ _ (update x (vardef_0__push_depth) preset1)) >>= fun x => (Done _ _ _ (fun x => false)) >>= fun y => liftToWithLocalVariables (funcdef_0__push y x))) >>=
-                      fun _ => Done _ _ _ tt
-                    )) >>=
-                    fun _ => Done _ _ _ tt
-                  ) else (
-                    Done _ _ _ tt
-                  )) >>=
-                  fun _ => Done _ _ _ tt
-                ) else (
-                  Done _ _ _ tt
-                )) >>=
-                fun _ => ((liftToWithinLoop ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_phase)) >>= fun x => (Done _ _ _ 1%Z) >>= fun y => Done _ _ _ (bool_decide (x = y)))) >>= fun x => if x then (
-                  (liftToWithinLoop ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_top)) >>= fun x => ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_current)) >>= fun tuple_element_0 => ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_depth)) >>= fun tuple_element_1 => ((Done _ _ _ 2%Z) >>= fun tuple_element_2 => (((Done _ _ _ 0%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x) >>= fun tuple_element_3 => Done _ _ _ (tuple_element_0, tuple_element_1, tuple_element_2, tuple_element_3))))) >>= fun y => store arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__frames) x y)) >>=
-                  fun _ => (liftToWithinLoop ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_b)) >>= fun preset0 => (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_depth)) >>= fun preset1 => (((Done _ _ _ (fun x => 0%Z)) >>= fun x => Done _ _ _ (update x (vardef_0__push_node) preset0)) >>= fun x => Done _ _ _ (update x (vardef_0__push_depth) preset1)) >>= fun x => (Done _ _ _ (fun x => false)) >>= fun y => liftToWithLocalVariables (funcdef_0__push y x))) >>=
-                  fun _ => Done _ _ _ tt
-                ) else (
-                  Done _ _ _ tt
-                )) >>=
-                fun _ => ((liftToWithinLoop ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_phase)) >>= fun x => (Done _ _ _ 2%Z) >>= fun y => Done _ _ _ (bool_decide (x = y)))) >>= fun x => if x then (
-                  (liftToWithinLoop ((Done _ _ _ 3%Z) >>= fun preset0 => (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_left)) >>= fun preset1 => ((Done _ _ _ 0%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x) >>= fun preset2 => ((((Done _ _ _ (fun x => 0%Z)) >>= fun x => Done _ _ _ (update x (vardef_0__intern_tag) preset0)) >>= fun x => Done _ _ _ (update x (vardef_0__intern_a) preset1)) >>= fun x => Done _ _ _ (update x (vardef_0__intern_b) preset2)) >>= fun x => (Done _ _ _ (fun x => false)) >>= fun y => liftToWithLocalVariables (funcdef_0__intern y x))) >>=
-                  fun _ => (liftToWithinLoop ((Done _ _ _ 10%Z) >>= fun x => ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_top)) >>= fun tuple_element_0 => Done _ _ _ (tuple_element_0)) >>= fun y => store arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x y)) >>=
-                  fun _ => Done _ _ _ tt
-                ) else (
-                  Done _ _ _ tt
-                )) >>=
-                fun _ => ((liftToWithinLoop ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_phase)) >>= fun x => (Done _ _ _ 3%Z) >>= fun y => Done _ _ _ (bool_decide (x = y)))) >>= fun x => if x then (
-                  (liftToWithinLoop ((Done _ _ _ 4%Z) >>= fun preset0 => ((Done _ _ _ 0%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x) >>= fun preset1 => (Done _ _ _ 0%Z) >>= fun preset2 => ((((Done _ _ _ (fun x => 0%Z)) >>= fun x => Done _ _ _ (update x (vardef_0__intern_tag) preset0)) >>= fun x => Done _ _ _ (update x (vardef_0__intern_a) preset1)) >>= fun x => Done _ _ _ (update x (vardef_0__intern_b) preset2)) >>= fun x => (Done _ _ _ (fun x => false)) >>= fun y => liftToWithLocalVariables (funcdef_0__intern y x))) >>=
-                  fun _ => (liftToWithinLoop ((Done _ _ _ 10%Z) >>= fun x => ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_top)) >>= fun tuple_element_0 => Done _ _ _ (tuple_element_0)) >>= fun y => store arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x y)) >>=
-                  fun _ => Done _ _ _ tt
-                ) else (
-                  Done _ _ _ tt
-                )) >>=
-                fun _ => Done _ _ _ tt
-              ))))) >>=
               fun _ => Done _ _ _ tt
-            ))))) >>=
+            ) else (
+              Done _ _ _ tt
+            )) >>=
+            fun _ => ((liftToWithinLoop (shortCircuitOr ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_tag)) >>= fun x => (Done _ _ _ 1%Z) >>= fun y => Done _ _ _ (bool_decide (x = y))) ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_tag)) >>= fun x => (Done _ _ _ 2%Z) >>= fun y => Done _ _ _ (bool_decide (x = y))))) >>= fun x => if x then (
+              (liftToWithinLoop ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_a)) >>= fun preset0 => (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_depth)) >>= fun preset1 => (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_mode)) >>= fun preset2 => (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_shift)) >>= fun preset3 => (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_arg)) >>= fun preset4 => ((((((Done _ _ _ (fun x => 0%Z)) >>= fun x => Done _ _ _ (update x (vardef_0__renameIndex_index) preset0)) >>= fun x => Done _ _ _ (update x (vardef_0__renameIndex_depth) preset1)) >>= fun x => Done _ _ _ (update x (vardef_0__renameIndex_mode) preset2)) >>= fun x => Done _ _ _ (update x (vardef_0__renameIndex_shift) preset3)) >>= fun x => Done _ _ _ (update x (vardef_0__renameIndex_arg) preset4)) >>= fun x => (Done _ _ _ (fun x => false)) >>= fun y => liftToWithLocalVariables (funcdef_0__renameIndex y x))) >>=
+              fun _ => (liftToWithinLoop (((Done _ _ _ 0%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x) >>= fun x => numberLocalSet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_a) x)) >>=
+              fun _ => (liftToWithinLoop ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_b)) >>= fun preset0 => (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_depth)) >>= fun preset1 => (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_mode)) >>= fun preset2 => (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_shift)) >>= fun preset3 => (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_arg)) >>= fun preset4 => ((((((Done _ _ _ (fun x => 0%Z)) >>= fun x => Done _ _ _ (update x (vardef_0__renameIndex_index) preset0)) >>= fun x => Done _ _ _ (update x (vardef_0__renameIndex_depth) preset1)) >>= fun x => Done _ _ _ (update x (vardef_0__renameIndex_mode) preset2)) >>= fun x => Done _ _ _ (update x (vardef_0__renameIndex_shift) preset3)) >>= fun x => Done _ _ _ (update x (vardef_0__renameIndex_arg) preset4)) >>= fun x => (Done _ _ _ (fun x => false)) >>= fun y => liftToWithLocalVariables (funcdef_0__renameIndex y x))) >>=
+              fun _ => (liftToWithinLoop (((Done _ _ _ 0%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x) >>= fun x => numberLocalSet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_b) x)) >>=
+              fun _ => (liftToWithinLoop ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_tag)) >>= fun preset0 => (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_a)) >>= fun preset1 => (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_b)) >>= fun preset2 => ((((Done _ _ _ (fun x => 0%Z)) >>= fun x => Done _ _ _ (update x (vardef_0__intern_tag) preset0)) >>= fun x => Done _ _ _ (update x (vardef_0__intern_a) preset1)) >>= fun x => Done _ _ _ (update x (vardef_0__intern_b) preset2)) >>= fun x => (Done _ _ _ (fun x => false)) >>= fun y => liftToWithLocalVariables (funcdef_0__intern y x))) >>=
+              fun _ => (liftToWithinLoop ((Done _ _ _ 10%Z) >>= fun x => ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_top)) >>= fun tuple_element_0 => Done _ _ _ (tuple_element_0)) >>= fun y => store arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x y)) >>=
+              fun _ => ((liftToWithinLoop (((Done _ _ _ 8%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x) >>= fun x => (Done _ _ _ 0%Z) >>= fun y => Done _ _ _ (bool_decide (x = y)))) >>= fun x => if x then (
+                (liftToWithinLoop ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_current)) >>= fun preset0 => (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_depth)) >>= fun preset1 => ((Done _ _ _ 0%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x) >>= fun preset2 => ((((Done _ _ _ (fun x => 0%Z)) >>= fun x => Done _ _ _ (update x (vardef_0__renameCachePut_node) preset0)) >>= fun x => Done _ _ _ (update x (vardef_0__renameCachePut_depth) preset1)) >>= fun x => Done _ _ _ (update x (vardef_0__renameCachePut_value) preset2)) >>= fun x => (Done _ _ _ (fun x => false)) >>= fun y => liftToWithLocalVariables (funcdef_0__renameCachePut y x))) >>=
+                fun _ => Done _ _ _ tt
+              ) else (
+                Done _ _ _ tt
+              )) >>=
+              fun _ => Done _ _ _ tt
+            ) else (
+              Done _ _ _ tt
+            )) >>=
+            fun _ => ((liftToWithinLoop ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_tag)) >>= fun x => (Done _ _ _ 3%Z) >>= fun y => Done _ _ _ (bool_decide (x = y)))) >>= fun x => if x then (
+              (liftToWithinLoop ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_top)) >>= fun x => ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_current)) >>= fun tuple_element_0 => ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_depth)) >>= fun tuple_element_1 => ((Done _ _ _ 1%Z) >>= fun tuple_element_2 => ((Done _ _ _ 0%Z) >>= fun tuple_element_3 => Done _ _ _ (tuple_element_0, tuple_element_1, tuple_element_2, tuple_element_3))))) >>= fun y => store arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__frames) x y)) >>=
+              fun _ => (liftToWithinLoop ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_a)) >>= fun preset0 => (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_depth)) >>= fun preset1 => (((Done _ _ _ (fun x => 0%Z)) >>= fun x => Done _ _ _ (update x (vardef_0__push_node) preset0)) >>= fun x => Done _ _ _ (update x (vardef_0__push_depth) preset1)) >>= fun x => (Done _ _ _ (fun x => false)) >>= fun y => liftToWithLocalVariables (funcdef_0__push y x))) >>=
+              fun _ => Done _ _ _ tt
+            ) else (
+              Done _ _ _ tt
+            )) >>=
+            fun _ => ((liftToWithinLoop ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_tag)) >>= fun x => (Done _ _ _ 4%Z) >>= fun y => Done _ _ _ (bool_decide (x = y)))) >>= fun x => if x then (
+              ((liftToWithinLoop ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_depth)) >>= fun x => (Done _ _ _ 18446744073709551615%Z) >>= fun y => Done _ _ _ (bool_decide (x = y)))) >>= fun x => if x then (
+                (liftToWithinLoop ((Done _ _ _ 8%Z) >>= fun x => ((Done _ _ _ 1%Z) >>= fun tuple_element_0 => Done _ _ _ (tuple_element_0)) >>= fun y => store arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x y)) >>=
+                fun _ => Done _ _ _ tt
+              ) else (
+                (liftToWithinLoop ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_top)) >>= fun x => ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_current)) >>= fun tuple_element_0 => ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_depth)) >>= fun tuple_element_1 => ((Done _ _ _ 3%Z) >>= fun tuple_element_2 => ((Done _ _ _ 0%Z) >>= fun tuple_element_3 => Done _ _ _ (tuple_element_0, tuple_element_1, tuple_element_2, tuple_element_3))))) >>= fun y => store arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__frames) x y)) >>=
+                fun _ => (liftToWithinLoop ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_a)) >>= fun preset0 => (addInt 64 (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_depth)) (Done _ _ _ 1%Z)) >>= fun preset1 => (((Done _ _ _ (fun x => 0%Z)) >>= fun x => Done _ _ _ (update x (vardef_0__push_node) preset0)) >>= fun x => Done _ _ _ (update x (vardef_0__push_depth) preset1)) >>= fun x => (Done _ _ _ (fun x => false)) >>= fun y => liftToWithLocalVariables (funcdef_0__push y x))) >>=
+                fun _ => Done _ _ _ tt
+              )) >>=
+              fun _ => Done _ _ _ tt
+            ) else (
+              Done _ _ _ tt
+            )) >>=
             fun _ => Done _ _ _ tt
-          ))))) >>=
+          )) >>=
           fun _ => Done _ _ _ tt
-        ))))) >>=
+        ) else (
+          Done _ _ _ tt
+        )) >>=
+        fun _ => ((liftToWithinLoop ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_phase)) >>= fun x => (Done _ _ _ 1%Z) >>= fun y => Done _ _ _ (bool_decide (x = y)))) >>= fun x => if x then (
+          (liftToWithinLoop ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_top)) >>= fun x => ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_current)) >>= fun tuple_element_0 => ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_depth)) >>= fun tuple_element_1 => ((Done _ _ _ 2%Z) >>= fun tuple_element_2 => (((Done _ _ _ 0%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x) >>= fun tuple_element_3 => Done _ _ _ (tuple_element_0, tuple_element_1, tuple_element_2, tuple_element_3))))) >>= fun y => store arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__frames) x y)) >>=
+          fun _ => (liftToWithinLoop ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_b)) >>= fun preset0 => (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_depth)) >>= fun preset1 => (((Done _ _ _ (fun x => 0%Z)) >>= fun x => Done _ _ _ (update x (vardef_0__push_node) preset0)) >>= fun x => Done _ _ _ (update x (vardef_0__push_depth) preset1)) >>= fun x => (Done _ _ _ (fun x => false)) >>= fun y => liftToWithLocalVariables (funcdef_0__push y x))) >>=
+          fun _ => Done _ _ _ tt
+        ) else (
+          Done _ _ _ tt
+        )) >>=
+        fun _ => ((liftToWithinLoop ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_phase)) >>= fun x => (Done _ _ _ 2%Z) >>= fun y => Done _ _ _ (bool_decide (x = y)))) >>= fun x => if x then (
+          (liftToWithinLoop ((Done _ _ _ 3%Z) >>= fun preset0 => (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_left)) >>= fun preset1 => ((Done _ _ _ 0%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x) >>= fun preset2 => ((((Done _ _ _ (fun x => 0%Z)) >>= fun x => Done _ _ _ (update x (vardef_0__intern_tag) preset0)) >>= fun x => Done _ _ _ (update x (vardef_0__intern_a) preset1)) >>= fun x => Done _ _ _ (update x (vardef_0__intern_b) preset2)) >>= fun x => (Done _ _ _ (fun x => false)) >>= fun y => liftToWithLocalVariables (funcdef_0__intern y x))) >>=
+          fun _ => (liftToWithinLoop ((Done _ _ _ 10%Z) >>= fun x => ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_top)) >>= fun tuple_element_0 => Done _ _ _ (tuple_element_0)) >>= fun y => store arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x y)) >>=
+          fun _ => ((liftToWithinLoop (((Done _ _ _ 8%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x) >>= fun x => (Done _ _ _ 0%Z) >>= fun y => Done _ _ _ (bool_decide (x = y)))) >>= fun x => if x then (
+            (liftToWithinLoop ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_current)) >>= fun preset0 => (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_depth)) >>= fun preset1 => ((Done _ _ _ 0%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x) >>= fun preset2 => ((((Done _ _ _ (fun x => 0%Z)) >>= fun x => Done _ _ _ (update x (vardef_0__renameCachePut_node) preset0)) >>= fun x => Done _ _ _ (update x (vardef_0__renameCachePut_depth) preset1)) >>= fun x => Done _ _ _ (update x (vardef_0__renameCachePut_value) preset2)) >>= fun x => (Done _ _ _ (fun x => false)) >>= fun y => liftToWithLocalVariables (funcdef_0__renameCachePut y x))) >>=
+            fun _ => Done _ _ _ tt
+          ) else (
+            Done _ _ _ tt
+          )) >>=
+          fun _ => Done _ _ _ tt
+        ) else (
+          Done _ _ _ tt
+        )) >>=
+        fun _ => ((liftToWithinLoop ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_phase)) >>= fun x => (Done _ _ _ 3%Z) >>= fun y => Done _ _ _ (bool_decide (x = y)))) >>= fun x => if x then (
+          (liftToWithinLoop ((Done _ _ _ 4%Z) >>= fun preset0 => ((Done _ _ _ 0%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x) >>= fun preset1 => (Done _ _ _ 0%Z) >>= fun preset2 => ((((Done _ _ _ (fun x => 0%Z)) >>= fun x => Done _ _ _ (update x (vardef_0__intern_tag) preset0)) >>= fun x => Done _ _ _ (update x (vardef_0__intern_a) preset1)) >>= fun x => Done _ _ _ (update x (vardef_0__intern_b) preset2)) >>= fun x => (Done _ _ _ (fun x => false)) >>= fun y => liftToWithLocalVariables (funcdef_0__intern y x))) >>=
+          fun _ => (liftToWithinLoop ((Done _ _ _ 10%Z) >>= fun x => ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_top)) >>= fun tuple_element_0 => Done _ _ _ (tuple_element_0)) >>= fun y => store arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x y)) >>=
+          fun _ => ((liftToWithinLoop (((Done _ _ _ 8%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x) >>= fun x => (Done _ _ _ 0%Z) >>= fun y => Done _ _ _ (bool_decide (x = y)))) >>= fun x => if x then (
+            (liftToWithinLoop ((numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_current)) >>= fun preset0 => (numberLocalGet arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (vardef_0__rename_depth)) >>= fun preset1 => ((Done _ _ _ 0%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x) >>= fun preset2 => ((((Done _ _ _ (fun x => 0%Z)) >>= fun x => Done _ _ _ (update x (vardef_0__renameCachePut_node) preset0)) >>= fun x => Done _ _ _ (update x (vardef_0__renameCachePut_depth) preset1)) >>= fun x => Done _ _ _ (update x (vardef_0__renameCachePut_value) preset2)) >>= fun x => (Done _ _ _ (fun x => false)) >>= fun y => liftToWithLocalVariables (funcdef_0__renameCachePut y x))) >>=
+            fun _ => Done _ _ _ tt
+          ) else (
+            Done _ _ _ tt
+          )) >>=
+          fun _ => Done _ _ _ tt
+        ) else (
+          Done _ _ _ tt
+        )) >>=
         fun _ => Done _ _ _ tt
-      ))))) >>=
+      )))) >>=
       fun _ => Done _ _ _ tt
-    ))))) >>=
+    )) >>=
     fun _ => Done _ _ _ tt
-  ))))) >>=
+  )) >>=
   fun _ => Done _ _ _ tt
-)))) >>=
+)) >>=
 fun _ => ((((Done _ _ _ 10%Z) >>= fun x => retrieve arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x) >>= fun x => (Done _ _ _ 0%Z) >>= fun y => Done _ _ _ (bool_decide (x <> y))) >>= fun x => if x then (
   ((Done _ _ _ 8%Z) >>= fun x => ((Done _ _ _ 1%Z) >>= fun tuple_element_0 => Done _ _ _ (tuple_element_0)) >>= fun y => store arrayIndex1 (arrayType _ environment1) varsfuncdef_0__rename (arraydef_0__meta) x y) >>=
   fun _ => Done _ _ _ tt

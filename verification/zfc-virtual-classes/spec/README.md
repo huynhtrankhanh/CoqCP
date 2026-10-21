@@ -216,6 +216,8 @@ Naming a well-typed proof-shaped node does not certify that every proposed subst
 
 The external `within_capacity` predicate is a resource premise. It must cover representable counters, indices and intermediate shifted variables, allocation capacity, and enough traversal work for the requested mathematical operations. It cannot be selected to mean that the submitted implementation executes correctly, or used to exclude a valid proof merely because its logical check is inconvenient. Host allocation failure is outside the imperative execution model. A full native result must identify and justify its concrete resource domain; declaring `native_contract` alone proves nothing.
 
+The current substitution implementation uses a per-call cache keyed by source formula ID and binder depth. It computes the finite bound `5*(root formula ID+1)^2+1` with checked unsigned arithmetic, stops on an empty work stack, and treats overflow or exhaustion as fatal. This uses the invariant that composite formulas refer to earlier arena IDs. The cache uses SipHash under the handshake seed with a separate domain tag and exact key comparison. The mathematical protocol rules above are unchanged; the new cache and traversal still need their complete native execution refinement.
+
 The specification deliberately distinguishes its contract from the current proof status. A generated definition that typechecks, passing native tests, a formula interner proof, or soundness of the abstract logical rules alone does not establish `Spec.required` for the native program. Every remaining handler, storage representation, parser-domain obligation, and final session composition must be discharged before claiming full end-to-end verification.
 
 ## Example dialogue

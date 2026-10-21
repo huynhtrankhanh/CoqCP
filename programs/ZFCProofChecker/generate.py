@@ -11,13 +11,6 @@ HERE = Path(__file__).resolve().parent
 MAX = "18446744073709551615"
 
 
-def loop256(body, stop, depth=0):
-    if depth == 8:
-        return body
-    inside = loop256(body, stop, depth + 1)
-    return f"range(4294967296, (bound{depth}) => {{\nif ({stop}) {{ ;('break') }}\n{inside}\n}})"
-
-
 def procedure(name, locals, body):
     declarations = ", ".join(f"{key}: {kind}" for key, kind in locals.items())
     return f"procedure('{name}', {{ {declarations} }}, () => {{\n{body}\n}})\n"
@@ -308,9 +301,7 @@ if (retrieve('meta', 8)[0] != 0) {
 def main(output=None):
     parts = [(HERE / "runtime.js.in").read_text()]
     evaluator = (HERE / "rename.js.in").read_text()
-    parts.append(evaluator.replace("RENAME_LOOP", loop256(
-        (HERE / "rename-step.js.in").read_text(),
-        "retrieve('meta', 10)[0] == 0 || retrieve('meta', 8)[0] != 0")))
+    parts.append(evaluator.replace("RENAME_STEP", (HERE / "rename-step.js.in").read_text()))
     parts.append(procedure("predicate", dict(cls="int64", shift="int64", arg="int64", value="int64"), """
 if (retrieve('classes', get('cls'))[0] == 0) {
   set('value', retrieve('classes', get('cls'))[1])

@@ -7,6 +7,8 @@ environment({
   classes: array([int64, int64], 0),
   theorems: array([int64], 0),
   frames: array([int64, int64, int64, int64], 0),
+  renameMemo: array([int64, int64, int64, int64], 0),
+  renameMemoScratch: array([int64, int64, int64, int64], 0),
   bindings: array([int64, int64, int64, int64, int64], 0),
   schemaNodes: array([int64, int64, int64, int64, int64, int64, int64], 0),
   schemaValues: array([int64], 0),

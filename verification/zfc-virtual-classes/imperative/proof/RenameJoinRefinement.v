@@ -1,7 +1,7 @@
 From CoqCP Require Import Options Imperative Execution InteractiveExecution.
 From ImperativeZFC Require Import ProofChecker.
 From Trusted Require Import SetTheory.
-From NativeProof Require Import Index SipHash Intern InternBounded Observation ObservedLocal RenameStack RenameFrames RenameStructure RenameJoin FormulaEncoding Representation HashTable ArenaFrame.
+From NativeProof Require Import Index SipHash Intern InternBounded InternGrowth Observation ObservedLocal RenameStack RenameFrames RenameStructure RenameJoin FormulaEncoding Representation HashTable ArenaFrame RenameConfiguration.
 From Stdlib Require Import Lists.List ZArith.ZArith Lia.
 From stdpp Require Import numbers list.
 Open Scope Z_scope.
@@ -46,7 +46,7 @@ Theorem generated_join_refines (f : Frame) phase fs p q depth stack left_value r
   exists final next index, execLocalObserved iteration (f,observations) = Some (KeepGoing,(final,observations)) /\
     NativeRepresentation.canonical_arena (machine final) next /\ RenameFrames.represents (machine final) next stack /\
     meta_value (machine final) 0 = Z.of_nat index /\ nth_error next index = Some (joined phase left_value right_value) /\
-    exists extra, next = fs ++ extra.
+    (exists extra, next = fs ++ extra) /\ meta_value (machine final) 8 = 0 /\ RenameConfiguration.preserved f final /\ (length next <= S (length fs))%nat.
 Proof.
   intros Hphase Hmeta Herror Hcapacity Harena Hstack Hcurrent Hcurrentword Hlookup.
   destruct (RenameFrames.top_entry (machine f) fs _ stack Hstack) as [raw [Hraw [Hentry Hframes]]].
@@ -62,6 +62,7 @@ Proof.
   destruct (InternBounded.generated_refines (machine f) (fun _ => false) (RenameJoin.arguments phase left_id current)
     fs (joined phase left_value right_value) Harena Herror Hcapacity Hnormal Hdecode)
     as [internstate [next [index [Hintern [Hframe [Hflag [Hindex [Hindexword [Hnext [Hmeaning [extra Hextends]]]]]]]]]]].
+  pose proof (InternGrowth.at_most_one (machine f) internstate _ _ fs next Harena Herror Hcapacity Hintern Hnext) as Hgrowth.
   assert (Hobserved : execObserved (funcdef_0__intern (fun _ => false) (RenameJoin.arguments phase left_id current))
     (machine f,observations) = Some (tt,(internstate,observations)))
     by (apply observed_plain; [apply InternalObservation.intern_nf|exact Hintern]).
@@ -77,6 +78,9 @@ Proof.
       * apply Hcells; lia.
       * apply Harrays; discriminate.
       * rewrite Hextends. now apply RenameFrames.extend.
-    + split; [change (meta_value (store_meta internstate 10 (Z.of_nat (length stack))) 0 = Z.of_nat index); rewrite meta_store_other by lia; exact Hindex|]. split; [exact Hmeaning|now exists extra].
+    + split; [change (meta_value (store_meta internstate 10 (Z.of_nat (length stack))) 0 = Z.of_nat index); rewrite meta_store_other by lia; exact Hindex|]. split; [exact Hmeaning|]. split; [now exists extra|]. split.
+      * change (meta_value (store_meta internstate 10 (Z.of_nat (length stack))) 8 = 0).
+        rewrite meta_store_other by lia. exact Hflag.
+      * split; [apply RenameConfiguration.join|exact Hgrowth].
 Qed.
 End RenameJoinRefinement.

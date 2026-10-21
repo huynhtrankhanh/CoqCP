@@ -7,38 +7,100 @@ set('tag', retrieve('formulas', get('current'))[0])
 set('a', retrieve('formulas', get('current'))[1])
 set('b', retrieve('formulas', get('current'))[2])
 if (get('phase') == 0) {
-  if (get('tag') == 0) {
-    store('meta', 0, [0])
+  call('renameCacheGet', { node: get('current'), depth: get('depth') })
+  if (retrieve('meta', 31)[0] != 18446744073709551615) {
+    store('meta', 0, [retrieve('meta', 31)[0]])
     store('meta', 10, [get('top')])
-  }
-  if (get('tag') == 1 || get('tag') == 2) {
-    call('renameIndex', {index: get('a'), depth: get('depth'), mode: get('mode'), shift: get('shift'), arg: get('arg')})
-    set('a', retrieve('meta', 0)[0])
-    call('renameIndex', {index: get('b'), depth: get('depth'), mode: get('mode'), shift: get('shift'), arg: get('arg')})
-    set('b', retrieve('meta', 0)[0])
-    call('intern', {tag: get('tag'), a: get('a'), b: get('b')})
-    store('meta', 10, [get('top')])
-  }
-  if (get('tag') == 3) {
-    store('frames', get('top'), [get('current'), get('depth'), 1, 0])
-    call('push', {node: get('a'), depth: get('depth')})
-  }
-  if (get('tag') == 4) {
-    if (get('depth') == 18446744073709551615) { store('meta', 8, [1]) } else {
-      store('frames', get('top'), [get('current'), get('depth'), 3, 0])
-      call('push', {node: get('a'), depth: get('depth') + 1})
+  } else {
+    if (get('tag') == 0) {
+      store('meta', 0, [0])
+      store('meta', 10, [get('top')])
+      if (retrieve('meta', 8)[0] == 0) {
+        call('renameCachePut', { node: get('current'), depth: get('depth'), value: retrieve('meta', 0)[0] })
+      }
+    }
+    if (get('tag') == 1 || get('tag') == 2) {
+      call('renameIndex', {
+        index: get('a'),
+        depth: get('depth'),
+        mode: get('mode'),
+        shift: get('shift'),
+        arg: get('arg'),
+      })
+      set('a', retrieve('meta', 0)[0])
+      call('renameIndex', {
+        index: get('b'),
+        depth: get('depth'),
+        mode: get('mode'),
+        shift: get('shift'),
+        arg: get('arg'),
+      })
+      set('b', retrieve('meta', 0)[0])
+      call('intern', {
+        tag: get('tag'),
+        a: get('a'),
+        b: get('b'),
+      })
+      store('meta', 10, [get('top')])
+      if (retrieve('meta', 8)[0] == 0) {
+        call('renameCachePut', { node: get('current'), depth: get('depth'), value: retrieve('meta', 0)[0] })
+      }
+    }
+    if (get('tag') == 3) {
+      store('frames', get('top'), [
+        get('current'),
+        get('depth'),
+        1,
+        0,
+      ])
+      call('push', { node: get('a'), depth: get('depth') })
+    }
+    if (get('tag') == 4) {
+      if (get('depth') == 18446744073709551615) {
+        store('meta', 8, [1])
+      } else {
+        store('frames', get('top'), [
+          get('current'),
+          get('depth'),
+          3,
+          0,
+        ])
+        call('push', {
+          node: get('a'),
+          depth: get('depth') + 1,
+        })
+      }
     }
   }
 }
 if (get('phase') == 1) {
-  store('frames', get('top'), [get('current'), get('depth'), 2, retrieve('meta', 0)[0]])
-  call('push', {node: get('b'), depth: get('depth')})
+  store('frames', get('top'), [
+    get('current'),
+    get('depth'),
+    2,
+    retrieve('meta', 0)[0],
+  ])
+  call('push', { node: get('b'), depth: get('depth') })
 }
 if (get('phase') == 2) {
-  call('intern', {tag: 3, a: get('left'), b: retrieve('meta', 0)[0]})
+  call('intern', {
+    tag: 3,
+    a: get('left'),
+    b: retrieve('meta', 0)[0],
+  })
   store('meta', 10, [get('top')])
+  if (retrieve('meta', 8)[0] == 0) {
+    call('renameCachePut', { node: get('current'), depth: get('depth'), value: retrieve('meta', 0)[0] })
+  }
 }
 if (get('phase') == 3) {
-  call('intern', {tag: 4, a: retrieve('meta', 0)[0], b: 0})
+  call('intern', {
+    tag: 4,
+    a: retrieve('meta', 0)[0],
+    b: 0,
+  })
   store('meta', 10, [get('top')])
+  if (retrieve('meta', 8)[0] == 0) {
+    call('renameCachePut', { node: get('current'), depth: get('depth'), value: retrieve('meta', 0)[0] })
+  }
 }

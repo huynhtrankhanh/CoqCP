@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Differential native tests against the separate Gallina reference checker."""
 import argparse
+from functools import lru_cache
 import select
 import subprocess
 import sys
@@ -167,6 +168,95 @@ class NativeTests(unittest.TestCase):
         self.c.ok('11 5 10 0 0')
         result = self.c.ok('24 snapshot 0')
         self.assertEqual(self.c.ok(f'19 {result}'), self.c.formula(['=', '9', '9']))
+
+    def test_substitution_reuses_a_deep_shared_dag(self):
+        # 180 tiny DAG nodes denote a tree with more than 2^180 leaves.
+        # Construct the expected renamed DAG directly, without tree expansion.
+        source = self.c.ok('1 0 1')
+        expected = self.c.ok('1 7 0')
+        for _ in range(180):
+            source = self.c.ok(f'3 {source} {source}')
+            expected = self.c.ok(f'3 {expected} {expected}')
+        abstraction = self.c.ok(f'6 {source}')
+        variable = self.c.ok('5 7')
+        self.assertEqual(self.c.ok(f'8 {variable} {abstraction}'), expected)
+
+    def test_substitution_cache_distinguishes_binder_depth(self):
+        source = self.c.ok('1 0 1')
+        source = self.c.ok(f'3 {source} {self.c.ok(f"4 {source}")}')
+        free = self.c.ok('1 7 0')
+        bound = self.c.ok('1 0 8')
+        expected = self.c.ok(f'3 {free} {self.c.ok(f"4 {bound}")}')
+        abstraction = self.c.ok(f'6 {source}')
+        variable = self.c.ok('5 7')
+        self.assertEqual(self.c.ok(f'8 {variable} {abstraction}'), expected)
+
+    def test_substitution_shared_dag_at_many_binder_depths(self):
+        # Each layer shares its child inside and outside a quantifier. There
+        # are quadratically many node/depth pairs and exponentially many paths.
+        layers = 80
+        source = self.c.ok('1 40 41')
+        for _ in range(layers):
+            quantified = self.c.ok(f'4 {source}')
+            source = self.c.ok(f'3 {source} {quantified}')
+
+        @lru_cache(None)
+        def expected(layer, depth):
+            if layer == 0:
+                def subst(index):
+                    if index < depth:
+                        return index
+                    return 7 + depth if index == depth else index - 1
+                return self.c.ok(f'1 {subst(40)} {subst(41)}')
+            left = expected(layer - 1, depth)
+            right = self.c.ok(f'4 {expected(layer - 1, depth + 1)}')
+            return self.c.ok(f'3 {left} {right}')
+
+        renamed = expected(layers, 0)
+        abstraction = self.c.ok(f'6 {source}')
+        variable = self.c.ok('5 7')
+        self.assertEqual(self.c.ok(f'8 {variable} {abstraction}'), renamed)
+
+    def test_substitution_cache_is_reset_between_calls(self):
+        source = self.c.ok('1 0 1')
+        first = self.c.ok('1 7 0')
+        second = self.c.ok('1 9 0')
+        for _ in range(48):
+            source = self.c.ok(f'3 {source} {source}')
+            first = self.c.ok(f'3 {first} {first}')
+            second = self.c.ok(f'3 {second} {second}')
+        abstraction = self.c.ok(f'6 {source}')
+        a, b = self.c.ok('5 7'), self.c.ok('5 9')
+        self.assertEqual(self.c.ok(f'8 {a} {abstraction}'), first)
+        self.assertEqual(self.c.ok(f'8 {b} {abstraction}'), second)
+        self.assertEqual(self.c.ok(f'8 {a} {abstraction}'), first)
+
+    def test_substitution_cache_can_return_formula_zero(self):
+        source = 0
+        for _ in range(180):
+            source = self.c.ok(f'3 {source} {source}')
+        abstraction = self.c.ok(f'6 {source}')
+        variable = self.c.ok('5 7')
+        self.assertEqual(self.c.ok(f'8 {variable} {abstraction}'), source)
+
+    def test_substitution_cache_collisions_and_rehashing(self):
+        key = tuple(map(int, SEED.split()))
+        colliding = []
+        for variable in range(10, 8192):
+            node = self.c.ok(f'1 {variable} {variable + 1}')
+            if siphash(key, (5, node, 0)) % 16 == 0:
+                colliding.append((node, variable))
+                if len(colliding) == 24:
+                    break
+        self.assertEqual(len(colliding), 24)
+        source = expected = 0
+        for node, variable in colliding:
+            source = self.c.ok(f'3 {source} {node}')
+            renamed = self.c.ok(f'1 {variable - 1} {variable}')
+            expected = self.c.ok(f'3 {expected} {renamed}')
+        abstraction = self.c.ok(f'6 {source}')
+        variable = self.c.ok('5 7')
+        self.assertEqual(self.c.ok(f'8 {variable} {abstraction}'), expected)
 
     def test_every_axiom_matches_reference(self):
         # The reference is a separate, Rocq-proved implementation. Compare full

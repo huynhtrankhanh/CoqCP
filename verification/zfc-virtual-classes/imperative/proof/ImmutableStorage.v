@@ -10,6 +10,7 @@ Import EffectFrame.
 Definition persistent_array watched :=
   arraydef_0__meta <> watched /\ arraydef_0__sipState <> watched /\
   arraydef_0__formulaBuckets <> watched /\ arraydef_0__formulaLinks <> watched /\
+  arraydef_0__renameMemo <> watched /\ arraydef_0__renameMemoScratch <> watched /\
   arraydef_0__formulas <> watched /\ arraydef_0__classes <> watched /\
   arraydef_0__theorems <> watched /\ arraydef_0__frames <> watched /\
   arraydef_0__schemaValues <> watched /\ arraydef_0__schemaMarks <> watched /\
@@ -92,8 +93,17 @@ Proof. unfold persistent_array in Hprotected.
   unfold funcdef_0__renameIndex. apply eliminate_ro. unfold funcdef_0__renameIndex_body. ro.
 Qed.
 Local Opaque funcdef_0__renameIndex.
+Theorem renameCacheGet_ro watched (Hprotected : persistent_array watched) bs ns : array_ro watched (funcdef_0__renameCacheGet bs ns).
+Proof. unfold persistent_array in Hprotected. pose proof (formulaHash_ro watched Hprotected) as Hhash. unfold funcdef_0__renameCacheGet. apply eliminate_ro. unfold funcdef_0__renameCacheGet_body. ro. Qed.
+Local Opaque funcdef_0__renameCacheGet.
+Theorem renameCacheGrow_ro watched (Hprotected : persistent_array watched) bs ns : array_ro watched (funcdef_0__renameCacheGrow bs ns).
+Proof. unfold persistent_array in Hprotected. pose proof (formulaHash_ro watched Hprotected) as Hhash. unfold funcdef_0__renameCacheGrow. apply eliminate_ro. unfold funcdef_0__renameCacheGrow_body. ro. Qed.
+Local Opaque funcdef_0__renameCacheGrow.
+Theorem renameCachePut_ro watched (Hprotected : persistent_array watched) bs ns : array_ro watched (funcdef_0__renameCachePut bs ns).
+Proof. unfold persistent_array in Hprotected. pose proof (formulaHash_ro watched Hprotected) as Hhash. pose proof (renameCacheGrow_ro watched Hprotected) as Hgrow. unfold funcdef_0__renameCachePut. apply eliminate_ro. unfold funcdef_0__renameCachePut_body. ro. Qed.
+Local Opaque funcdef_0__renameCachePut.
 Theorem rename_ro watched (Hprotected : persistent_array watched) bs ns : array_ro watched (funcdef_0__rename bs ns).
-Proof. unfold persistent_array in Hprotected.
+Proof. pose proof (renameCacheGet_ro watched Hprotected) as HrenameCacheGet.  pose proof (renameCachePut_ro watched Hprotected) as HrenameCachePut.  unfold persistent_array in Hprotected.
   pose proof (push_ro watched Hprotected) as Hdep0.
   pose proof (renameIndex_ro watched Hprotected) as Hdep1.
   pose proof (intern_ro watched Hprotected) as Hdep2.

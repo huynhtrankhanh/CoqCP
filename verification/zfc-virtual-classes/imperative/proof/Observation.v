@@ -159,8 +159,17 @@ Proof.
   unfold funcdef_0__renameIndex. apply eliminate_nf. unfold funcdef_0__renameIndex_body. nf.
 Qed.
 Local Opaque funcdef_0__renameIndex.
+Theorem renameCacheGet_nf bs ns : NoFlush (funcdef_0__renameCacheGet bs ns).
+Proof. pose proof (formulaHash_nf) as Hhash. unfold funcdef_0__renameCacheGet. apply eliminate_nf. unfold funcdef_0__renameCacheGet_body. nf. Qed.
+Local Opaque funcdef_0__renameCacheGet.
+Theorem renameCacheGrow_nf bs ns : NoFlush (funcdef_0__renameCacheGrow bs ns).
+Proof. pose proof (formulaHash_nf) as Hhash. unfold funcdef_0__renameCacheGrow. apply eliminate_nf. unfold funcdef_0__renameCacheGrow_body. nf. Qed.
+Local Opaque funcdef_0__renameCacheGrow.
+Theorem renameCachePut_nf bs ns : NoFlush (funcdef_0__renameCachePut bs ns).
+Proof. pose proof (formulaHash_nf) as Hhash. pose proof (renameCacheGrow_nf) as Hgrow. unfold funcdef_0__renameCachePut. apply eliminate_nf. unfold funcdef_0__renameCachePut_body. nf. Qed.
+Local Opaque funcdef_0__renameCachePut.
 Theorem rename_nf bs ns : NoFlush (funcdef_0__rename bs ns).
-Proof.
+Proof. pose proof (renameCacheGet_nf) as HrenameCacheGet.  pose proof (renameCachePut_nf) as HrenameCachePut.
   pose proof push_nf as Hdep0.
   pose proof renameIndex_nf as Hdep1.
   pose proof intern_nf as Hdep2.

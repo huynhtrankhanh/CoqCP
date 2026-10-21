@@ -1,7 +1,7 @@
 From CoqCP Require Import Options Imperative Execution InteractiveExecution.
 From ImperativeZFC Require Import ProofChecker.
 From Trusted Require Import SetTheory.
-From NativeProof Require Import Index SipHash Lift LocalParameters IndexFrame Intern InternBounded Observation ObservedLocal RenameStack RenameFrames RenameStructure RenameAtom FormulaEncoding Representation HashTable ArenaFrame.
+From NativeProof Require Import Index SipHash Lift LocalParameters IndexFrame Intern InternBounded InternGrowth Observation ObservedLocal RenameStack RenameFrames RenameStructure RenameAtom FormulaEncoding Representation HashTable ArenaFrame RenameConfiguration.
 From Stdlib Require Import Lists.List ZArith.ZArith Lia.
 From stdpp Require Import numbers list.
 Open Scope Z_scope.
@@ -30,7 +30,7 @@ Theorem generated_atom_refines (f : Frame) tag fs i j depth stack m shift arg ob
     NativeRepresentation.canonical_arena (machine final) next /\ RenameFrames.represents (machine final) next stack /\
     meta_value (machine final) 0 = Z.of_nat index /\
     nth_error next index = Some (SetTheory.rename (under_binders depth (renaming m shift arg)) (atom tag i j)) /\
-    exists extra, next = fs ++ extra.
+    (exists extra, next = fs ++ extra) /\ meta_value (machine final) 8 = 0 /\ RenameConfiguration.preserved f final /\ (length next <= S (length fs))%nat.
 Proof.
   intros Htag Hmode Hshift Harg Hmeta Herror Hcapacity Harena Hstack Hi Hj Hshiftword Hargword Hmapped_i Hmapped_j.
   destruct (RenameFrames.top_entry (machine f) fs _ stack Hstack) as [raw [Hraw [Hentry Hframes]]].
@@ -76,6 +76,7 @@ Proof.
   destruct (InternBounded.generated_refines second (fun _ => false) (RenameAtom.intern_arguments tag (Z.of_nat mapped_i) (Z.of_nat mapped_j))
     fs (atom tag mapped_i mapped_j) Hsecondarena Hsecondclear Hcapacity Hnormal Hdecode)
     as [internstate [next [index [Hintern [Hframe [Hflag [Hindex [Hindexword [Hnext [Hmeaning [extra Hextends]]]]]]]]]]].
+  pose proof (InternGrowth.at_most_one second internstate _ _ fs next Hsecondarena Hsecondclear Hcapacity Hintern Hnext) as Hgrowth.
   assert (Hobserved : execObserved (funcdef_0__intern (fun _ => false) (RenameAtom.intern_arguments tag (Z.of_nat mapped_i) (Z.of_nat mapped_j)))
     (second,observations) = Some (tt,(internstate,observations)))
     by (apply observed_plain; [apply InternalObservation.intern_nf|exact Hintern]).
@@ -95,6 +96,9 @@ Proof.
     + split.
       * change (meta_value (store_meta internstate 10 (Z.of_nat (length stack))) 0 = Z.of_nat index).
         rewrite meta_store_other by lia. exact Hindex.
-      * split; [rewrite renamed_atom by exact Htag; exact Hmeaning|now exists extra].
+      * split; [rewrite renamed_atom by exact Htag; exact Hmeaning|]. split; [now exists extra|]. split.
+        -- change (meta_value (store_meta internstate 10 (Z.of_nat (length stack))) 8 = 0).
+           rewrite meta_store_other by lia. exact Hflag.
+        -- split; [apply RenameConfiguration.atom|exact Hgrowth].
 Qed.
 End RenameAtomRefinement.

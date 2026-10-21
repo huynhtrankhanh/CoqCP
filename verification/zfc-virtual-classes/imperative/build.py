@@ -6,6 +6,7 @@ This is a development build. Main's execution refinement is not implied by typec
 import argparse
 import hashlib
 import json
+import re
 from pathlib import Path
 import shutil
 import subprocess
@@ -73,7 +74,21 @@ def main():
                      'ParsedState', 'CommandRestate', 'CommandRestateReject', 'RestateRefinement', 'CommandInspect', 'InspectRefinement',
                      'EffectFrame', 'ImmutableStorage', 'ImmutableHandlers',
                      'LocalObservation', 'NameLookup', 'NameSearch', 'NameRepresentation', 'NameCopy', 'BindingStorage', 'BindName', 'BindNameRefinement', 'ReadName', 'ReadNameOne', 'CommandNameTheorem', 'NameTheoremRefinement', 'CommandNameClass', 'NameClassRefinement', 'TypedNameLookup', 'CommandLookupClass', 'NameQueryState', 'LookupClassRefinement',
-                     'LogicalNames', 'CommandRecall', 'RecallRefinement', 'CommandText', 'CommandNameQuery', 'NameQueryRefinement', 'LogicalSoundness', 'SchemaMetadata', 'CommandArity', 'ArityRefinement', 'MetaCellFrame', 'SchemaCountStorage', 'SchemaFrame', 'CommandNameSchema', 'NameSchemaRefinement', 'RenameStack', 'RenameStructure', 'RenameFrames', 'RenameBudget', 'RenameLeaf', 'LocalParameters', 'IndexFrame', 'RenameJoin', 'RenameJoinRefinement', 'RenameAtom', 'RenameAtomRefinement']
+                     'LogicalNames', 'CommandRecall', 'RecallRefinement', 'CommandText', 'CommandNameQuery', 'NameQueryRefinement', 'LogicalSoundness', 'SchemaMetadata', 'CommandArity', 'ArityRefinement', 'MetaCellFrame', 'SchemaCountStorage', 'SchemaFrame', 'CommandNameSchema', 'NameSchemaRefinement', 'RenameStack', 'RenameStructure', 'RenameFrames', 'RenameBudget', 'RenameLeaf', 'LocalParameters', 'IndexFrame', 'FrameReplace', 'RenameJoin', 'RenameAtom', 'RenamePush', 'RenameNext', 'RenameConfiguration', 'InternGrowth', 'RenameJoinRefinement', 'RenameAtomRefinement', 'RenamePushRefinement', 'RenameNextRefinement', 'RenameFalsityRefinement', 'RenameInvariant', 'RenameStep', 'RenameRefinement', 'PredicateExecution', 'PredicateRefinement', 'InternalIO', 'InternalIOProcedures', 'RenameStorage', 'ClassLookup', 'ClassPredicate', 'ClassEqualSets', 'ClassMemberSet', 'InternReserve', 'FormulaCircuit', 'ClassEqualCircuit', 'ClassEqualRefinement', 'ClassEqualCommand', 'ClassEqualProtocol', 'ClassMemberCircuit', 'RenameMemoBounds', 'RenameMemoTable', 'RenameMemoLookup', 'RenameMemoPlacement', 'RenameMemoCapacity', 'RenameMemoInsert', 'FormulaTopology']
+    # These sources describe the former eight-level, uncached traversal.
+    # Keep them for porting, but never audit them against a different program.
+    pending_proof_ports = {'RenameStructure'}
+    while True:
+        old_pending = set(pending_proof_ports)
+        for name in proof_modules:
+            source_text = (here / 'proof' / f'{name}.v').read_text()
+            dependencies = set(' '.join(re.findall(
+                r'From NativeProof Require (?:Import|Export) ([^.]+)\.', source_text)).split())
+            if dependencies & pending_proof_ports:
+                pending_proof_ports.add(name)
+        if pending_proof_ports == old_pending:
+            break
+    proof_modules = [name for name in proof_modules if name not in pending_proof_ports]
     for name in proof_modules:
         source = proofs / f'{name}.v'
         shutil.copy2(here / 'proof' / source.name, source)
@@ -395,7 +410,37 @@ def main():
                'IndexFrame.generated_semantics', 'RenameJoin.generated_join', 'RenameJoinRefinement.fields',
                'RenameJoinRefinement.arguments_spec', 'RenameJoinRefinement.generated_join_refines', 'RenameAtom.generated_atom',
                'RenameAtomRefinement.decoded', 'RenameAtomRefinement.normal', 'RenameAtomRefinement.renamed_atom',
-               'RenameAtomRefinement.generated_atom_refines',]
+               'RenameAtomRefinement.generated_atom_refines',
+               'FrameReplace.write_other', 'FrameReplace.write_frames', 'FrameReplace.write_meta',
+               'FrameReplace.replace_prefix', 'FrameReplace.replace_top', 'FrameReplace.write_projection',
+               'FrameReplace.write_arena', 'FrameReplace.push_other', 'FrameReplace.push_meta_length',
+               'FrameReplace.push_meta_other', 'FrameReplace.push_projection', 'FrameReplace.push_arena',
+               'RenamePush.generated_fresh', 'RenameNext.generated_next', 'RenameConfiguration.loaded',
+               'RenameConfiguration.falsity', 'RenameConfiguration.join', 'RenameConfiguration.atom',
+               'RenameConfiguration.push', 'RenameConfiguration.next', 'InternGrowth.at_most_one',
+               'RenamePushRefinement.decode_all', 'RenamePushRefinement.source_fields', 'RenamePushRefinement.child_depth_value',
+               'RenamePushRefinement.child_depth_word', 'RenamePushRefinement.generated_fresh_refines', 'RenameNextRefinement.generated_next_refines',
+               'RenameFalsityRefinement.generated_falsity_refines', 'RenameInvariant.parameters_preserved', 'RenameInvariant.pending_length',
+               'RenameInvariant.pending_zero', 'RenameInvariant.tick_fits', 'RenameInvariant.word_id',
+               'RenameInvariant.current_with_id', 'RenameInvariant.ready', 'RenameInvariant.capacity',
+               'RenameInvariant.stack_room', 'RenameInvariant.adopt', 'RenameStep.finish',
+               'RenameStep.advance',
+               'RenameRefinement.work_rename', 'RenameRefinement.fits_depth', 'RenameRefinement.initial_invariant', 'RenameRefinement.sufficient_budget', 'RenameRefinement.generated_local', 'RenameRefinement.generated_rename',
+               'PredicateExecution.generated_set_body', 'PredicateExecution.generated_abstract_body',
+               'PredicateExecution.generated_set', 'PredicateExecution.generated_abstract',
+               'PredicateRefinement.rename_extensional', 'PredicateRefinement.predicate_renaming',
+               'PredicateRefinement.generated_set_refines', 'PredicateRefinement.generated_abstract_refines',
+               'InternalIOProcedures.rename_preserves', 'InternalIOProcedures.predicate_preserves',
+               'RenameStorage.rename_arrays', 'RenameStorage.predicate_arrays', 'RenameStorage.rename_cells', 'RenameStorage.predicate_cells',
+               'RenameStorage.rename_frame', 'RenameStorage.predicate_frame', 'RenameStorage.classes_transport',
+               'RenameStorage.history_transport', 'RenameStorage.names_transport', 'RenameStorage.schemas_transport',
+               'ClassLookup.empty', 'ClassLookup.transport', 'ClassLookup.append_wellformed',
+               'ClassLookup.frame_wellformed', 'ClassLookup.lookup', 'ClassPredicate.generated_refines',
+               'ClassEqualSets.generated_body', 'ClassEqualSets.generated_helper', 'ClassEqualSets.set_lookup',
+               'ClassEqualSets.intern_frame', 'ClassEqualSets.generated_refines',
+               'ClassMemberSet.generated_body', 'ClassMemberSet.generated_helper', 'ClassMemberSet.predicate_identity', 'ClassMemberSet.generated_refines',
+               'InternReserve.generated_refines', 'InternReserve.lookup_preserved', 'InternReserve.extends_trans', 'FormulaCircuit.wire', 'FormulaCircuit.extend', 'FormulaCircuit.decode', 'FormulaCircuit.step', 'FormulaCircuit.complete', 'ClassEqualCircuit.infer', 'ClassEqualCircuit.fits', 'ClassEqualCircuit.construct', 'ClassEqualCircuit.generated_general', 'ClassEqualCircuit.result_semantics', 'ClassEqualRefinement.frame_trans', 'ClassEqualRefinement.result_frame', 'ClassEqualRefinement.predicate_successor', 'ClassEqualRefinement.equality_formula', 'ClassEqualRefinement.records', 'ClassEqualRefinement.generated_general', 'ClassEqualRefinement.unit_projection', 'ClassEqualRefinement.general_without_reserve', 'ClassEqualRefinement.generated_refines', 'ClassEqualCommand.generated_handler', 'ClassEqualCommand.generated_command', 'ClassEqualCommand.generated_rejected_first', 'ClassEqualCommand.generated_rejected_second', 'ClassEqualCommand.generated_rejected_handler', 'ClassEqualCommand.generated_rejected_command', 'ClassEqualProtocol.argument_classes', 'ClassEqualProtocol.argument_history', 'ClassEqualProtocol.reference', 'ClassEqualProtocol.generated_protocol', 'ClassEqualProtocol.logical_rejected', 'ClassEqualProtocol.generated_rejected_protocol', 'ClassEqualProtocol.generated_total_protocol', 'ClassMemberCircuit.infer', 'ClassMemberCircuit.fits', 'ClassMemberCircuit.construct', 'RenameMemoBounds.grid_length_aux', 'RenameMemoBounds.grid_length', 'RenameMemoBounds.grid_contains', 'RenameMemoBounds.distinct_pairs', 'RenameMemoBounds.counted_work', 'RenameMemoBounds.root_fuel', 'RenameMemoBounds.checked_arithmetic', 'RenameMemoBounds.grid_from_length_aux', 'RenameMemoBounds.grid_from_length', 'RenameMemoBounds.grid_from_contains', 'RenameMemoBounds.distinct_pairs_from', 'RenameMemoBounds.root_fuel_from', 'RenameMemoBounds.reachable_rank', 'RenameMemoBounds.reachable_bounds', 'RenameMemoTable.next_bound', 'RenameMemoTable.scan_sound', 'RenameMemoTable.scan_complete', 'RenameMemoTable.scan_meaning', 'RenameMemoTable.put_represents', 'RenameMemoTable.empty_represents', 'RenameMemoLookup.generated_probe', 'RenameMemoLookup.advance_key', 'RenameMemoLookup.advance_parameters', 'RenameMemoLookup.parameters_trans', 'RenameMemoLookup.generated_scan', 'RenameMemoLookup.scan_no_flush', 'RenameMemoLookup.generated_scan_observed', 'RenameMemoLookup.hash_meta_length', 'RenameMemoLookup.prepared_meta_length', 'RenameMemoLookup.prepared_table', 'RenameMemoLookup.prepared_memo', 'RenameMemoLookup.prepared_miss', 'RenameMemoLookup.prepared_meta_other', 'RenameMemoLookup.body_actual', 'RenameMemoLookup.hash_observed', 'RenameMemoLookup.generated_body_composition', 'RenameMemoLookup.prepared_hash', 'RenameMemoLookup.hash_start_bound', 'RenameMemoLookup.start_key', 'RenameMemoLookup.start_size', 'RenameMemoLookup.start_slot', 'RenameMemoLookup.generated_lookup_exact', 'RenameMemoLookup.prepared_frame', 'RenameMemoLookup.store_frame', 'RenameMemoLookup.frame_trans', 'RenameMemoLookup.result_frame', 'RenameMemoLookup.result_value', 'RenameMemoLookup.lookup_sound', 'RenameMemoLookup.lookup_complete', 'RenameMemoLookup.lookup_miss_absent', 'RenameMemoLookup.generated_lookup_refines', 'RenameMemoLookup.generated_hit_sound', 'RenameMemoLookup.generated_hit_iff', 'RenameMemoPlacement.place_sound', 'RenameMemoPlacement.place_scan', 'RenameMemoPlacement.accessible_preserved', 'RenameMemoPlacement.put_nonempty', 'RenameMemoPlacement.put_indexed', 'RenameMemoPlacement.placed_indexed', 'RenameMemoPlacement.empty_indexed', 'RenameMemoPlacement.accessible_ext', 'RenameMemoPlacement.indexed_ext', 'RenameMemoPlacement.represents_ext', 'RenameMemoCapacity.position_zero', 'RenameMemoCapacity.position_next', 'RenameMemoCapacity.position_covers', 'RenameMemoCapacity.exhausted_occupied', 'RenameMemoCapacity.empty_place', 'RenameMemoCapacity.live_bound', 'RenameMemoCapacity.live_ext', 'RenameMemoCapacity.live_empty', 'RenameMemoCapacity.room_place', 'RenameMemoCapacity.live_put', 'RenameMemoInsert.modify_memo_meta', 'RenameMemoInsert.generated_probe', 'RenameMemoInsert.advance_key', 'RenameMemoInsert.advance_value', 'RenameMemoInsert.advance_parameters', 'RenameMemoInsert.parameters_trans', 'RenameMemoInsert.generated_scan', 'RenameMemoInsert.scan_no_flush', 'RenameMemoInsert.generated_scan_observed', 'RenameMemoInsert.store_entry_meta_length', 'RenameMemoInsert.update_meta_length', 'RenameMemoInsert.body_actual', 'RenameMemoInsert.generated_body_below_half', 'RenameMemoInsert.prepared_table', 'RenameMemoInsert.prepared_memo', 'RenameMemoInsert.start_key', 'RenameMemoInsert.start_value', 'RenameMemoInsert.start_size', 'RenameMemoInsert.start_placed', 'RenameMemoInsert.start_slot', 'RenameMemoInsert.generated_below_half', 'RenameMemoInsert.store_entry_other', 'RenameMemoInsert.store_entry_meta', 'RenameMemoInsert.store_entry_table', 'RenameMemoInsert.update_table', 'RenameMemoInsert.update_meta_other', 'RenameMemoInsert.result_table', 'RenameMemoInsert.result_represents', 'RenameMemoInsert.result_nonfatal', 'RenameMemoInsert.result_frame', 'RenameMemoInsert.result_meaning', 'RenameMemoInsert.result_hash_start', 'RenameMemoInsert.result_indexed', 'RenameMemoInsert.generated_below_half_preserves', 'RenameMemoInsert.placement_available', 'RenameMemoInsert.below_half_room', 'RenameMemoInsert.generated_below_half_nonfatal', 'RenameMemoInsert.result_live_count', 'RenameMemoInsert.below_half_increment_word', 'RenameMemoInsert.result_memo_length', 'RenameMemoInsert.generated_below_half_invariant', 'FormulaTopology.decoded_children', 'FormulaTopology.empty', 'FormulaTopology.same', 'FormulaTopology.append', 'FormulaTopology.canonical_preserves', 'FormulaTopology.generated_intern_preserves', 'FormulaTopology.edge_children', 'FormulaTopology.path_reachable', 'FormulaTopology.path_bounds',]
+    audited = [name for name in audited if name.split('.')[0] not in pending_proof_ports]
     (code / 'Audit.v').write_text(
         'From CoqCP Require Import Options TapeEnd.\n'
         'From ImperativeZFC Require Import ProofChecker.\n'
@@ -426,10 +471,16 @@ def main():
     (out / 'development-status.json').write_text(json.dumps({
         'status': 'incomplete', 'implementation': 'CoqCP imperative DSL to C++',
         'generated_rocq_kernel_recheck': 'passed', 'main_global_assumptions': [],
+        'proof_module_count': len(proof_modules), 'closed_assumption_audits': len(audited),
+        'pending_proof_ports': sorted(pending_proof_ports),
+        'implemented_unproved': ['sparse SipHash memoization of substitution by source formula ID and binder depth, with checked 5*(root ID+1)^2+1 traversal fuel; native cache resizing/rehashing, cache initialization and complete new traversal execution refinement remain open'],
         'proved_generated_execution': [
             'checked index substitution and overflow rejection',
-            'actual iterative substitution setup, eight-layer loop structure, stopping/error guards and exhaustion check; loop-budget progress follows from an explicit one-iteration semantic-decrease premise, whose remaining cases are frame pushes and phase replacement',
-            'typed substitution-stack model: capture-avoiding denotation, exact decreasing work measure, native frame representation, checked stack push/pop, and actual execution refinements for falsity/variable leaves and completed implication/quantifier frames',
+            'typed substitution-stack model: capture-avoiding denotation, exact decreasing work measure, native frame representation and checked stack push/pop; the prior traversal-specific execution refinements await porting to memoization',
+            'memoization bound arithmetic: finite source/depth grid cardinality, distinct-pair counting and checked polynomial fuel guards; connecting traversal events to those counting premises remains open',
+            'complete native substitution-cache lookup: seeded hash, finite linear probing with wraparound, exact hit/miss model, metadata and logical-array preservation and unchanged input/output/flush trace; hit meaning and completeness under explicit table invariants',
+            'native substitution-cache insertion below half capacity: exact hashing and probe execution, preserved logical state, entry meanings, lookup reachability, live-entry count and allocated capacity; valid counted tables terminate without a fatal error, without assuming hash injectivity',
+            'native formula-arena topology: decoding bounds child IDs; the actual bounded interner preserves backward child edges, and arena paths satisfy the source-ID/binder-depth grid bound',
             'explicit traversal stack push',
             'formatter memory preservation',
             'complete native unsigned formatter: exact canonical decimal bytes for every 64-bit value, unchanged input/flush trace and framed memory',
@@ -493,9 +544,10 @@ def main():
             'complete generated main on seed plus quit: exact three-flush transcript, preserved arena and arbitrary later bytes left unread',
         ],
         'command_loop': 'tapeEnd (EOF, quit, or fatal error)',
-        'missing_obligations': ['generated-main end-to-end execution refinement',
-                                'native substitution, class expansion, axiom builders and proof commands',
-                                'native naming/schema evaluator and complete logical-state representation refinement',
+        'missing_obligations': ['native memo resizing/rehashing and the insertion resize path, cache initialization and invariant preservation through the traversal, polynomial traversal bound and complete memoized substitution execution refinement',
+                                'generated-main end-to-end execution refinement',
+                                'native class expansion, axiom builders and remaining proof commands; checked renaming overflow/exhaustion paths outside the success domain',
+                                'native schema construction/evaluation, class certification and complete logical-state representation refinement',
                                 'malformed-input parser refinement and protocol refinement and dialogue composition for opcodes 7–8, 11, 14, 22 and 24; complete logical-state protocol composition including undo/reset'],
         'adversarial_acceptance': False, 'sha256': artifacts,
     }, indent=2) + '\n')
