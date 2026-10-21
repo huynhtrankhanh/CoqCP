@@ -8,10 +8,10 @@ The formal entry point is [Spec.v](Spec.v), especially `required`. Its dependenc
 
 Every completed, resource-fitting canonical dialogue must terminate, produce the specified replies and flushes, and correspond to `Protocol.dialogue` starting at `Protocol.initial`. Its final logical state must also satisfy `Guarantees.safe`, an explicit part of `Spec.required`:
 
-* Every active theorem slot denotes a formula with a derivation in `SetTheory.derives`.
-* Every named theorem denotes such a derivable formula, including after undo, reset, and reuse of history slots.
-* Every named class denotes a class expression. A name marked `SET` carries a derivation of that class's representing-set existence formula, `Protocol.class_setness`.
-* Every named schema denotes a proof template. Whenever an instantiation check succeeds, its returned formula has a ZFC derivation.
+- Every active theorem slot denotes a formula with a derivation in `SetTheory.derives`.
+- Every named theorem denotes such a derivable formula, including after undo, reset, and reuse of history slots.
+- Every named class denotes a class expression. A name marked `SET` carries a derivation of that class's representing-set existence formula, `Protocol.class_setness`.
+- Every named schema denotes a proof template. Whenever an instantiation check succeeds, its returned formula has a ZFC derivation.
 
 `Guarantees.step_safe` and `Guarantees.dialogue_safe` prove these properties at every logical transition, including all prefixes of a dialogue, rather than only after the last command. `Guarantees.classes_conservative` proves that a virtual-class statement is provable exactly when its first-order expansion is derivable in the ZFC calculus. Creating a class or a formula is a syntax operation; it does not assert a theorem.
 
@@ -55,10 +55,10 @@ A class expression is either `set i`, meaning the class represented by the set v
 
 `VirtualClasses.erase` translates every extended statement to a first-order formula. With `P_A(x)` denoting the capture-avoiding expansion of class `A`'s predicate:
 
-* Equality of two set-variable classes is ordinary equality of those set variables.
-* Other class equality expands to `forall x, P_A(x) iff P_B(x)`.
-* Membership with a set-variable class on the left expands to the right class's predicate at that variable.
-* Membership of a general class `A` in `B` expands to `exists y, (forall x, x in y iff P_A(x)) and P_B(y)`.
+- Equality of two set-variable classes is ordinary equality of those set variables.
+- Other class equality expands to `forall x, P_A(x) iff P_B(x)`.
+- Membership with a set-variable class on the left expands to the right class's predicate at that variable.
+- Membership of a general class `A` in `B` expands to `exists y, (forall x, x in y iff P_A(x)) and P_B(y)`.
 
 The formal expansions in `VirtualClasses.v` specify all shifts needed for fresh witnesses. For `set i`, the predicate is membership in the appropriately renamed set variable. For an abstraction it is simultaneous, capture-avoiding substitution into the erased body.
 
@@ -124,35 +124,35 @@ Internal expansion can allocate auxiliary formulas and classes. `Protocol.alloca
 
 Every field shown is required. All numeric fields must fit the unsigned range, even if that particular command or tag ignores their values.
 
-| Request | Required effect or acceptance condition | Success reply |
-| --- | --- | --- |
-| `0` | Stop; preserve mathematical state; leave subsequent input unread | `BYE` |
-| `1 i j` | Intern `v_i = v_j` | `OK formulaID` |
-| `2 i j` | Intern `v_i in v_j` | `OK formulaID` |
-| `3 p q` | Both formula IDs exist; intern their implication | `OK formulaID` |
-| `4 p` | Formula ID exists; intern its universal quantification | `OK formulaID` |
-| `5 i` | Allocate the virtual class `set i` | `OK classID` |
-| `6 p` | Formula ID exists; allocate `abstract (core p)` | `OK classID` |
-| `7 a b` | Both class IDs exist; intern their equality expansion | `OK formulaID` |
-| `8 a b` | Both class IDs exist; intern their membership expansion | `OK formulaID` |
-| `9 classID name` | Class exists and name is fresh; save uncertified class binding | `OK classID` |
-| `10 name` | Name denotes a class; return its ID | `OK classID` |
-| `11 tag a b c` | Construct the exact logical/ZFC axiom instance below, checking required formula IDs; append it to history | `OK historyIndex` |
-| `12 implicationIndex antecedentIndex` | Both active slots exist, the first is exactly `p -> q`, and the second is exactly `p`; append `q` | `OK historyIndex` |
-| `13 theoremIndex` | Active slot exists with formula `p`; append `forall p` | `OK historyIndex` |
-| `14 name theoremIndex` | Name denotes class `A` and active theorem is exactly `class_setness A`; certify that binding | `OK classID` |
-| `15 name` | Name denotes a class; report its stored certification flag | `CLASS` or `SET` |
-| `16` | History is nonempty; remove its last active entry | `OK newHistoryLength` |
-| `17` | Clear active history, including when already empty | `OK 0` |
-| `18 theoremIndex formulaID` | Active theorem's formula is exactly the referenced formula; append that same theorem | `OK historyIndex` |
-| `19 theoremIndex` | Active slot exists; inspect its formula ID | `OK formulaID` |
-| `20 theoremIndex name` | Active slot exists and name is fresh; save immutable theorem snapshot | `OK capturedFormulaID` |
-| `21 name` | Name denotes a theorem; append the captured formula to active history | `OK historyIndex` |
-| `22 kind a b c d` | Build a well-typed schema-expression node according to the table below | `OK expressionID` |
-| `23 proofNode name` | Node has proof type and name is fresh; save schema binding | `OK proofNode` |
-| `24 name count classID...` | Name denotes a schema; read exactly `count` class IDs; count equals its arity; every class ID exists; instantiated certificate check succeeds; append result | `OK historyIndex` |
-| `25 name` | Name exists; report its binding type, independently of class certification | `CLASS`, `THEOREM`, or `SCHEMA` |
-| `26 name` | Name denotes a schema; return required number of class arguments | `OK arity` |
+| Request                               | Required effect or acceptance condition                                                                                                                      | Success reply                   |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------- |
+| `0`                                   | Stop; preserve mathematical state; leave subsequent input unread                                                                                             | `BYE`                           |
+| `1 i j`                               | Intern `v_i = v_j`                                                                                                                                           | `OK formulaID`                  |
+| `2 i j`                               | Intern `v_i in v_j`                                                                                                                                          | `OK formulaID`                  |
+| `3 p q`                               | Both formula IDs exist; intern their implication                                                                                                             | `OK formulaID`                  |
+| `4 p`                                 | Formula ID exists; intern its universal quantification                                                                                                       | `OK formulaID`                  |
+| `5 i`                                 | Allocate the virtual class `set i`                                                                                                                           | `OK classID`                    |
+| `6 p`                                 | Formula ID exists; allocate `abstract (core p)`                                                                                                              | `OK classID`                    |
+| `7 a b`                               | Both class IDs exist; intern their equality expansion                                                                                                        | `OK formulaID`                  |
+| `8 a b`                               | Both class IDs exist; intern their membership expansion                                                                                                      | `OK formulaID`                  |
+| `9 classID name`                      | Class exists and name is fresh; save uncertified class binding                                                                                               | `OK classID`                    |
+| `10 name`                             | Name denotes a class; return its ID                                                                                                                          | `OK classID`                    |
+| `11 tag a b c`                        | Construct the exact logical/ZFC axiom instance below, checking required formula IDs; append it to history                                                    | `OK historyIndex`               |
+| `12 implicationIndex antecedentIndex` | Both active slots exist, the first is exactly `p -> q`, and the second is exactly `p`; append `q`                                                            | `OK historyIndex`               |
+| `13 theoremIndex`                     | Active slot exists with formula `p`; append `forall p`                                                                                                       | `OK historyIndex`               |
+| `14 name theoremIndex`                | Name denotes class `A` and active theorem is exactly `class_setness A`; certify that binding                                                                 | `OK classID`                    |
+| `15 name`                             | Name denotes a class; report its stored certification flag                                                                                                   | `CLASS` or `SET`                |
+| `16`                                  | History is nonempty; remove its last active entry                                                                                                            | `OK newHistoryLength`           |
+| `17`                                  | Clear active history, including when already empty                                                                                                           | `OK 0`                          |
+| `18 theoremIndex formulaID`           | Active theorem's formula is exactly the referenced formula; append that same theorem                                                                         | `OK historyIndex`               |
+| `19 theoremIndex`                     | Active slot exists; inspect its formula ID                                                                                                                   | `OK formulaID`                  |
+| `20 theoremIndex name`                | Active slot exists and name is fresh; save immutable theorem snapshot                                                                                        | `OK capturedFormulaID`          |
+| `21 name`                             | Name denotes a theorem; append the captured formula to active history                                                                                        | `OK historyIndex`               |
+| `22 kind a b c d`                     | Build a well-typed schema-expression node according to the table below                                                                                       | `OK expressionID`               |
+| `23 proofNode name`                   | Node has proof type and name is fresh; save schema binding                                                                                                   | `OK proofNode`                  |
+| `24 name count classID...`            | Name denotes a schema; read exactly `count` class IDs; count equals its arity; every class ID exists; instantiated certificate check succeeds; append result | `OK historyIndex`               |
+| `25 name`                             | Name exists; report its binding type, independently of class certification                                                                                   | `CLASS`, `THEOREM`, or `SCHEMA` |
+| `26 name`                             | Name denotes a schema; return required number of class arguments                                                                                             | `OK arity`                      |
 
 A failed mathematical condition in this table returns `NO`. In particular, undo on empty history returns `NO`, and an object of the wrong named type is never coerced into the requested type. Formula construction and inspection do not add history entries. Invalid requests may leave auxiliary syntax as described above.
 
@@ -160,26 +160,26 @@ A failed mathematical condition in this table returns `NO`. In particular, undo 
 
 The three fields `a b c` always follow the tag. In the table, `P`, `Q`, and `R` are the formulas at the indicated IDs. Fields described as variables are raw de Bruijn indices, not formula IDs. Unused fields are still parsed as integers but are not dereferenced.
 
-| Tag | Family | Fields and formula |
-| --- | --- | --- |
-| `0` | K | `P=a`, `Q=b`; `P -> (Q -> P)` |
-| `1` | S | `P=a`, `Q=b`, `R=c`; `(P -> (Q -> R)) -> ((P -> Q) -> (P -> R))` |
-| `2` | Double negation | `P=a`; `not (not P) -> P` |
-| `3` | Universal instantiation | `P=a`, variable `j=b`; `(forall P) -> rename (instantiate j) P` |
-| `4` | Universal distribution | `P=a`, `Q=b`; `(forall (shift P -> Q)) -> (P -> forall Q)` |
-| `5` | Reflexivity | variable `i=a`; `v_i = v_i` |
-| `6` | Left membership substitution | variables `i=a`, `j=b`, `k=c`; `(v_i=v_j) -> ((v_i in v_k) -> (v_j in v_k))` |
-| `7` | Right membership substitution | variables `i=a`, `j=b`, `k=c`; `(v_i=v_j) -> ((v_k in v_i) -> (v_k in v_j))` |
-| `8` | Equality transitivity | variables `i=a`, `j=b`, `k=c`; `(v_i=v_j) -> ((v_i=v_k) -> (v_j=v_k))` |
-| `9` | Extensionality | fixed `SetTheory.extensionality` |
-| `10` | Foundation | fixed `SetTheory.foundation` |
-| `11` | Pairing | fixed `SetTheory.pairing` |
-| `12` | Union | fixed `SetTheory.union` |
-| `13` | Power Set | fixed `SetTheory.power` |
-| `14` | Infinity | fixed `SetTheory.infinity` |
-| `15` | Separation | `P=a`; `SetTheory.separation P` |
-| `16` | Replacement | `P=a`; `SetTheory.replacement P` |
-| `17` | Choice | fixed `SetTheory.choice` |
+| Tag  | Family                        | Fields and formula                                                           |
+| ---- | ----------------------------- | ---------------------------------------------------------------------------- |
+| `0`  | K                             | `P=a`, `Q=b`; `P -> (Q -> P)`                                                |
+| `1`  | S                             | `P=a`, `Q=b`, `R=c`; `(P -> (Q -> R)) -> ((P -> Q) -> (P -> R))`             |
+| `2`  | Double negation               | `P=a`; `not (not P) -> P`                                                    |
+| `3`  | Universal instantiation       | `P=a`, variable `j=b`; `(forall P) -> rename (instantiate j) P`              |
+| `4`  | Universal distribution        | `P=a`, `Q=b`; `(forall (shift P -> Q)) -> (P -> forall Q)`                   |
+| `5`  | Reflexivity                   | variable `i=a`; `v_i = v_i`                                                  |
+| `6`  | Left membership substitution  | variables `i=a`, `j=b`, `k=c`; `(v_i=v_j) -> ((v_i in v_k) -> (v_j in v_k))` |
+| `7`  | Right membership substitution | variables `i=a`, `j=b`, `k=c`; `(v_i=v_j) -> ((v_k in v_i) -> (v_k in v_j))` |
+| `8`  | Equality transitivity         | variables `i=a`, `j=b`, `k=c`; `(v_i=v_j) -> ((v_i=v_k) -> (v_j=v_k))`       |
+| `9`  | Extensionality                | fixed `SetTheory.extensionality`                                             |
+| `10` | Foundation                    | fixed `SetTheory.foundation`                                                 |
+| `11` | Pairing                       | fixed `SetTheory.pairing`                                                    |
+| `12` | Union                         | fixed `SetTheory.union`                                                      |
+| `13` | Power Set                     | fixed `SetTheory.power`                                                      |
+| `14` | Infinity                      | fixed `SetTheory.infinity`                                                   |
+| `15` | Separation                    | `P=a`; `SetTheory.separation P`                                              |
+| `16` | Replacement                   | `P=a`; `SetTheory.replacement P`                                             |
+| `17` | Choice                        | fixed `SetTheory.choice`                                                     |
 
 Other tags fail. `instantiate j` maps the removed bound variable `0` to `j` and each former free index `n+1` to `n`; `rename` lifts this map under inner binders. `shift` is renaming by successor. The exact formulas for the set axioms, including all parameters and functionality/choice premises, are definitions in `SetTheory.v`, not implementation-selected formulas.
 
@@ -187,20 +187,20 @@ Other tags fail. `instantiate j` maps the removed bound variable `0` to `j` and 
 
 Command `22` consumes exactly five numeric fields: a kind plus four fields. Only the fields listed below are dereferenced. Every referenced expression must already exist and have the required type. Types are class (`CE`), formula (`FE`), and proof certificate (`PE`).
 
-| Kind | Fields used | Result |
-| --- | --- | --- |
-| `0` | `a`: metavariable index, strictly below `2^64-1` | Class metavariable `a` |
-| `1` | `a`: class ID | Literal class |
-| `2` | `a`: formula ID | Literal formula |
-| `3` | `a`: formula-expression ID | Predicate abstraction; class type |
-| `4` | `a,b`: class-expression IDs | Class equality; formula type |
-| `5` | `a,b`: class-expression IDs | Class membership; formula type |
-| `6` | `a,b`: formula-expression IDs | Implication; formula type |
-| `7` | `a`: formula-expression ID | Universal quantification; formula type |
-| `8` | `a`: axiom tag; `b,c,d`: its fields | Axiom certificate; proof type |
-| `9` | `a,b`: proof-expression IDs | Modus-ponens certificate; proof type |
-| `10` | `a`: proof-expression ID | Generalization certificate; proof type |
-| `11` | `a`: active theorem index | Saved checked theorem certificate; proof type |
+| Kind | Fields used                                      | Result                                        |
+| ---- | ------------------------------------------------ | --------------------------------------------- |
+| `0`  | `a`: metavariable index, strictly below `2^64-1` | Class metavariable `a`                        |
+| `1`  | `a`: class ID                                    | Literal class                                 |
+| `2`  | `a`: formula ID                                  | Literal formula                               |
+| `3`  | `a`: formula-expression ID                       | Predicate abstraction; class type             |
+| `4`  | `a,b`: class-expression IDs                      | Class equality; formula type                  |
+| `5`  | `a,b`: class-expression IDs                      | Class membership; formula type                |
+| `6`  | `a,b`: formula-expression IDs                    | Implication; formula type                     |
+| `7`  | `a`: formula-expression ID                       | Universal quantification; formula type        |
+| `8`  | `a`: axiom tag; `b,c,d`: its fields              | Axiom certificate; proof type                 |
+| `9`  | `a,b`: proof-expression IDs                      | Modus-ponens certificate; proof type          |
+| `10` | `a`: proof-expression ID                         | Generalization certificate; proof type        |
+| `11` | `a`: active theorem index                        | Saved checked theorem certificate; proof type |
 
 Other kinds fail. For kind `8`, the formula fields required by the axiom tag are formula-expression IDs rather than concrete formula IDs; raw variable fields retain the meanings in the axiom table. For example, kind `8`, tag `0` needs formula expressions in `b` and `c`; kind `8`, tag `3` needs a formula expression in `b` and a raw variable in `c`. No schema node can reference a later expression, creating a cycle.
 
