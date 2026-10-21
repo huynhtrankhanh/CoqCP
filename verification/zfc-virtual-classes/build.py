@@ -38,7 +38,7 @@ def main():
     shutil.copy2(task / "spec/Reference.v", trusted / "Reference.v")
     compile_file(trusted / "Reference.v")
     modules = ["Elimination", "Checker", "Regression", "ClassNames", "Arena", "NamedSessions", "SchemataSoundness", "Candidate"]
-    for name in ["Schemata", "Protocol", "Spec"]:
+    for name in ["Schemata", "Protocol", "Guarantees", "Spec"]:
         target = trusted / f"{name}.v"
         shutil.copy2(task / "spec" / target.name, target)
         compile_file(target)
@@ -47,10 +47,12 @@ def main():
         shutil.copy2(task / "candidate" / target.name, target)
         compile_file(target)
     audited = ["Implementation.correct", "Implementation.classes_conservative",
-               "ClassNames.step_safe", "NamedSessions.run_safe", "SchemataSoundness.instance_sound"]
+               "ClassNames.step_safe", "NamedSessions.run_safe", "SchemataSoundness.instance_sound", "Guarantees.initial_dialogue_safe",
+               "Guarantees.classes_conservative", "Guarantees.instance_sound",
+               "Guarantees.certified_class_sound", "Trusted.Spec.required_iff_protocol"]
     audit = out / "Audit.v"
     audit.write_text("From CoqCP Require Import Options.\n"
-                     "From Trusted Require Import Schemata.\n"
+                     "From Trusted Require Import Schemata Spec.\n"
                      "From Submission Require Import Candidate ClassNames NamedSessions SchemataSoundness.\n" +
                      "".join(f"Print Assumptions {name}.\n" for name in audited))
     result = subprocess.run([args.rocq, "compile", *flags, str(audit)], cwd=out,
@@ -58,7 +60,7 @@ def main():
     (out / "assumptions.log").write_text(result.stdout + result.stderr)
     if result.stdout.count("Closed under the global context") != len(audited) or "Axioms:" in result.stdout:
         raise RuntimeError("Unexpected global assumptions")
-    subprocess.run([args.rocq, "check", "-silent", *flags[1:], "Submission.Candidate", "Submission.SchemataSoundness", "Trusted.Protocol"],
+    subprocess.run([args.rocq, "check", "-silent", *flags[1:], "Submission.Candidate", "Submission.SchemataSoundness", "Trusted.Protocol", "Trusted.Spec"],
                    cwd=out, check=True)
     (out / "development-status.json").write_text(json.dumps({
         "reference_contract": "passed", "local_kernel_recheck": "passed",

@@ -41,7 +41,7 @@ def main():
         origin = repo / 'theories' / source.name
         shutil.copy2(origin, source)
         run([args.rocq, 'compile', *flags, source])
-    for name in ['SetTheory', 'VirtualClasses', 'Schemata', 'Protocol', 'Spec']:
+    for name in ['SetTheory', 'VirtualClasses', 'Schemata', 'Protocol', 'Guarantees', 'Spec']:
         source = out / 'Trusted' / f'{name}.v'
         shutil.copy2(here.parent / 'spec' / source.name, source)
         run([args.rocq, 'compile', *flags, source])
@@ -73,7 +73,7 @@ def main():
                      'ParsedState', 'CommandRestate', 'CommandRestateReject', 'RestateRefinement', 'CommandInspect', 'InspectRefinement',
                      'EffectFrame', 'ImmutableStorage', 'ImmutableHandlers',
                      'LocalObservation', 'NameLookup', 'NameSearch', 'NameRepresentation', 'NameCopy', 'BindingStorage', 'BindName', 'BindNameRefinement', 'ReadName', 'ReadNameOne', 'CommandNameTheorem', 'NameTheoremRefinement', 'CommandNameClass', 'NameClassRefinement', 'TypedNameLookup', 'CommandLookupClass', 'NameQueryState', 'LookupClassRefinement',
-                     'LogicalNames', 'CommandRecall', 'RecallRefinement', 'CommandText', 'CommandNameQuery', 'NameQueryRefinement', 'LogicalSoundness', 'SchemaMetadata', 'CommandArity', 'ArityRefinement', 'MetaCellFrame', 'SchemaCountStorage', 'SchemaFrame', 'CommandNameSchema', 'NameSchemaRefinement']
+                     'LogicalNames', 'CommandRecall', 'RecallRefinement', 'CommandText', 'CommandNameQuery', 'NameQueryRefinement', 'LogicalSoundness', 'SchemaMetadata', 'CommandArity', 'ArityRefinement', 'MetaCellFrame', 'SchemaCountStorage', 'SchemaFrame', 'CommandNameSchema', 'NameSchemaRefinement', 'RenameStack', 'RenameStructure', 'RenameFrames', 'RenameBudget', 'RenameLeaf', 'LocalParameters', 'IndexFrame', 'RenameJoin', 'RenameJoinRefinement', 'RenameAtom', 'RenameAtomRefinement']
     for name in proof_modules:
         source = proofs / f'{name}.v'
         shutil.copy2(here / 'proof' / source.name, source)
@@ -339,12 +339,12 @@ def main():
                'CommandNameQueryExecution.result_classes', 'CommandNameQueryExecution.result_history', 'CommandNameQueryExecution.actual_handler',
                'CommandNameQueryExecution.generated_command', 'NameQueryRefinement.number_opcode', 'NameQueryRefinement.answer_missing',
                'NameQueryRefinement.kind_range', 'NameQueryRefinement.reply_typed', 'NameQueryRefinement.logical_rejected',
-               'NameQueryRefinement.logical_total', 'NameQueryRefinement.generated_total_protocol', 'LogicalSoundness.axiom_derivable',
-               'LogicalSoundness.instance_sound', 'LogicalSoundness.initial_safe', 'LogicalSoundness.lookup_sound',
-               'LogicalSoundness.theorem_sound', 'LogicalSoundness.option_axiom_sound', 'LogicalSoundness.concrete_axiom_sound',
-               'LogicalSoundness.request_sound', 'LogicalSoundness.denotes_extend', 'LogicalSoundness.extend',
-               'LogicalSoundness.retained', 'LogicalSoundness.append_safe', 'LogicalSoundness.accepted_safe',
-               'LogicalSoundness.step_safe', 'LogicalSoundness.dialogue_safe', 'LogicalSoundness.initial_dialogue_safe',
+               'NameQueryRefinement.logical_total', 'NameQueryRefinement.generated_total_protocol', 'Guarantees.axiom_derivable',
+               'Guarantees.instance_sound', 'Guarantees.initial_safe', 'Guarantees.lookup_sound',
+               'Guarantees.theorem_sound', 'Guarantees.option_axiom_sound', 'Guarantees.concrete_axiom_sound',
+               'Guarantees.request_sound', 'Guarantees.denotes_extend', 'Guarantees.extend',
+               'Guarantees.retained', 'Guarantees.append_safe', 'Guarantees.accepted_safe',
+               'Guarantees.step_safe', 'Guarantees.dialogue_safe', 'Guarantees.initial_dialogue_safe',
                'SchemaMetadata.empty', 'SchemaMetadata.represents_length', 'SchemaMetadata.transport',
                'SchemaMetadata.represented_lookup', 'SchemaMetadata.fields', 'SchemaMetadata.proof_fields',
                'CommandArityExecution.generated_handler', 'CommandArityExecution.result_other', 'CommandArityExecution.result_meta',
@@ -369,10 +369,37 @@ def main():
                'SchemaFrame.readToken_preserves', 'SchemaFrame.bindName_nodes', 'SchemaFrame.bindName_preserves',
                'CommandNameSchemaExecution.generated_handler', 'CommandNameSchemaExecution.generated_command', 'CommandNameSchemaExecution.generated_rejected_handler',
                'CommandNameSchemaExecution.generated_rejected_command', 'CommandNameSchemaExecution.generated_wrong_type_handler', 'CommandNameSchemaExecution.generated_wrong_type_command',
-               'NameSchemaRefinement.logical_success', 'NameSchemaRefinement.logical_rejected', 'NameSchemaRefinement.generated_total_protocol',]
+               'NameSchemaRefinement.logical_success', 'NameSchemaRefinement.logical_rejected', 'NameSchemaRefinement.generated_total_protocol',
+               'Guarantees.nth_error_extend', 'Guarantees.named_theorem_sound', 'Guarantees.certified_class_sound',
+               'Guarantees.named_schema_instance_sound', 'Guarantees.dialogue_history_sound', 'Guarantees.dialogue_prefix_sound',
+               'Guarantees.eliminate_classes', 'Guarantees.embed_core', 'Guarantees.classes_conservative',
+               'Guarantees.set_variable_is_set', 'Guarantees.bounded_class_is_set', 'RenameStack.work_positive',
+               'RenameStack.pending_positive', 'RenameStack.tick_decreases', 'RenameStack.tick_preserves',
+               'RenameStack.run_complete', 'RenameStack.root_correct', 'RenameStack.unbound_root_correct',
+               'RenameStack.work_bound', 'RenameStack.size_budget_correct', 'RenameStructure.actual_body',
+               'RenameStructure.generated_prefix', 'RenameStructure.generated_finish_empty', 'RenameStructure.generated_finish_exhausted',
+               'RenameStructure.generated_iteration_empty', 'RenameStructure.generated_iteration_failed', 'RenameFrames.entry_extend',
+               'RenameFrames.capacity', 'RenameFrames.empty', 'RenameFrames.transport',
+               'RenameFrames.extend', 'RenameFrames.firstn_related', 'RenameFrames.nth_error_prefix',
+               'RenameFrames.top_entry', 'RenameFrames.pop', 'RenameFrames.push_frames',
+               'RenameFrames.push_count', 'RenameFrames.push_visit', 'RenameFrames.generated_push_visit',
+               'Trusted.Spec.required_iff_protocol',
+               'RenameStructure.iteration_uniform', 'RenameStructure.traversal_structure', 'RenameStructure.generated_layer_empty',
+               'RenameStructure.generated_layer_active', 'RenameBudget.iteration_loop_progress', 'RenameBudget.layer_loop_progress',
+               'RenameBudget.outer_layers_progress', 'RenameBudget.traversal_progress', 'RenameBudget.traversal_complete',
+               'RenameBudget.actual_work_budget', 'RenameLeaf.generated_falsity', 'RenameLeaf.falsity_record',
+               'RenameLeaf.generated_falsity_refines',
+               'LocalParameters.observed_extensional', 'IndexFrame.generated', 'IndexFrame.generated_native',
+               'IndexFrame.result_meta_other', 'IndexFrame.result_meta_length', 'IndexFrame.result_other',
+               'IndexFrame.result_value', 'IndexFrame.result_arena', 'IndexFrame.result_frames',
+               'IndexFrame.generated_semantics', 'RenameJoin.generated_join', 'RenameJoinRefinement.fields',
+               'RenameJoinRefinement.arguments_spec', 'RenameJoinRefinement.generated_join_refines', 'RenameAtom.generated_atom',
+               'RenameAtomRefinement.decoded', 'RenameAtomRefinement.normal', 'RenameAtomRefinement.renamed_atom',
+               'RenameAtomRefinement.generated_atom_refines',]
     (code / 'Audit.v').write_text(
         'From CoqCP Require Import Options TapeEnd.\n'
         'From ImperativeZFC Require Import ProofChecker.\n'
+        'From Trusted Require Import Spec.\n'
         'From NativeProof Require Import ' + ' '.join(proof_modules) + '.\n' +
         ''.join(f'Print Assumptions {name}.\n' for name in audited))
     result = subprocess.run([args.rocq, 'compile', *flags, str(code / 'Audit.v')],
@@ -394,12 +421,15 @@ def main():
                        stdout=log, stderr=subprocess.STDOUT)
     artifacts = {name: hashlib.sha256((out / name).read_bytes()).hexdigest()
                  for name in ['ProofChecker.js', 'Code/ProofChecker.v', 'checker.cpp', 'zfc-checker']
-                 + [f'Proof/{name}.v' for name in proof_modules]}
+                 + [f'Proof/{name}.v' for name in proof_modules]
+                 + [f'Trusted/{name}.v' for name in ['SetTheory', 'VirtualClasses', 'Schemata', 'Protocol', 'Guarantees', 'Spec']]}
     (out / 'development-status.json').write_text(json.dumps({
         'status': 'incomplete', 'implementation': 'CoqCP imperative DSL to C++',
         'generated_rocq_kernel_recheck': 'passed', 'main_global_assumptions': [],
         'proved_generated_execution': [
             'checked index substitution and overflow rejection',
+            'actual iterative substitution setup, eight-layer loop structure, stopping/error guards and exhaustion check; loop-budget progress follows from an explicit one-iteration semantic-decrease premise, whose remaining cases are frame pushes and phase replacement',
+            'typed substitution-stack model: capture-avoiding denotation, exact decreasing work measure, native frame representation, checked stack push/pop, and actual execution refinements for falsity/variable leaves and completed implication/quantifier frames',
             'explicit traversal stack push',
             'formatter memory preservation',
             'complete native unsigned formatter: exact canonical decimal bytes for every 64-bit value, unchanged input/flush trace and framed memory',

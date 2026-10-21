@@ -32,12 +32,33 @@ Definition iteration : LocalAction LoopOutcome := ltac:(
   let code := eval unfold traversal in traversal in
   let code := eval cbn beta iota zeta delta [bind] in code in
   descend_loops 8%nat code ltac:(fun selected => exact selected)).
+Definition iteration_at remaining : LocalAction LoopOutcome := ltac:(
+  let code := eval unfold traversal in traversal in
+  let code := eval cbn beta iota zeta delta [bind] in code in
+  descend_loops 7%nat code ltac:(fun selected =>
+    match selected with context [loop ?count ?body] => exact (body remaining) end)).
+Lemma iteration_uniform remaining : iteration_at remaining = iteration.
+Proof. reflexivity. Qed.
+Definition layer (work : LocalAction unit) : LocalAction LoopOutcome := ltac:(
+  let code := eval unfold traversal in traversal in
+  let code := eval cbn beta iota zeta delta [bind] in code in
+  descend_loops 1%nat code ltac:(fun selected =>
+    match selected with context [loop ?count ?body] =>
+      let actual := constr:(loop count body) in
+      let family := eval pattern actual in selected in
+      lazymatch family with ?family _ => exact (family work) end
+    end)).
+Definition limit := Z.to_nat 4294967296.
+Fixpoint outer_layers depth (work : LocalAction unit) : LocalAction unit :=
+  match depth with O => work | S depth => loop limit (fun _ => layer (outer_layers depth work)) end.
+Local Opaque Z.to_nat.
+Theorem traversal_structure : traversal = outer_layers 7 (loop limit (fun _ => iteration)).
+Proof. reflexivity. Qed.
 Definition body_with (work : LocalAction unit) : LocalAction unit := ltac:(
   let code := eval unfold funcdef_0__rename_body in funcdef_0__rename_body in
   let work_actual := eval unfold traversal in traversal in
   let family := eval pattern work_actual in code in
   lazymatch family with ?family _ => exact (family work) end).
-Local Opaque loop.
 Lemma actual_body : funcdef_0__rename_body = body_with traversal.
 Proof. reflexivity. Qed.
 Definition pushed (f : Frame) := StackExecution.push_state (store_meta (machine f) 10 0) 0
@@ -91,5 +112,72 @@ Proof.
     |progress rewrite bool_decide_true by exact Hnonempty
     |progress cbv beta iota zeta delta [machine nums bools setMachine]
   ]. reflexivity.
+Qed.
+Theorem generated_iteration_empty (f : Frame) observations :
+  (10 < length (memory (machine f) arraydef_0__meta))%nat -> meta_value (machine f) 10 = 0 ->
+  execLocalObserved iteration (f,observations) = Some (Stop,(f,observations)).
+Proof.
+  intros Hmeta Hempty. unfold iteration.
+  repeat first [progress cbn [optionBind fst snd negb]
+    |progress rewrite ObservedLocal.drop_assoc |progress rewrite ObservedLocal.drop_lift
+    |NativePrimitives.primitive ltac:(fun frame name slot => cbn [machine setMachine]; exact Hmeta)
+    |progress replace (Z.to_nat 10) with 10%nat by reflexivity
+    |progress rewrite Hempty |progress rewrite bool_decide_true by reflexivity
+    |progress cbn [dropWithinLoop Action_rect]
+    |progress cbv beta iota zeta delta [machine nums bools setMachine]
+  ]. reflexivity.
+Qed.
+Theorem generated_iteration_failed (f : Frame) observations :
+  (10 < length (memory (machine f) arraydef_0__meta))%nat ->
+  meta_value (machine f) 10 <> 0 -> meta_value (machine f) 8 <> 0 ->
+  execLocalObserved iteration (f,observations) = Some (Stop,(f,observations)).
+Proof.
+  intros Hmeta Hnonempty Herror. unfold iteration.
+  repeat first [progress cbn [optionBind fst snd negb]
+    |progress rewrite ObservedLocal.drop_assoc |progress rewrite ObservedLocal.drop_lift
+    |NativePrimitives.primitive ltac:(fun frame name slot => cbn [machine setMachine];
+       first [exact Hmeta|eapply Nat.le_lt_trans with (m := 10%nat); [cbn; lia|exact Hmeta]])
+    |progress replace (Z.to_nat 10) with 10%nat by reflexivity
+    |progress replace (Z.to_nat 8) with 8%nat by reflexivity
+    |progress rewrite bool_decide_false by exact Hnonempty
+    |progress rewrite bool_decide_true by exact Herror
+    |progress cbn [dropWithinLoop Action_rect]
+    |progress cbv beta iota zeta delta [machine nums bools setMachine]
+  ]. reflexivity.
+Qed.
+Theorem generated_layer_empty work (f : Frame) observations :
+  (10 < length (memory (machine f) arraydef_0__meta))%nat -> meta_value (machine f) 10 = 0 ->
+  execLocalObserved (layer work) (f,observations) = Some (Stop,(f,observations)).
+Proof.
+  intros Hmeta Hempty. unfold layer.
+  repeat first [progress cbn [optionBind fst snd negb]
+    |progress rewrite ObservedLocal.drop_assoc |progress rewrite ObservedLocal.drop_lift
+    |NativePrimitives.primitive ltac:(fun frame name slot => cbn [machine setMachine]; exact Hmeta)
+    |progress replace (Z.to_nat 10) with 10%nat by reflexivity
+    |progress rewrite Hempty |progress rewrite bool_decide_true by reflexivity
+    |progress cbn [dropWithinLoop Action_rect]
+    |progress cbv beta iota zeta delta [machine nums bools setMachine]
+  ]. reflexivity.
+Qed.
+Theorem generated_layer_active work (f : Frame) observations :
+  (10 < length (memory (machine f) arraydef_0__meta))%nat ->
+  meta_value (machine f) 10 <> 0 -> meta_value (machine f) 8 = 0 ->
+  execLocalObserved (layer work) (f,observations) =
+    optionBind (execLocalObserved work (f,observations)) (fun r => Some (KeepGoing,snd r)).
+Proof.
+  intros Hmeta Hnonempty Herror. unfold layer.
+  repeat first [progress cbn [optionBind fst snd negb]
+    |progress rewrite ObservedLocal.drop_assoc |progress rewrite ObservedLocal.drop_lift
+    |NativePrimitives.primitive ltac:(fun frame name slot => cbn [machine setMachine];
+       first [exact Hmeta|eapply Nat.le_lt_trans with (m := 10%nat); [cbn; lia|exact Hmeta]])
+    |progress replace (Z.to_nat 10) with 10%nat by reflexivity
+    |progress replace (Z.to_nat 8) with 8%nat by reflexivity
+    |progress rewrite bool_decide_false by exact Hnonempty
+    |progress rewrite Herror |progress rewrite bool_decide_false by congruence
+    |match goal with |- context [dropWithinLoop (bind (Done _ _ _ ?value) ?next)] =>
+       let expression := constr:(dropWithinLoop (bind (Done _ _ _ value) next)) in
+       change expression with (dropWithinLoop (next value)) end
+    |progress cbv beta iota zeta delta [machine nums bools setMachine]
+  ]. destruct (execLocalObserved work (f,observations)) as [[[] [after trace]]|]; reflexivity.
 Qed.
 End RenameStructure.
