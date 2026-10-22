@@ -226,14 +226,14 @@ rename (up^b rho) p
 
 Here `up^b` means `b` repetitions of the lifting operation defined above. In particular, indices below `b` remain bound to their existing variables, and every further binder in `p` lifts the map again. The available maps cover shifts, universal instantiation, the Separation and Replacement expansions, and predicate abstraction. Their maximum index-increase allowances are:
 
-| Renaming map | Increase allowance `delta` |
-| --- | --- |
-| Shift by `s` | `s` |
-| Instantiate the removed variable with index `a` | `a` |
-| Separation | `1` |
-| Replacement left or right premise | `2` |
-| Replacement image | `1` |
-| Predicate abstraction, with parameter shift `s` and element index `a` | `max(s,a)` |
+| Renaming map                                                          | Increase allowance `delta` |
+| --------------------------------------------------------------------- | -------------------------- |
+| Shift by `s`                                                          | `s`                        |
+| Instantiate the removed variable with index `a`                       | `a`                        |
+| Separation                                                            | `1`                        |
+| Replacement left or right premise                                     | `2`                        |
+| Replacement image                                                     | `1`                        |
+| Predicate abstraction, with parameter shift `s` and element index `a` | `max(s,a)`                 |
 
 Let `U = 2^64-1`, `S = 2^63-1`, `r` be the source formula ID, `n` the number of existing formula nodes, and `G = (r+1)^2`. Let `B` bound every variable index occurring in the stored source formula, and let `h(p)` be its maximum nesting depth of universal binders. Thus atoms and falsity have height zero, implication takes the maximum of its children's heights, and a universal binder adds one.
 
@@ -253,10 +253,10 @@ There are at most `G` fresh source/depth pairs and `4*G+1` active phase dispatch
 
 [`RenameMemoCallers.generated_predicate`](../imperative/proof/RenameMemoCallers.v) additionally proves the complete actual predicate helper for a valid represented class `C`. Given parameter shift `s` and element index `a`, it returns a formula ID denoting `VirtualClasses.predicate C (fun i => i+s) a`. For `C = set v`, this is `v_a in v_(v+s)`; for `C = abstract (core p)`, it is `rename rho p` with `rho 0 = a` and `rho (i+1) = i+s`, lifted under inner binders. Its common input conditions are a canonical backward formula arena with falsity at ID `0`, well-formed represented class storage and a valid class ID, at least 32 metadata cells, a nonempty SipHash state array, positive interner capacity, a zero fatal-error flag, and unsigned word values `s,a`. The helper arguments identify that class ID, shift and element index exactly. Its additional checks depend on the class form:
 
-| Class form | Sufficient additional checks | Added formula nodes |
-| --- | --- | --- |
-| `set v` | `n <= S` and `v+s <= U` | At most `1` |
-| Abstraction with body at ID `r` | `5*G+1 <= U`, `n+G <= S`, `B+s <= U` and `B+a <= U`, with `B` computed from the stored prefix as above | At most `G` |
+| Class form                      | Sufficient additional checks                                                                           | Added formula nodes |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------ | ------------------- |
+| `set v`                         | `n <= S` and `v+s <= U`                                                                                | At most `1`         |
+| Abstraction with body at ID `r` | `5*G+1 <= U`, `n+G <= S`, `B+s <= U` and `B+a <= U`, with `B` computed from the stored prefix as above | At most `G`         |
 
 The result preserves canonical formulas, backward child references, represented classes and logical storage, with the fatal-error cell zero. This proves predicate expansion for both native class-record forms; membership/equality constructors and their protocol handlers require further composition.
 
