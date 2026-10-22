@@ -1,9 +1,10 @@
 From CoqCP Require Import Options Imperative Execution InteractiveExecution.
 From ImperativeZFC Require Import ProofChecker.
 From Trusted Require Import SetTheory VirtualClasses.
-From NativeProof Require Import Index SipHash ObservedLocal InternReserve ClassStorage ClassLookup ClassEqualSets
+From NativeProof Require Import Index SipHash HashTable ObservedLocal InternReserve ClassStorage ClassLookup ClassEqualSets
   ClassEqualCircuit RenameMemoCallers RenameMemoLengths RenameMemoResourceBounds RenameMemoInput
-  RenameStorage FormulaCircuit FormulaEncoding Representation ArenaFrame FormulaTopology.
+  RenameStorage FormulaCircuit FormulaCircuitProperties FormulaEncoding Representation ArenaFrame FormulaTopology
+  Intern InternGrowth RenameMemoTopology.
 From Stdlib Require Import Lists.List ZArith.ZArith Lia.
 From stdpp Require Import numbers list.
 Open Scope Z_scope.
@@ -87,7 +88,9 @@ Theorem generated_general s bs ns fs classes a b cls_a cls_b reserve observation
     nth_error next index = Some (VirtualClasses.erase (VirtualClasses.class_equal cls_a cls_b)) /\
     (exists extra,next=fs++extra) /\ meta_value final 8 = 0 /\ RenameStorage.logical_frame s final /\
     ClassStorage.represents final next classes /\ ClassLookup.wellformed final /\
-    Z.of_nat (length next + reserve) <= RenameMemoResourceBounds.doubling_limit.
+    Z.of_nat (length next + reserve) <= RenameMemoResourceBounds.doubling_limit /\
+    FormulaTopology.ordered final (length next) /\
+    (length next<=length fs+(RenameMemoCallers.predicate_growth s a+RenameMemoCallers.predicate_growth s b+6))%nat.
 Proof.
   intros Hmeta Hsip Harena Htopology Hfalse Herror Hclasses Hwellformed Ha Hb Hnonsets Hna Hnb Hfits_a Hfits_b Hbudget.
   assert (Hzero : word 0) by (unfold word,maximum; lia).
@@ -115,10 +118,16 @@ Proof.
   assert (Hmeaning_right : nth_error fs_b (Z.to_nat (Z.of_nat right)) = Some (VirtualClasses.predicate cls_b (fun n=>(n+1)%nat) 0)) by now rewrite Nat2Z.id.
   assert (Hcircuit_budget : Z.of_nat (length fs_b + 6 + reserve) <= 9223372036854775807).
   { apply Nat2Z.inj_le in Hgrowth_b. repeat rewrite Nat2Z.inj_add in *. unfold RenameMemoResourceBounds.doubling_limit in *. lia. }
-  destruct (ClassEqualCircuit.construct second fs_b (Z.of_nat left) (Z.of_nat right) _ _ reserve observations Harena_b Hflag_b Hfalse_b Hleftword Hrightword Hmeaning_left Hmeaning_right Hcircuit_budget)
-    as [built [next [ids [Htrace [Hbuilt_frame [Harena_next [Hflag_next [Hrep [Hprefix_next Hremaining]]]]]]]]].
+  assert (Hinitial_rep : FormulaCircuit.represents fs_b [0;Z.of_nat left;Z.of_nat right]
+    [SetTheory.falsity;VirtualClasses.predicate cls_a (fun n=>(n+1)%nat) 0;VirtualClasses.predicate cls_b (fun n=>(n+1)%nat) 0]).
+  { constructor; [split; assumption|]. constructor; [split; assumption|]. constructor; [split; assumption|constructor]. }
+  destruct (FormulaCircuitProperties.complete ClassEqualCircuit.plan second fs_b [0;Z.of_nat left;Z.of_nat right]
+    [SetTheory.falsity;VirtualClasses.predicate cls_a (fun n=>(n+1)%nat) 0;VirtualClasses.predicate cls_b (fun n=>(n+1)%nat) 0]
+    (ClassEqualCircuit.values (VirtualClasses.predicate cls_a (fun n=>(n+1)%nat) 0) (VirtualClasses.predicate cls_b (fun n=>(n+1)%nat) 0))
+    reserve observations Harena_b Htopology_b Hflag_b Hinitial_rep ClassEqualCircuit.fits (ClassEqualCircuit.infer _ _) Hcircuit_budget)
+    as (built & next & ids & Htrace & Hbuilt_frame & Harena_next & Hflag_next & Hrep & Hprefix_next & Hremaining & Htopology_next & Hgrowth_next).
   pose proof (ClassEqualCircuit.result_semantics observations second (Z.of_nat left) (Z.of_nat right) built ids next _ _ Htrace Hrep) as [Hresultword Hmeaning].
-  pose proof (proj1 (proj1 Harena_a)) as [Hmeta_a Hrest_a].
+  pose proof (proj1 (proj1 Harena_a)) as [Hmeta_a_table Hrest_a].
   pose proof (proj1 (proj1 Harena_b)) as [Hmeta_b Hrest_b].
   pose proof (proj1 (proj1 Harena_next)) as [Hmeta_next Hrest_next].
   set (final := store_meta built 0 (meta_value built 0)).
@@ -143,6 +152,77 @@ Proof.
       * unfold final. now rewrite meta_store_other by discriminate.
       * split; [exact Hfinalframe|]. split.
         -- destruct Hfinalprefix as [extra ->]. exact (RenameStorage.classes_transport s final fs extra classes Hfinalframe Hclasses).
-        -- split; [now apply (ClassLookup.frame_wellformed s final)|exact Hremaining].
+        -- split; [now apply (ClassLookup.frame_wellformed s final)|]. split; [exact Hremaining|]. split.
+           ++ intros parent child Hparent Hchild. apply Htopology_next; [exact Hparent|].
+              unfold final,HashTableInvariant.tuple_at in Hchild. now rewrite store_meta_other in Hchild by discriminate.
+           ++ cbn [ClassEqualCircuit.plan length] in Hgrowth_next. lia.
+Qed.
+Theorem generated_sets s bs ns fs classes a b left right reserve observations :
+  NativeRepresentation.canonical_arena s fs -> FormulaTopology.ordered s (length fs) -> meta_value s 8=0 ->
+  ClassStorage.represents s fs classes -> ClassLookup.wellformed s ->
+  nth_error classes a=Some (VirtualClasses.set left) -> nth_error classes b=Some (VirtualClasses.set right) ->
+  ns vardef_0__classEqual_a=Z.of_nat a -> ns vardef_0__classEqual_b=Z.of_nat b ->
+  Z.of_nat (length fs+1+reserve)<=RenameMemoResourceBounds.doubling_limit ->
+  exists final next index, execObserved (funcdef_0__classEqual bs ns) (s,observations)=Some (tt,(final,observations)) /\
+    NativeRepresentation.canonical_arena final next /\ meta_value final 0=Z.of_nat index /\ word (Z.of_nat index) /\
+    nth_error next index=Some (VirtualClasses.erase (VirtualClasses.class_equal (VirtualClasses.set left) (VirtualClasses.set right))) /\
+    (exists extra,next=fs++extra) /\ meta_value final 8=0 /\ RenameStorage.logical_frame s final /\
+    ClassStorage.represents final next classes /\ ClassLookup.wellformed final /\
+    Z.of_nat (length next+reserve)<=RenameMemoResourceBounds.doubling_limit /\
+    FormulaTopology.ordered final (length next) /\ (length next<=length fs+1)%nat.
+Proof.
+  intros Harena Htopology Herror Hclasses Hwellformed Hleft Hright Ha Hb Hbudget.
+  destruct (ClassEqualSets.set_lookup s fs classes a left Hclasses Hwellformed Hleft) as [Habound [Hleftword Hleftrecord]].
+  destruct (ClassEqualSets.set_lookup s fs classes b right Hclasses Hwellformed Hright) as [Hbbound [Hrightword Hrightrecord]].
+  set (arguments:=ClassEqualSets.arguments (Z.of_nat left) (Z.of_nat right)).
+  assert (Hnormal : FormulaEncoding.normal (arguments vardef_0__intern_tag,arguments vardef_0__intern_a,arguments vardef_0__intern_b)).
+  { change (FormulaEncoding.normal (1,Z.of_nat left,Z.of_nat right)). right. left. auto. }
+  assert (Hdecode : FormulaEncoding.decode fs (arguments vardef_0__intern_tag,arguments vardef_0__intern_a,arguments vardef_0__intern_b)=Some (SetTheory.equal left right)).
+  { change (Some (SetTheory.equal (Z.to_nat (Z.of_nat left)) (Z.to_nat (Z.of_nat right)))=Some (SetTheory.equal left right)). now rewrite !Nat2Z.id. }
+  destruct (InternReserve.generated_refines s (fun _=>false) arguments fs (SetTheory.equal left right) reserve observations
+    Harena Herror ltac:(replace (length fs+S reserve)%nat with (length fs+1+reserve)%nat by lia; exact Hbudget) Hnormal Hdecode)
+    as (final & next & index & Hintern & Hlogical & Hnext & Hflag & Hindex & Hword & Hmeaning & Hextends & Hreserve).
+  assert (Hplain : exec (funcdef_0__intern (fun _=>false) arguments) s=Some (tt,final)).
+  { pose proof (execObserved_erases (funcdef_0__intern (fun _=>false) arguments) (s,observations)) as Herased.
+    rewrite Hintern in Herased. exact (eq_sym Herased). }
+  assert (Hcapacity : Z.of_nat (length fs)<=9223372036854775807).
+  { unfold RenameMemoResourceBounds.doubling_limit in Hbudget. rewrite Nat2Z.inj_add in Hbudget. lia. }
+  pose proof (InternGrowth.at_most_one s final _ _ fs next Harena Herror Hcapacity Hplain Hnext) as Hgrowth.
+  pose proof (ClassEqualSets.intern_frame s final Hlogical) as Hframe.
+  exists final,next,index. split.
+  - eapply ClassEqualSets.generated_helper; eassumption.
+  - split; [exact Hnext|]. split; [exact Hindex|]. split; [exact Hword|]. split; [exact Hmeaning|].
+    split; [exact Hextends|]. split; [exact Hflag|]. split; [exact Hframe|]. split.
+    + destruct Hextends as [extra ->]. exact (RenameStorage.classes_transport s final fs extra classes Hframe Hclasses).
+    + split; [now apply (ClassLookup.frame_wellformed s final)|]. split; [exact Hreserve|]. split.
+      * exact (RenameMemoTopology.preserves s final fs next Harena Hnext Hextends Hgrowth Htopology).
+      * lia.
+Qed.
+Definition work s a b cls_a cls_b := match cls_a,cls_b with
+  | VirtualClasses.set _,VirtualClasses.set _=>1%nat
+  | _,_ => (RenameMemoCallers.predicate_growth s a+RenameMemoCallers.predicate_growth s b+6)%nat end.
+Definition ready s fs a b cls_a cls_b := match cls_a,cls_b with
+  | VirtualClasses.set _,VirtualClasses.set _=>True
+  | _,_ => RenameMemoCallers.predicate_ready s fs a 1 0 /\ RenameMemoCallers.predicate_ready s fs b 1 0 end.
+Theorem generated_refines s bs ns fs classes a b cls_a cls_b reserve observations :
+  (31<length (memory s arraydef_0__meta))%nat -> (0<length (memory s arraydef_0__sipState))%nat ->
+  NativeRepresentation.canonical_arena s fs -> FormulaTopology.ordered s (length fs) ->
+  nth_error fs 0=Some SetTheory.falsity -> meta_value s 8=0 ->
+  ClassStorage.represents s fs classes -> ClassLookup.wellformed s -> nth_error classes a=Some cls_a -> nth_error classes b=Some cls_b ->
+  ns vardef_0__classEqual_a=Z.of_nat a -> ns vardef_0__classEqual_b=Z.of_nat b -> ready s fs a b cls_a cls_b ->
+  Z.of_nat (length fs+work s a b cls_a cls_b+reserve)<=RenameMemoResourceBounds.doubling_limit ->
+  exists final next index, execObserved (funcdef_0__classEqual bs ns) (s,observations)=Some (tt,(final,observations)) /\
+    NativeRepresentation.canonical_arena final next /\ meta_value final 0=Z.of_nat index /\ word (Z.of_nat index) /\
+    nth_error next index=Some (VirtualClasses.erase (VirtualClasses.class_equal cls_a cls_b)) /\
+    (exists extra,next=fs++extra) /\ meta_value final 8=0 /\ RenameStorage.logical_frame s final /\
+    ClassStorage.represents final next classes /\ ClassLookup.wellformed final /\
+    Z.of_nat (length next+reserve)<=RenameMemoResourceBounds.doubling_limit /\
+    FormulaTopology.ordered final (length next) /\ (length next<=length fs+work s a b cls_a cls_b)%nat.
+Proof.
+  intros Hmeta Hsip Harena Htopology Hfalse Herror Hclasses Hwellformed Ha Hb Hna Hnb Hready Hbudget.
+  destruct cls_a as [left|body_a],cls_b as [right|body_b]; cbn [ready work] in Hready,Hbudget |- *.
+  all: first [eapply generated_sets with (a:=a) (b:=b); eassumption|
+    destruct Hready as [Hready_a Hready_b]; eapply generated_general with (a:=a) (b:=b);
+    try eassumption; try lia; intros [i [j [Hbad Hbad']]]; discriminate].
 Qed.
 End RenameMemoClassEqual.

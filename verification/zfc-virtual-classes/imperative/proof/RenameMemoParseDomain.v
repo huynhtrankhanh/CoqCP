@@ -2,7 +2,7 @@ From CoqCP Require Import Options Imperative Execution.
 From ImperativeZFC Require Import ProofChecker.
 From Trusted Require Import SetTheory.
 From NativeProof Require Import Index SipHash HashTable FormulaTopology ArenaFrame ReadTwo
-  RenameMemoInput RenameMemoCallers.
+  RenameMemoInput RenameMemoCallers RenameMemoClassEqual.
 From stdpp Require Import numbers list.
 From Stdlib Require Import Lists.List ZArith.ZArith Lia.
 Open Scope Z_scope.
@@ -48,4 +48,16 @@ Theorem second_predicate s fs ch chars a middle b last tail index shift arg :
   (17<length (memory s arraydef_0__meta))%nat -> RenameMemoCallers.predicate_ready s fs index shift arg ->
   RenameMemoCallers.predicate_ready (ReadTwo.second_state s ch chars a middle b last tail) fs index shift arg.
 Proof. intros Hmeta Hready. eapply predicate_ready; [now apply ReadTwo.second_storage|exact Hready]. Qed.
+Theorem equal_ready s t fs a b cls_a cls_b : ArenaFrame.storage s t ->
+  RenameMemoClassEqual.ready s fs a b cls_a cls_b -> RenameMemoClassEqual.ready t fs a b cls_a cls_b.
+Proof.
+  intros Hframe Hready. destruct cls_a,cls_b; cbn [RenameMemoClassEqual.ready] in *; [exact I| | |].
+  all: destruct Hready as [Ha Hb]; split; eapply predicate_ready; eassumption.
+Qed.
+Theorem equal_work s t a b cls_a cls_b : ArenaFrame.storage s t ->
+  RenameMemoClassEqual.work t a b cls_a cls_b=RenameMemoClassEqual.work s a b cls_a cls_b.
+Proof.
+  intro Hframe. destruct cls_a,cls_b; cbn [RenameMemoClassEqual.work]; [reflexivity| | |].
+  all: now rewrite (growth_same s t a Hframe),(growth_same s t b Hframe).
+Qed.
 End RenameMemoParseDomain.
