@@ -216,7 +216,51 @@ Naming a well-typed proof-shaped node does not certify that every proposed subst
 
 The external `within_capacity` predicate is a resource premise. It must cover representable counters, indices and intermediate shifted variables, allocation capacity, and enough traversal work for the requested mathematical operations. It cannot be selected to mean that the submitted implementation executes correctly, or used to exclude a valid proof merely because its logical check is inconvenient. Host allocation failure is outside the imperative execution model. A full native result must identify and justify its concrete resource domain; declaring `native_contract` alone proves nothing.
 
-The current substitution implementation uses a per-call cache keyed by source formula ID and binder depth. It computes the finite bound `5*(root formula ID+1)^2+1` with checked unsigned arithmetic, stops on an empty work stack, and treats overflow or exhaustion as fatal. This uses the invariant that composite formulas refer to earlier arena IDs. The cache uses SipHash under the handshake seed with a separate domain tag and exact key comparison. The mathematical protocol rules above are unchanged; the native cache lookup, initialization, resizing and bounded insertion helpers have execution proofs. The semantic cache invariant is also preserved by a complete cache-hit iteration and by falsity visits on both hit and miss paths. Other miss cases and return phases, the traversal work count and the complete traversal execution refinement remain open.
+### Proved native renaming domain
+
+The complete generated renaming helper now has an execution theorem, [`RenameMemoRun.generated`](../imperative/proof/RenameMemoRun.v). For an encoded formula `p`, a variable map `rho`, and initial binder depth `b`, its result denotes
+
+```text
+rename (up^b rho) p
+```
+
+Here `up^b` means `b` repetitions of the lifting operation defined above. In particular, indices below `b` remain bound to their existing variables, and every further binder in `p` lifts the map again. The available maps cover shifts, universal instantiation, the Separation and Replacement expansions, and predicate abstraction. Their maximum index-increase allowances are:
+
+| Renaming map | Increase allowance `delta` |
+| --- | --- |
+| Shift by `s` | `s` |
+| Instantiate the removed variable with index `a` | `a` |
+| Separation | `1` |
+| Replacement left or right premise | `2` |
+| Replacement image | `1` |
+| Predicate abstraction, with parameter shift `s` and element index `a` | `max(s,a)` |
+
+Let `U = 2^64-1`, `S = 2^63-1`, `r` be the source formula ID, `n` the number of existing formula nodes, and `G = (r+1)^2`. Let `B` bound every variable index occurring in the stored source formula, and let `h(p)` be its maximum nesting depth of universal binders. Thus atoms and falsity have height zero, implication takes the maximum of its children's heights, and a universal binder adds one.
+
+The theorem proves success under these explicit input conditions:
+
+- The input formula arena is canonical: stored records decode to their represented formulas, each represented formula has one ID, tuple records are normalized, and the seeded interner's allocation, bucket/link and reachability invariants hold. ID `0` represents falsity, ID `r` represents `p`, and every composite record's child IDs are smaller than its own ID.
+- The native metadata array has at least 32 cells, the SipHash state array is nonempty, the interner capacity in metadata cell `20` is positive, and the fatal-error cell `8` is zero. The procedure arguments specify exactly `r`, `b`, the selected map, and its shift/argument values. The latter are unsigned 64-bit words.
+- `5*G+1 <= U`, `n+G <= S`, `B+delta <= U`, and `b+h(p) <= U`.
+
+These are sufficient arithmetic and representation conditions on the input. They assume no execution, successful result, consistency statement or invariant-preservation theorem. [`RenameMemoInput.v`](../imperative/proof/RenameMemoInput.v) derives `h(p) <= r` from backward child IDs, so the simpler check `b+r <= U` suffices for the depth condition. It also computes a suitable `B` as the maximum of atomic index fields in stored records with IDs at most `r`; this scans the stored source prefix and does not expand the formula's shared DAG.
+
+From concrete per-call initialization, the actual helper terminates with the fatal-error cell still zero, an empty traversal stack, and a representable result ID denoting the capture-avoiding formula above. The formula arena remains canonical with backward child references; earlier formula IDs retain their meanings; and at most `G` nodes are added. [`RenameMemoOutput.v`](../imperative/proof/RenameMemoOutput.v) transports represented classes, active history, named objects and schema metadata through that extension. Input, output and flush observations remain unchanged. These internal-helper results provide the substitution component needed by class, axiom and schema callers. The class-predicate caller is covered below; other callers and protocol handlers still need their own semantic composition proofs.
+
+The per-call cache uses `(source formula ID, absolute binder depth)` keys, SipHash under the handshake seed with domain tag `5`, and exact key comparison. It begins empty with 16 slots and grows at half load. All earlier completed keys survive insertion and resizing, including when hashes collide. [`RenameMemoSchedule.v`](../imperative/proof/RenameMemoSchedule.v) counts partial runs with caching on return; [`RenameMemoScheduleRelation.v`](../imperative/proof/RenameMemoScheduleRelation.v) and [`RenameMemoEventSchedule.v`](../imperative/proof/RenameMemoEventSchedule.v) connect that scheduler to the actual native frames and cache effects. [`RenameMemoScheduleResources.v`](../imperative/proof/RenameMemoScheduleResources.v) preserves the required stack, arena and checked-growth bounds throughout the run. [`RenameMemoInitial.v`](../imperative/proof/RenameMemoInitial.v), [`RenameMemoStart.v`](../imperative/proof/RenameMemoStart.v) and [`RenameMemoLoop.v`](../imperative/proof/RenameMemoLoop.v) close initialization, native loop execution and stopping.
+
+There are at most `G` fresh source/depth pairs and `4*G+1` active phase dispatches, followed by one empty-stack stopping dispatch. The generated loop's checked fuel `5*G+1` therefore suffices. This is a dispatch-count theorem, not a machine-instruction or elapsed-time bound: cache probing, SipHash, formula interning and resizing perform additional work. The imperative memory model uses finite lists and total growth operations; physical host allocation failure lies outside that model. Calls outside the stated sufficient domain require separate reasoning; the theorem does not establish that every such call fails. The implementation checks arithmetic overflow and treats traversal exhaustion as fatal, so an exhausted traversal cannot accept a partial result.
+
+[`RenameMemoCallers.generated_predicate`](../imperative/proof/RenameMemoCallers.v) additionally proves the complete actual predicate helper for a valid represented class `C`. Given parameter shift `s` and element index `a`, it returns a formula ID denoting `VirtualClasses.predicate C (fun i => i+s) a`. For `C = set v`, this is `v_a in v_(v+s)`; for `C = abstract (core p)`, it is `rename rho p` with `rho 0 = a` and `rho (i+1) = i+s`, lifted under inner binders. Its common input conditions are a canonical backward formula arena with falsity at ID `0`, well-formed represented class storage and a valid class ID, at least 32 metadata cells, a nonempty SipHash state array, positive interner capacity, a zero fatal-error flag, and unsigned word values `s,a`. The helper arguments identify that class ID, shift and element index exactly. Its additional checks depend on the class form:
+
+| Class form | Sufficient additional checks | Added formula nodes |
+| --- | --- | --- |
+| `set v` | `n <= S` and `v+s <= U` | At most `1` |
+| Abstraction with body at ID `r` | `5*G+1 <= U`, `n+G <= S`, `B+s <= U` and `B+a <= U`, with `B` computed from the stored prefix as above | At most `G` |
+
+The result preserves canonical formulas, backward child references, represented classes and logical storage, with the fatal-error cell zero. This proves predicate expansion for both native class-record forms; membership/equality constructors and their protocol handlers require further composition.
+
+**Full native protocol refinement remains open.** Complete renaming and its cache/resource preservation are proved. Class membership/equality expansion and protocol composition, remaining axiom/proof handlers, schema construction and evaluation, class certification, malformed-stream parser behavior, complete logical-state representation and final general `main`/dialogue composition still require execution refinements. No consistency or equiconsistency result is claimed.
 
 The specification deliberately distinguishes its contract from the current proof status. A generated definition that typechecks, passing native tests, a formula interner proof, or soundness of the abstract logical rules alone does not establish `Spec.required` for the native program. Every remaining handler, storage representation, parser-domain obligation, and final session composition must be discharged before claiming full end-to-end verification.
 

@@ -34,7 +34,7 @@ Proof.
     { apply RenameMemoMeaning.falsity_value with (fs:=fs) (rho:=rho) (root:=root) (depth:=Z.of_nat depth); try assumption.
       exact (proj1 (proj2 (proj2 Harena))). }
     destruct (RenameMemoHitRefinement.generated_cached_visit {|machine:=s;bools:=bs;nums:=ns|} fs rho SetTheory.falsity depth stack count root left_id value observations
-      Hvalid Harena Hframes Hview Hlookup) as [final [Hrun [Hvalid' [Harena' [Hframes' [Hresult [Hdenotes [Hstorage Hparameters]]]]]]]].
+      Hvalid Harena Hframes Hview Hlookup) as [final [Hrun [Hvalid' [Harena' [Hframes' [Hresult [Hdenotes [Hstorage [Hparameters Hpassive]]]]]]]]].
     exists final,count. split; [exact Hrun|]. split; [now left|]. split; [exact Hvalid'|]. split; [exact Harena'|].
     split; [exact Hframes'|]. split; [now rewrite Hresult,Hvalue|]. split; assumption.
   - pose proof (RenameMemoVisit.falsity_record s fs root Harena Hsource) as Hraw.

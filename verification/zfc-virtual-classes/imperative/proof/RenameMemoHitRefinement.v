@@ -3,7 +3,7 @@ From ImperativeZFC Require Import ProofChecker.
 From Trusted Require Import SetTheory.
 From NativeProof Require Import Index SipHash RenameStack RenameFrames Representation RenameMemoTable RenameMemoLookup
   RenameMemoInit RenameMemoControl RenameMemoHit RenameMemoInvariant RenameMemoStorage RenameMemoMeaning RenameMemoVisit
-  ObservedLocal Observation.
+  RenameMemoAccounting ObservedLocal Observation.
 From stdpp Require Import numbers list.
 From Stdlib Require Import Lists.List ZArith.ZArith Lia.
 Open Scope Z_scope.
@@ -20,7 +20,8 @@ Theorem generated_cached_visit (f : Frame) fs rho source depth stack count root 
     RenameMemoInvariant.valid (machine final) count (RenameMemoMeaning.entry_meaning fs rho) /\
     NativeRepresentation.canonical_arena (machine final) fs /\ RenameFrames.represents (machine final) fs stack /\
     meta_value (machine final) 0=value /\ nth_error fs (Z.to_nat (meta_value (machine final) 0))=Some (RenameStack.renamed rho depth source) /\
-    RenameMemoInvariant.storage_frame (machine f) (machine final) /\ RenameMemoHit.parameters f final.
+    RenameMemoInvariant.storage_frame (machine f) (machine final) /\ RenameMemoHit.parameters f final /\
+    RenameMemoAccounting.passive (machine f) (machine final).
 Proof.
   intros Hvalid Harena Hframes Hview Hcached.
   destruct Hview as [Hcount Hword Hroot Hdepth Hframecap Hframe Hsource Hnodecap].
@@ -67,6 +68,11 @@ Proof.
       * apply RenameMemoStorage.popped_frames with (s:=machine f) (task:=RenameStack.visit source depth); try assumption. lia.
       * split; [exact HvalueFinal|]. split.
         -- rewrite HvalueFinal. exact (RenameMemoMeaning.result fs rho root depth value source Hmeaning Hsource).
-        -- split; [exact Hstorage|]. apply RenameMemoHit.hit_parameters.
+        -- split; [exact Hstorage|]. split; [apply RenameMemoHit.hit_parameters|].
+           apply RenameMemoAccounting.passive_trans with (t:=looked); [apply RenameMemoAccounting.lookup|].
+           change (RenameMemoAccounting.passive looked (RenameMemoHit.hit_state looked (length stack))).
+           unfold RenameMemoAccounting.passive,RenameMemoHit.hit_state. split.
+           ++ unfold RenameMemoLookup.table. now rewrite !store_meta_other by discriminate.
+           ++ split; rewrite !meta_store_other by lia; reflexivity.
 Qed.
 End RenameMemoHitRefinement.
