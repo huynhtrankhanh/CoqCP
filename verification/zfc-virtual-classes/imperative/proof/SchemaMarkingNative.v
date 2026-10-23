@@ -14,7 +14,7 @@ Lemma initialized_represents s root : represents root (SchemaMarking.initialized
 Proof.
   intros node depth Hnode Hdepth. rewrite SchemaMarking.initialized_cell by (now apply SchemaGraph.grid_bound).
   destruct (Nat.eqb (SchemaGraph.key root node depth) (SchemaGraph.key root root 0)) eqn:Hkey.
-  - apply Nat.eqb_eq in Hkey. destruct (SchemaGraph.key_injective root node depth root 0 Hdepth ltac:(unfold SchemaGraph.width;lia) Hkey) as [-> ->]. cbn. lia.
+  - apply Nat.eqb_eq in Hkey. destruct (SchemaGraph.key_injective root node depth root 0 Hdepth ltac:(unfold SchemaGraph.width;lia) Hkey) as [-> ->]. cbn. split;[intro;now left|intros;lia].
   - cbn. split;[lia|]. intros [Heq|Hnone];[inversion Heq;subst;rewrite Nat.eqb_refl in Hkey;discriminate|contradiction].
 Qed.
 Lemma mark_cell s index target : (index<length (memory s arraydef_0__schemaMarks))%nat ->
@@ -35,8 +35,8 @@ Proof.
   intros Hrep Hcapacity Hchild Hcd node depth Hnode Hdepth.
   rewrite mark_cell by (pose proof (SchemaGraph.grid_bound root child childDepth Hchild Hcd);unfold SchemaMarking.size in Hcapacity;lia).
   destruct (Nat.eqb (SchemaGraph.key root node depth) (SchemaGraph.key root child childDepth)) eqn:Hkey.
-  - apply Nat.eqb_eq in Hkey. destruct (SchemaGraph.key_injective root node depth child childDepth Hdepth Hcd Hkey) as [-> ->]. cbn. lia.
-  - rewrite Hrep by assumption. cbn. split;[tauto|]. intros [Heq|Hin];[inversion Heq;subst;rewrite Nat.eqb_refl in Hkey;discriminate|exact Hin].
+  - apply Nat.eqb_eq in Hkey. destruct (SchemaGraph.key_injective root node depth child childDepth Hdepth Hcd Hkey) as [-> ->]. cbn. split;[intro;now left|intros;lia].
+  - rewrite (Hrep node depth Hnode Hdepth). cbn. split;[tauto|]. intros [Heq|Hin];[inversion Heq;subst;rewrite Nat.eqb_refl in Hkey;discriminate|exact Hin].
 Qed.
 Lemma represents_membership root s left right : represents root s left ->
   (forall pair, In pair left <-> In pair right) -> represents root s right.
@@ -53,6 +53,12 @@ Proof.
   assert (Hrest:represents root (SchemaMarking.mark_children (SchemaGraph.marked s (SchemaGraph.key root child (depth+extra))) root depth rest)
     (map (fun pair=>(fst pair,(depth+snd pair)%nat)) rest++(child,(depth+extra)%nat)::marked)).
   { apply IH;[exact Hmarked|rewrite SchemaMarking.marked_length;exact Hcapacity|]. intros c e Hin. apply Hall. now right. }
-  eapply represents_membership;[exact Hrest|]. intro pair. rewrite !in_app_iff. cbn. tauto.
+  eapply represents_membership;[exact Hrest|]. intro pair. rewrite !in_app_iff. cbn. rewrite ?in_app_iff. tauto.
 Qed.
+Lemma children_length s root depth children :
+  length (memory (SchemaMarking.mark_children s root depth children) arraydef_0__schemaMarks)=length (memory s arraydef_0__schemaMarks).
+Proof. induction children as [|[child extra] rest IH] in s|-*;[reflexivity|]. cbn [SchemaMarking.mark_children]. now rewrite IH,SchemaMarking.marked_length. Qed.
+Lemma children_other s root depth children name : name<>arraydef_0__schemaMarks ->
+  memory (SchemaMarking.mark_children s root depth children) name=memory s name.
+Proof. intro Hname. induction children as [|[child extra] rest IH] in s|-*;[reflexivity|]. cbn [SchemaMarking.mark_children]. now rewrite IH,SchemaGraph.marked_other by exact Hname. Qed.
 End SchemaMarkingNative.

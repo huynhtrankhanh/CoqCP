@@ -118,6 +118,7 @@ def main():
         'AxiomSeparationRefinement', 'AxiomReplacementCircuits', 'ClassEqualProtocol', 'ClassMemberDomain', 'RenameMemoClassSetness',
         'AxiomReplacementRaw', 'ClassMemberProtocol', 'ClassCertifyState', 'AxiomReplacementRefinement', 'ClassCertifyProtocol',
         'ClassCertifyRejection', 'AxiomRenamingProtocol', 'ClassCertifyTotal', 'AxiomInvariant', 'ClassCertifyInvariant',
+        'AxiomTaggedInvariant',
     ]
     # These sources describe the former eight-level, uncached traversal.
     # Keep them for porting, but never audit them against a different program.
@@ -1110,6 +1111,10 @@ def main():
         'AxiomInvariant.logical',
         'AxiomInvariant.fixed',
         'AxiomInvariant.renaming',
+    ]
+    audited += [
+        'AxiomTaggedInvariant.literal_instantiated',
+        'AxiomTaggedInvariant.construct',
     ]
     (code / 'Audit.v').write_text(
         'From CoqCP Require Import Options TapeEnd.\n'

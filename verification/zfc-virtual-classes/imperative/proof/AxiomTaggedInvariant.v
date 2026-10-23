@@ -15,12 +15,12 @@ Definition ready (fs:list SetTheory.formula) tag idA idB idC rawI rawJ rawK p q 
   (if needs_p tag then nth_error fs idA=Some p else idA=rawI) /\
   (if needs_q tag then nth_error fs idB=Some q else idB=rawJ) /\
   (if Nat.eqb tag 1 then nth_error fs idC=Some r else idC=rawK).
-Definition cost (tag root:nat) : nat := match tag with
+Definition cost (tag root:nat) : nat := (match tag with
 | 0=>2 | 1=>6 | 2=>3 | 3=>S root*S root+2 | 4=>S root*S root+5
 | 5=>1 | 6 | 7 | 8=>5 | 9=>10 | 10=>15 | 11=>8 | 12=>10 | 13=>9 | 14=>33
-| 15=>S root*S root+14 | 16=>3*(S root*S root)+21 | 17=>42 | _=>0 end.
+| 15=>S root*S root+14 | 16=>3*(S root*S root)+21 | 17=>42 | _=>0 end)%nat.
 Definition uses_rename tag := existsb (Nat.eqb tag) [3;4;15;16]%nat.
-Definition increment (tag rawJ:nat) : nat := match tag with 3=>rawJ | 4=>1 | _=>2 end.
+Definition increment (tag rawJ:nat) : nat := (match tag with 3=>rawJ | 4=>1 | _=>2 end)%nat.
 Definition renaming_ready tag root rawJ p bound :=
   if uses_rename tag then
     Z.of_nat (RenameMemoBounds.fuel root)<=maximum /\ RenameMemoIndexBounds.formula_bound bound p /\
@@ -29,6 +29,12 @@ Definition renaming_ready tag root rawJ p bound :=
 Definition literal_axiom tag p q r rawI rawJ rawK :=
   Schemata.instantiate_axiom (fun _=>VirtualClasses.set 0) 0
     (Schemata.template_axiom tag (Schemata.literal_formula p) (Schemata.literal_formula q) (Schemata.literal_formula r) rawI rawJ rawK).
+
+Lemma literal_instantiated rho depth tag tp tq tr rawI rawJ rawK :
+  literal_axiom tag (Schemata.instantiate_formula rho depth tp) (Schemata.instantiate_formula rho depth tq)
+    (Schemata.instantiate_formula rho depth tr) rawI rawJ rawK=
+  Schemata.instantiate_axiom rho depth (Schemata.template_axiom tag tp tq tr rawI rawJ rawK).
+Proof. reflexivity. Qed.
 
 Theorem construct s fs tag idA idB idC rawI rawJ rawK p q r bound reserve observations :
   (tag<=17)%nat ->
@@ -48,29 +54,29 @@ Proof.
     O=>idtac | S ?rest=>destruct index as [|index];[idtac|cases rest index] end in cases 18%nat tag.
   19: lia.
   all: destruct Hready as [HA [HB HC]];
-    cbn [needs_p needs_q existsb Nat.eqb] in HA,HB,HC;
+    cbn [needs_p needs_q existsb Nat.eqb orb] in HA,HB,HC;
     eexists;split;[reflexivity|].
-  - eapply (AxiomInvariant.logical AxiomLogicalProtocol.k);try eassumption;[lia|split;assumption].
-  - eapply (AxiomInvariant.logical AxiomLogicalProtocol.srule);try eassumption;[lia|repeat split;assumption].
-  - eapply (AxiomInvariant.logical AxiomLogicalProtocol.dne);try eassumption;lia.
+  - eapply (AxiomInvariant.logical AxiomLogicalProtocol.k s fs idA idB idC p q r reserve observations);try eassumption;[lia|split;assumption].
+  - eapply (AxiomInvariant.logical AxiomLogicalProtocol.srule s fs idA idB idC p q r reserve observations);try eassumption;[lia|repeat split;assumption].
+  - eapply (AxiomInvariant.logical AxiomLogicalProtocol.dne s fs idA idB idC p q r reserve observations);try eassumption;lia.
   - subst idB. destruct Hrename as [Hfuel [Hbound [Hindices Hheight]]].
-    eapply (AxiomInvariant.renaming AxiomRenamingProtocol.inst);try eassumption. split;[exact HA|exact I].
+    eapply (AxiomInvariant.renaming AxiomRenamingProtocol.inst s fs idA rawJ idC p q bound reserve observations);try eassumption. split;[exact HA|exact I].
   - destruct Hrename as [Hfuel [Hbound [Hindices Hheight]]].
-    eapply (AxiomInvariant.renaming AxiomRenamingProtocol.dist);try eassumption. split;assumption.
-  - subst idA. eapply AxiomInvariant.reflexivity;try eassumption;[lia|reflexivity|reflexivity].
-  - subst idA idB idC. eapply (AxiomInvariant.logical (AxiomLogicalProtocol.equality AxiomEqualityCircuits.member_left));try eassumption;[lia|exact I].
-  - subst idA idB idC. eapply (AxiomInvariant.logical (AxiomLogicalProtocol.equality AxiomEqualityCircuits.member_right));try eassumption;[lia|exact I].
-  - subst idA idB idC. eapply (AxiomInvariant.logical (AxiomLogicalProtocol.equality AxiomEqualityCircuits.equal_trans));try eassumption;[lia|exact I].
-  - eapply (AxiomInvariant.fixed AxiomFixedCircuits.extensionality);try eassumption;lia.
-  - eapply (AxiomInvariant.fixed AxiomFixedCircuits.foundation);try eassumption;lia.
-  - eapply (AxiomInvariant.fixed AxiomFixedCircuits.pairing);try eassumption;lia.
-  - eapply (AxiomInvariant.fixed AxiomFixedCircuits.union);try eassumption;lia.
-  - eapply (AxiomInvariant.fixed AxiomFixedCircuits.power);try eassumption;lia.
-  - eapply (AxiomInvariant.fixed AxiomFixedCircuits.infinity);try eassumption;lia.
+    eapply (AxiomInvariant.renaming AxiomRenamingProtocol.dist s fs idA idB idC p q bound reserve observations);try eassumption. split;assumption.
+  - subst idA. eapply (AxiomInvariant.reflexivity s (fun _=>false) (AxiomCommand.arguments 5 (Z.of_nat rawI) (Z.of_nat idB) (Z.of_nat idC)) fs rawI reserve observations);try eassumption;[lia|reflexivity|reflexivity].
+  - subst idA idB idC. eapply (AxiomInvariant.logical (AxiomLogicalProtocol.equality AxiomEqualityCircuits.member_left) s fs rawI rawJ rawK p q r reserve observations);try eassumption;first [lia|exact I].
+  - subst idA idB idC. eapply (AxiomInvariant.logical (AxiomLogicalProtocol.equality AxiomEqualityCircuits.member_right) s fs rawI rawJ rawK p q r reserve observations);try eassumption;first [lia|exact I].
+  - subst idA idB idC. eapply (AxiomInvariant.logical (AxiomLogicalProtocol.equality AxiomEqualityCircuits.equal_trans) s fs rawI rawJ rawK p q r reserve observations);try eassumption;first [lia|exact I].
+  - eapply (AxiomInvariant.fixed AxiomFixedCircuits.extensionality s fs idA idB idC reserve observations);try eassumption;lia.
+  - eapply (AxiomInvariant.fixed AxiomFixedCircuits.foundation s fs idA idB idC reserve observations);try eassumption;lia.
+  - eapply (AxiomInvariant.fixed AxiomFixedCircuits.pairing s fs idA idB idC reserve observations);try eassumption;lia.
+  - eapply (AxiomInvariant.fixed AxiomFixedCircuits.union s fs idA idB idC reserve observations);try eassumption;lia.
+  - eapply (AxiomInvariant.fixed AxiomFixedCircuits.power s fs idA idB idC reserve observations);try eassumption;lia.
+  - eapply (AxiomInvariant.fixed AxiomFixedCircuits.infinity s fs idA idB idC reserve observations);try eassumption;lia.
   - destruct Hrename as [Hfuel [Hbound [Hindices Hheight]]].
-    eapply (AxiomInvariant.renaming AxiomRenamingProtocol.separation);try eassumption. split;[exact HA|exact I].
+    eapply (AxiomInvariant.renaming AxiomRenamingProtocol.separation s fs idA idB idC p q bound reserve observations);try eassumption. split;[exact HA|exact I].
   - destruct Hrename as [Hfuel [Hbound [Hindices Hheight]]].
-    eapply (AxiomInvariant.renaming AxiomRenamingProtocol.replacement);try eassumption. split;[exact HA|exact I].
-  - eapply (AxiomInvariant.fixed AxiomFixedCircuits.choice);try eassumption;lia.
+    eapply (AxiomInvariant.renaming AxiomRenamingProtocol.replacement s fs idA idB idC p q bound reserve observations);try eassumption. split;[exact HA|exact I].
+  - eapply (AxiomInvariant.fixed AxiomFixedCircuits.choice s fs idA idB idC reserve observations);try eassumption;lia.
 Qed.
 End AxiomTaggedInvariant.

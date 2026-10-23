@@ -3,7 +3,7 @@ From ImperativeZFC Require Import ProofChecker.
 From Trusted Require Import SetTheory Protocol Schemata Guarantees.
 From NativeProof Require Import Index SipHash TokenByte ReadFive AxiomCommand SchemaNodeCommand SchemaNode
   SchemaRepresentation SchemaMetadata ArenaFrame FormulaProjection Representation ClassStorage
-  HistoryRefinement NameRepresentation SemanticFrames.
+  HistoryRefinement NameRepresentation SemanticFrames ReplyOK ReadFour ReadTwo ReadOne DecimalInput CommandArgs FormulaTopology HashTable.
 From Stdlib Require Import Lists.List ZArith.ZArith Lia.
 From stdpp Require Import numbers list.
 Open Scope Z_scope.
@@ -36,6 +36,26 @@ Lemma variable_projection s variable b c d n : FormulaProjection.storage s (vari
 Proof.
   unfold variable_result. eapply FormulaProjection.storage_trans;[|apply SchemaNode.result_projection].
   apply FormulaProjection.strong_storage. unfold SchemaNode.variable_state,SchemaNode.initialized. ArenaFrame.storage_steps.
+Qed.
+Lemma variable_allocation s variable b c d n watched : watched<>arraydef_0__schemaNodes ->
+  length (memory (variable_result s variable b c d n) watched)=length (memory s watched).
+Proof.
+  intro Hnodes. destruct (decide (watched=arraydef_0__meta)) as [->|Hmeta];[apply variable_meta_length|].
+  destruct (decide (watched=arraydef_0__printBuffer)) as [->|Hprint].
+  - unfold variable_result,SchemaNode.result. rewrite store_meta_other by discriminate.
+    rewrite ReplyOKExecution.reply_buffer_length,SchemaNode.written_other by discriminate.
+    unfold SchemaNode.variable_state,SchemaNode.initialized. now rewrite !store_meta_other by discriminate.
+  - now rewrite variable_other by assumption.
+Qed.
+Lemma argument_allocation s ch chars variable b c d sep1 sep2 sep3 sep4 sep5 tail watched :
+  length (memory (ReadFive.fifth_state s ch chars 0 sep1 variable sep2 b sep3 c sep4 d sep5 tail) watched)=length (memory s watched).
+Proof.
+  destruct (decide (watched=arraydef_0__meta)) as [->|Hmeta];[apply ReadFive.fifth_meta_length|].
+  destruct (decide (watched=arraydef_0__token)) as [->|Htoken].
+  - unfold ReadFive.fifth_state,ReadFive.fourth_state,ReadFour.fourth_state,ReadFour.third_state,ReadFour.second_state,
+      ReadTwo.second_state,ReadTwo.first_state,ReadOne.argument_state,ReadOne.opcode_state.
+    now rewrite !DecimalInput.encoded_token_length,CommandArgs.pending_token_length.
+  - now rewrite ReadFive.fifth_other by assumption.
 Qed.
 Lemma variable_entry fs classes prior variable b c d :
   Z.of_nat (S variable)<=maximum -> Z.of_nat b<=maximum -> Z.of_nat c<=maximum -> Z.of_nat d<=maximum ->
@@ -74,6 +94,9 @@ Theorem generated_variable s logical bs ns ch chars variable b c d sep0 sep1 sep
     HistoryRefinement.represents final (SchemaRepresentation.with_expression logical (Protocol.CE (Schemata.metavariable variable))) /\
     NameRepresentation.represents final (Protocol.bindings logical) /\
     SchemaRepresentation.represents final (SchemaRepresentation.with_expression logical (Protocol.CE (Schemata.metavariable variable))) /\
+    (forall watched,watched<>arraydef_0__schemaNodes -> length (memory final watched)=length (memory s watched)) /\
+    meta_value final 8=0 /\
+    (FormulaTopology.ordered s (length (Protocol.formulas logical)) -> FormulaTopology.ordered final (length (Protocol.formulas logical))) /\
     (Guarantees.safe logical -> Guarantees.safe (SchemaRepresentation.with_expression logical (Protocol.CE (Schemata.metavariable variable)))).
 Proof.
   intros Hencoding Hmeta Htoken Hbuffer Hpending Herror Hvariable Hb Hc Hd Hcapacity
@@ -143,6 +166,12 @@ Proof.
       * split.
         -- unfold NameRepresentation.represents in *. rewrite (Hcells 4%nat),(Hcells 5%nat) by lia.
            rewrite (Harrays arraydef_0__names),(Harrays arraydef_0__bindings) by discriminate. exact Hnames.
-        -- split;[exact Hfinal_schema|]. intro Hsafe. eapply Guarantees.step_safe;eassumption.
+        -- split;[exact Hfinal_schema|]. split.
+           ++ intros watched Hnodes. unfold final. rewrite variable_allocation by exact Hnodes.
+              unfold arg. apply argument_allocation.
+           ++ split;[exact Hfinalerror|]. split.
+              ** intro Hordered. apply (FormulaTopology.same s final _ Hordered).
+                 intros parent Hparent. unfold HashTableInvariant.tuple_at. now rewrite Harrays by discriminate.
+              ** intro Hsafe. eapply Guarantees.step_safe;eassumption.
 Qed.
 End SchemaNodeProtocol.

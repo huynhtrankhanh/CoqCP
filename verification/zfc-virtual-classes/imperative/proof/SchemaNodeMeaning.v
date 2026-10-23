@@ -1,7 +1,7 @@
 From CoqCP Require Import Options Imperative Execution.
 From ImperativeZFC Require Import ProofChecker.
 From Trusted Require Import Protocol Schemata.
-From NativeProof Require Import Index SipHash SchemaMetadata SchemaNode.
+From NativeProof Require Import Index SipHash SchemaMetadata SchemaRepresentation SchemaNode.
 From stdpp Require Import numbers list.
 From Stdlib Require Import Lists.List ZArith.ZArith Lia.
 Open Scope Z_scope.
@@ -62,14 +62,15 @@ Proof.
   intro Haxiom.
   let rec cases depth tag := lazymatch depth with O=>idtac | S ?rest=>
     let next:=fresh "tag" in destruct tag as [|next];[idtac|cases rest next] end in cases 18%nat tag.
-  all: cbn [Protocol.axiom_expression Protocol.formula_argument existsb Nat.eqb Nat.leb] in Haxiom.
-  all: repeat match goal with Haxiom:context[Protocol.ff ?logical ?index] |- _ =>
+  all: unfold Protocol.axiom_expression,Protocol.formula_argument in Haxiom; cbn [existsb Nat.eqb Nat.leb] in Haxiom.
+  all: repeat match type of Haxiom with context[Protocol.ff ?logical ?index] =>
     let formula:=fresh "formula" in let Hlookup:=fresh "Hlookup" in
     destruct (Protocol.ff logical index) as [formula|] eqn:Hlookup; [|discriminate Haxiom] end.
   all: try discriminate Haxiom.
   all: injection Haxiom as <-; collect_lookups;
     unfold plan,SchemaNode.reference_requests,SchemaNode.reference_type;
-    cbn [bool_decide app fold_left fst snd]; split;[valid_requests|];
+    repeat first [rewrite bool_decide_true by lia|rewrite bool_decide_false by lia];
+    cbn [app fold_left fst snd]; split;[valid_requests|];
     split;[lia|];split;[widths|reflexivity].
 Qed.
 Theorem builds_plan logical kind a b c d expression :
@@ -79,7 +80,8 @@ Proof.
   intros Hbuild Hrange. inversion Hbuild;subst;try lia.
   all: try match goal with H:Protocol.axiom_expression _ _ _ _ _=Some _ |- _ => exact (axiom_plan _ _ _ _ _ _ H) end.
   all: collect_lookups; unfold plan,SchemaNode.reference_requests,SchemaNode.reference_type;
-    cbn [bool_decide fold_left fst snd]; split;[valid_requests|];
+    repeat first [rewrite bool_decide_true by lia|rewrite bool_decide_false by lia];
+    cbn [fold_left fst snd]; split;[valid_requests|];
     split;[lia|];split;[widths|reflexivity].
 Qed.
 Theorem reference_metadata s logical kind a b c d expression :
@@ -104,5 +106,56 @@ Proof.
   assert (Hzero:meta_value (SchemaNode.initialized s) 19=0).
   { unfold SchemaNode.initialized. apply meta_store_same. rewrite store_meta_length. lia. }
   rewrite Hzero. exact Hwidth.
+Qed.
+Lemma builds_context logical kind a b c d expression :
+  Protocol.builds_node logical [kind;a;b;c;d] expression -> (3<=kind<=10)%nat ->
+  Protocol.builds_node (SchemaRepresentation.context (Protocol.formulas logical) (Protocol.classes logical) (Protocol.expressions logical))
+    [kind;a;b;c;d] expression.
+Proof. intros Hbuild Hrange. inversion Hbuild;subst;try lia;constructor;assumption. Qed.
+Theorem entry_bridge logical kind a b c d expression :
+  Protocol.builds_node logical [kind;a;b;c;d] expression -> (3<=kind<=10)%nat ->
+  Forall (fun index=>word (Z.of_nat index)) [kind;a;b;c;d] ->
+  word (Z.of_nat (SchemaMetadata.arity expression)) ->
+  SchemaRepresentation.entry (Protocol.formulas logical) (Protocol.classes logical) (Protocol.expressions logical)
+    (Z.of_nat kind,Z.of_nat a,Z.of_nat b,Z.of_nat c,Z.of_nat d,SchemaNode.reference_type kind,Z.of_nat (SchemaMetadata.arity expression)) expression.
+Proof.
+  intros Hbuild Hrange Hfields Hwidth.
+  destruct (builds_plan logical kind a b c d expression Hbuild Hrange) as [_ [_ [_ Htype]]].
+  rewrite Htype. change (SchemaRepresentation.entry (Protocol.formulas logical) (Protocol.classes logical) (Protocol.expressions logical) (SchemaRepresentation.encode kind a b c d expression) expression).
+  apply SchemaRepresentation.entry_builds;[lia| |exact (builds_context logical kind a b c d expression Hbuild Hrange)].
+  unfold SchemaRepresentation.fields_fit.
+  inversion Hfields as [|k ks Hk Htail];subst k ks.
+  inversion Htail as [|x xs Ha Htail2];subst x xs.
+  inversion Htail2 as [|x xs Hb Htail3];subst x xs.
+  inversion Htail3 as [|x xs Hc Htail4];subst x xs.
+  inversion Htail4 as [|x xs Hd Hnil];subst x xs.
+  constructor 2;[exact Hk|]. constructor 2;[exact Ha|]. constructor 2;[exact Hb|].
+  constructor 2;[exact Hc|]. constructor 2;[exact Hd|]. constructor 2;[exact Hwidth|constructor 1].
+Qed.
+Lemma represented_arity_word s expressions index expression : SchemaMetadata.represents s expressions ->
+  nth_error expressions index=Some expression -> word (Z.of_nat (SchemaMetadata.arity expression)).
+Proof.
+  intros Hrep Hlookup. destruct (SchemaMetadata.fields s expressions index expression Hrep Hlookup) as [_ [_ [_ Hbound]]].
+  unfold word. split;lia.
+Qed.
+Lemma width_fold_word expressions requests initial :
+  Forall (fun request=>word (SchemaNode.reference_width expressions request)) requests -> word initial ->
+  word (fold_left (fun width request=>Z.max width (SchemaNode.reference_width expressions request)) requests initial).
+Proof.
+  intros Hrequests. induction Hrequests as [|request tail Hwidth Htail IH] in initial|-*;[exact (fun H=>H)|].
+  intros Hinitial. cbn [fold_left]. apply IH. unfold word in *. destruct Hwidth as [Hw0 Hwmax]. destruct Hinitial as [Hi0 Himax].
+  split;[eapply Z.le_trans;[exact Hi0|apply Z.le_max_l]|apply Z.max_lub;assumption].
+Qed.
+Theorem builds_arity_word s logical kind a b c d expression :
+  SchemaMetadata.represents s (Protocol.expressions logical) ->
+  Protocol.builds_node logical [kind;a;b;c;d] expression -> (3<=kind<=10)%nat ->
+  word (Z.of_nat (SchemaMetadata.arity expression)).
+Proof.
+  intros Hrep Hbuild Hrange.
+  destruct (builds_plan logical kind a b c d expression Hbuild Hrange) as [Hvalid [_ [Hwidth _]]].
+  rewrite <-Hwidth. apply width_fold_word;[|unfold word,maximum;lia].
+  induction Hvalid as [|request tail Hrequest Htail IH];[constructor|]. constructor;[|exact IH].
+  destruct Hrequest as [found [Hlookup Hkind]]. unfold SchemaNode.reference_width. rewrite Hlookup.
+  exact (represented_arity_word s (Protocol.expressions logical) (fst request) found Hrep Hlookup).
 Qed.
 End SchemaNodeMeaning.

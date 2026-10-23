@@ -79,6 +79,8 @@ Proof.
  intros Hkind Hmiddle Happly Hrun.
  rewrite actual_compute. unfold compact_compute.
  destruct which;cbn [selected applies] in *;
+ repeat match goal with H:_ \/ _ |- _=>destruct H end;
+ subst kind;
  repeat first [progress cbn [optionBind fst snd bind]
  |progress rewrite drop_assoc|progress rewrite drop_lift
  |NativePrimitives.primitive ltac:(fun frame name slot=>lia)
@@ -89,7 +91,11 @@ Proof.
  |match goal with |- context [execLocalObserved (dropWithinLoop (?code >>= ?tail)) (?current,observations)]=>
     let Hstraight:=fresh in assert (Hstraight:straight code) by
       (first [apply meta_straight|apply literal_straight|apply abstract_straight|apply binary_straight|apply all_straight|apply axiom_straight]);
-    rewrite (straight_drop_tail code (tail tt) current observations middle observations Hstraight Hrun);clear Hstraight end].
+    let Hstep:=fresh in assert (Hstep:execLocalObserved (dropWithinLoop (code >>= tail)) (current,observations)=
+      execLocalObserved (dropWithinLoop (tail tt)) (middle,observations)) by
+      (apply (straight_drop_tail code (tail tt) current observations middle observations Hstraight Hrun));
+    rewrite Hstep;clear Hstep Hstraight end].
  all: reflexivity.
 Qed.
+
 End SchemaPair.
