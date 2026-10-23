@@ -49,10 +49,11 @@ Proof.
   destruct (AxiomCircuits.s_result observations (AxiomRefl.cleared s) p_id q_id r_id built ids next p q r Htrace Hrep)
     as (Hword & Hmeaning & Hderives).
   destruct (AxiomK.finishing_result built Hbuiltmeta) as (Hsuccess & Hresult_error & Hresult).
+  change (meta_value (AxiomRefl.finished built) 0=meta_value built 0) in Hresult.
   exists built,next. split.
   - eapply AxiomS.generated_helper; try eassumption; eapply source_reference; eassumption.
   - split; [exact (ArenaFrame.storage_arena built (AxiomRefl.finished built) next (AxiomRefl.finished_storage built) Hnext)|].
-    split; [exact Hsuccess|]. split; [congruence|]. split; [now rewrite Hresult|].
+    split; [exact Hsuccess|]. split; [unfold AxiomRefl.finished;rewrite !meta_store_other by lia;exact Hflag|]. split; [now rewrite Hresult|].
     split; [now rewrite Hresult|]. split; [exact Hderives|]. split; [exact Hprefix|].
     split; [exact Hreserve|]. split; [eapply AxiomK.storage_topology;[apply AxiomRefl.finished_storage|exact Htopology]|].
     split; [exact Hgrowth|exact (AxiomRefl.frame s built Hframe)].

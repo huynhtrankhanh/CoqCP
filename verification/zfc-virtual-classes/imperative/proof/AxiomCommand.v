@@ -19,11 +19,11 @@ Definition read_result (reader : CommandQuitExecution.reader_function) s t value
 Definition locals (f : Frame) tag a b c :=
   setNum (setNum (setNum (setNum f vardef_0__command_tag tag) vardef_0__command_a a)
     vardef_0__command_b b) vardef_0__command_c c.
-Definition result built n index accepted := if accepted then HistoryStorage.result built n (Z.of_nat index)
+Definition result built n index (accepted : bool) := if accepted then HistoryStorage.result built n (Z.of_nat index)
   else ReplyNOExecution.reply_state built.
-Definition reply n accepted := if accepted then Protocol.OK n else Protocol.NO.
+Definition reply n (accepted : bool) := if accepted then Protocol.OK n else Protocol.NO.
 Local Opaque funcdef_0__axiom funcdef_0__appendTheorem funcdef_0__no Imperative.update.
-Theorem generated_handler reader (f : Frame) first second third fourth built tag a b c n index accepted observations :
+Theorem generated_handler reader (f : Frame) first second third fourth built tag a b c n index (accepted : bool) observations :
   (17<length (memory (machine f) arraydef_0__meta))%nat -> meta_value (machine f) 8=0 ->
   read_result reader (machine f) first tag observations -> read_result reader first second a observations ->
   read_result reader second third b observations -> read_result reader third fourth c observations ->
@@ -85,5 +85,45 @@ Proof.
     |progress cbv beta iota zeta delta [machine setMachine setNum nums bools]
   ].
   all: unfold locals,result,reply;reflexivity.
+Qed.
+Lemma result_meta_length built n index accepted :
+  length (memory (result built n index accepted) arraydef_0__meta)=length (memory built arraydef_0__meta).
+Proof.
+  destruct accepted; unfold result.
+  - apply HistoryStorage.result_meta_length.
+  - rewrite ReplyNOExecution.reply_memory. reflexivity.
+Qed.
+Lemma result_error built n index accepted : meta_value (result built n index accepted) 8=meta_value built 8.
+Proof.
+  destruct accepted; unfold result.
+  - apply HistoryStorage.result_meta_other. lia.
+  - unfold meta_value. now rewrite ReplyNOExecution.reply_memory.
+Qed.
+Theorem generated_command s bs ns opstate first second third fourth built tag a b c n index (accepted : bool) observations :
+  read_result funcdef_0__readNat s opstate 11 observations ->
+  read_result funcdef_0__readNat opstate first tag observations -> read_result funcdef_0__readNat first second a observations ->
+  read_result funcdef_0__readNat second third b observations -> read_result funcdef_0__readNat third fourth c observations ->
+  execObserved (funcdef_0__axiom (fun _=>false) (arguments tag a b c)) (fourth,observations)=Some (tt,(built,observations)) ->
+  (17<length (memory built arraydef_0__meta))%nat -> meta_value built 13=(if accepted then 1 else 0) ->
+  meta_value built 8=0 -> meta_value built 0=Z.of_nat index -> meta_value built 3=Z.of_nat n -> Z.of_nat n<maximum ->
+  (20<=length (memory built arraydef_0__printBuffer))%nat ->
+  execObserved (funcdef_0__command bs ns) (s,observations)=Some (tt,(result built n index accepted,
+    observations++[{|flushedOutput:=stdout built++Protocol.reply_bytes (reply n accepted);unreadInput:=stdin built|}])).
+Proof.
+  intros [Hopcode [Hopmeta [Hopnumber [Hopvalid Hoperror]]]] Hfirst Hsecond Hthird Hfourth
+    Haxiom Hbuilt Hsuccess Herror Hindex Hcount Hword Hbuffer.
+  set (initial:=CommandDispatch.opcode_frame {|machine:=s;bools:=bs;nums:=ns|} opstate 11).
+  set (after:=setMachine (locals initial tag a b c) (result built n index accepted)).
+  apply (CommandDispatch.generated_positive_command s bs ns after opstate 11 observations
+    (observations++[{|flushedOutput:=stdout built++Protocol.reply_bytes (reply n accepted);unreadInput:=stdin built|}])) ; try assumption.
+  - lia.
+  - reflexivity.
+  - change (execLocalObserved (CommandChain.handler_for funcdef_0__readNat 11) (initial,observations)=
+      Some (tt,(after,observations++[{|flushedOutput:=stdout built++Protocol.reply_bytes (reply n accepted);unreadInput:=stdin built|}]))).
+    eapply generated_handler; eassumption.
+  - change (8<length (memory (result built n index accepted) arraydef_0__meta))%nat.
+    rewrite result_meta_length. lia.
+  - change (meta_value (result built n index accepted) 8=0).
+    now rewrite result_error.
 Qed.
 End AxiomCommand.

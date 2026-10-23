@@ -120,13 +120,14 @@ Lemma certified_record s binding offset size cls : (binding<length (memory s arr
   nth_error (memory (certified s binding offset size cls) arraydef_0__bindings) binding=Some (offset,size,Z.of_nat cls,1,0).
 Proof.
   intro Hbound. change (nth_error (<[binding:=(offset,size,Z.of_nat cls,1,0)]>(memory s arraydef_0__bindings)) binding=Some (offset,size,Z.of_nat cls,1,0)).
-  apply list_lookup_insert_eq. exact Hbound.
+  rewrite nth_error_nth' with (d:=(0,0,0,0,0)) by (rewrite length_insert;exact Hbound).
+  f_equal. apply OverflowExecution.nth_insert_same. exact Hbound.
 Qed.
 Lemma result_meta s binding offset size cls matches :
   memory (result s binding offset size cls matches) arraydef_0__meta=memory s arraydef_0__meta.
 Proof.
   destruct matches; cbn [result]; [rewrite ReplyOKExecution.reply_other by discriminate; apply certified_other; discriminate|
-    apply ReplyNOExecution.reply_other; discriminate].
+    apply ReplyNOExecution.reply_memory].
 Qed.
 Theorem generated_command s bs ns opstate named looked parsed built binding tid cls offset size flag formula matches observations :
   execObserved (funcdef_0__readNat (fun _=>false) (fun _=>0)) (s,observations)=Some (tt,(opstate,observations)) ->

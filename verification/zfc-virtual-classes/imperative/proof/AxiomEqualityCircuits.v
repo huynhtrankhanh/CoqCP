@@ -41,7 +41,8 @@ Lemma fits which i j k : word (Z.of_nat i) -> word (Z.of_nat j) -> word (Z.of_na
   Forall FormulaCircuit.fits (plan which i j k).
 Proof.
   intros Hi Hj Hk. destruct which;unfold plan,left_op,right_op;
-    repeat constructor;assumption.
+    repeat (constructor; [first [exact I|exact (conj Hi Hj)|exact (conj Hi Hk)|exact (conj Hj Hk)|exact (conj Hk Hi)|exact (conj Hk Hj)]|]);
+    constructor.
 Qed.
 Theorem construct which i j k s fs reserve observations :
   NativeRepresentation.canonical_arena s fs -> FormulaTopology.ordered s (length fs) -> meta_value s 8=0 ->
