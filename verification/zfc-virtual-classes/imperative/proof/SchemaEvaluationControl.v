@@ -36,6 +36,15 @@ Proof.
    destruct (localStepObserved effect (f,observations)) as [[value [middle trace]]|];cbn [optionBind fst snd] in *;[|discriminate].
    eapply IH;[apply Hcode|exact Hrun].
 Qed.
+Lemma drop_lift_final (code:LocalAction unit) state :
+ execLocalObserved (dropWithinLoop (liftToWithinLoop code)) state =
+ optionBind (execLocalObserved code state) (fun r=>Some (KeepGoing,snd r)).
+Proof.
+ induction code as [value|effect cont IH] in state|-*.
+ - destruct value. reflexivity.
+ - cbn [liftToWithinLoop dropWithinLoop Action_rect execLocalObserved].
+   destruct (localStepObserved effect state) as [[value after]|];cbn [optionBind fst snd];[apply IH|reflexivity].
+Qed.
 Ltac straight_program :=
  repeat first [apply straight_lift|apply straight_bind|exact I|intro|match goal with b:bool |- _=>destruct b end].
 End SchemaEvaluationControl.

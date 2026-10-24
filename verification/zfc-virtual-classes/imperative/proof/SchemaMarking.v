@@ -356,6 +356,7 @@ all: try (destruct f;reflexivity).
   all: cbn [SchemaGraph.need_p SchemaGraph.need_q SchemaGraph.need_r existsb Nat.eqb mark_children app];rewrite ?Nat.add_0_r.
   all: try (destruct f;reflexivity).
 all: try (repeat rewrite Nat.add_0_r;destruct f;reflexivity).
-Show.
+all: cbn [orb dropWithinLoop Action_rect execLocalObserved mark_children app].
+all: rewrite ?Nat.add_0_r;destruct f;reflexivity.
 Qed.
 End SchemaMarking.

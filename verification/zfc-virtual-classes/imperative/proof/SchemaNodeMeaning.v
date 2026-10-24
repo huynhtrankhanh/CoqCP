@@ -1,7 +1,7 @@
 From CoqCP Require Import Options Imperative Execution.
 From ImperativeZFC Require Import ProofChecker.
 From Trusted Require Import Protocol Schemata.
-From NativeProof Require Import Index SipHash SchemaMetadata SchemaRepresentation SchemaNode.
+From NativeProof Require Import Index SipHash SchemaMetadata SchemaRepresentation SchemaCheck SchemaNode.
 From stdpp Require Import numbers list.
 From Stdlib Require Import Lists.List ZArith.ZArith Lia.
 Open Scope Z_scope.
@@ -154,8 +154,113 @@ Proof.
   intros Hrep Hbuild Hrange.
   destruct (builds_plan logical kind a b c d expression Hbuild Hrange) as [Hvalid [_ [Hwidth _]]].
   rewrite <-Hwidth. apply width_fold_word;[|unfold word,maximum;lia].
-  induction Hvalid as [|request tail Hrequest Htail IH];[constructor|]. constructor;[|exact IH].
+  clear Hwidth. induction Hvalid as [|request tail Hrequest Htail IH];[constructor|]. constructor;[|exact IH].
   destruct Hrequest as [found [Hlookup Hkind]]. unfold SchemaNode.reference_width. rewrite Hlookup.
   exact (represented_arity_word s (Protocol.expressions logical) (fst request) found Hrep Hlookup).
+Qed.
+Lemma check_many_nonzero expressions requests s :
+  (19<length (memory s arraydef_0__meta))%nat ->
+  meta_value (SchemaNode.check_many expressions requests s) 18<>0 ->
+  meta_value s 18<>0 /\ Forall (SchemaNode.valid_reference expressions) requests.
+Proof.
+  induction requests as [|[index expected] tail IH] in s|-*.
+  - intros Hmeta Hflag. split;[exact Hflag|constructor].
+  - intros Hmeta Hflag. unfold SchemaNode.check_many in Hflag. cbn [fold_left fst snd] in Hflag.
+    destruct (IH (SchemaCheck.semantic_result s expressions index expected)
+      ltac:(rewrite SchemaNode.semantic_length;exact Hmeta) Hflag) as [Hhead Htail].
+    rewrite SchemaCheck.semantic_flag in Hhead by exact Hmeta.
+    destruct (nth_error expressions index) as [expression|] eqn:Hlookup;[|contradiction].
+    destruct (bool_decide (SchemaMetadata.kind expression<>expected)) eqn:Hkind;[contradiction|].
+    apply bool_decide_eq_false in Hkind.
+    split;[exact Hhead|]. constructor;[|exact Htail].
+    exists expression. cbn [fst snd]. split;[exact Hlookup|]. lia.
+Qed.
+Lemma valid_class logical index :
+  SchemaNode.valid_reference (Protocol.expressions logical) (index,0) ->
+  exists cls, Protocol.cf logical index=Some cls.
+Proof.
+  intros [expression [Hlookup Hkind]]. destruct expression;cbn [SchemaMetadata.kind] in Hkind;try discriminate.
+  unfold Protocol.cf. cbn [fst] in Hlookup. rewrite Hlookup. eexists;reflexivity.
+Qed.
+Lemma valid_formula logical index :
+  SchemaNode.valid_reference (Protocol.expressions logical) (index,1) ->
+  exists formula, Protocol.ff logical index=Some formula.
+Proof.
+  intros [expression [Hlookup Hkind]]. destruct expression;cbn [SchemaMetadata.kind] in Hkind;try discriminate.
+  unfold Protocol.ff. cbn [fst] in Hlookup. rewrite Hlookup. eexists;reflexivity.
+Qed.
+Lemma valid_proof logical index :
+  SchemaNode.valid_reference (Protocol.expressions logical) (index,2) ->
+  exists cert, Protocol.pf logical index=Some cert.
+Proof.
+  intros [expression [Hlookup Hkind]]. destruct expression;cbn [SchemaMetadata.kind] in Hkind;try discriminate.
+  unfold Protocol.pf. cbn [fst] in Hlookup. rewrite Hlookup. eexists;reflexivity.
+Qed.
+Ltac unpack_requests H := repeat match type of H with
+| Forall _ (_::_) => let Hhead:=fresh "Hhead" in let Htail:=fresh "Htail" in
+  inversion H as [|request requests Hhead Htail];subst request requests;clear H;rename Htail into H
+end.
+Ltac resolve_valid := repeat match goal with
+| H:SchemaNode.valid_reference (Protocol.expressions ?logical) (?index,0) |- _ =>
+  let cls:=fresh "cls" in let Hlookup:=fresh "Hlookup" in destruct (valid_class logical index H) as [cls Hlookup];clear H
+| H:SchemaNode.valid_reference (Protocol.expressions ?logical) (?index,1) |- _ =>
+  let formula:=fresh "formula" in let Hlookup:=fresh "Hlookup" in destruct (valid_formula logical index H) as [formula Hlookup];clear H
+| H:SchemaNode.valid_reference (Protocol.expressions ?logical) (?index,2) |- _ =>
+  let cert:=fresh "cert" in let Hlookup:=fresh "Hlookup" in destruct (valid_proof logical index H) as [cert Hlookup];clear H
+end.
+Lemma valid_axiom_builds logical tag a b c : (tag<=17)%nat ->
+  Forall (SchemaNode.valid_reference (Protocol.expressions logical)) (SchemaNode.reference_requests 8 tag a b c) ->
+  exists cert, Protocol.axiom_expression logical tag a b c=Some cert.
+Proof.
+  intros Htag Hvalid.
+  let rec cases depth tag := lazymatch depth with O=>idtac | S ?rest=>
+    let next:=fresh "tag" in destruct tag as [|next];[idtac|cases rest next] end in cases 18%nat tag.
+  all: try lia.
+  all: unfold SchemaNode.reference_requests in Hvalid;
+    repeat first [rewrite bool_decide_true in Hvalid by lia|rewrite bool_decide_false in Hvalid by lia];
+    cbn [app] in Hvalid;unpack_requests Hvalid;resolve_valid;
+    unfold Protocol.axiom_expression,Protocol.formula_argument;
+    cbn [existsb Nat.eqb Nat.leb];
+    repeat match goal with H:Protocol.ff ?logical ?index=Some ?formula |- context[Protocol.ff ?logical ?index] => rewrite H end;
+    eexists;reflexivity.
+Qed.
+Lemma valid_requests_builds logical kind a b c d :
+  (3<=kind<=10)%nat -> (kind=8%nat -> (a<=17)%nat) ->
+  Forall (SchemaNode.valid_reference (Protocol.expressions logical)) (SchemaNode.reference_requests kind a b c d) ->
+  exists expression, Protocol.builds_node logical [kind;a;b;c;d] expression.
+Proof.
+  intros Hrange Htag Hvalid.
+  assert (Hcases:kind=3%nat \/ kind=4%nat \/ kind=5%nat \/ kind=6%nat \/ kind=7%nat \/ kind=8%nat \/ kind=9%nat \/ kind=10%nat) by lia.
+  destruct Hcases as [Hcase|[Hcase|[Hcase|[Hcase|[Hcase|[Hcase|[Hcase|Hcase]]]]]]];subst kind.
+  all: try match goal with H:Forall _ (SchemaNode.reference_requests 8 _ _ _ _) |- _ =>
+    destruct (valid_axiom_builds logical a b c d ltac:(apply Htag;reflexivity) H) as [cert Haxiom];
+    exists (Protocol.PE cert);constructor;exact Haxiom end.
+  all: unfold SchemaNode.reference_requests in Hvalid;unpack_requests Hvalid;resolve_valid;
+    eexists;constructor;eassumption.
+Qed.
+Theorem reference_builds s logical kind a b c d :
+  (19<length (memory s arraydef_0__meta))%nat -> (3<=kind<=10)%nat ->
+  meta_value (SchemaNode.reference_state s (Protocol.expressions logical) kind a b c d) 18<>0 ->
+  exists expression, Protocol.builds_node logical [kind;a;b;c;d] expression.
+Proof.
+  intros Hmeta Hrange Hflag. unfold SchemaNode.reference_state in Hflag.
+  assert (Hlength:(19<length (memory (SchemaNode.reference_initial s kind a) arraydef_0__meta))%nat).
+  { unfold SchemaNode.reference_initial,SchemaCheck.rejected.
+    destruct (bool_decide (kind=8%nat /\ (17<a)%nat));rewrite ?store_meta_length,SchemaNode.initialized_length;exact Hmeta. }
+  destruct (check_many_nonzero _ _ _ Hlength Hflag) as [Hinitial Hvalid].
+  apply valid_requests_builds;[exact Hrange| |exact Hvalid].
+  intro Hkind. unfold SchemaNode.reference_initial in Hinitial.
+  destruct (bool_decide (kind=8%nat /\ (17<a)%nat)) eqn:Hbad.
+  - unfold SchemaCheck.rejected in Hinitial. rewrite meta_store_same in Hinitial by (rewrite SchemaNode.initialized_length;lia). contradiction.
+  - apply bool_decide_eq_false in Hbad. lia.
+Qed.
+Theorem reference_rejected s logical kind a b c d :
+  (19<length (memory s arraydef_0__meta))%nat -> (3<=kind<=10)%nat ->
+  (~exists expression, Protocol.builds_node logical [kind;a;b;c;d] expression) ->
+  meta_value (SchemaNode.reference_state s (Protocol.expressions logical) kind a b c d) 18=0.
+Proof.
+  intros Hmeta Hrange Hnone.
+  destruct (Z.eq_dec (meta_value (SchemaNode.reference_state s (Protocol.expressions logical) kind a b c d) 18) 0) as [Hzero|Hnonzero];[exact Hzero|].
+  exfalso. apply Hnone. exact (reference_builds s logical kind a b c d Hmeta Hrange Hnonzero).
 Qed.
 End SchemaNodeMeaning.

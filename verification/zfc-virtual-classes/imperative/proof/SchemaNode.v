@@ -576,7 +576,7 @@ Proof.
     Hmeta Hrep Hkind Ha Hb Hc Hd Hrange) as Hprefix.
   unfold Frame in Hprefix. rewrite Hprefix. cbn [optionBind fst snd].
   rewrite (generated_finish _ n observations).
-  - rewrite row_typed. cbn [optionBind fst snd nums]. rewrite Hkind,Ha,Hb,Hc,Hd.
+  - rewrite row_typed. cbn [optionBind fst snd nums machine setMachine]. rewrite Hkind,Ha,Hb,Hc,Hd.
     rewrite reference_output,reference_input. reflexivity.
   - cbn [machine setMachine]. rewrite reference_length. exact Hmeta.
   - exact Hvalid.
@@ -632,7 +632,7 @@ Theorem result_represents s logical raw :
     (SchemaRepresentation.with_expression logical expression).
 Proof.
   intros Hmeta Hrep expression Hentry Hword.
-  apply (SchemaRepresentation.append s); [exact Hrep|exact Hentry| | |].
+  apply (SchemaRepresentation.append s _ logical raw expression); [exact Hrep|exact Hentry| | |].
   - apply result_nodes. apply SchemaMetadata.represents_length. exact (SchemaRepresentation.metadata s logical Hrep).
   - rewrite Nat.add_1_r. apply result_count. lia.
   - lia.
