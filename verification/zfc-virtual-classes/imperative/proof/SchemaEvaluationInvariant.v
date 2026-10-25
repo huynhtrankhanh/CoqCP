@@ -57,6 +57,17 @@ Proof.
     rewrite Hlookup in Hother. injection Hother as <-. now rewrite Hkey.
 Qed.
 
+Theorem completed_skip source root expressions rho fs classes before after limit :
+  completed source root expressions rho fs classes before limit ->
+  (forall key,(key<limit)%nat -> SchemaEvaluation.value after key=SchemaEvaluation.value before key) ->
+  (forall node depth,SchemaGraph.reachable source root node depth -> SchemaGraph.key root node depth<>limit) ->
+  completed source root expressions rho fs classes after (S limit).
+Proof.
+  intros Hcompleted Hvalues Hskip node depth expression Hreachable Hbound Hlookup.
+  assert (Hprevious:(SchemaGraph.key root node depth<limit)%nat) by (specialize (Hskip node depth Hreachable);lia).
+  rewrite Hvalues by exact Hprevious. eapply Hcompleted;eassumption.
+Qed.
+
 Theorem completed_root source root expressions rho fs classes native expression :
   SchemaGraph.ordered source -> (root<length (memory source arraydef_0__schemaNodes))%nat ->
   completed source root expressions rho fs classes native (SchemaGraph.width root*SchemaGraph.width root) ->
