@@ -118,6 +118,9 @@ Definition after_evaluation : LocalAction unit := ltac:(
 Lemma evaluation_parts : evaluation=((numberLocalGet _ _ _ vardef_0__command_node >>=
  fun root=>liftToWithLocalVariables (funcdef_0__schemaInstance (fun _=>false) (instance_arguments root))) >>=fun _=>after_evaluation).
 Proof. reflexivity. Qed.
+Lemma option_unit {S} (response:option (unit*S)) :
+ optionBind response (fun value=>Some (tt,snd value))=response.
+Proof. destruct response as [[[] state]|];reflexivity. Qed.
 Lemma generated_checked (f:Frame) index offset size node flag k a b c d ty arity observations :
  (18<length (memory (machine f) arraydef_0__meta))%nat -> meta_value (machine f) 8=0 ->
  nums f vardef_0__command_binding=Z.of_nat index -> Z.of_nat index<maximum ->
@@ -138,7 +141,14 @@ Proof.
      |assert (Hsame:expression=(k,a,b,c,d,ty,Z.of_nat arity)) by exact HnodeNth];rewrite Hsame;clear Hsame end
   |progress rewrite (bool_decide_false (Z.of_nat index=18446744073709551615)) by lia
   |suffix_primitives ltac:(fun frame name slot=>cbn [machine setMachine setNum];rewrite ?Hbinding,?Nat2Z.id;first[exact Hbound|exact Hnodebound|lia])].
- unfold evaluation,rooted. reflexivity.
+ unfold evaluation,rooted.
+ repeat first [progress rewrite local_bind
+  |progress cbn [optionBind fst snd execLocalObserved machine setMachine setNum nums]
+  |NativePrimitives.primitive ltac:(fun frame name slot=>lia)
+  |progress rewrite RenameMemoControl.updated_same
+  |progress rewrite RenameMemoControl.updated_other by discriminate
+  |progress rewrite option_unit].
+ reflexivity.
 Qed.
 Lemma generated_evaluation (f:Frame) root built observations :
  nums f vardef_0__command_node=Z.of_nat root ->

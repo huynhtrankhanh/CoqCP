@@ -41,10 +41,10 @@ Proof.
  intros Htable node depth kind a b c d expression Hreachable Hraw.
  assert (Hentry:free_kind (raw_kind (SchemaRepresentation.encode kind a b c d expression))).
  { induction Htable as [|head rest Hhead Hrest IH] in node,Hraw|-*;[destruct node;discriminate|].
-   destruct node;[injection Hraw as <-;exact Hhead|apply (IH node Hraw)]. }
+   destruct node as [|node];[injection Hraw as <-;exact Hhead|apply (IH node Hraw)]. }
  unfold raw_kind,SchemaRepresentation.encode in Hentry. now rewrite Nat2Z.id in Hentry.
 Qed.
-Corollary fits_free_table source logical root rho fs classes f :
+Theorem fits_free_table source logical root rho fs classes f :
  Forall (fun raw=>free_kind (raw_kind raw)) (memory source arraydef_0__schemaNodes) ->
  memory (machine f) arraydef_0__schemaNodes=memory source arraydef_0__schemaNodes ->
  SchemaEvaluationRun.fits source logical root rho (SchemaGraph.width root*SchemaGraph.width root) 0 fs classes f.
