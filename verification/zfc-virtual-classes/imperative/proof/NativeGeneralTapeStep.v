@@ -2,7 +2,7 @@ From CoqCP Require Import Options Imperative Execution InteractiveExecution.
 From ImperativeZFC Require Import ProofChecker.
 From Trusted Require Import SetTheory Protocol Guarantees.
 From NativeProof Require Import Index SipHash NativeState NativeSession NativeDialogueComposition
- NativeBasicDispatcher NativeGeneralDispatcher NativeFullTapeStep NativeCommandBoundary NativeCommandLengths CommandLoop
+ NativeBasicDispatcher NativeFullDispatcher NativeGeneralDispatcher NativeFullTapeStep NativeCommandBoundary NativeCommandLengths CommandLoop
  FormulaTopology HashTable ClassLookup LogicalRegistryBounds LogicalStorageMonotone.
 From Stdlib Require Import Lists.List ZArith.ZArith Lia.
 From stdpp Require Import numbers list.

@@ -1,0 +1,68 @@
+From CoqCP Require Import Options Imperative Execution InteractiveExecution.
+From ImperativeZFC Require Import ProofChecker.
+From Trusted Require Import Protocol.
+From NativeProof Require Import Index SipHash TokenByte ReadToken ReadNat ReadNatOverflow SeedInput Startup NativeBadSeed.
+From stdpp Require Import numbers list.
+From Stdlib Require Import Lists.List ZArith.ZArith Lia.
+Open Scope Z_scope.
+Module NativeOverflowSeed.
+Import IndexExecution SipHashExecution SeedInputExecution StartupExecution NativeBadSeed.
+Theorem generated_overflow_first_seed s bs ns prefix bad suffix sep tail observations :
+ (17<length(memory s arraydef_0__meta))%nat -> (1024<=length(memory s arraydef_0__token))%nat ->
+ meta_value s 15=0 -> meta_value s 8=0 ->
+ (length(prefix++bad::suffix)<=1024)%nat ->
+ Forall(fun ch=>0<=ch<256 /\ ~TokenByteExecution.separator ch)(prefix++bad::suffix) ->
+ TokenByteExecution.separator sep -> stdin s=(prefix++bad::suffix)++sep::tail ->
+ Forall(fun ch=>48<=ch<=57)prefix -> ReadNatExecution.number_from 0 prefix<=maximum ->
+ 48<=bad<=57 -> maximum<10*(ReadNatExecution.number_from 0 prefix)+(bad-48) ->
+ exists final, execObserved(funcdef_0__main bs ns)(s,observations)=Some(tt,(final,
+ observations++[{|flushedOutput:=stdout s++Protocol.seed_prompt;unreadInput:=stdin s|};
+ {|flushedOutput:=stdout s++Protocol.seed_prompt++Protocol.reply_bytes Protocol.ERR;unreadInput:=tail|}])) /\
+ stdout final=stdout s++Protocol.seed_prompt++Protocol.reply_bytes Protocol.ERR /\ stdin final=tail.
+Proof.
+ intros Hmeta Htoken Hpending Herror Hlength Hbytes Hsep Hinput Hdigits Hbound Hbyte Hoverflow.
+ set(before:=withOutput s(stdout s++Protocol.seed_prompt)).
+ set(tokenstate:=ReadTokenExecution.read_result before (prefix++bad::suffix) tail).
+ set(parsed:=store_meta(store_meta tokenstate 14 0)11(ReadNatExecution.number_from 0 prefix)).
+ set(failed:=store_meta parsed 8 1).
+ assert(Hread:exec(funcdef_0__readNat (fun _=>false)(fun _=>0))before=Some(tt,parsed)).
+ { unfold parsed,tokenstate. apply(ReadNatOverflow.generated_overflow_token before (fun _=>false)(fun _=>0) prefix bad suffix sep tail);try assumption. }
+ assert(Hparsedmeta:(14<length(memory parsed arraydef_0__meta))%nat).
+ { unfold parsed,tokenstate. rewrite !store_meta_length,ReadTokenExecution.result_meta_length. change (14<length(memory s arraydef_0__meta))%nat. lia. }
+ assert(Hparsedinvalid:meta_value parsed 14=0).
+ { unfold parsed. rewrite meta_store_other by lia. apply meta_store_same. unfold tokenstate. rewrite ReadTokenExecution.result_meta_length. change (14<length(memory s arraydef_0__meta))%nat. lia. }
+ assert(Hseed:exec(seed_program bs ns)before=Some(tt,failed)).
+ { unfold seed_program. rewrite exec_eliminate,actual_body.
+   rewrite(seed_invalid funcdef_0__readNat {|machine:=before;bools:=bs;nums:=ns|} parsed Hread Hparsedmeta Hparsedinvalid).
+   reflexivity. }
+ assert(Hfailedmeta:(8<length(memory failed arraydef_0__meta))%nat).
+ { unfold failed. rewrite store_meta_length. lia. }
+ assert(Hfailedflag:meta_value failed 8<>0).
+ { unfold failed. rewrite meta_store_same by lia. discriminate. }
+ assert(Hin:stdin failed=tail) by reflexivity.
+ assert(Hout:stdout failed=stdout s++Protocol.seed_prompt).
+ { unfold failed,parsed,tokenstate. change(stdout(ReadTokenExecution.read_result before (prefix++bad::suffix) tail)=stdout s++Protocol.seed_prompt).
+   rewrite ReadTokenExecution.result_output. reflexivity. }
+ rewrite observed_main_factorization,generated_prompt_observed.
+ fold before.
+ cbn [optionBind fst snd]. rewrite(observed_plain (seed_program bs ns) before (observations++[{|flushedOutput:=stdout s++Protocol.seed_prompt;unreadInput:=stdin s|}]) tt failed (seed_no_flush bs ns) Hseed).
+ cbn [optionBind fst snd]. rewrite actual_finish,finish_bad by assumption. rewrite generated_err,Hin,Hout.
+ exists(withOutput failed(stdout s++Protocol.seed_prompt++Protocol.reply_bytes Protocol.ERR)).
+ split;[repeat rewrite <-List.app_assoc;reflexivity|]. split;[reflexivity|exact Hin].
+Qed.
+Theorem actual_overflow_first_seed bs ns prefix bad suffix sep tail :
+ (length(prefix++bad::suffix)<=1024)%nat ->
+ Forall(fun ch=>0<=ch<256 /\ ~TokenByteExecution.separator ch)(prefix++bad::suffix) ->
+ TokenByteExecution.separator sep -> Forall(fun ch=>48<=ch<=57)prefix ->
+ ReadNatExecution.number_from 0 prefix<=maximum -> 48<=bad<=57 -> maximum<10*(ReadNatExecution.number_from 0 prefix)+(bad-48) ->
+ exists final,execObserved(funcdef_0__main bs ns)
+ ({|memory:=arrays _ environment1;stdin:=(prefix++bad::suffix)++sep::tail;stdout:=[]|},[])=
+ Some(tt,(final,[{|flushedOutput:=Protocol.seed_prompt;unreadInput:=(prefix++bad::suffix)++sep::tail|};
+ {|flushedOutput:=Protocol.seed_prompt++Protocol.reply_bytes Protocol.ERR;unreadInput:=tail|}])) /\
+ stdout final=Protocol.seed_prompt++Protocol.reply_bytes Protocol.ERR /\ stdin final=tail.
+Proof.
+ intros Hlength Hbytes Hsep Hdigits Hbound Hbyte Hoverflow.
+ exact(generated_overflow_first_seed {|memory:=arrays _ environment1;stdin:=(prefix++bad::suffix)++sep::tail;stdout:=[]|}
+  bs ns prefix bad suffix sep tail [] ltac:(cbn;lia) ltac:(cbn;lia) eq_refl eq_refl Hlength Hbytes Hsep eq_refl Hdigits Hbound Hbyte Hoverflow).
+Qed.
+End NativeOverflowSeed.

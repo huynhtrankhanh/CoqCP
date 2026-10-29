@@ -30,7 +30,7 @@ def main():
                               for name in ['Options', 'Imperative', 'Execution',
                                            'InteractiveExecution', 'DecimalEncoding']] + [
             (spec / f'{name}.v', 'Trusted') for name in
-            ['SetTheory', 'VirtualClasses', 'Schemata', 'Protocol', 'Guarantees', 'Spec']]:
+            ['SetTheory', 'VirtualClasses', 'Schemata', 'Protocol', 'Guarantees', 'Spec', 'ByteProtocol']]:
         target = out / namespace / source.name
         shutil.copy2(source, target)
         compile_file(target)
@@ -38,9 +38,11 @@ def main():
     audited = ['Guarantees.' + name for name in re.findall(
         r'^(?:Lemma|Theorem) (\w+)', (spec / 'Guarantees.v').read_text(), re.M)]
     audited.append('Trusted.Spec.required_iff_protocol')
+    audited += ['ByteProtocol.' + name for name in re.findall(
+        r'^(?:Lemma|Theorem) (\w+)', (spec / 'ByteProtocol.v').read_text(), re.M)]
     audit = out / 'Audit.v'
     audit.write_text('From CoqCP Require Import Options.\n'
-                     'From Trusted Require Import Spec.\n' +
+                     'From Trusted Require Import Spec ByteProtocol.\n' +
                      ''.join(f'Print Assumptions {name}.\n' for name in audited))
     result = subprocess.run([args.rocq, 'compile', *flags, str(audit)],
                             text=True, capture_output=True, check=True)
@@ -48,7 +50,7 @@ def main():
     if result.stdout.count('Closed under the global context') != len(audited) or 'Axioms:' in result.stdout:
         raise RuntimeError('Unexpected specification assumptions')
     with (out / 'kernel.log').open('w') as log:
-        subprocess.run([args.rocq, 'check', '-silent', *flags[1:], 'Trusted.Spec'],
+        subprocess.run([args.rocq, 'check', '-silent', *flags[1:], 'Trusted.Spec', 'Trusted.ByteProtocol'],
                        stdout=log, stderr=subprocess.STDOUT, check=True)
     (out / 'specification-status.json').write_text(json.dumps({
         'standalone_specification': 'checked', 'implementation_imports': [],
