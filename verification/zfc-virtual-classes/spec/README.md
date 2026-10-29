@@ -316,22 +316,22 @@ The contract's resource predicate is [`NativeVerifiedDomain.within_capacity`](..
 
 Let `U = 2^64−1`, `J = 2^63−1`, and `N` be the maximum numeric argument anywhere in the request list, or zero when there are none. The check starts with seven natural-number bounds: formula count `F=1`, variable-index bound `I=max(3,N)`, class count `C=0`, history count `H=0`, binding count `T=0`, expression count `E=0`, and permanent name bytes `L=0`. It processes positive commands in order, stops at quit, and accepts EOF. The bounds advance as follows; the input `N` stays fixed.
 
-| Opcode | Next formula bound | Next index bound |
-|---|---|---|
-| `1–4`, `13` | `F+1` | `max(I,N)` |
-| `7` | `F+2F²+13` | `I+2` |
-| `8` | `F+2F²+13` | `2I+3` |
-| `11`, tag `t` | `F+A(t,F)` | `I+3N+4` |
-| `14` | `F+F²+10` | `I+2` |
-| `22` | `F` | `I` |
-| `24` | iterate `x ↦ x+3x²+42` exactly `E²` times, starting at `F` | iterate `x ↦ 2x+E+3N+4` exactly `E²` times, starting at `I` |
-| Other positive commands | `F` | `max(I,N)` |
+| Opcode                  | Next formula bound                                         | Next index bound                                            |
+| ----------------------- | ---------------------------------------------------------- | ----------------------------------------------------------- |
+| `1–4`, `13`             | `F+1`                                                      | `max(I,N)`                                                  |
+| `7`                     | `F+2F²+13`                                                 | `I+2`                                                       |
+| `8`                     | `F+2F²+13`                                                 | `2I+3`                                                      |
+| `11`, tag `t`           | `F+A(t,F)`                                                 | `I+3N+4`                                                    |
+| `14`                    | `F+F²+10`                                                  | `I+2`                                                       |
+| `22`                    | `F`                                                        | `I`                                                         |
+| `24`                    | iterate `x ↦ x+3x²+42` exactly `E²` times, starting at `F` | iterate `x ↦ 2x+E+3N+4` exactly `E²` times, starting at `I` |
+| Other positive commands | `F`                                                        | `max(I,N)`                                                  |
 
 [`NativeFastDomain.native_required`](../imperative/proof/NativeFastDomain.v) provides an equivalent contract whose general fallback checks the schema formula and index recurrences using binary integers and stops as soon as either exceeds its word limit. Its equivalence to the original predicate is proved in [`BoundedIteration.v`](../imperative/proof/BoundedIteration.v). When those preflights succeed it still invokes the original natural-number check, so this does not establish a general execution-time bound for evaluating the predicate. [`NativeFastExample.v`](../imperative/proof/NativeFastExample.v) checks a concrete expanding-schema rejection by computation.
 
 The axiom allocation allowance `A(t,F)` is `2,6,3,F²+2,F²+5,1,5,5,5,10,15,8,10,9,33,F²+14,3F²+21,42` for tags `0–17`, respectively, and zero for unsupported tags. Since the arena starts with falsity, `F` stays positive. Classes advance to `C+E²` on opcode `24`, and to `C+1` on other positive commands. Expressions advance to `E+1` only on `22`. Every positive command advances `H` and `T` by one and `L` by 1024, even when its actual history/name storage does not grow.
 
-Before advancing a positive command, the check requires `F≤J`, next `F≤J`, next `I≤U`, and `C+1,H+1,T+1,E+1,L+1024≤U`. It also checks the opcode range and argument bound. The following additional sufficient guards use the bounds *before* that command:
+Before advancing a positive command, the check requires `F≤J`, next `F≤J`, next `I≤U`, and `C+1,H+1,T+1,E+1,L+1024≤U`. It also checks the opcode range and argument bound. The following additional sufficient guards use the bounds _before_ that command:
 
 - `7`: `F+2F²+6≤J`, `5F²+1≤U`, `I+2≤U`.
 - `8`: `F+2F²+13≤J`, `5F²+1≤U`, `2I+3≤U`.
@@ -345,7 +345,7 @@ Before advancing a positive command, the check requires `F≤J`, next `F≤J`, n
 
 ### Practical plan for set-valued class parameters
 
-The second check admits meaningful class-metavariable schemas without repeatedly squaring the formula bound. Every stored class must remain a set-variable class, and every reachable schema cell stays at binder depth zero. These are maintained invariants proved from the request restrictions, not assumptions about later states. It admits basic commands `1–5`, `9`, `10`, `12`, `13`, `15–21`, `23`, `25`, `26` (excluding class abstraction `6`), direct axiom command `11` except tags `3`, `4`, `15`, `16`, schema construction `22` except kinds `3`, `7`, `10` and those same four axiom tags within kind `8`, and schema instantiation `24`. Quit and EOF are allowed. Commands `7`, `8`, and `14` use the general plan instead; equality and membership *schema nodes* (kinds `4` and `5`) are admitted by this practical plan.
+The second check admits meaningful class-metavariable schemas without repeatedly squaring the formula bound. Every stored class must remain a set-variable class, and every reachable schema cell stays at binder depth zero. These are maintained invariants proved from the request restrictions, not assumptions about later states. It admits basic commands `1–5`, `9`, `10`, `12`, `13`, `15–21`, `23`, `25`, `26` (excluding class abstraction `6`), direct axiom command `11` except tags `3`, `4`, `15`, `16`, schema construction `22` except kinds `3`, `7`, `10` and those same four axiom tags within kind `8`, and schema instantiation `24`. Quit and EOF are allowed. Commands `7`, `8`, and `14` use the general plan instead; equality and membership _schema nodes_ (kinds `4` and `5`) are admitted by this practical plan.
 
 Start with `F=1` and `C=H=T=E=L=0`. For each positive command, set the next formula bound to `F+42E²` for `24`, to `F+42` for `11`, to `F` for `22`, and to `F+1` otherwise. Set `C,H,T` to their previous bounds plus one, increase `E` only on `22`, and increase `L` by 1024. Before advancing, require the allowed-command condition above, opcode at most 26, current and next formula bounds at most `J`, and `C+1,H+1,T+1,E+1,L+1024` at most `U`. As in the general plan, stop checking at quit and accept EOF. Canonical shape separately requires all numeric arguments to fit unsigned words and all names to be valid.
 
