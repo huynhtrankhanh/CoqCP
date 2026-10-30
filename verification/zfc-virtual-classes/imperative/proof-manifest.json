@@ -16,9 +16,7 @@
     "Spec",
     "ByteProtocol"
   ],
-  "pending_proof_ports": [
-    "RenameStructure"
-  ],
+  "pending_proof_ports": ["RenameStructure"],
   "proof_modules": [
     "Index",
     "ObservedLocal",
