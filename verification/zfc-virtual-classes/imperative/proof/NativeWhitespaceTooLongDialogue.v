@@ -1,0 +1,50 @@
+From CoqCP Require Import DecimalEncoding Options Imperative Execution InteractiveExecution.
+From ImperativeZFC Require Import ProofChecker.
+From Trusted Require Import SetTheory Protocol Guarantees.
+From NativeProof Require Import Index SipHash TokenByte NativeState NativeSession NativeBasicSession NativeGeneralSession
+ NativeGeneralArbitraryTailCommand NativeGeneralWhitespaceTailCommand NativeBudgetPlan NativeRequestBounds NativeBudgetFrame NativeNameCompact NativeStartupCompact NativeDialogueComposition NativeWhitespaceEOFDialogue NativeGeneralPrefixStop NativeMalformedOpcodeStop NativeMalformedOpcode ReadNat NativeSetMalformedDialogue NativeGeneralMalformedDialogue NativeWhitespaceTooLongStop NativeStopDialogue NativeFastDomain NativeVerifiedDomain NativeSeedInputTransport NativeWhitespaceDialogue FormulaTopology ClassLookup LogicalRegistryBounds CommandLoop Dialogue SeedBootstrap.
+From Stdlib Require Import Lists.List ZArith.ZArith Lia.
+From stdpp Require Import numbers list.
+Open Scope Z_scope.
+Module NativeWhitespaceTooLongDialogue.
+Import IndexExecution SipHashExecution NativeGeneralPrefixStop.
+Theorem generated_main key0 key1 frames ch spaces chars extra tail bs ns :
+ 0<=ch<256 -> TokenByteExecution.separator ch -> Forall TokenByteExecution.separator spaces ->
+ length chars=1024%nat -> Forall(fun x=>0<=x<256 /\ ~TokenByteExecution.separator x)chars ->
+ 0<=extra<256 -> ~TokenByteExecution.separator extra ->
+ Z.of_nat key0<=maximum -> Z.of_nat key1<=maximum -> Forall valid frames ->
+ NativeFastDomain.within_capacity (map snd frames) ->
+ exists replies final logical,
+ length replies=length frames /\ Protocol.dialogue Protocol.initial (map snd frames) replies logical [] /\ Guarantees.safe logical /\ meta_value final 9=1 /\
+ execObserved(funcdef_0__main bs ns)(SeedBootstrapExecution.initial key0 key1(NativeGeneralPrefixStop.wire frames++(ch::spaces++chars++extra::tail))[],[])=
+ Some(tt,(final,
+ [{|flushedOutput:=Protocol.seed_prompt;unreadInput:=Protocol.seed_bytes key0 key1++NativeGeneralPrefixStop.wire frames++(ch::spaces++chars++extra::tail)|};
+  {|flushedOutput:=Protocol.handshake_output;unreadInput:=NativeGeneralPrefixStop.wire frames++(ch::spaces++chars++extra::tail)|}]++NativeGeneralPrefixStop.schedule_tail frames replies Protocol.handshake_output (ch::spaces++chars++extra::tail)++[{|flushedOutput:=Protocol.handshake_output++concat(map Protocol.reply_bytes replies)++Protocol.reply_bytes Protocol.ERR;unreadInput:=tail|}])) /\
+ stdout final=Protocol.handshake_output++concat(map Protocol.reply_bytes replies)++Protocol.reply_bytes Protocol.ERR /\ stdin final=tail.
+Proof.
+ intros Hch Hsep0 Hspaces Hlength Hbytes Hextra Hbad Hkey0 Hkey1 Hvalid Hcapacity.
+ apply NativeStopDialogue.generated_main; try assumption.
+ exact(NativeWhitespaceTooLongStop.too_long ch spaces chars extra tail Hch Hsep0 Hspaces Hlength Hbytes Hextra Hbad).
+Qed.
+Theorem flexible_seeds key0 key1 prefix0 prefix1 sep0 sep1 frames ch spaces chars extra tail bs ns :
+ TokenByteExecution.separator sep0 -> TokenByteExecution.separator sep1 -> Forall TokenByteExecution.separator prefix0 -> Forall TokenByteExecution.separator prefix1 ->
+ 0<=ch<256 -> TokenByteExecution.separator ch -> Forall TokenByteExecution.separator spaces ->
+ length chars=1024%nat -> Forall(fun x=>0<=x<256 /\ ~TokenByteExecution.separator x)chars ->
+ 0<=extra<256 -> ~TokenByteExecution.separator extra ->
+ Z.of_nat key0<=maximum -> Z.of_nat key1<=maximum -> Forall valid frames ->
+ NativeFastDomain.within_capacity (map snd frames) ->
+ exists replies final logical,
+ length replies=length frames /\ Protocol.dialogue Protocol.initial (map snd frames) replies logical [] /\ Guarantees.safe logical /\ meta_value final 9=1 /\
+ execObserved(funcdef_0__main bs ns)(NativeWhitespaceDialogue.alternate key0 key1 prefix0 prefix1 sep0 sep1 (NativeGeneralPrefixStop.wire frames++(ch::spaces++chars++extra::tail)),[])=
+ Some(tt,(final,
+ [{|flushedOutput:=Protocol.seed_prompt;unreadInput:=prefix0++decimalBytes key0++sep0::(prefix1++decimalBytes key1++sep1::(NativeGeneralPrefixStop.wire frames++(ch::spaces++chars++extra::tail)))|};
+  {|flushedOutput:=Protocol.handshake_output;unreadInput:=NativeGeneralPrefixStop.wire frames++(ch::spaces++chars++extra::tail)|}]++NativeGeneralPrefixStop.schedule_tail frames replies Protocol.handshake_output (ch::spaces++chars++extra::tail)++[{|flushedOutput:=Protocol.handshake_output++concat(map Protocol.reply_bytes replies)++Protocol.reply_bytes Protocol.ERR;unreadInput:=tail|}])) /\
+ stdout final=Protocol.handshake_output++concat(map Protocol.reply_bytes replies)++Protocol.reply_bytes Protocol.ERR /\ stdin final=tail.
+Proof.
+ intros Hsep0 Hsep1 Hprefix0 Hprefix1 Hch Hchsep Hspaces Hlength Hbytes Hextra Hbad Hkey0 Hkey1 Hvalid Hcapacity.
+ destruct(generated_main key0 key1 frames ch spaces chars extra tail bs ns Hch Hchsep Hspaces Hlength Hbytes Hextra Hbad Hkey0 Hkey1 Hvalid Hcapacity)
+ as(replies & final & logical & Hlength' & Hdialogue & Hsafe & Hstop & Hrun & Hout & Hin).
+ exists replies,final,logical. repeat first [assumption|split].
+ eapply NativeSeedInputTransport.generated; eassumption.
+Qed.
+End NativeWhitespaceTooLongDialogue.

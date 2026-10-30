@@ -2,7 +2,7 @@
 
 The independent [protocol and mathematical specification](spec/README.md) describes every command, the full ZFC calculus, virtual-class expansion, set certification and class-metavariable schemata. [Spec.v](spec/Spec.v) explicitly requires those mathematical guarantees as well as end-to-end execution and flush behavior. It can be reviewed without the implementation.
 
-[NativeVerifiedDomain.native_required](imperative/proof/NativeVerifiedDomain.v) proves the end-to-end contract for the actual generated entry point: all 26 positive commands, seeded startup, EOF/quit, exact replies and flushes, and ZFC derivation guarantees. Its domain is canonical well-shaped sessions passing the finite arithmetic check [NativeVerifiedDomain.within_capacity](imperative/proof/NativeVerifiedDomain.v), the union of the general plan and a practical plan for schemas with set-valued class parameters. There are no helper-execution or command-interface assumptions and no added Rocq axioms. The resource check is conservative; malformed streams, noncanonical encodings and sessions failing that check are outside this theorem.
+[NativeFastDomain.native_required](imperative/proof/NativeFastDomain.v) proves the end-to-end contract for the actual generated entry point: all 26 positive commands, seeded startup, EOF/quit, exact replies and flushes, and ZFC derivation guarantees. Its domain is canonical well-shaped sessions passing the finite arithmetic check [NativeFastDomain.within_capacity](imperative/proof/NativeFastDomain.v), the union of the general plan and a practical plan for schemas with set-valued class parameters. There are no helper-execution or command-interface assumptions and no added Rocq axioms. The resource check is conservative; malformed streams, noncanonical encodings and sessions failing that check are outside this theorem.
 
 The primary implementation is [programs/ZFCProofChecker.js](../../programs/ZFCProofChecker.js), written in IIL and compiled to C++ and Rocq. Its [module configuration](../../programs/ZFCProofChecker.module.json) participates in the normal dual-target CI build. Regenerate it with:
 
@@ -175,6 +175,8 @@ python3 verification/zfc-virtual-classes/imperative/test.py \
   --binary .verification/zfc-native/zfc-checker \
   --reference .verification/zfc-reference/zfc-checker -v
 ```
+
+The native build reads its ordered proof modules, assumption-audit roots and excluded legacy-port seeds from [proof-manifest.json](imperative/proof-manifest.json). Add a proof module and its public theorem roots there in dependency order; the build rejects duplicate entries, compiles the active modules and audits the listed roots. Its output records a copy and hash of the manifest used.
 
 ## Formal contract and current proof boundary
 
