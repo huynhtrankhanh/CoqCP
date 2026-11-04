@@ -31,6 +31,13 @@
             "type": "string",
             "pattern": "^verification/[a-z0-9]+(?:-[a-z0-9]+)*/candidate$"
           },
+          "spec_dependencies": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*\\.v$" }
+          },
+          "generated_program": { "enum": ["zfc-proofchecker"] },
+          "candidate_layout": { "enum": ["zfc-native-proof"] },
           "axiom_policy": { "enum": ["none", "ci"] },
           "profile": { "$ref": "#/$defs/name" }
         }

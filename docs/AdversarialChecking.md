@@ -158,9 +158,8 @@ declarations. Changing this set also requires rebuilding and freezing new bundle
 A submission is a dedicated directory containing only top-level `.v` files,
 including `Candidate.v`. Names must be ASCII Rocq identifiers. Symlinks, special
 files, subdirectories, precompiled libraries, project files, and build scripts
-are rejected. At most 128 sources and 8 MiB of source text are accepted. The
-source-count bound accommodates the complete Koxia proof chain (74 files);
-the byte, artifact, memory, CPU, and filesystem limits remain enforced.
+are rejected. At most 8 MiB of source text is accepted, with no separate
+source-count limit. Artifact, memory, CPU, and filesystem limits remain enforced.
 
 For the increment contract, `Candidate.v` can contain:
 
@@ -409,6 +408,7 @@ project libraries. See [the layout and commands](../verification/README.md).
 | Permuted Binary Strings | Complete generated execution, exact bytes, and every flush boundary              |
 | Koxia and Bracket       | Complete generated execution and positional-mask optimum count                   |
 | Sorting Subarrays       | Complete byte-stream execution, signed decimal I/O, and the final selected value |
+| ZFC with virtual classes | Generated checker on canonical sessions in the fixed capacity domain |
 
 The first three contracts use no axioms. The generated execution contracts use
 the CI policy. Each spec defines its own formal scope and input bounds.

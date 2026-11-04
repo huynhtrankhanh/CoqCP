@@ -154,7 +154,7 @@ def main():
             'canonical dialogues rejected by the conservative resource check, including some feasible schema instances',
         ],
         'command_loop': 'tapeEnd (EOF or quit within the verified domain)',
-        'adversarial_acceptance': True, 'sha256': artifacts,
+        'adversarial_acceptance': 'not-run', 'sha256': artifacts,
     }, indent=2) + '\n')
     print(out / 'zfc-checker')
     print('VERIFIED: native end-to-end contract for canonical requests in NativeFastDomain.within_capacity.')

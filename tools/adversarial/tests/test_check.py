@@ -5,6 +5,7 @@ from pathlib import Path
 import shutil
 import sys
 import tempfile
+from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 
@@ -75,6 +76,30 @@ class ContextPolicyTests(unittest.TestCase):
 
 
 class ProtocolValidationTests(unittest.TestCase):
+    def test_many_sources_and_total_size_limit(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            bundle, candidate = root / "bundle", root / "candidate"
+            bundle.mkdir()
+            candidate.mkdir()
+            (candidate / "Candidate.v").write_text("Module Implementation. End Implementation.\n")
+            for i in range(130):
+                (candidate / f"Helper{i}.v").write_text("")
+            sandbox = SimpleNamespace(name="mock", network_isolation=True, limits={})
+            policy = {"allowed_axioms": [], "specification": "Trusted.Spec.SOLUTION",
+                      "implementation": "Submission.Candidate.Implementation"}
+            with (patch.object(gate, "validate_bundle", return_value=policy),
+                  patch.object(gate, "compile_sources", return_value={}) as compile_sources,
+                  patch.object(gate, "kernel_check", return_value={"status": "accepted"})):
+                report = gate.evaluate(bundle, "id", candidate, root / "good", {"fingerprint": "test"}, sandbox)
+                self.assertEqual(report["status"], "accepted")
+                self.assertEqual(len(compile_sources.call_args.args[1]), 131)
+                (candidate / "TooLarge.v").write_bytes(b"x" * (8 * 1024**2))
+                report = gate.evaluate(bundle, "id", candidate, root / "large", {"fingerprint": "test"}, sandbox)
+                self.assertEqual(report["status"], "rejected")
+                self.assertIn("source size limit", report["reason"])
+                self.assertEqual(compile_sources.call_count, 1)
+
     def test_specification_dependencies_are_explicit_and_local(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

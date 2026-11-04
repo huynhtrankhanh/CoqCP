@@ -5,6 +5,9 @@ on:
     branches: [main]
     paths:
       - '**.v'
+      - 'compiler/**'
+      - 'programs/**'
+      - 'verification/zfc-virtual-classes/**'
       - 'tools/adversarial/**'
       - 'verification/trusted_axioms.json'
       - 'verification/compiler_plugins.json'
@@ -57,6 +60,16 @@ jobs:
     timeout-minutes: 360
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: compiler/package-lock.json
+      - name: Build CoqCP compiler
+        working-directory: compiler
+        run: |
+          npm ci
+          npm run build
       - name: Install native toolchain and gVisor
         uses: ./.github/actions/setup-gvisor
       - name: Restore evaluator-owned proof cache

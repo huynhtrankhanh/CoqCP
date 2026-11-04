@@ -2,6 +2,14 @@
   "$schema": "adversarial-examples.schema.json",
   "format": 1,
   "profiles": {
+    "zfc-proof-chain": {
+      "wall_seconds": 14400,
+      "cpu_seconds": 7200,
+      "memory_mib": 8192,
+      "work_mib": 1024,
+      "artifact_mib": 256,
+      "log_mib": 2
+    },
     "small": {
       "wall_seconds": 120,
       "cpu_seconds": 60,
@@ -98,6 +106,16 @@
       "candidate": "verification/sorting-subarrays/candidate",
       "axiom_policy": "ci",
       "profile": "full-proof-chain"
+    },
+    {
+      "name": "zfc-virtual-classes",
+      "spec": "verification/zfc-virtual-classes/spec/Spec.v",
+      "spec_dependencies": ["SetTheory.v", "VirtualClasses.v", "Schemata.v", "Protocol.v", "Guarantees.v", "CapacityGeneral.v", "CapacitySet.v", "Capacity.v"],
+      "generated_program": "zfc-proofchecker",
+      "candidate_layout": "zfc-native-proof",
+      "candidate": "verification/zfc-virtual-classes/candidate",
+      "axiom_policy": "ci",
+      "profile": "zfc-proof-chain"
     }
   ]
 }

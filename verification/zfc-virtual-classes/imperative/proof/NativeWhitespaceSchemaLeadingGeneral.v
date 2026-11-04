@@ -36,10 +36,10 @@ Proof.
  destruct(NativeCommandWhitespace.generated native (fun _=>false)(fun _=>0) ch prefix 50 [52] firstsep (payload name fields namespaces namesep countspaces countsep tail) observations final _
   ltac:(pose proof(NativeSession.represented_meta native logical (NativeDialogueComposition.state _ _ Hboundary));lia)
   (NativeDialogueComposition.token _ _ Hboundary) (NativeDialogueComposition.error _ _ Hboundary) Hch Hsep Hprefix
-  ltac:(lia) ltac:(repeat constructor;lia) ltac:(cbn;unfold maximum;lia) Hfirst Hrun) as(after & Hactual & Hsame).
+  ltac:(cbn;lia) ltac:(repeat constructor;lia) ltac:(cbn;unfold maximum;lia) Hfirst Hrun) as(after & Hactual & Hsame).
  exists after,reply,next. split;[exact Hactual|]. split;[exact Hstep|].
  split;[exact(NativePointwiseState.boundary _ _ _ Hsame HnextBoundary)|].
  split;[exact(NativePointwiseState.extra _ _ _ _ Hsame HnextExtra)|]. split;[exact HnextCapacity|].
- destruct Hsame as [Hinsame [Houtsame Hmemory]]. split;congruence.
+ destruct Hsame as [Hinsame [Houtsame Hmemory]]. change (stdout final=stdout native++Protocol.reply_bytes reply) in Hout. split;congruence.
 Qed.
 End NativeWhitespaceSchemaLeadingGeneral.

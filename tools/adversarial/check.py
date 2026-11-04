@@ -446,8 +446,8 @@ def evaluate(bundle, spec_id, submission, output, runtime, sandbox):
                     raise Rejected("Submissions contain only top-level .v source files")
                 data = read_regular(path, 8 * 1024**2)
                 total += len(data)
-                if total > 8 * 1024**2 or len(sources) >= 128:
-                    raise Rejected("Submission exceeds source size/count limit")
+                if total > 8 * 1024**2:
+                    raise Rejected("Submission exceeds source size limit")
                 (inputs / path.name).write_bytes(data)
                 sources.append(path.name)
             if "Candidate.v" not in sources:

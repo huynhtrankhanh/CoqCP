@@ -80,4 +80,18 @@ def load(path=MANIFEST):
             correct_kind = target.is_file() if field == "spec" else target.is_dir()
             if not target.is_relative_to(check.REPO) or not correct_kind:
                 raise ValueError("Invalid example " + field + ": " + example[field])
+        # Apply the same adjacency, regular-file and symlink rules as prepare.
+        spec = check.REPO / example["spec"]
+        check.specification_sources(spec, [spec.parent / name
+                                           for name in example.get("spec_dependencies", [])])
+        if ("generated_program" in example and
+                (example["generated_program"] != "zfc-proofchecker" or
+                 example["spec"] != "verification/zfc-virtual-classes/spec/Spec.v" or
+                 "ProofChecker.v" in example.get("spec_dependencies", []))):
+            raise ValueError("Invalid generated program specification")
+        if ("candidate_layout" in example and
+                (example["candidate_layout"] != "zfc-native-proof" or
+                 example.get("generated_program") != "zfc-proofchecker" or
+                 example["candidate"] != "verification/zfc-virtual-classes/candidate")):
+            raise ValueError("Invalid candidate layout")
     return manifest

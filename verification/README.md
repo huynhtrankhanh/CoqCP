@@ -19,6 +19,19 @@ compiled as shared CoqCP libraries by `_CoqProject`. Supporting lemmas,
 algorithm analysis, and execution proofs belong in `candidate/`, even when
 they establish properties of specification definitions.
 
+The examples manifest can list adjacent specification files in
+`spec_dependencies`; the runner freezes their exact contents with `Spec.v`.
+The ZFC native program can also be generated as an evaluator-owned trusted
+dependency using `generated_program: "zfc-proofchecker"`. Its compiler and
+input paths are fixed by the runner, not selected by the candidate.
+Candidate source bytes and compilation resources are bounded; the number of
+source files has no separate cap.
+
+The ZFC example uses the shared `ci` axiom policy, which permits CoqCP’s
+functional extensionality axiom. The sandbox report records the axioms it
+actually sees. Its fixed resource domain covers the proven canonical-input
+sessions; the broader byte-stream proof is developed separately.
+
 Candidates import the frozen specification as `Trusted.Spec`, other candidate
 helpers as `Submission.<name>`, and general libraries as `CoqCP.<name>`.
 Reusable mathematics and language/runtime semantics belong in `theories/`.
