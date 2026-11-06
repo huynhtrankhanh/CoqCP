@@ -4,6 +4,7 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 PATH = Path(__file__).resolve().parents[1] / 'check.py'
 sys.path.insert(0, str(PATH.parent))
@@ -67,6 +68,42 @@ class SourceSnapshotTests(unittest.TestCase):
             (submission / 'invalid.txt').write_text('')
             with self.assertRaises(gate.Rejected):
                 gate.snapshot_submission(submission, target, 1024**2)
+
+    def test_symlink_submission_directory_is_rejected(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            actual, target = root / 'actual', root / 'snapshot'
+            actual.mkdir()
+            target.mkdir()
+            (actual / 'Candidate.v').write_text('candidate')
+            linked = root / 'linked'
+            linked.symlink_to(actual, target_is_directory=True)
+            with self.assertRaises(OSError):
+                gate.snapshot_submission(linked, target, 1024**2)
+            self.assertEqual(list(target.iterdir()), [])
+
+    def test_directory_swap_cannot_redirect_source_reads(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            submission, replacement = root / 'submission', root / 'replacement'
+            target, moved = root / 'snapshot', root / 'moved'
+            submission.mkdir()
+            replacement.mkdir()
+            target.mkdir()
+            (submission / 'Candidate.v').write_text('original')
+            (replacement / 'Candidate.v').write_text('replacement')
+            original_scandir = gate.os.scandir
+
+            def swap_then_scan(directory_fd):
+                self.assertIsInstance(directory_fd, int)
+                submission.rename(moved)
+                submission.symlink_to(replacement, target_is_directory=True)
+                return original_scandir(directory_fd)
+
+            with mock.patch.object(gate.os, 'scandir', side_effect=swap_then_scan):
+                names = gate.snapshot_submission(submission, target, 1024**2)
+            self.assertEqual(names, ['Candidate.v'])
+            self.assertEqual((target / 'Candidate.v').read_text(), 'original')
 
 
 if __name__ == '__main__':

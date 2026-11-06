@@ -80,6 +80,20 @@ def read_regular(path, limit):
         return data
 
 
+def read_regular_at(directory_fd, name, limit):
+    """Read a regular file relative to an already-open directory."""
+    fd = os.open(name, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK,
+                 dir_fd=directory_fd)
+    with os.fdopen(fd, "rb") as stream:
+        info = os.fstat(stream.fileno())
+        if not stat.S_ISREG(info.st_mode) or info.st_size > limit:
+            raise Rejected(f"Not a regular file within the size limit: {name}")
+        data = stream.read(limit + 1)
+        if len(data) > limit:
+            raise Rejected(f"Input exceeds size limit: {name}")
+        return data
+
+
 def command(program):
     if program in ["rocq", "ocamlfind"]:
         fixed = TOOLCHAIN / "bin" / program
@@ -435,27 +449,33 @@ def snapshot_submission(submission, inputs, work_bytes):
     source_bytes = 0
     work_used = 0
     sources = []
-    with os.scandir(submission) as entries:
-        for entry in entries:
-            name = entry.name
-            if not NAME.fullmatch(name):
-                raise Rejected("Submissions contain only top-level .v source files")
-            # Charge the entry before opening or copying it, so zero-byte files
-            # cannot consume unlimited host filesystem space or source-list RAM.
-            entry_cost = SNAPSHOT_BLOCK_BYTES + len(name.encode("ascii"))
-            if work_used + entry_cost > work_bytes:
-                raise Rejected("Submission exceeds snapshot work budget")
-            data = read_regular(Path(submission) / name, SOURCE_BYTES_LIMIT)
-            source_bytes += len(data)
-            if source_bytes > SOURCE_BYTES_LIMIT:
-                raise Rejected("Submission exceeds source size limit")
-            content_cost = ((len(data) + SNAPSHOT_BLOCK_BYTES - 1)
-                            // SNAPSHOT_BLOCK_BYTES * SNAPSHOT_BLOCK_BYTES)
-            work_used += entry_cost + content_cost
-            if work_used > work_bytes:
-                raise Rejected("Submission exceeds snapshot work budget")
-            (inputs / name).write_bytes(data)
-            sources.append(name)
+    directory_fd = os.open(submission, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+    try:
+        # Pin the directory throughout the scan. Reopening by path after
+        # scandir would allow a rename or symlink swap to redirect reads.
+        with os.scandir(directory_fd) as entries:
+            for entry in entries:
+                name = entry.name
+                if not NAME.fullmatch(name):
+                    raise Rejected("Submissions contain only top-level .v source files")
+                # Charge the entry before opening or copying it, so zero-byte files
+                # cannot consume unlimited host filesystem space or source-list RAM.
+                entry_cost = SNAPSHOT_BLOCK_BYTES + len(name.encode("ascii"))
+                if work_used + entry_cost > work_bytes:
+                    raise Rejected("Submission exceeds snapshot work budget")
+                data = read_regular_at(directory_fd, name, SOURCE_BYTES_LIMIT)
+                source_bytes += len(data)
+                if source_bytes > SOURCE_BYTES_LIMIT:
+                    raise Rejected("Submission exceeds source size limit")
+                content_cost = ((len(data) + SNAPSHOT_BLOCK_BYTES - 1)
+                                // SNAPSHOT_BLOCK_BYTES * SNAPSHOT_BLOCK_BYTES)
+                work_used += entry_cost + content_cost
+                if work_used > work_bytes:
+                    raise Rejected("Submission exceeds snapshot work budget")
+                (inputs / name).write_bytes(data)
+                sources.append(name)
+    finally:
+        os.close(directory_fd)
     if "Candidate.v" not in sources:
         raise Rejected("Submission must contain Candidate.v")
     sources.sort()
