@@ -8,6 +8,7 @@ on:
       - '**.js'
       - '**.ts'
       - '**.module.json'
+      - 'verification/zfc-native/spec/ProofChecker.v'
   pull_request:
     branches:
       - main
@@ -36,6 +37,9 @@ jobs:
           find . -name '*.module.json' | while read path; do
             node compiler/dist/cli ?json "$path"
           done
+
+      - name: Check the ZFC adversarial program snapshot
+        run: cmp generated-coq/ZFCProofChecker.v verification/zfc-native/spec/ProofChecker.v
 
       - name: Commit generated code
         env:

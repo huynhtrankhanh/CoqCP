@@ -2,7 +2,6 @@
 import contextlib
 import copy
 import io
-import importlib.util
 import json
 from pathlib import Path
 import sys
@@ -35,14 +34,6 @@ class ExampleManifestTests(unittest.TestCase):
             self.assertTrue((check.REPO / entry["spec"]).is_file())
             self.assertTrue((check.REPO / entry["candidate"]).is_dir())
 
-    def test_zfc_uses_the_shared_ci_axiom_policy(self):
-        manifest = example_manifest.load()
-        entry = next(item for item in manifest["examples"]
-                     if item["name"] == "zfc-virtual-classes")
-        self.assertEqual(entry["axiom_policy"], "ci")
-        self.assertIn("Stdlib.Logic.FunctionalExtensionality.functional_extensionality_dep",
-                      check.trusted_axioms())
-
     def test_schema_rejects_invalid_types_fields_policy_paths_and_limits(self):
         mutations = [
             lambda m: m.update(format=True),
@@ -52,6 +43,8 @@ class ExampleManifestTests(unittest.TestCase):
             lambda m: m["profiles"]["small"].update(memory_mib=1.5),
             lambda m: m["profiles"]["small"].update(network=True),
             lambda m: m["examples"][0].update(axiom_policy="arbitrary"),
+            lambda m: m["examples"][0].update(generated_program="untrusted-generator"),
+            lambda m: m["examples"][0].update(candidate_layout="custom-staging"),
             lambda m: m["examples"][0].update(spec="../private/Spec.v"),
             lambda m: m["examples"][0].update(candidate="/tmp/candidate"),
             lambda m: m["examples"][0].update(spec_dependencies=["../outside.v"]),
@@ -146,45 +139,6 @@ class ExampleManifestTests(unittest.TestCase):
                          [(check.REPO / entry["spec"]).parent / "Dependency.v"])
         self.assertEqual(evaluate.call_args.args[2], check.REPO / entry["candidate"])
 
-    def test_generated_program_is_frozen_from_evaluator_inputs(self):
-        entry = {"spec": "verification/zfc-virtual-classes/spec/Spec.v",
-                 "spec_dependencies": ["Protocol.v"],
-                 "generated_program": "zfc-proofchecker"}
-        def generate(argv, **kwargs):
-            self.assertEqual(Path(argv[1]), check.REPO / "compiler/dist/cli.js")
-            self.assertEqual(Path(argv[4]), check.REPO / "programs/ZFCProofChecker.js")
-            Path(argv[2]).write_text("generated program")
-
-        def prepare(spec, bundle, runtime, sandbox, allowed, spec_dependencies):
-            self.assertEqual(spec.read_bytes(), (check.REPO / entry["spec"]).read_bytes() + b"\n" +
-                             (check.REPO / "verification/zfc-virtual-classes/spec/AdversarialInterface.inc").read_bytes())
-            self.assertEqual({p.name for p in spec_dependencies}, {"Protocol.v", "ProofChecker.v"})
-            self.assertEqual(next(p for p in spec_dependencies if p.name == "ProofChecker.v").read_text(),
-                             "generated program")
-            return "frozen"
-
-        with (patch.object(examples.subprocess, "run", side_effect=generate),
-              patch.object(check, "prepare", side_effect=prepare)):
-            self.assertEqual(examples.prepare_example(entry, Path("bundle"), {}, None, []), "frozen")
-
-    def test_zfc_staging_remaps_only_proof_and_generated_imports(self):
-        source = check.REPO / "verification/zfc-virtual-classes/imperative/prepare_adversarial.py"
-        spec = importlib.util.spec_from_file_location("test_zfc_staging", source)
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        root = Path(self.temporary.name)
-        proof = root / "proof"
-        proof.mkdir()
-        (proof / "AdversarialCapacityBridge.v").write_text(
-            "From NativeProof Require Import Helper.\n"
-            "From ImperativeZFC Require Import ProofChecker NativeContract.\n")
-        (proof / "Helper.v").write_text("From Trusted Require Import Spec.\n")
-        with patch.object(module, "PROOF", proof):
-            self.assertEqual(module.stage(root / "submission"), 2)
-        staged = (root / "submission/AdversarialCapacityBridge.v").read_text()
-        self.assertIn("From Submission Require Import Helper.", staged)
-        self.assertIn("From Trusted Require Import ProofChecker.", staged)
-        self.assertIn("From Submission Require Import NativeContract.", staged)
 
 
 if __name__ == "__main__":

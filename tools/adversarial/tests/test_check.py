@@ -123,10 +123,10 @@ class ProtocolValidationTests(unittest.TestCase):
             with self.assertRaises(OSError):
                 gate.specification_sources(spec, [specdir / "Missing.v"])
 
-    def test_zfc_theories_are_not_shared_trusted_libraries(self):
+    def test_problem_sources_are_not_shared_trusted_libraries(self):
         _, sources = gate.project_layout()
-        self.assertFalse(any(source.name in {"SetTheory.v", "VirtualClasses.v"}
-                             for source in sources))
+        self.assertTrue(sources)
+        self.assertTrue(all(source.parts[0] != "verification" for source in sources))
 
     class Sandbox:
         limits = dict(gate.DEFAULT_LIMITS)

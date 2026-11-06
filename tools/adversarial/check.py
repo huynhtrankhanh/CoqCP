@@ -29,6 +29,10 @@ BINARIES = ["spec-check", "sandbox-exec", "compile-safe"]
 NAME = re.compile(r"[A-Za-z][A-Za-z0-9_]*\.v\Z")
 DEFAULT_LIMITS = dict(wall_seconds=120, cpu_seconds=60, memory_mib=2048,
                       work_mib=256, artifact_mib=64, log_mib=1)
+SOURCE_BYTES_LIMIT = 8 * 1024**2
+# Charge a filesystem block per entry as well as its content. This bounds
+# directory, inode and in-memory bookkeeping costs even for empty files.
+SNAPSHOT_BLOCK_BYTES = 4096
 
 
 class Rejected(Exception):
@@ -424,6 +428,40 @@ def validate_bundle(bundle, spec_id, runtime):
     return manifest
 
 
+def snapshot_submission(submission, inputs, work_bytes):
+    """Copy bounded regular source files without first materializing the directory."""
+    if work_bytes <= 0:
+        raise Rejected("Submission snapshot work budget must be positive")
+    source_bytes = 0
+    work_used = 0
+    sources = []
+    with os.scandir(submission) as entries:
+        for entry in entries:
+            name = entry.name
+            if not NAME.fullmatch(name):
+                raise Rejected("Submissions contain only top-level .v source files")
+            # Charge the entry before opening or copying it, so zero-byte files
+            # cannot consume unlimited host filesystem space or source-list RAM.
+            entry_cost = SNAPSHOT_BLOCK_BYTES + len(name.encode("ascii"))
+            if work_used + entry_cost > work_bytes:
+                raise Rejected("Submission exceeds snapshot work budget")
+            data = read_regular(Path(submission) / name, SOURCE_BYTES_LIMIT)
+            source_bytes += len(data)
+            if source_bytes > SOURCE_BYTES_LIMIT:
+                raise Rejected("Submission exceeds source size limit")
+            content_cost = ((len(data) + SNAPSHOT_BLOCK_BYTES - 1)
+                            // SNAPSHOT_BLOCK_BYTES * SNAPSHOT_BLOCK_BYTES)
+            work_used += entry_cost + content_cost
+            if work_used > work_bytes:
+                raise Rejected("Submission exceeds snapshot work budget")
+            (inputs / name).write_bytes(data)
+            sources.append(name)
+    if "Candidate.v" not in sources:
+        raise Rejected("Submission must contain Candidate.v")
+    sources.sort()
+    return sources
+
+
 def evaluate(bundle, spec_id, submission, output, runtime, sandbox):
     # Snapshot the whole frozen bundle before starting any untrusted process.
     validate_bundle(bundle, spec_id, runtime)
@@ -439,19 +477,8 @@ def evaluate(bundle, spec_id, submission, output, runtime, sandbox):
             policy = validate_bundle(frozen, spec_id, runtime)
             inputs = output / "sources"
             inputs.mkdir()
-            total = 0
-            sources = []
-            for path in sorted(submission.iterdir()):
-                if not NAME.fullmatch(path.name):
-                    raise Rejected("Submissions contain only top-level .v source files")
-                data = read_regular(path, 8 * 1024**2)
-                total += len(data)
-                if total > 8 * 1024**2:
-                    raise Rejected("Submission exceeds source size limit")
-                (inputs / path.name).write_bytes(data)
-                sources.append(path.name)
-            if "Candidate.v" not in sources:
-                raise Rejected("Submission must contain Candidate.v")
+            work_mib = sandbox.limits.get("work_mib", DEFAULT_LIMITS["work_mib"])
+            sources = snapshot_submission(submission, inputs, work_mib * 1024**2)
             report["sources"] = {name: digest(inputs / name) for name in sources}
             report["stage"] = "compilation"
             compiled = compile_sources(inputs, sources, "Submission", frozen, runtime, sandbox)

@@ -84,14 +84,4 @@ def load(path=MANIFEST):
         spec = check.REPO / example["spec"]
         check.specification_sources(spec, [spec.parent / name
                                            for name in example.get("spec_dependencies", [])])
-        if ("generated_program" in example and
-                (example["generated_program"] != "zfc-proofchecker" or
-                 example["spec"] != "verification/zfc-virtual-classes/spec/Spec.v" or
-                 "ProofChecker.v" in example.get("spec_dependencies", []))):
-            raise ValueError("Invalid generated program specification")
-        if ("candidate_layout" in example and
-                (example["candidate_layout"] != "zfc-native-proof" or
-                 example.get("generated_program") != "zfc-proofchecker" or
-                 example["candidate"] != "verification/zfc-virtual-classes/candidate")):
-            raise ValueError("Invalid candidate layout")
     return manifest

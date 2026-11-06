@@ -109,11 +109,9 @@
     },
     {
       "name": "zfc-virtual-classes",
-      "spec": "verification/zfc-virtual-classes/spec/Spec.v",
-      "spec_dependencies": ["SetTheory.v", "VirtualClasses.v", "Schemata.v", "Protocol.v", "Guarantees.v", "CapacityGeneral.v", "CapacitySet.v", "Capacity.v"],
-      "generated_program": "zfc-proofchecker",
-      "candidate_layout": "zfc-native-proof",
-      "candidate": "verification/zfc-virtual-classes/candidate",
+      "spec": "verification/zfc-native/spec/Spec.v",
+      "spec_dependencies": ["SetTheory.v", "VirtualClasses.v", "Schemata.v", "Protocol.v", "Guarantees.v", "CapacityGeneral.v", "CapacitySet.v", "Capacity.v", "ProofChecker.v"],
+      "candidate": "verification/zfc-native/candidate",
       "axiom_policy": "ci",
       "profile": "zfc-proof-chain"
     }

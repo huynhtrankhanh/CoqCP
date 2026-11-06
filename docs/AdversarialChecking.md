@@ -159,7 +159,9 @@ A submission is a dedicated directory containing only top-level `.v` files,
 including `Candidate.v`. Names must be ASCII Rocq identifiers. Symlinks, special
 files, subdirectories, precompiled libraries, project files, and build scripts
 are rejected. At most 8 MiB of source text is accepted, with no separate
-source-count limit. Artifact, memory, CPU, and filesystem limits remain enforced.
+source-count limit. The work-space limit also accounts for each source file's
+name, a 4096-byte metadata allowance, and its contents rounded up to 4096-byte
+blocks. Artifact, memory, CPU, and filesystem limits remain enforced.
 
 For the increment contract, `Candidate.v` can contain:
 

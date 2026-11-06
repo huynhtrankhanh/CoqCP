@@ -21,16 +21,16 @@ they establish properties of specification definitions.
 
 The examples manifest can list adjacent specification files in
 `spec_dependencies`; the runner freezes their exact contents with `Spec.v`.
-The ZFC native program can also be generated as an evaluator-owned trusted
-dependency using `generated_program: "zfc-proofchecker"`. Its compiler and
-input paths are fixed by the runner, not selected by the candidate.
 Candidate source bytes and compilation resources are bounded; the number of
 source files has no separate cap.
 
-The ZFC example uses the shared `ci` axiom policy, which permits CoqCP’s
-functional extensionality axiom. The sandbox report records the axioms it
-actually sees. Its fixed resource domain covers the proven canonical-input
-sessions; the broader byte-stream proof is developed separately.
+The ZFC native example uses CoqCP’s `ci` policy, which permits functional
+extensionality. Its frozen specification fixes both the checked-in Rocq program
+and the capacity domain for the proved canonical-input contract. The evaluator
+compiles the specification and source-only proof submission in its sandbox; it
+does not run the repository's compiler or preparation scripts. The gate checks
+the frozen Rocq artifact and does not itself certify that it corresponds to the
+JavaScript source or generated C++ target.
 
 Candidates import the frozen specification as `Trusted.Spec`, other candidate
 helpers as `Submission.<name>`, and general libraries as `CoqCP.<name>`.

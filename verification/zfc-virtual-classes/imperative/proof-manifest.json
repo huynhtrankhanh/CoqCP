@@ -799,7 +799,8 @@
     "NativeWhitespaceSchemaQuitDialogue",
     "NativeMalformedWhitespaceUnified",
     "NativeSecondArgumentByteErrorDialogue",
-    "NativeTagLaterByteErrorDialogue"
+    "NativeTagLaterByteErrorDialogue",
+    "NativeSpacedClassSchemaExample"
   ],
   "audit_roots": [
     "funcdef_0__main",
@@ -4947,6 +4948,11 @@
     "NativeWhitespaceSchemaQuitGeneralMain.generated_main",
     "NativeWhitespaceSchemaQuitSetMain.generated_main",
     "NativeWhitespaceSchemaQuitDialogue.quit",
-    "NativeSpacedNonNodeFields.preserves"
+    "NativeSpacedNonNodeFields.preserves",
+    "NativeSpacedClassSchemaExample.requests_match",
+    "NativeSpacedClassSchemaExample.item_count",
+    "NativeSpacedClassSchemaExample.items_valid",
+    "NativeSpacedClassSchemaExample.capacity",
+    "NativeSpacedClassSchemaExample.checked_session"
   ]
 }
