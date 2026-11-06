@@ -34,7 +34,10 @@
           "spec_dependencies": {
             "type": "array",
             "uniqueItems": true,
-            "items": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*\\.v$" }
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z_][A-Za-z0-9_]*\\.v$"
+            }
           },
           "axiom_policy": { "enum": ["none", "ci"] },
           "profile": { "$ref": "#/$defs/name" }

@@ -110,7 +110,17 @@
     {
       "name": "zfc-virtual-classes",
       "spec": "verification/zfc-native/spec/Spec.v",
-      "spec_dependencies": ["SetTheory.v", "VirtualClasses.v", "Schemata.v", "Protocol.v", "Guarantees.v", "CapacityGeneral.v", "CapacitySet.v", "Capacity.v", "ProofChecker.v"],
+      "spec_dependencies": [
+        "SetTheory.v",
+        "VirtualClasses.v",
+        "Schemata.v",
+        "Protocol.v",
+        "Guarantees.v",
+        "CapacityGeneral.v",
+        "CapacitySet.v",
+        "Capacity.v",
+        "ProofChecker.v"
+      ],
       "candidate": "verification/zfc-native/candidate",
       "axiom_policy": "ci",
       "profile": "zfc-proof-chain"
