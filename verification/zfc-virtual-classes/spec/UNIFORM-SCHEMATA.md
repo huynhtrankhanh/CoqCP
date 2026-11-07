@@ -27,13 +27,13 @@ The byte syntax, seed handshake, object IDs, schema node kinds, names, and
 reply vocabulary remain as specified in [README.md](README.md). The proposed
 changes affect these two commands:
 
-* `23 proofNode name` requires an existing proof-typed node, a fresh name,
+- `23 proofNode name` requires an existing proof-typed node, a fresh name,
   and successful uniform certification of the referenced proof template. On
   success it saves both the proof root and its certified symbolic conclusion,
   and replies `OK proofNode`. A nonuniform proof, an invalid root, or an
   unavailable name replies `NO` and creates no name. For example, an MP step
   whose antecedents agree only for `X = Y = 0` is rejected at this point.
-* `24 name count classID...` reads exactly `count` class IDs. The name must
+- `24 name count classID...` reads exactly `count` class IDs. The name must
   identify a certified schema, `count` must equal its original proof
   template's arity, and every supplied class ID must exist. On success the
   checker expands the cached conclusion with those classes, appends the
