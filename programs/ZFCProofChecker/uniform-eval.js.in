@@ -1,0 +1,101 @@
+// Unconnected experimental evaluator. In addition to uniform-symbols.js.in
+// and uniform-memo.js.in, requires:
+// uniformEvalState: array([int64], 1),
+// uniformEvalStack: array([int64, int64, int64], 0).
+// No refinement theorem has been proved. Do not wire into production.
+
+procedure('uniformEvalPush', {node: int64, depth: int64, count: int64}, () => {
+  set('count', retrieve('uniformEvalState', 0)[0])
+  if (get('count') == 18446744073709551615) { store('meta', 8, [1]) } else {
+    grow('uniformEvalStack', get('count') + 1)
+    store('uniformEvalStack', get('count'), [get('node'), get('depth'), 0])
+    store('uniformEvalState', 0, [get('count') + 1])
+  }
+})
+
+// This traversal is bounded by actual reachable (node, depth) pairs and their
+// edges; the finite range provides the imperative loop's machine bound. The
+// memo is private to this call and survives nested rename/class operations.
+procedure('uniformEvaluate', {root: int64, node: int64, depth: int64, stage: int64, kind: int64, a: int64, b: int64, x: int64, y: int64, child: int64, childDepth: int64, base: int64}, () => {
+  call('uniformMemoReset', {})
+  store('uniformEvalState', 0, [0])
+  call('uniformEvalPush', {node: get('root'), depth: 0})
+  range(18446744073709551615, (work) => {
+    if (retrieve('uniformEvalState', 0)[0] == 0 || retrieve('meta', 8)[0] != 0) { ;('break') }
+    set('node', retrieve('uniformEvalStack', retrieve('uniformEvalState', 0)[0] - 1)[0])
+    set('depth', retrieve('uniformEvalStack', retrieve('uniformEvalState', 0)[0] - 1)[1])
+    set('stage', retrieve('uniformEvalStack', retrieve('uniformEvalState', 0)[0] - 1)[2])
+    call('uniformMemoGet', {node: get('node'), depth: get('depth')})
+    if (retrieve('uniformMemoState', 0)[2] != 0) {
+      store('uniformEvalState', 0, [retrieve('uniformEvalState', 0)[0] - 1])
+    } else {
+      if (!less(get('node'), retrieve('uniformState', 0)[0])) { store('meta', 8, [1]) } else {
+        set('kind', retrieve('uniformNodes', get('node'))[0])
+        set('a', retrieve('uniformNodes', get('node'))[1])
+        set('b', retrieve('uniformNodes', get('node'))[2])
+        if (get('kind') == 7) {
+          set('base', get('a'))
+          range(4, (i) => { set('base', retrieve('uniformNodes', get('base'))[1]) })
+        }
+        if (get('stage') == 0) {
+          store('uniformEvalStack', retrieve('uniformEvalState', 0)[0] - 1, [get('node'), get('depth'), 1])
+          set('childDepth', get('depth'))
+          if (get('kind') == 4 || get('kind') == 12 || get('kind') == 43 || get('kind') == 47) {
+            if (get('depth') == 18446744073709551615) { store('meta', 8, [1]) } else { set('childDepth', get('depth') + 1) }
+          }
+          if (get('kind') == 7) { set('a', retrieve('uniformNodes', get('base'))[2]) }
+          if (get('kind') == 2 || get('kind') == 24 || get('kind') == 25 || get('kind') == 44 || get('kind') == 45 || get('kind') == 46) { call('uniformEvalPush', {node: get('b'), depth: get('depth')}) }
+          if (get('kind') == 1 || get('kind') == 2 || get('kind') == 3 || get('kind') == 4 || get('kind') == 5 || get('kind') == 6 || get('kind') == 7 || get('kind') == 12 || get('kind') == 24 || get('kind') == 25 || get('kind') == 43 || get('kind') == 44 || get('kind') == 45 || get('kind') == 46 || get('kind') == 47) {
+            call('uniformEvalPush', {node: get('a'), depth: get('childDepth')})
+          }
+        } else {
+          set('childDepth', get('depth'))
+          if (get('kind') == 4 || get('kind') == 12 || get('kind') == 43 || get('kind') == 47) { set('childDepth', get('depth') + 1) }
+          set('child', get('a'))
+          if (get('kind') == 7) { set('child', retrieve('uniformNodes', get('base'))[2]) }
+          if (get('kind') == 1 || get('kind') == 2 || get('kind') == 3 || get('kind') == 4 || get('kind') == 5 || get('kind') == 6 || get('kind') == 7 || get('kind') == 12 || get('kind') == 24 || get('kind') == 25 || get('kind') == 43 || get('kind') == 44 || get('kind') == 45 || get('kind') == 46 || get('kind') == 47) {
+            call('uniformMemoGet', {node: get('child'), depth: get('childDepth')})
+            if (retrieve('uniformMemoState', 0)[2] == 0) { store('meta', 8, [1]) }
+            set('x', retrieve('uniformMemoState', 0)[3])
+          }
+          if (get('kind') == 2 || get('kind') == 24 || get('kind') == 25 || get('kind') == 44 || get('kind') == 45 || get('kind') == 46) {
+            call('uniformMemoGet', {node: get('b'), depth: get('depth')})
+            if (retrieve('uniformMemoState', 0)[2] == 0) { store('meta', 8, [1]) }
+            set('y', retrieve('uniformMemoState', 0)[3])
+          }
+          if (get('kind') == 0 || get('kind') == 42) { store('meta', 0, [get('a')]) }
+          if (get('kind') == 11 || get('kind') == 41) { call('schemaClass', {kind: get('a'), value: get('b')}) }
+          if (get('kind') == 1) { store('meta', 0, [get('x')]) }
+          if (get('kind') == 2 || get('kind') == 46) { call('intern', {tag: 3, a: get('x'), b: get('y')}) }
+          if (get('kind') == 3 || get('kind') == 4 || get('kind') == 47) { call('intern', {tag: 4, a: get('x'), b: 0}) }
+          if (get('kind') == 5) { call('rename', {node: get('x'), mode: 0, shift: 1, initialDepth: 0}) }
+          if (get('kind') == 6) { call('rename', {node: get('x'), mode: 1, arg: get('b'), initialDepth: 0}) }
+          if (get('kind') == 7) {
+            call('axiom', {tag: retrieve('uniformNodes', get('base'))[1], p: get('x'), q: 0, r: 0})
+            // The axiom builder can fail (for example on variable-index
+            // overflow). In that case meta[0] is not a promised result ID.
+            if (retrieve('meta', 8)[0] == 0) {
+              if (retrieve('formulas', retrieve('meta', 0)[0])[0] != 3) { store('meta', 8, [1]) } else {
+                if (get('b') == 1) { store('meta', 0, [retrieve('formulas', retrieve('meta', 0)[0])[1]]) }
+                else { store('meta', 0, [retrieve('formulas', retrieve('meta', 0)[0])[2]]) }
+              }
+            }
+          }
+          if (get('kind') == 10 || get('kind') == 40) { call('schemaShiftClass', {cls: retrieve('schemaArguments', get('a'))[0], depth: get('depth')}) }
+          if (get('kind') == 12 || get('kind') == 43) { call('schemaClass', {kind: 1, value: get('x')}) }
+          if (get('kind') == 24 || get('kind') == 44) { call('classEqual', {a: get('x'), b: get('y')}) }
+          if (get('kind') == 25 || get('kind') == 45) { call('classMember', {a: get('x'), b: get('y')}) }
+          if (retrieve('meta', 8)[0] == 0) {
+            call('uniformMemoPutNew', {node: get('node'), depth: get('depth'), value: retrieve('meta', 0)[0]})
+            store('uniformEvalState', 0, [retrieve('uniformEvalState', 0)[0] - 1])
+          }
+        }
+      }
+    }
+  })
+  if (retrieve('uniformEvalState', 0)[0] != 0) { store('meta', 8, [1]) }
+  if (retrieve('meta', 8)[0] == 0) {
+    call('uniformMemoGet', {node: get('root'), depth: 0})
+    if (retrieve('uniformMemoState', 0)[2] == 0) { store('meta', 8, [1]) } else { store('meta', 0, [retrieve('uniformMemoState', 0)[3]]) }
+  }
+})

@@ -1,0 +1,283 @@
+// Unconnected development source. Required environment additions:
+// uniformState: array([int64, int64], 1), // node count, bucket count
+// uniformNodes: array([int64, int64, int64], 0),
+// uniformLinks: array([int64], 0), uniformBuckets: array([int64], 1024).
+// uniformFormulaMap: array([int64, int64], 0),
+// uniformCompiled: array([int64, int64], 0).
+// uniformTemplates: array([int64], 0).
+// Existing formulaHash and intern procedures, nonzero meta[20] (the formula
+// hash table size), and the seed in meta[26:28] are required. This file is not
+// included in the published checker.
+//
+// Symbolic tags: 0 concrete atomic formula, 1 opaque formula template,
+// 2 implication, 3 object-level all, 4 schema-depth-incrementing all,
+// 5 shift, 6 instantiate (a=child, b=index), 7 axiom part. A tag 7 node's
+// a field is a canonical axiom-template ID and b selects left (1) or right
+// (0) of its instantiated axiom formula. Only tags 15/16 may use tag 7.
+// Children are
+// interned before parents. All table matches check the full tuple, not a hash.
+// INCOMPLETE: the experimental evaluator has no native refinement proof.
+// Do not wire this component into the production checker.
+// Exact correspondence with Rocq symbolic_eq_dec has not been proved; an exact
+// refinement proof is required before any use as a certificate checker.
+
+procedure('uniformRehash', {size: int64, bucket: int64}, () => {
+  set('size', retrieve('uniformState', 0)[1])
+  if (less(9223372036854775807, get('size'))) { store('meta', 8, [1]) } else {
+    set('size', get('size') * 2)
+    grow('uniformBuckets', get('size'))
+    range(get('size'), (i) => { store('uniformBuckets', i, [0]) })
+    store('uniformState', 0, [retrieve('uniformState', 0)[0], get('size')])
+    range(retrieve('uniformState', 0)[0], (i) => {
+      call('formulaHash', {tag: retrieve('uniformNodes', i)[0], a: retrieve('uniformNodes', i)[1], b: retrieve('uniformNodes', i)[2]})
+      set('bucket', retrieve('meta', 28)[0] % get('size'))
+      store('uniformLinks', i, [retrieve('uniformBuckets', get('bucket'))[0]])
+      store('uniformBuckets', get('bucket'), [i + 1])
+    })
+  }
+})
+
+procedure('uniformIntern', {tag: int64, a: int64, b: int64, found: int64, current: int64, bucket: int64, count: int64}, () => {
+  if (retrieve('uniformState', 0)[1] == 0) { store('uniformState', 0, [0, 1024]) }
+  set('found', 0)
+  if (retrieve('uniformState', 0)[0] == retrieve('uniformState', 0)[1]) { call('uniformRehash', {}) }
+  if (retrieve('meta', 8)[0] == 0) {
+    call('formulaHash', {tag: get('tag'), a: get('a'), b: get('b')})
+    set('bucket', retrieve('meta', 28)[0] % retrieve('uniformState', 0)[1])
+    set('current', retrieve('uniformBuckets', get('bucket'))[0])
+    range(retrieve('uniformState', 0)[0], (probe) => {
+      if (get('current') == 0) { ;('break') }
+      set('current', get('current') - 1)
+      if (retrieve('uniformNodes', get('current'))[0] == get('tag') && retrieve('uniformNodes', get('current'))[1] == get('a') && retrieve('uniformNodes', get('current'))[2] == get('b')) {
+        store('meta', 0, [get('current')])
+        set('found', 1)
+        ;('break')
+      }
+      set('current', retrieve('uniformLinks', get('current'))[0])
+    })
+    if (get('found') == 0) {
+      set('count', retrieve('uniformState', 0)[0])
+      if (get('count') == 18446744073709551615) { store('meta', 8, [1]) } else {
+        grow('uniformNodes', get('count') + 1)
+        grow('uniformLinks', get('count') + 1)
+        store('uniformNodes', get('count'), [get('tag'), get('a'), get('b')])
+        store('uniformLinks', get('count'), [retrieve('uniformBuckets', get('bucket'))[0]])
+        store('uniformBuckets', get('bucket'), [get('count') + 1])
+        store('uniformState', 0, [get('count') + 1, retrieve('uniformState', 0)[1]])
+        store('meta', 0, [get('count')])
+      }
+    }
+  }
+})
+
+// Formula literals are already interned in the main formula arena. Only atomic
+// ones may enter here: implications and quantifiers require normalization.
+procedure('uniformAtom', {tag: int64, a: int64, b: int64}, () => {
+  call('intern', {tag: get('tag'), a: get('a'), b: get('b')})
+  if (retrieve('meta', 8)[0] == 0) { call('uniformIntern', {tag: 0, a: retrieve('meta', 0)[0], b: 0}) }
+})
+
+// MP validation is deliberately conservative: IDs match only after exact
+// structural hash-consing. meta[18] reports invalid certificates.
+procedure('uniformMP', {implication: int64, antecedent: int64}, () => {
+  if (!less(get('implication'), retrieve('uniformState', 0)[0]) || !less(get('antecedent'), retrieve('uniformState', 0)[0])) {
+    store('meta', 18, [0])
+  } else {
+    if (retrieve('uniformNodes', get('implication'))[0] == 2 && retrieve('uniformNodes', get('implication'))[1] == get('antecedent')) {
+      store('meta', 0, [retrieve('uniformNodes', get('implication'))[2]])
+    } else { store('meta', 18, [0]) }
+  }
+})
+
+// Construct symbolic conclusions for the five formula-parametric logical
+// axioms. Inputs p/q/r must already be normalized symbolic IDs; j is the
+// object-variable parameter of Inst. Caller validates tag and all inputs.
+procedure('uniformLogicalAxiom', {tag: int64, p: int64, q: int64, r: int64, j: int64, x: int64, y: int64, z: int64, t: int64}, () => {
+  if (get('tag') == 0) {
+    call('uniformIntern', {tag: 2, a: get('q'), b: get('p')})
+    call('uniformIntern', {tag: 2, a: get('p'), b: retrieve('meta', 0)[0]})
+  }
+  if (get('tag') == 1) {
+    call('uniformIntern', {tag: 2, a: get('q'), b: get('r')})
+    call('uniformIntern', {tag: 2, a: get('p'), b: retrieve('meta', 0)[0]})
+    set('x', retrieve('meta', 0)[0])
+    call('uniformIntern', {tag: 2, a: get('p'), b: get('q')})
+    set('y', retrieve('meta', 0)[0])
+    call('uniformIntern', {tag: 2, a: get('p'), b: get('r')})
+    call('uniformIntern', {tag: 2, a: get('y'), b: retrieve('meta', 0)[0]})
+    call('uniformIntern', {tag: 2, a: get('x'), b: retrieve('meta', 0)[0]})
+  }
+  if (get('tag') == 2) {
+    call('uniformAtom', {tag: 0, a: 0, b: 0})
+    set('x', retrieve('meta', 0)[0])
+    call('uniformIntern', {tag: 2, a: get('p'), b: get('x')})
+    call('uniformIntern', {tag: 2, a: retrieve('meta', 0)[0], b: get('x')})
+    call('uniformIntern', {tag: 2, a: retrieve('meta', 0)[0], b: get('p')})
+  }
+  if (get('tag') == 3) {
+    call('uniformIntern', {tag: 3, a: get('p'), b: 0})
+    set('x', retrieve('meta', 0)[0])
+    call('uniformIntern', {tag: 6, a: get('p'), b: get('j')})
+    call('uniformIntern', {tag: 2, a: get('x'), b: retrieve('meta', 0)[0]})
+  }
+  if (get('tag') == 4) {
+    call('uniformIntern', {tag: 5, a: get('p'), b: 0})
+    call('uniformIntern', {tag: 2, a: retrieve('meta', 0)[0], b: get('q')})
+    call('uniformIntern', {tag: 3, a: retrieve('meta', 0)[0], b: 0})
+    set('x', retrieve('meta', 0)[0])
+    call('uniformIntern', {tag: 3, a: get('q'), b: 0})
+    call('uniformIntern', {tag: 2, a: get('p'), b: retrieve('meta', 0)[0]})
+    call('uniformIntern', {tag: 2, a: get('x'), b: retrieve('meta', 0)[0]})
+  }
+})
+
+procedure('uniformAxiomPartPair', {axiom: int64, left: int64}, () => {
+  call('uniformIntern', {tag: 7, a: get('axiom'), b: 1})
+  set('left', retrieve('meta', 0)[0])
+  call('uniformIntern', {tag: 7, a: get('axiom'), b: 0})
+  call('uniformIntern', {tag: 2, a: get('left'), b: retrieve('meta', 0)[0]})
+})
+
+// Formula interning ensures proper child formula IDs precede the parent. The
+// memo records (symbolic ID, present); an ID of zero is therefore unambiguous.
+procedure('uniformConcrete', {root: int64, tag: int64, a: int64, b: int64}, () => {
+  if (!less(get('root'), retrieve('meta', 1)[0]) || get('root') == 18446744073709551615) {
+    store('meta', 8, [1])
+  } else {
+    grow('uniformFormulaMap', get('root') + 1)
+    range(get('root') + 1, (i) => {
+      if (retrieve('meta', 8)[0] != 0) { ;('break') }
+      if (retrieve('uniformFormulaMap', i)[1] == 0) {
+        set('tag', retrieve('formulas', i)[0])
+        set('a', retrieve('formulas', i)[1])
+        set('b', retrieve('formulas', i)[2])
+        if (less(get('tag'), 3)) { call('uniformIntern', {tag: 0, a: i, b: 0}) }
+        if (get('tag') == 3) {
+          call('uniformIntern', {tag: 2, a: retrieve('uniformFormulaMap', get('a'))[0], b: retrieve('uniformFormulaMap', get('b'))[0]})
+        }
+        if (get('tag') == 4) {
+          call('uniformIntern', {tag: 3, a: retrieve('uniformFormulaMap', get('a'))[0], b: 0})
+        }
+        if (less(4, get('tag'))) { store('meta', 8, [1]) }
+        if (retrieve('meta', 8)[0] == 0) { store('uniformFormulaMap', i, [retrieve('meta', 0)[0], 1]) }
+      }
+    })
+    if (retrieve('meta', 8)[0] == 0) { store('meta', 0, [retrieve('uniformFormulaMap', get('root'))[0]]) }
+  }
+})
+
+// Concrete equality/membership axioms, corresponding to tags 5 through 8.
+procedure('uniformRelationAxiom', {tag: int64, i: int64, j: int64, k: int64, x: int64, y: int64}, () => {
+  if (get('tag') == 5) { call('uniformAtom', {tag: 1, a: get('i'), b: get('i')}) }
+  if (get('tag') != 5) {
+    call('uniformAtom', {tag: 1, a: get('i'), b: get('j')})
+    set('x', retrieve('meta', 0)[0])
+  }
+  if (get('tag') == 6) {
+    call('uniformAtom', {tag: 2, a: get('i'), b: get('k')})
+    set('y', retrieve('meta', 0)[0])
+    call('uniformAtom', {tag: 2, a: get('j'), b: get('k')})
+  }
+  if (get('tag') == 7) {
+    call('uniformAtom', {tag: 2, a: get('k'), b: get('i')})
+    set('y', retrieve('meta', 0)[0])
+    call('uniformAtom', {tag: 2, a: get('k'), b: get('j')})
+  }
+  if (get('tag') == 8) {
+    call('uniformAtom', {tag: 1, a: get('i'), b: get('k')})
+    set('y', retrieve('meta', 0)[0])
+    call('uniformAtom', {tag: 1, a: get('j'), b: get('k')})
+  }
+  if (get('tag') != 5) {
+    call('uniformIntern', {tag: 2, a: get('y'), b: retrieve('meta', 0)[0]})
+    call('uniformIntern', {tag: 2, a: get('x'), b: retrieve('meta', 0)[0]})
+  }
+})
+
+// Compile a topologically ordered schema-node prefix into symbolic nodes. The
+// caller must pass a previously validated type-2 root. uniformCompiled tracks
+// (symbolic ID, valid); an invalid MP propagates only to dependent nodes.
+// uniformTemplates retains structural (not normalized) template identities.
+procedure('uniformCompile', {root: int64, kind: int64, a: int64, b: int64, c: int64, d: int64, x: int64, y: int64, z: int64, valid: int64}, () => {
+  store('meta', 18, [1])
+  if (!less(get('root'), retrieve('meta', 16)[0]) || get('root') == 18446744073709551615) {
+    store('meta', 18, [0])
+  } else {
+    grow('uniformCompiled', get('root') + 1)
+    grow('uniformTemplates', get('root') + 1)
+    range(get('root') + 1, (i) => {
+      if (retrieve('meta', 8)[0] != 0) { ;('break') }
+      set('kind', retrieve('schemaNodes', i)[0])
+      set('a', retrieve('schemaNodes', i)[1])
+      set('b', retrieve('schemaNodes', i)[2])
+      set('c', retrieve('schemaNodes', i)[3])
+      set('d', retrieve('schemaNodes', i)[4])
+      set('valid', 1)
+      if (get('kind') == 0) { call('uniformIntern', {tag: 10, a: get('a'), b: 0}) }
+      if (get('kind') == 1) { call('uniformIntern', {tag: 11, a: retrieve('classes', get('a'))[0], b: retrieve('classes', get('a'))[1]}) }
+      if (get('kind') == 2 || get('kind') == 11) { call('uniformConcrete', {root: get('a')}) }
+      if (get('kind') == 3) {
+        call('uniformIntern', {tag: 12, a: retrieve('uniformCompiled', get('a'))[0], b: 0})
+      }
+      if (get('kind') == 4 || get('kind') == 5) {
+        call('uniformIntern', {tag: 40 + get('kind'), a: retrieve('uniformTemplates', get('a'))[0], b: retrieve('uniformTemplates', get('b'))[0]})
+        call('uniformIntern', {tag: 1, a: retrieve('meta', 0)[0], b: 0})
+      }
+      if (get('kind') == 6) {
+        call('uniformIntern', {tag: 2, a: retrieve('uniformCompiled', get('a'))[0], b: retrieve('uniformCompiled', get('b'))[0]})
+      }
+      if (get('kind') == 7) {
+        call('uniformIntern', {tag: 4, a: retrieve('uniformCompiled', get('a'))[0], b: 0})
+      }
+      if (get('kind') == 8) {
+        set('x', 0)
+        set('y', 0)
+        set('z', 0)
+        if (get('a') == 0 || get('a') == 1 || get('a') == 2 || get('a') == 3 || get('a') == 4 || get('a') == 15 || get('a') == 16) { set('x', retrieve('uniformCompiled', get('b'))[0]) }
+        if (get('a') == 0 || get('a') == 1 || get('a') == 4) { set('y', retrieve('uniformCompiled', get('c'))[0]) }
+        if (get('a') == 1) { set('z', retrieve('uniformCompiled', get('d'))[0]) }
+        if (less(get('a'), 5)) { call('uniformLogicalAxiom', {tag: get('a'), p: get('x'), q: get('y'), r: get('z'), j: get('c')}) }
+        if (less(4, get('a')) && less(get('a'), 9)) { call('uniformRelationAxiom', {tag: get('a'), i: get('b'), j: get('c'), k: get('d')}) }
+        if (less(8, get('a')) && (less(get('a'), 15) || get('a') == 17)) {
+          call('axiom', {tag: get('a'), p: 0, q: 0, r: 0})
+          call('uniformConcrete', {root: retrieve('meta', 0)[0]})
+        }
+        if (get('a') == 15 || get('a') == 16) {
+          call('uniformIntern', {tag: 30, a: get('a'), b: get('x')})
+          call('uniformIntern', {tag: 31, a: retrieve('meta', 0)[0], b: retrieve('uniformTemplates', get('b'))[0]})
+          call('uniformIntern', {tag: 32, a: retrieve('meta', 0)[0], b: get('b')})
+          call('uniformIntern', {tag: 33, a: retrieve('meta', 0)[0], b: get('c')})
+          call('uniformIntern', {tag: 34, a: retrieve('meta', 0)[0], b: get('d')})
+          call('uniformAxiomPartPair', {axiom: retrieve('meta', 0)[0]})
+        }
+      }
+      if (get('kind') == 9) {
+        if (retrieve('uniformCompiled', get('a'))[1] == 0 || retrieve('uniformCompiled', get('b'))[1] == 0) { set('valid', 0) } else {
+          store('meta', 18, [1])
+          call('uniformMP', {implication: retrieve('uniformCompiled', get('a'))[0], antecedent: retrieve('uniformCompiled', get('b'))[0]})
+          if (retrieve('meta', 18)[0] == 0) { set('valid', 0) }
+        }
+      }
+      if (get('kind') == 10) {
+        if (retrieve('uniformCompiled', get('a'))[1] == 0) { set('valid', 0) } else {
+          call('uniformIntern', {tag: 4, a: retrieve('uniformCompiled', get('a'))[0], b: 0})
+        }
+      }
+      store('uniformCompiled', i, [retrieve('meta', 0)[0], get('valid')])
+      if (get('kind') == 0) { call('uniformIntern', {tag: 40, a: get('a'), b: 0}) }
+      if (get('kind') == 1) { call('uniformIntern', {tag: 41, a: retrieve('classes', get('a'))[0], b: retrieve('classes', get('a'))[1]}) }
+      if (get('kind') == 2) { call('uniformIntern', {tag: 42, a: get('a'), b: 0}) }
+      if (get('kind') == 3 || get('kind') == 7) {
+        call('uniformIntern', {tag: 40 + get('kind'), a: retrieve('uniformTemplates', get('a'))[0], b: 0})
+      }
+      if (get('kind') == 4 || get('kind') == 5 || get('kind') == 6) {
+        call('uniformIntern', {tag: 40 + get('kind'), a: retrieve('uniformTemplates', get('a'))[0], b: retrieve('uniformTemplates', get('b'))[0]})
+      }
+      if (less(get('kind'), 8)) { store('uniformTemplates', i, [retrieve('meta', 0)[0]]) }
+    })
+    if (retrieve('uniformCompiled', get('root'))[1] == 0) { store('meta', 18, [0]) } else {
+      store('meta', 18, [1])
+      store('meta', 0, [retrieve('uniformCompiled', get('root'))[0]])
+    }
+  }
+})

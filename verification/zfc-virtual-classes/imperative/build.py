@@ -120,7 +120,8 @@ def main():
                            + result.stdout)
     with (out / 'kernel.log').open('w') as log:
         subprocess.run([args.rocq, 'check', '-silent', *flags[1:],
-                        'CoqCP.TapeEnd', 'ImperativeZFC.NativeContract', 'Trusted.ByteProtocol',
+                        'CoqCP.TapeEnd', 'ImperativeZFC.NativeContract',
+                        *[f'Trusted.{name}' for name in manifest['trusted_modules']],
                         *[f'NativeProof.{name}' for name in proof_modules]],
                        cwd=repo, check=True, stdout=log, stderr=subprocess.STDOUT)
     with (out / 'cpp-build.log').open('w') as log:
