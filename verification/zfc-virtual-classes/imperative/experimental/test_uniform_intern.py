@@ -64,8 +64,32 @@ def main():
         example = fixture / 'UniformInternRun.v'
         shutil.copyfile(HERE / example.name, example)
         run(rocq, 'compile', *flags, example)
+        loop = fixture / 'UniformInternLoop.v'
+        shutil.copyfile(HERE / loop.name, loop)
+        run(rocq, 'compile', *flags, loop)
+        hit = fixture / 'UniformInternHit.v'
+        shutil.copyfile(HERE / hit.name, hit)
+        run(rocq, 'compile', *flags, hit)
+        prelude = fixture / 'UniformInternPrelude.v'
+        shutil.copyfile(HERE / prelude.name, prelude)
+        run(rocq, 'compile', *flags, prelude)
+        # Reuse the production SipHash proof in this generated environment.
+        for name in ('Index', 'Overflow', 'ArrayFacts', 'SipHash'):
+            dest = fixture / (name + '.v')
+            source = (HERE.parent / 'proof' / dest.name).read_text()
+            source = source.replace('From ImperativeZFC Require Import ProofChecker.',
+                                    'From UniformInternFixture Require Import UniformInternProgram.')
+            source = source.replace('From NativeProof Require Import ',
+                                    'From UniformInternFixture Require Import ')
+            dest.write_text(source)
+            run(rocq, 'compile', *flags, dest)
+        hash_proof = fixture / 'UniformInternHash.v'
+        shutil.copyfile(HERE / hash_proof.name, hash_proof)
+        run(rocq, 'compile', *flags, hash_proof)
         run(rocq, 'check', '-silent', '-Q', coqcp, 'CoqCP', '-Q', fixture,
-            'UniformInternFixture', 'UniformInternFixture.UniformInternRun')
+            'UniformInternFixture', 'UniformInternFixture.UniformInternRun',
+            'UniformInternFixture.UniformInternLoop', 'UniformInternFixture.UniformInternHit',
+            'UniformInternFixture.UniformInternPrelude', 'UniformInternFixture.UniformInternHash')
     print('Uniform interner concrete collision execution checked.')
 
 

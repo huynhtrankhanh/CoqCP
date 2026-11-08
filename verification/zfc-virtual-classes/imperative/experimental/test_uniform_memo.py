@@ -53,6 +53,9 @@ def main():
         chains = fixture / 'UniformMemoChains.v'
         shutil.copyfile(HERE.parent / 'proof' / chains.name, chains)
         run(rocq, 'compile', *flags, chains)
+        insert = fixture / 'UniformMemoInsert.v'
+        shutil.copyfile(HERE / insert.name, insert)
+        run(rocq, 'compile', *flags, insert)
         frame = fixture / 'ArrayLengthFrame.v'
         shutil.copyfile(HERE.parent / 'proof' / frame.name, frame)
         run(rocq, 'compile', *flags, frame)
@@ -71,13 +74,40 @@ def main():
         prelude = fixture / 'UniformMemoPrelude.v'
         shutil.copyfile(HERE / prelude.name, prelude)
         run(rocq, 'compile', *flags, prelude)
+        # Reuse the verified production hash proof against this fixture's
+        # extended generated environment, preserving its proof source.
+        for name in ('Index', 'Overflow', 'ArrayFacts', 'SipHash'):
+            dest = fixture / (name + '.v')
+            source = (HERE.parent / 'proof' / dest.name).read_text()
+            source = source.replace('From ImperativeZFC Require Import ProofChecker.',
+                                    'From UniformMemoFixture Require Import UniformMemoProgram.')
+            source = source.replace('From NativeProof Require Import ',
+                                    'From UniformMemoFixture Require Import ')
+            dest.write_text(source)
+            run(rocq, 'compile', *flags, dest)
+        hash_proof = fixture / 'UniformMemoHash.v'
+        shutil.copyfile(HERE / hash_proof.name, hash_proof)
+        run(rocq, 'compile', *flags, hash_proof)
+        storage = fixture / 'UniformMemoStorage.v'
+        shutil.copyfile(HERE / storage.name, storage)
+        run(rocq, 'compile', *flags, storage)
+        audit = fixture / 'UniformMemoStorageAudit.v'
+        audit.write_text('From UniformMemoFixture Require Import UniformMemoStorage.\n'
+                         'Print Assumptions UniformMemoStorage.lookup_initial_scan.\n'
+                         'Print Assumptions UniformMemoStorage.lookup_initial_natural_scan.\n')
+        checked = subprocess.run([str(rocq), 'compile', *map(str, flags), str(audit)],
+                                 cwd=REPO, check=True, text=True, capture_output=True)
+        if checked.stdout.count('Closed under the global context') != 2 or 'Axioms:' in checked.stdout:
+            raise RuntimeError('Unexpected memo lookup assumptions:\n' + checked.stdout + checked.stderr)
         example = fixture / 'UniformMemoRun.v'
         shutil.copyfile(HERE / 'UniformMemoRun.v', example)
         run(rocq, 'compile', *flags, example)
         run(rocq, 'check', '-silent', '-Q', coqcp, 'CoqCP', '-Q', fixture,
             'UniformMemoFixture', 'UniformMemoFixture.UniformMemoRun',
             'UniformMemoFixture.UniformMemoFrame', 'UniformMemoFixture.UniformMemoContents',
-            'UniformMemoFixture.UniformMemoLoop', 'UniformMemoFixture.UniformMemoPrelude')
+            'UniformMemoFixture.UniformMemoLoop', 'UniformMemoFixture.UniformMemoPrelude',
+            'UniformMemoFixture.UniformMemoHash', 'UniformMemoFixture.UniformMemoStorage',
+            'UniformMemoFixture.UniformMemoInsert')
     print('Uniform memo generated-code execution and refinement instances checked.')
 
 

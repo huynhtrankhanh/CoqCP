@@ -82,6 +82,9 @@ depth + root ID + 1)` insertions. This counts abstract symbolic insertions;
 it does not bound class expansion, renaming, actual stack iterations or native
 allocation. It does not yet prove that the IIL worklist implements the
 schedule or completes within machine bounds.
+At starting depth zero, the root ID is below the arena length, so the same
+result gives at most `N²` insertions for `N` arena nodes. This is a
+conservative arena-wide bound; it is not a bound on total runtime.
 [`SchemaArity.v`](SchemaArity.v) proves that a certified conclusion is
 independent of substitution values beyond its proof template's arity. Thus
 the choice of a default for indices outside the supplied argument vector
@@ -115,9 +118,13 @@ instance evaluation is restricted to the reachable conclusion graph.
 The collision-chain model in
 [`UniformMemoChains.v`](../imperative/proof/UniformMemoChains.v) proves
 properties of a mathematical scan, including checking both keys and
-following collisions. A Rocq fixture additionally proves the generated
-collision loop agrees with that scan for arbitrary bounded chains; it does
-not yet cover the complete lookup including hash and bucket setup.
+following collisions. A Rocq fixture relates the complete generated lookup
+to that scan for arbitrary bounded chains, using the previously proved
+SipHash execution and modulo operation. The stronger lookup theorem derives
+the post-hash state from its initial-state assumptions and relates the result
+to the original entry array. It still assumes valid initial buckets, links,
+array sizes and word bounds; the complete cache has not yet been proved to
+maintain those invariants.
 [`test_uniform_memo.py`](../imperative/experimental/test_uniform_memo.py)
 also compiles an isolated wrapper using the actual memo template and production
 hash function, then kernel-checks two concrete collision executions. Neither

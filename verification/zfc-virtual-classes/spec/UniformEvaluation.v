@@ -463,4 +463,21 @@ Proof.
   exists schedule, final. split; [exact Hrun|]. split; [exact Hresult|].
   pose proof (ordered_depth_span_bound nodes i s Hordered Hrepr) as Hspan. nia.
 Qed.
+
+(* A root-independent form of the insertion bound.  The ordered-arena
+   hypothesis implies that the root ID is strictly below the arena length. *)
+Corollary ordered_schedule_exists_with_arena_bound nodes rho i s :
+  ordered nodes -> represents nodes i s ->
+  forall depth m, memo_ok nodes rho m ->
+  exists schedule final, completed_fresh nodes rho m schedule final /\
+    final i depth = Some (evaluate rho depth s) /\
+    (length schedule <= length nodes * (depth + length nodes))%nat.
+Proof.
+  intros Hordered Hrepr depth m Hmemo.
+  assert (Hi : (i < length nodes)%nat).
+  { inversion Hrepr; apply nth_error_Some; congruence. }
+  destruct (ordered_schedule_exists_with_bound nodes rho i s Hordered Hrepr depth m Hmemo)
+    as [schedule [final [Hrun [Hresult Hbound]]]].
+  exists schedule, final. split; [exact Hrun|]. split; [exact Hresult|]. nia.
+Qed.
 End UniformEvaluation.

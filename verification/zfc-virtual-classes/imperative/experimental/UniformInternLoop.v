@@ -1,7 +1,7 @@
 From CoqCP Require Import Options Imperative Execution.
 From UniformInternFixture Require Import UniformInternProgram UniformInternModel.
 From stdpp Require Import numbers list.
-From Stdlib Require Import Lists.List ZArith.ZArith Lia.
+From Stdlib Require Import Lists.List ZArith.ZArith Logic.Eqdep_dec Lia.
 Open Scope Z_scope.
 
 (* Generated experimental interner scan. Does not prove hashing, insertion,
@@ -119,14 +119,17 @@ Definition observed_result (f : Frame) : option Z :=
 
 Lemma next_observed f i link : observed_result (next_frame f i link) = observed_result f.
 Proof. destruct f. reflexivity. Qed.
+Lemma next_sought f i link : sought (next_frame f i link) = sought f.
+Proof. destruct f. reflexivity. Qed.
 Lemma next_scan f i link fuel pointer : scan_index (next_frame f i link) fuel pointer = scan_index f fuel pointer.
 Proof.
   induction fuel as [|fuel IH] in pointer |- *; [reflexivity|]. destruct pointer as [|pointer]; [reflexivity|].
-  destruct f as [s bs ns]. cbn [scan_index next_frame advance machine nums sought setNum].
-  cbv beta iota zeta delta [Imperative.update decide decide_rel
-    variableIndexEqualityDecidablevarsfuncdef_0__uniformIntern varsfuncdef_0__uniformIntern_rec].
-  destruct (bool_decide (List.nth pointer (memory s arraydef_0__uniformNodes) (0,0,0) =
-     (ns vardef_0__uniformIntern_tag,ns vardef_0__uniformIntern_a,ns vardef_0__uniformIntern_b))); [reflexivity|].
+  cbn [scan_index]. rewrite next_sought.
+  change (memory (machine (next_frame f i link)) arraydef_0__uniformNodes) with
+    (memory (machine f) arraydef_0__uniformNodes).
+  change (memory (machine (next_frame f i link)) arraydef_0__uniformLinks) with
+    (memory (machine f) arraydef_0__uniformLinks).
+  destruct (bool_decide (List.nth pointer (memory (machine f) arraydef_0__uniformNodes) (0,0,0) = sought f)); [reflexivity|].
   apply IH.
 Qed.
 Lemma hit_observed f i :
@@ -137,6 +140,8 @@ Proof.
   unfold observed_result, found_frame, advance, store_meta.
   cbn [machine setMachine setNum withMemory memory].
   rewrite bool_decide_true by reflexivity.
+  unfold modifyArray. destruct (decide (arraydef_0__meta = arraydef_0__meta)) as [Heq|Hne]; [|contradiction].
+  assert (Heq = eq_refl) as -> by (apply Eqdep_dec.UIP_dec; decide equality).
   destruct (memory s arraydef_0__meta); [cbn in Hlen; lia|reflexivity].
 Qed.
 
@@ -172,5 +177,44 @@ Proof.
         -- pose proof (Z2Nat.id link ltac:(lia)). lia.
         -- now rewrite next_observed.
         -- exists final. split; [exact Hrun|]. now rewrite next_scan in Hresult.
+Qed.
+
+(* Regardless of collisions or cycles, a reported hit is an in-bounds row
+   equal to all three components of the query. *)
+Theorem scan_index_sound fuel (f : Frame) count pointer result :
+  entries_valid f count -> (pointer <= count)%nat ->
+  scan_index f fuel pointer = Some result ->
+  exists i, (i < count)%nat /\ result = Z.of_nat i /\
+    nth_error (memory (machine f) arraydef_0__uniformNodes) i = Some (sought f).
+Proof.
+  induction fuel as [|fuel IH] in pointer |- *; [discriminate|].
+  destruct pointer as [|i]; [discriminate|].
+  intros Hvalid Hpointer. destruct Hvalid as [Hnodes [Hlinks Hbounded]].
+  cbn [scan_index].
+  destruct (bool_decide (List.nth i (memory (machine f) arraydef_0__uniformNodes)
+    (0,0,0) = sought f)) eqn:Hmatch.
+  - intro Hresult. inversion Hresult; subst result. exists i. split; [lia|].
+    split; [reflexivity|]. apply bool_decide_eq_true in Hmatch.
+    rewrite <- Hmatch. apply nth_error_nth'. lia.
+  - intro Hresult. eapply IH; [split; [exact Hnodes|split; [exact Hlinks|exact Hbounded]]| |exact Hresult].
+    pose proof (Hbounded i ltac:(lia)) as Hlink.
+    pose proof (Z2Nat.id (List.nth i (memory (machine f) arraydef_0__uniformLinks) 0) ltac:(lia)). lia.
+Qed.
+
+Corollary generated_loop_hit_sound fuel (f : Frame) count pointer :
+  entries_valid f count -> Z.of_nat count <= maximum ->
+  (0 < length (memory (machine f) arraydef_0__meta))%nat ->
+  nums f vardef_0__uniformIntern_current = Z.of_nat pointer -> (pointer <= count)%nat ->
+  observed_result f = None ->
+  exists final, execLocal (loop fuel scan_body) f = Some (tt,final) /\
+    (forall result, observed_result final = Some result ->
+      exists i, (i < count)%nat /\ result = Z.of_nat i /\
+        nth_error (memory (machine f) arraydef_0__uniformNodes) i = Some (sought f)).
+Proof.
+  intros Hvalid Hlimit Hmeta Hpointer Hbound Hinitial.
+  destruct (scan_loop_refines fuel f count pointer Hvalid Hlimit Hmeta Hpointer Hbound Hinitial)
+    as [final [Hrun Hresult]]. exists final. split; [exact Hrun|].
+  intros result Hhit. rewrite Hresult in Hhit.
+  eapply scan_index_sound; eauto.
 Qed.
 End UniformInternLoop.

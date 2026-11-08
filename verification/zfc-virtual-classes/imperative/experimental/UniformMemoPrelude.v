@@ -138,13 +138,62 @@ Proof.
   repeat first [rewrite execLocal_bind |rewrite local_get |rewrite local_set |rewrite local_done
     |rewrite get_dispatch |rewrite set_dispatch
     |rewrite Hmod
+    |rewrite update_here
+    |rewrite update_other by discriminate
     |rewrite read_bucket by (cbn [machine setNum setMachine]; exact Hbound)
     |rewrite read_state by (cbn [machine setNum setMachine]; exact Hstate)
     |rewrite Hpointer |rewrite Hcount
     |progress cbn [bind optionBind machine nums bools setNum setMachine fst snd]].
   unfold scan_start. cbn [machine nums bools setNum setMachine].
+  rewrite (read_bucket (setNum {| machine := s; bools := bs; nums := ns |}
+    vardef_0__uniformMemoGet_bucket (Z.of_nat bucket)) bucket) by (cbn [machine setNum]; exact Hbound).
+  repeat first [rewrite execLocal_bind |rewrite local_get |rewrite local_set |rewrite local_done
+    |rewrite get_dispatch |rewrite set_dispatch |rewrite update_here
+    |rewrite update_other by discriminate
+    |rewrite read_bucket by (cbn [machine setNum setMachine]; exact Hbound)
+    |rewrite read_state by (cbn [machine setNum setMachine]; exact Hstate)
+    |rewrite Hpointer |rewrite Hcount
+    |progress cbn [bind optionBind machine nums bools setNum setMachine fst snd]].
   destruct (execLocal (scan (Z.of_nat count))
     (setNum (setNum {| machine := s; bools := bs; nums := ns |} vardef_0__uniformMemoGet_bucket (Z.of_nat bucket))
       vardef_0__uniformMemoGet_current (Z.of_nat pointer))) as [[[] final]|]; reflexivity.
+Qed.
+
+(* A complete generated lookup reduces to the verified collision-chain loop.
+   The premises separately expose successful hash execution and modulo, and
+   the post-hash memory facts: they do not assert hash correctness or bucket
+   placement. *)
+Theorem lookup_refines_scan (f : Frame) count size oldfound oldvalue hashed bucket pointer found value :
+  (0 < length (memory (machine f) arraydef_0__uniformMemoState))%nat ->
+  List.nth 0 (memory (machine f) arraydef_0__uniformMemoState) (0,0,0,0) =
+    (Z.of_nat count,size,oldfound,oldvalue) ->
+  size <> 0 ->
+  exec (funcdef_0__formulaHash (fun _ => false) (hash_args f))
+       (reset_machine f (Z.of_nat count) size) = Some (tt,hashed) ->
+  let post := setMachine (reset_frame f (Z.of_nat count) size) hashed in
+  execLocal (modIntUnsigned (retrieve _ _ _ arraydef_0__meta 28)
+    (numberLocalGet _ _ _ vardef_0__uniformMemoGet_size)) post = Some (Z.of_nat bucket,post) ->
+  (bucket < length (memory (machine post) arraydef_0__uniformMemoBuckets))%nat ->
+  List.nth bucket (memory (machine post) arraydef_0__uniformMemoBuckets) 0 = Z.of_nat pointer ->
+  (0 < length (memory (machine post) arraydef_0__uniformMemoState))%nat ->
+  List.nth 0 (memory (machine post) arraydef_0__uniformMemoState) (0,0,0,0) =
+    (Z.of_nat count,size,found,value) ->
+  let start := scan_start post bucket pointer in
+  entries_valid start count -> Z.of_nat count <= maximum -> (pointer <= count)%nat ->
+  observed_result start = None ->
+  exists final, execLocal funcdef_0__uniformMemoGet_body f = Some (tt,final) /\
+    observed_result final = scan_values start count pointer.
+Proof.
+  intros Hstate Hvalue Hsize Hhash post Hmod Hbucket Hpointer Hpost Hcount start
+         Hvalid Hlimit Hbound Hnone.
+  rewrite (hash_prelude f (Z.of_nat count) size oldfound oldvalue hashed Hstate Hvalue Hsize Hhash).
+  change (exists final, execLocal after_hash post = Some (tt,final) /\
+    observed_result final = scan_values start count pointer).
+  rewrite after_hash_actual.
+  rewrite (after_hash_composition scan_callback post count bucket pointer size found value
+    Hmod Hbucket Hpointer Hpost Hcount).
+  unfold scan_callback. rewrite Nat2Z.id.
+  eapply scan_loop_refines; try eassumption.
+  unfold start, scan_start. cbn [nums setNum]. apply update_here.
 Qed.
 End UniformMemoPrelude.
