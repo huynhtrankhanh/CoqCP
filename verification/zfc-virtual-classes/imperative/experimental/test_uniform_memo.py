@@ -56,6 +56,9 @@ def main():
         insert = fixture / 'UniformMemoInsert.v'
         shutil.copyfile(HERE / insert.name, insert)
         run(rocq, 'compile', *flags, insert)
+        put_action = fixture / 'UniformMemoPutAction.v'
+        shutil.copyfile(HERE / put_action.name, put_action)
+        run(rocq, 'compile', *flags, put_action)
         frame = fixture / 'ArrayLengthFrame.v'
         shutil.copyfile(HERE.parent / 'proof' / frame.name, frame)
         run(rocq, 'compile', *flags, frame)
@@ -92,12 +95,13 @@ def main():
         shutil.copyfile(HERE / storage.name, storage)
         run(rocq, 'compile', *flags, storage)
         audit = fixture / 'UniformMemoStorageAudit.v'
-        audit.write_text('From UniformMemoFixture Require Import UniformMemoStorage.\n'
+        audit.write_text('From UniformMemoFixture Require Import UniformMemoStorage UniformMemoPutAction.\n'
                          'Print Assumptions UniformMemoStorage.lookup_initial_scan.\n'
-                         'Print Assumptions UniformMemoStorage.lookup_initial_natural_scan.\n')
+                         'Print Assumptions UniformMemoStorage.lookup_initial_natural_scan.\n'
+                         'Print Assumptions UniformMemoPutAction.generated_writes.\n')
         checked = subprocess.run([str(rocq), 'compile', *map(str, flags), str(audit)],
                                  cwd=REPO, check=True, text=True, capture_output=True)
-        if checked.stdout.count('Closed under the global context') != 2 or 'Axioms:' in checked.stdout:
+        if checked.stdout.count('Closed under the global context') != 3 or 'Axioms:' in checked.stdout:
             raise RuntimeError('Unexpected memo lookup assumptions:\n' + checked.stdout + checked.stderr)
         example = fixture / 'UniformMemoRun.v'
         shutil.copyfile(HERE / 'UniformMemoRun.v', example)
@@ -107,7 +111,7 @@ def main():
             'UniformMemoFixture.UniformMemoFrame', 'UniformMemoFixture.UniformMemoContents',
             'UniformMemoFixture.UniformMemoLoop', 'UniformMemoFixture.UniformMemoPrelude',
             'UniformMemoFixture.UniformMemoHash', 'UniformMemoFixture.UniformMemoStorage',
-            'UniformMemoFixture.UniformMemoInsert')
+            'UniformMemoFixture.UniformMemoInsert', 'UniformMemoFixture.UniformMemoPutAction')
     print('Uniform memo generated-code execution and refinement instances checked.')
 
 

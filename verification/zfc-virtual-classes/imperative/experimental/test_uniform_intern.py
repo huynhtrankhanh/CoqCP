@@ -86,10 +86,23 @@ def main():
         hash_proof = fixture / 'UniformInternHash.v'
         shutil.copyfile(HERE / hash_proof.name, hash_proof)
         run(rocq, 'compile', *flags, hash_proof)
+        storage = fixture / 'UniformInternStorage.v'
+        shutil.copyfile(HERE / storage.name, storage)
+        run(rocq, 'compile', *flags, storage)
+        audit = fixture / 'UniformInternAudit.v'
+        audit.write_text('From UniformInternFixture Require Import UniformInternStorage.\n'
+                         'Print Assumptions UniformInternStorage.hit_from_initial_storage.\n')
+        result = subprocess.run([str(rocq), 'compile', *map(str, flags), str(audit)],
+                                cwd=REPO, text=True, capture_output=True, check=True)
+        if ('Closed under the global context' not in result.stdout
+                or 'Axioms:' in result.stdout):
+            raise RuntimeError('Unexpected assumptions in interner hit theorem: '
+                               + result.stdout + result.stderr)
         run(rocq, 'check', '-silent', '-Q', coqcp, 'CoqCP', '-Q', fixture,
             'UniformInternFixture', 'UniformInternFixture.UniformInternRun',
             'UniformInternFixture.UniformInternLoop', 'UniformInternFixture.UniformInternHit',
-            'UniformInternFixture.UniformInternPrelude', 'UniformInternFixture.UniformInternHash')
+            'UniformInternFixture.UniformInternPrelude', 'UniformInternFixture.UniformInternHash',
+            'UniformInternFixture.UniformInternStorage')
     print('Uniform interner concrete collision execution checked.')
 
 

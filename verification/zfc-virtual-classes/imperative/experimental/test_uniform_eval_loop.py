@@ -56,16 +56,39 @@ def main():
         run('node', REPO / 'compiler/dist/cli.js', fixture / 'EvalProgram.v',
             out / 'program.cpp', program, REPO / 'programs/IO/PrintInt64.js')
         flags = ['-q', '-Q', coqcp, 'CoqCP', '-Q', fixture, 'UniformEvalFull']
-        for name in ('Options', 'Imperative', 'Execution'):
+        for name in ('Options', 'Imperative', 'Execution', 'InteractiveExecution'):
             dest = coqcp / (name + '.v')
             shutil.copyfile(REPO / 'theories' / dest.name, dest)
             run(rocq, 'compile', *flags, dest)
         run(rocq, 'compile', *flags, fixture / 'EvalProgram.v')
+        # Retarget the verified memo lookup to the same generated array
+        # environment as the evaluator; do not use the smaller memo-only
+        # program as if its array indices were interchangeable.
+        for name, directory in (
+            ('UniformMemoChains', HERE.parent / 'proof'),
+            ('UniformMemoLoop', HERE), ('UniformMemoPrelude', HERE),
+            ('Index', HERE.parent / 'proof'), ('Overflow', HERE.parent / 'proof'),
+            ('ArrayFacts', HERE.parent / 'proof'), ('SipHash', HERE.parent / 'proof'),
+            ('UniformMemoHash', HERE), ('UniformMemoStorage', HERE),
+        ):
+            dest = fixture / (name + '.v')
+            text = (directory / dest.name).read_text()
+            text = text.replace('From ImperativeZFC Require Import ProofChecker.',
+                                'From UniformEvalFull Require Import EvalProgram.')
+            text = text.replace('From NativeProof Require Import ',
+                                'From UniformEvalFull Require Import ')
+            text = text.replace('From UniformMemoFixture Require Import UniformMemoProgram',
+                                'From UniformEvalFull Require Import EvalProgram')
+            text = text.replace('From UniformMemoFixture Require Import ',
+                                'From UniformEvalFull Require Import ')
+            dest.write_text(text)
+            run(rocq, 'compile', *flags, dest)
         proof = fixture / 'UniformEvalLoop.v'
         shutil.copyfile(HERE / proof.name, proof)
         run(rocq, 'compile', *flags, proof)
         run(rocq, 'check', '-silent', '-Q', coqcp, 'CoqCP', '-Q', fixture,
-            'UniformEvalFull', 'UniformEvalFull.UniformEvalLoop')
+            'UniformEvalFull', 'UniformEvalFull.UniformEvalLoop',
+            'UniformEvalFull.UniformMemoStorage')
     print('Uniform evaluator generated loop exits checked.')
 
 
