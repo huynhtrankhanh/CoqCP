@@ -300,14 +300,22 @@ describe('sortModules', () => {
 })
 
 test('cycle diagnostics identify the module containing each call', () => {
-  const modules = [createEdges('A', ['B']), createEdges('B', ['C']), createEdges('C', ['A'])]
+  const modules = [
+    createEdges('A', ['B']),
+    createEdges('B', ['C']),
+    createEdges('C', ['A']),
+  ]
   modules.forEach((module, i) => {
     module.procedures[0].body[0].location.start.line = i + 1
   })
   const { validateCyclicDependencies } = require('./dependencyGraph')
   const errors = validateCyclicDependencies(modules)
-  expect(errors.map(e => [e.location.moduleName, e.location.start.line]).sort()).toEqual([
-    ['A', 1], ['B', 2], ['C', 3],
+  expect(
+    errors.map((e) => [e.location.moduleName, e.location.start.line]).sort()
+  ).toEqual([
+    ['A', 1],
+    ['B', 2],
+    ['C', 3],
   ])
 })
 
@@ -315,8 +323,10 @@ test('finds dependencies in subscript indices', () => {
   const module = createEdges('A', ['B'])
   const call = module.procedures[0].body[0]
   module.procedures[0].body[0] = {
-    type: 'subscript', value: { type: 'get', name: 'x', location: call.location },
-    index: call, location: call.location,
+    type: 'subscript',
+    value: { type: 'get', name: 'x', location: call.location },
+    index: call,
+    location: call.location,
   }
-  expect(findDependencies(module).map(d => d.dependencyName)).toEqual(['B'])
+  expect(findDependencies(module).map((d) => d.dependencyName)).toEqual(['B'])
 })

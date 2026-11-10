@@ -981,9 +981,10 @@ export const validateAST = (sortedModules: CoqCPAST[]): ValidationError[] => {
             if (isFloat(valueType)) {
               if (operator === 'minus' || operator === 'plus') return valueType
               errors.push({
-                type: operator === 'boolean not'
-                  ? 'unary operator expects boolean'
-                  : 'unary operator expects integer',
+                type:
+                  operator === 'boolean not'
+                    ? 'unary operator expects boolean'
+                    : 'unary operator expects integer',
                 location: { ...instruction.location, moduleName },
               })
               return 'illegal'
@@ -1023,9 +1024,10 @@ export const validateAST = (sortedModules: CoqCPAST[]): ValidationError[] => {
                 case 'minus':
                 case 'plus': {
                   errors.push({
-                    type: operator === 'bitwise not'
-                      ? 'unary operator expects integer'
-                      : 'unary operator expects numeric',
+                    type:
+                      operator === 'bitwise not'
+                        ? 'unary operator expects integer'
+                        : 'unary operator expects numeric',
                     location: { ...instruction.location, moduleName },
                   })
                   return 'illegal'

@@ -447,7 +447,8 @@ void growArray(std::vector<T>& array, uint64_t minimumLength) {
                   if (instruction.valueType === 'boolean')
                     return adorn(instruction.raw)
                   else {
-                    const suffix = BigInt(instruction.raw) >= 2n ** 63n ? 'ULL' : ''
+                    const suffix =
+                      BigInt(instruction.raw) >= 2n ** 63n ? 'ULL' : ''
                     return adorn('uint64_t(' + instruction.raw + suffix + ')')
                   }
                 }

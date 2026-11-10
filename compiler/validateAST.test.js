@@ -325,9 +325,13 @@ procedure("hello", {}, () => {
 })
 
 test('validation does not remove invalid array declarations', () => {
-  const module = new CoqCPASTTransformer('module(M); environment({a: array([int8], 0)})').transform()
+  const module = new CoqCPASTTransformer(
+    'module(M); environment({a: array([int8], 0)})'
+  ).transform()
   const first = validateAST([module])
-  expect(first.some(error => error.type === "array length can't be less than 1")).toBe(true)
+  expect(
+    first.some((error) => error.type === "array length can't be less than 1")
+  ).toBe(true)
   expect(module.environment.arrays.has('a')).toBe(true)
   expect(validateAST([module])).toEqual(first)
 })
@@ -340,7 +344,9 @@ test.each([
   ['~true', 'unary operator expects integer'],
   ['~f32("1")', 'unary operator expects integer'],
 ])('reports the expected operand type for %s', (expression, expected) => {
-  const result = getCombinedError([`module(M); procedure("main", {}, () => { writeChar(${expression}) })`])
+  const result = getCombinedError([
+    `module(M); procedure("main", {}, () => { writeChar(${expression}) })`,
+  ])
   expect(result.type).toBe('validation error')
-  expect(result.errors.map(error => error.type)).toContain(expected)
+  expect(result.errors.map((error) => error.type)).toContain(expected)
 })

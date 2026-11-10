@@ -669,13 +669,17 @@ test.each([
   'procedure("p", {}, () => { call("q", {[x]: 0}) })',
   'procedure("p", {}, () => { call(M, {[x]: "a"}, "q", {}) })',
   'procedure("p", {}, () => { call(M, {}, "q", {[x]: 0}) })',
-])('rejects computed object keys: %s', source => {
-  expect(() => new CoqCPASTTransformer(source).transform()).toThrow(/computed keys are not supported\. 1:/)
+])('rejects computed object keys: %s', (source) => {
+  expect(() => new CoqCPASTTransformer(source).transform()).toThrow(
+    /computed keys are not supported\. 1:/
+  )
 })
 
 test.each([
   'procedure("p", {}, x => {})',
   'procedure("p", {}, () => { writeChar(...x) })',
-])('reports a location for malformed procedure syntax: %s', source => {
-  expect(() => new CoqCPASTTransformer(source).transform()).toThrow(/\. 1:\d+-1:\d+$/)
+])('reports a location for malformed procedure syntax: %s', (source) => {
+  expect(() => new CoqCPASTTransformer(source).transform()).toThrow(
+    /\. 1:\d+-1:\d+$/
+  )
 })
