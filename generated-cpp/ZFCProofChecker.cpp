@@ -184,7 +184,7 @@ int main() {
         local_4 = get<0>(environment_3[local_4]);
       }
       if ((local_3 == uint64_t(0))) {
-        if ((get<0>(environment_0[uint64_t(1)]) == uint64_t(18446744073709551615))) {
+        if ((get<0>(environment_0[uint64_t(1)]) == uint64_t(18446744073709551615ULL))) {
           environment_0[uint64_t(8)] = { uint64_t(1) };
         } else {
           environment_0[uint64_t(0)] = { get<0>(environment_0[uint64_t(1)]) };
@@ -201,7 +201,7 @@ int main() {
     }
   };
   auto procedure_7 = [&](std::tuple<uint64_t> *environment_0, std::tuple<uint64_t, uint64_t, uint64_t, uint64_t> *environment_1, std::vector<std::tuple<uint64_t>>& environment_2, std::vector<std::tuple<uint64_t>>& environment_3, std::vector<std::tuple<uint64_t, uint64_t, uint64_t>>& environment_4, std::vector<std::tuple<uint64_t, uint64_t>>& environment_5, std::vector<std::tuple<uint64_t>>& environment_6, std::vector<std::tuple<uint64_t, uint64_t, uint64_t, uint64_t>>& environment_7, std::vector<std::tuple<uint64_t, uint64_t, uint64_t, uint64_t>>& environment_8, std::vector<std::tuple<uint64_t, uint64_t, uint64_t, uint64_t>>& environment_9, std::vector<std::tuple<uint64_t, uint64_t, uint64_t, uint64_t, uint64_t>>& environment_10, std::vector<std::tuple<uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t>>& environment_11, std::vector<std::tuple<uint64_t>>& environment_12, std::vector<std::tuple<uint8_t>>& environment_13, std::vector<std::tuple<uint64_t>>& environment_14, std::vector<std::tuple<uint8_t>>& environment_15, std::tuple<uint8_t> *environment_16, std::tuple<uint8_t> *environment_17, uint64_t local_0, uint64_t local_1) {
-    if ((get<0>(environment_0[uint64_t(10)]) == uint64_t(18446744073709551615))) {
+    if ((get<0>(environment_0[uint64_t(10)]) == uint64_t(18446744073709551615ULL))) {
       environment_0[uint64_t(8)] = { uint64_t(1) };
     } else {
       growArray(environment_7, (get<0>(environment_0[uint64_t(10)]) + uint64_t(1)));
@@ -265,7 +265,7 @@ int main() {
         } else {
         }
         local_0 = (local_0 - uint64_t(48));
-        if ((((uint64_t(18446744073709551615) - local_0) / uint64_t(10)) < local_1)) {
+        if ((((uint64_t(18446744073709551615ULL) - local_0) / uint64_t(10)) < local_1)) {
           environment_0[uint64_t(14)] = { uint64_t(0) };
           break;
         } else {
@@ -277,7 +277,7 @@ int main() {
     environment_0[uint64_t(11)] = { local_1 };
   };
   auto procedure_11 = [&](std::tuple<uint64_t> *environment_0, std::tuple<uint64_t, uint64_t, uint64_t, uint64_t> *environment_1, std::vector<std::tuple<uint64_t>>& environment_2, std::vector<std::tuple<uint64_t>>& environment_3, std::vector<std::tuple<uint64_t, uint64_t, uint64_t>>& environment_4, std::vector<std::tuple<uint64_t, uint64_t>>& environment_5, std::vector<std::tuple<uint64_t>>& environment_6, std::vector<std::tuple<uint64_t, uint64_t, uint64_t, uint64_t>>& environment_7, std::vector<std::tuple<uint64_t, uint64_t, uint64_t, uint64_t>>& environment_8, std::vector<std::tuple<uint64_t, uint64_t, uint64_t, uint64_t>>& environment_9, std::vector<std::tuple<uint64_t, uint64_t, uint64_t, uint64_t, uint64_t>>& environment_10, std::vector<std::tuple<uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t>>& environment_11, std::vector<std::tuple<uint64_t>>& environment_12, std::vector<std::tuple<uint8_t>>& environment_13, std::vector<std::tuple<uint64_t>>& environment_14, std::vector<std::tuple<uint8_t>>& environment_15, std::tuple<uint8_t> *environment_16, std::tuple<uint8_t> *environment_17, uint64_t local_0) {
-    environment_0[uint64_t(0)] = { uint64_t(18446744073709551615) };
+    environment_0[uint64_t(0)] = { uint64_t(18446744073709551615ULL) };
     for (uint64_t binder_0 = 0, loop_end = get<0>(environment_0[uint64_t(4)]); binder_0 < loop_end; binder_0++) {
       if ((get<1>(environment_10[binder_0]) == get<0>(environment_0[uint64_t(6)]))) {
         local_0 = uint64_t(1);
@@ -313,10 +313,10 @@ int main() {
   };
   auto procedure_14 = [&](std::tuple<uint64_t> *environment_0, std::tuple<uint64_t, uint64_t, uint64_t, uint64_t> *environment_1, std::vector<std::tuple<uint64_t>>& environment_2, std::vector<std::tuple<uint64_t>>& environment_3, std::vector<std::tuple<uint64_t, uint64_t, uint64_t>>& environment_4, std::vector<std::tuple<uint64_t, uint64_t>>& environment_5, std::vector<std::tuple<uint64_t>>& environment_6, std::vector<std::tuple<uint64_t, uint64_t, uint64_t, uint64_t>>& environment_7, std::vector<std::tuple<uint64_t, uint64_t, uint64_t, uint64_t>>& environment_8, std::vector<std::tuple<uint64_t, uint64_t, uint64_t, uint64_t>>& environment_9, std::vector<std::tuple<uint64_t, uint64_t, uint64_t, uint64_t, uint64_t>>& environment_10, std::vector<std::tuple<uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t>>& environment_11, std::vector<std::tuple<uint64_t>>& environment_12, std::vector<std::tuple<uint8_t>>& environment_13, std::vector<std::tuple<uint64_t>>& environment_14, std::vector<std::tuple<uint8_t>>& environment_15, std::tuple<uint8_t> *environment_16, std::tuple<uint8_t> *environment_17, uint64_t local_0, uint64_t local_1) {
     procedure_11(environment_0, environment_1, environment_2, environment_3, environment_4, environment_5, environment_6, environment_7, environment_8, environment_9, environment_10, environment_11, environment_12, environment_13, environment_14, environment_15, environment_16, environment_17, 0);
-    if ((get<0>(environment_0[uint64_t(0)]) != uint64_t(18446744073709551615))) {
+    if ((get<0>(environment_0[uint64_t(0)]) != uint64_t(18446744073709551615ULL))) {
       procedure_13(environment_0, environment_1, environment_2, environment_3, environment_4, environment_5, environment_6, environment_7, environment_8, environment_9, environment_10, environment_11, environment_12, environment_13, environment_14, environment_15, environment_16, environment_17);
     } else {
-      if ((get<0>(environment_0[uint64_t(4)]) == uint64_t(18446744073709551615)) || ((uint64_t(18446744073709551615) - get<0>(environment_0[uint64_t(5)])) < get<0>(environment_0[uint64_t(6)]))) {
+      if ((get<0>(environment_0[uint64_t(4)]) == uint64_t(18446744073709551615ULL)) || ((uint64_t(18446744073709551615ULL) - get<0>(environment_0[uint64_t(5)])) < get<0>(environment_0[uint64_t(6)]))) {
         environment_0[uint64_t(8)] = { uint64_t(1) };
       } else {
         growArray(environment_15, (get<0>(environment_0[uint64_t(5)]) + get<0>(environment_0[uint64_t(6)])));
@@ -333,7 +333,7 @@ int main() {
   };
   auto procedure_15 = [&](std::tuple<uint64_t> *environment_0, std::tuple<uint64_t, uint64_t, uint64_t, uint64_t> *environment_1, std::vector<std::tuple<uint64_t>>& environment_2, std::vector<std::tuple<uint64_t>>& environment_3, std::vector<std::tuple<uint64_t, uint64_t, uint64_t>>& environment_4, std::vector<std::tuple<uint64_t, uint64_t>>& environment_5, std::vector<std::tuple<uint64_t>>& environment_6, std::vector<std::tuple<uint64_t, uint64_t, uint64_t, uint64_t>>& environment_7, std::vector<std::tuple<uint64_t, uint64_t, uint64_t, uint64_t>>& environment_8, std::vector<std::tuple<uint64_t, uint64_t, uint64_t, uint64_t>>& environment_9, std::vector<std::tuple<uint64_t, uint64_t, uint64_t, uint64_t, uint64_t>>& environment_10, std::vector<std::tuple<uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t>>& environment_11, std::vector<std::tuple<uint64_t>>& environment_12, std::vector<std::tuple<uint8_t>>& environment_13, std::vector<std::tuple<uint64_t>>& environment_14, std::vector<std::tuple<uint8_t>>& environment_15, std::tuple<uint8_t> *environment_16, std::tuple<uint8_t> *environment_17, uint64_t local_0) {
     if ((get<0>(environment_0[uint64_t(8)]) == uint64_t(0))) {
-      if ((get<0>(environment_0[uint64_t(3)]) == uint64_t(18446744073709551615))) {
+      if ((get<0>(environment_0[uint64_t(3)]) == uint64_t(18446744073709551615ULL))) {
         environment_0[uint64_t(8)] = { uint64_t(1) };
       } else {
         growArray(environment_6, (get<0>(environment_0[uint64_t(3)]) + uint64_t(1)));
@@ -362,7 +362,7 @@ int main() {
       local_5 = (local_0 - local_1);
       local_6 = local_5;
       if ((local_2 == uint64_t(0))) {
-        if (((uint64_t(18446744073709551615) - local_5) < local_3)) {
+        if (((uint64_t(18446744073709551615ULL) - local_5) < local_3)) {
           environment_0[uint64_t(8)] = { uint64_t(1) };
         } else {
         }
@@ -378,7 +378,7 @@ int main() {
       } else {
       }
       if ((local_2 == uint64_t(2)) && (local_5 != uint64_t(0))) {
-        if ((local_5 == uint64_t(18446744073709551615))) {
+        if ((local_5 == uint64_t(18446744073709551615ULL))) {
           environment_0[uint64_t(8)] = { uint64_t(1) };
         } else {
         }
@@ -395,7 +395,7 @@ int main() {
         } else {
         }
         if ((!(local_5 < uint64_t(2)))) {
-          if ((local_5 == uint64_t(18446744073709551615))) {
+          if ((local_5 == uint64_t(18446744073709551615ULL))) {
             environment_0[uint64_t(8)] = { uint64_t(1) };
           } else {
           }
@@ -408,7 +408,7 @@ int main() {
         if ((local_5 == uint64_t(0))) {
           local_6 = local_4;
         } else {
-          if (((uint64_t(18446744073709551615) - (local_5 - uint64_t(1))) < local_3)) {
+          if (((uint64_t(18446744073709551615ULL) - (local_5 - uint64_t(1))) < local_3)) {
             environment_0[uint64_t(8)] = { uint64_t(1) };
           } else {
           }
@@ -416,7 +416,7 @@ int main() {
         }
       } else {
       }
-      if (((uint64_t(18446744073709551615) - local_6) < local_1)) {
+      if (((uint64_t(18446744073709551615ULL) - local_6) < local_1)) {
         environment_0[uint64_t(8)] = { uint64_t(1) };
       } else {
       }
@@ -425,7 +425,7 @@ int main() {
     }
   };
   auto procedure_19 = [&](std::tuple<uint64_t> *environment_0, std::tuple<uint64_t, uint64_t, uint64_t, uint64_t> *environment_1, std::vector<std::tuple<uint64_t>>& environment_2, std::vector<std::tuple<uint64_t>>& environment_3, std::vector<std::tuple<uint64_t, uint64_t, uint64_t>>& environment_4, std::vector<std::tuple<uint64_t, uint64_t>>& environment_5, std::vector<std::tuple<uint64_t>>& environment_6, std::vector<std::tuple<uint64_t, uint64_t, uint64_t, uint64_t>>& environment_7, std::vector<std::tuple<uint64_t, uint64_t, uint64_t, uint64_t>>& environment_8, std::vector<std::tuple<uint64_t, uint64_t, uint64_t, uint64_t>>& environment_9, std::vector<std::tuple<uint64_t, uint64_t, uint64_t, uint64_t, uint64_t>>& environment_10, std::vector<std::tuple<uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t>>& environment_11, std::vector<std::tuple<uint64_t>>& environment_12, std::vector<std::tuple<uint8_t>>& environment_13, std::vector<std::tuple<uint64_t>>& environment_14, std::vector<std::tuple<uint8_t>>& environment_15, std::tuple<uint8_t> *environment_16, std::tuple<uint8_t> *environment_17, uint64_t local_0, uint64_t local_1, uint64_t local_2, uint64_t local_3) {
-    environment_0[uint64_t(31)] = { uint64_t(18446744073709551615) };
+    environment_0[uint64_t(31)] = { uint64_t(18446744073709551615ULL) };
     local_3 = get<0>(environment_0[uint64_t(29)]);
     procedure_4(environment_0, environment_1, environment_2, environment_3, environment_4, environment_5, environment_6, environment_7, environment_8, environment_9, environment_10, environment_11, environment_12, environment_13, environment_14, environment_15, environment_16, environment_17, uint64_t(5), local_0, local_1, 0);
     local_2 = (get<0>(environment_0[uint64_t(28)]) % local_3);
@@ -524,15 +524,15 @@ int main() {
     for (uint64_t binder_0 = 0, loop_end = uint64_t(16); binder_0 < loop_end; binder_0++) {
       environment_8[binder_0] = { uint64_t(0), uint64_t(0), uint64_t(0), uint64_t(0) };
     }
-    if ((local_0 == uint64_t(18446744073709551615))) {
+    if ((local_0 == uint64_t(18446744073709551615ULL))) {
       environment_0[uint64_t(8)] = { uint64_t(1) };
     } else {
       local_1 = (local_0 + uint64_t(1));
-      if (((uint64_t(18446744073709551615) / local_1) < local_1)) {
+      if (((uint64_t(18446744073709551615ULL) / local_1) < local_1)) {
         environment_0[uint64_t(8)] = { uint64_t(1) };
       } else {
         local_2 = (local_1 * local_1);
-        if (((uint64_t(18446744073709551614) / uint64_t(5)) < local_2)) {
+        if (((uint64_t(18446744073709551614ULL) / uint64_t(5)) < local_2)) {
           environment_0[uint64_t(8)] = { uint64_t(1) };
         } else {
           local_3 = ((local_2 * uint64_t(5)) + uint64_t(1));
@@ -552,7 +552,7 @@ int main() {
             local_14 = get<2>(environment_4[local_9]);
             if ((local_11 == uint64_t(0))) {
               procedure_19(environment_0, environment_1, environment_2, environment_3, environment_4, environment_5, environment_6, environment_7, environment_8, environment_9, environment_10, environment_11, environment_12, environment_13, environment_14, environment_15, environment_16, environment_17, local_9, local_10, 0, 0);
-              if ((get<0>(environment_0[uint64_t(31)]) != uint64_t(18446744073709551615))) {
+              if ((get<0>(environment_0[uint64_t(31)]) != uint64_t(18446744073709551615ULL))) {
                 environment_0[uint64_t(0)] = { get<0>(environment_0[uint64_t(31)]) };
                 environment_0[uint64_t(10)] = { local_8 };
               } else {
@@ -584,7 +584,7 @@ int main() {
                 } else {
                 }
                 if ((local_12 == uint64_t(4))) {
-                  if ((local_10 == uint64_t(18446744073709551615))) {
+                  if ((local_10 == uint64_t(18446744073709551615ULL))) {
                     environment_0[uint64_t(8)] = { uint64_t(1) };
                   } else {
                     environment_7[local_8] = { local_9, local_10, uint64_t(3), uint64_t(0) };
@@ -630,7 +630,7 @@ int main() {
   auto procedure_23 = [&](std::tuple<uint64_t> *environment_0, std::tuple<uint64_t, uint64_t, uint64_t, uint64_t> *environment_1, std::vector<std::tuple<uint64_t>>& environment_2, std::vector<std::tuple<uint64_t>>& environment_3, std::vector<std::tuple<uint64_t, uint64_t, uint64_t>>& environment_4, std::vector<std::tuple<uint64_t, uint64_t>>& environment_5, std::vector<std::tuple<uint64_t>>& environment_6, std::vector<std::tuple<uint64_t, uint64_t, uint64_t, uint64_t>>& environment_7, std::vector<std::tuple<uint64_t, uint64_t, uint64_t, uint64_t>>& environment_8, std::vector<std::tuple<uint64_t, uint64_t, uint64_t, uint64_t>>& environment_9, std::vector<std::tuple<uint64_t, uint64_t, uint64_t, uint64_t, uint64_t>>& environment_10, std::vector<std::tuple<uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t>>& environment_11, std::vector<std::tuple<uint64_t>>& environment_12, std::vector<std::tuple<uint8_t>>& environment_13, std::vector<std::tuple<uint64_t>>& environment_14, std::vector<std::tuple<uint8_t>>& environment_15, std::tuple<uint8_t> *environment_16, std::tuple<uint8_t> *environment_17, uint64_t local_0, uint64_t local_1, uint64_t local_2, uint64_t local_3) {
     if ((get<0>(environment_5[local_0]) == uint64_t(0))) {
       local_3 = get<1>(environment_5[local_0]);
-      if (((uint64_t(18446744073709551615) - local_3) < local_1)) {
+      if (((uint64_t(18446744073709551615ULL) - local_3) < local_1)) {
         environment_0[uint64_t(8)] = { uint64_t(1) };
       } else {
       }
@@ -705,7 +705,7 @@ int main() {
   auto procedure_26 = [&](std::tuple<uint64_t> *environment_0, std::tuple<uint64_t, uint64_t, uint64_t, uint64_t> *environment_1, std::vector<std::tuple<uint64_t>>& environment_2, std::vector<std::tuple<uint64_t>>& environment_3, std::vector<std::tuple<uint64_t, uint64_t, uint64_t>>& environment_4, std::vector<std::tuple<uint64_t, uint64_t>>& environment_5, std::vector<std::tuple<uint64_t>>& environment_6, std::vector<std::tuple<uint64_t, uint64_t, uint64_t, uint64_t>>& environment_7, std::vector<std::tuple<uint64_t, uint64_t, uint64_t, uint64_t>>& environment_8, std::vector<std::tuple<uint64_t, uint64_t, uint64_t, uint64_t>>& environment_9, std::vector<std::tuple<uint64_t, uint64_t, uint64_t, uint64_t, uint64_t>>& environment_10, std::vector<std::tuple<uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t>>& environment_11, std::vector<std::tuple<uint64_t>>& environment_12, std::vector<std::tuple<uint8_t>>& environment_13, std::vector<std::tuple<uint64_t>>& environment_14, std::vector<std::tuple<uint8_t>>& environment_15, std::tuple<uint8_t> *environment_16, std::tuple<uint8_t> *environment_17, uint64_t local_0, uint64_t local_1, uint64_t local_2, uint64_t local_3, uint64_t local_4, uint64_t local_5, uint64_t local_6, uint64_t local_7, uint64_t local_8, uint64_t local_9, uint64_t local_10, uint64_t local_11, uint64_t local_12) {
     if ((get<0>(environment_5[local_0]) == uint64_t(0))) {
       local_1 = get<1>(environment_5[local_0]);
-      if ((local_1 == uint64_t(18446744073709551615))) {
+      if ((local_1 == uint64_t(18446744073709551615ULL))) {
         environment_0[uint64_t(8)] = { uint64_t(1) };
       } else {
       }
@@ -1267,7 +1267,7 @@ int main() {
     } else {
     }
     if ((local_0 == uint64_t(0))) {
-      if ((local_1 == uint64_t(18446744073709551615))) {
+      if ((local_1 == uint64_t(18446744073709551615ULL))) {
         environment_0[uint64_t(18)] = { uint64_t(0) };
       } else {
         environment_0[uint64_t(19)] = { (local_1 + uint64_t(1)) };
@@ -1346,7 +1346,7 @@ int main() {
     if ((get<0>(environment_0[uint64_t(18)]) == uint64_t(0))) {
       procedure_13(environment_0, environment_1, environment_2, environment_3, environment_4, environment_5, environment_6, environment_7, environment_8, environment_9, environment_10, environment_11, environment_12, environment_13, environment_14, environment_15, environment_16, environment_17);
     } else {
-      if ((get<0>(environment_0[uint64_t(16)]) == uint64_t(18446744073709551615))) {
+      if ((get<0>(environment_0[uint64_t(16)]) == uint64_t(18446744073709551615ULL))) {
         environment_0[uint64_t(8)] = { uint64_t(1) };
       } else {
         growArray(environment_11, (get<0>(environment_0[uint64_t(16)]) + uint64_t(1)));
@@ -1357,7 +1357,7 @@ int main() {
     }
   };
   auto procedure_30 = [&](std::tuple<uint64_t> *environment_0, std::tuple<uint64_t, uint64_t, uint64_t, uint64_t> *environment_1, std::vector<std::tuple<uint64_t>>& environment_2, std::vector<std::tuple<uint64_t>>& environment_3, std::vector<std::tuple<uint64_t, uint64_t, uint64_t>>& environment_4, std::vector<std::tuple<uint64_t, uint64_t>>& environment_5, std::vector<std::tuple<uint64_t>>& environment_6, std::vector<std::tuple<uint64_t, uint64_t, uint64_t, uint64_t>>& environment_7, std::vector<std::tuple<uint64_t, uint64_t, uint64_t, uint64_t>>& environment_8, std::vector<std::tuple<uint64_t, uint64_t, uint64_t, uint64_t>>& environment_9, std::vector<std::tuple<uint64_t, uint64_t, uint64_t, uint64_t, uint64_t>>& environment_10, std::vector<std::tuple<uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t>>& environment_11, std::vector<std::tuple<uint64_t>>& environment_12, std::vector<std::tuple<uint8_t>>& environment_13, std::vector<std::tuple<uint64_t>>& environment_14, std::vector<std::tuple<uint8_t>>& environment_15, std::tuple<uint8_t> *environment_16, std::tuple<uint8_t> *environment_17, uint64_t local_0, uint64_t local_1) {
-    if ((get<0>(environment_0[uint64_t(2)]) == uint64_t(18446744073709551615))) {
+    if ((get<0>(environment_0[uint64_t(2)]) == uint64_t(18446744073709551615ULL))) {
       environment_0[uint64_t(8)] = { uint64_t(1) };
     } else {
       growArray(environment_5, (get<0>(environment_0[uint64_t(2)]) + uint64_t(1)));
@@ -1371,7 +1371,7 @@ int main() {
     if ((local_1 != uint64_t(0))) {
       local_2 = get<1>(environment_5[local_0]);
       if ((get<0>(environment_5[local_0]) == uint64_t(0))) {
-        if (((uint64_t(18446744073709551615) - local_2) < local_1)) {
+        if (((uint64_t(18446744073709551615ULL) - local_2) < local_1)) {
           environment_0[uint64_t(8)] = { uint64_t(1) };
         } else {
           procedure_30(environment_0, environment_1, environment_2, environment_3, environment_4, environment_5, environment_6, environment_7, environment_8, environment_9, environment_10, environment_11, environment_12, environment_13, environment_14, environment_15, environment_16, environment_17, uint64_t(0), (local_2 + local_1));
@@ -1391,7 +1391,7 @@ int main() {
   };
   auto procedure_33 = [&](std::tuple<uint64_t> *environment_0, std::tuple<uint64_t, uint64_t, uint64_t, uint64_t> *environment_1, std::vector<std::tuple<uint64_t>>& environment_2, std::vector<std::tuple<uint64_t>>& environment_3, std::vector<std::tuple<uint64_t, uint64_t, uint64_t>>& environment_4, std::vector<std::tuple<uint64_t, uint64_t>>& environment_5, std::vector<std::tuple<uint64_t>>& environment_6, std::vector<std::tuple<uint64_t, uint64_t, uint64_t, uint64_t>>& environment_7, std::vector<std::tuple<uint64_t, uint64_t, uint64_t, uint64_t>>& environment_8, std::vector<std::tuple<uint64_t, uint64_t, uint64_t, uint64_t>>& environment_9, std::vector<std::tuple<uint64_t, uint64_t, uint64_t, uint64_t, uint64_t>>& environment_10, std::vector<std::tuple<uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t>>& environment_11, std::vector<std::tuple<uint64_t>>& environment_12, std::vector<std::tuple<uint8_t>>& environment_13, std::vector<std::tuple<uint64_t>>& environment_14, std::vector<std::tuple<uint8_t>>& environment_15, std::tuple<uint8_t> *environment_16, std::tuple<uint8_t> *environment_17, uint64_t local_0, uint64_t local_1, uint64_t local_2, uint64_t local_3, uint64_t local_4, uint64_t local_5, uint64_t local_6, uint64_t local_7, uint64_t local_8, uint64_t local_9, uint64_t local_10, uint64_t local_11, uint64_t local_12, uint64_t local_13) {
     local_1 = (local_0 + uint64_t(1));
-    if (((uint64_t(18446744073709551615) / local_1) < local_1)) {
+    if (((uint64_t(18446744073709551615ULL) / local_1) < local_1)) {
       environment_0[uint64_t(8)] = { uint64_t(1) };
     } else {
       local_2 = (local_1 * local_1);
@@ -1695,7 +1695,7 @@ int main() {
         }
         if ((get<0>(environment_0[uint64_t(8)]) == uint64_t(0))) {
           if (true) {
-            if ((get<0>(environment_0[uint64_t(2)]) == uint64_t(18446744073709551615))) {
+            if ((get<0>(environment_0[uint64_t(2)]) == uint64_t(18446744073709551615ULL))) {
               environment_0[uint64_t(8)] = { uint64_t(1) };
             } else {
               growArray(environment_5, (get<0>(environment_0[uint64_t(2)]) + uint64_t(1)));
@@ -1722,7 +1722,7 @@ int main() {
         }
         if ((get<0>(environment_0[uint64_t(8)]) == uint64_t(0))) {
           if ((local_1 < get<0>(environment_0[uint64_t(1)]))) {
-            if ((get<0>(environment_0[uint64_t(2)]) == uint64_t(18446744073709551615))) {
+            if ((get<0>(environment_0[uint64_t(2)]) == uint64_t(18446744073709551615ULL))) {
               environment_0[uint64_t(8)] = { uint64_t(1) };
             } else {
               growArray(environment_5, (get<0>(environment_0[uint64_t(2)]) + uint64_t(1)));
@@ -1845,7 +1845,7 @@ int main() {
             }
             if ((get<0>(environment_0[uint64_t(8)]) == uint64_t(0))) {
               procedure_11(environment_0, environment_1, environment_2, environment_3, environment_4, environment_5, environment_6, environment_7, environment_8, environment_9, environment_10, environment_11, environment_12, environment_13, environment_14, environment_15, environment_16, environment_17, 0);
-              if ((get<0>(environment_0[uint64_t(0)]) == uint64_t(18446744073709551615)) || (get<4>(environment_10[get<0>(environment_0[uint64_t(0)])]) != uint64_t(0))) {
+              if ((get<0>(environment_0[uint64_t(0)]) == uint64_t(18446744073709551615ULL)) || (get<4>(environment_10[get<0>(environment_0[uint64_t(0)])]) != uint64_t(0))) {
                 procedure_13(environment_0, environment_1, environment_2, environment_3, environment_4, environment_5, environment_6, environment_7, environment_8, environment_9, environment_10, environment_11, environment_12, environment_13, environment_14, environment_15, environment_16, environment_17);
               } else {
                 procedure_12(environment_0, environment_1, environment_2, environment_3, environment_4, environment_5, environment_6, environment_7, environment_8, environment_9, environment_10, environment_11, environment_12, environment_13, environment_14, environment_15, environment_16, environment_17, get<2>(environment_10[get<0>(environment_0[uint64_t(0)])]));
@@ -1981,7 +1981,7 @@ int main() {
               } else {
               }
               if ((get<0>(environment_0[uint64_t(8)]) == uint64_t(0))) {
-                if ((local_6 != uint64_t(18446744073709551615)) && (get<4>(environment_10[local_6]) == uint64_t(0)) && (local_1 < get<0>(environment_0[uint64_t(3)]))) {
+                if ((local_6 != uint64_t(18446744073709551615ULL)) && (get<4>(environment_10[local_6]) == uint64_t(0)) && (local_1 < get<0>(environment_0[uint64_t(3)]))) {
                   procedure_26(environment_0, environment_1, environment_2, environment_3, environment_4, environment_5, environment_6, environment_7, environment_8, environment_9, environment_10, environment_11, environment_12, environment_13, environment_14, environment_15, environment_16, environment_17, get<2>(environment_10[local_6]), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
                   if ((get<0>(environment_0[uint64_t(8)]) == uint64_t(0))) {
                     if ((get<0>(environment_0[uint64_t(0)]) == get<0>(environment_6[local_1]))) {
@@ -2016,7 +2016,7 @@ int main() {
             }
             if ((get<0>(environment_0[uint64_t(8)]) == uint64_t(0))) {
               procedure_11(environment_0, environment_1, environment_2, environment_3, environment_4, environment_5, environment_6, environment_7, environment_8, environment_9, environment_10, environment_11, environment_12, environment_13, environment_14, environment_15, environment_16, environment_17, 0);
-              if ((get<0>(environment_0[uint64_t(0)]) == uint64_t(18446744073709551615)) || (get<4>(environment_10[get<0>(environment_0[uint64_t(0)])]) != uint64_t(0))) {
+              if ((get<0>(environment_0[uint64_t(0)]) == uint64_t(18446744073709551615ULL)) || (get<4>(environment_10[get<0>(environment_0[uint64_t(0)])]) != uint64_t(0))) {
                 procedure_13(environment_0, environment_1, environment_2, environment_3, environment_4, environment_5, environment_6, environment_7, environment_8, environment_9, environment_10, environment_11, environment_12, environment_13, environment_14, environment_15, environment_16, environment_17);
               } else {
                 if ((get<3>(environment_10[get<0>(environment_0[uint64_t(0)])]) == uint64_t(1))) {
@@ -2162,7 +2162,7 @@ int main() {
             }
             if ((get<0>(environment_0[uint64_t(8)]) == uint64_t(0))) {
               procedure_11(environment_0, environment_1, environment_2, environment_3, environment_4, environment_5, environment_6, environment_7, environment_8, environment_9, environment_10, environment_11, environment_12, environment_13, environment_14, environment_15, environment_16, environment_17, 0);
-              if ((get<0>(environment_0[uint64_t(0)]) == uint64_t(18446744073709551615)) || (get<4>(environment_10[get<0>(environment_0[uint64_t(0)])]) != uint64_t(1))) {
+              if ((get<0>(environment_0[uint64_t(0)]) == uint64_t(18446744073709551615ULL)) || (get<4>(environment_10[get<0>(environment_0[uint64_t(0)])]) != uint64_t(1))) {
                 procedure_13(environment_0, environment_1, environment_2, environment_3, environment_4, environment_5, environment_6, environment_7, environment_8, environment_9, environment_10, environment_11, environment_12, environment_13, environment_14, environment_15, environment_16, environment_17);
               } else {
                 procedure_15(environment_0, environment_1, environment_2, environment_3, environment_4, environment_5, environment_6, environment_7, environment_8, environment_9, environment_10, environment_11, environment_12, environment_13, environment_14, environment_15, environment_16, environment_17, get<2>(environment_10[get<0>(environment_0[uint64_t(0)])]));
@@ -2307,7 +2307,7 @@ int main() {
                 environment_14[binder_0] = { local_2 };
               }
               if ((get<0>(environment_0[uint64_t(8)]) == uint64_t(0))) {
-                if ((local_6 == uint64_t(18446744073709551615)) || (get<4>(environment_10[local_6]) != uint64_t(2))) {
+                if ((local_6 == uint64_t(18446744073709551615ULL)) || (get<4>(environment_10[local_6]) != uint64_t(2))) {
                   procedure_13(environment_0, environment_1, environment_2, environment_3, environment_4, environment_5, environment_6, environment_7, environment_8, environment_9, environment_10, environment_11, environment_12, environment_13, environment_14, environment_15, environment_16, environment_17);
                 } else {
                   local_5 = get<2>(environment_10[local_6]);
@@ -2346,7 +2346,7 @@ int main() {
             }
             if ((get<0>(environment_0[uint64_t(8)]) == uint64_t(0))) {
               procedure_11(environment_0, environment_1, environment_2, environment_3, environment_4, environment_5, environment_6, environment_7, environment_8, environment_9, environment_10, environment_11, environment_12, environment_13, environment_14, environment_15, environment_16, environment_17, 0);
-              if ((get<0>(environment_0[uint64_t(0)]) == uint64_t(18446744073709551615))) {
+              if ((get<0>(environment_0[uint64_t(0)]) == uint64_t(18446744073709551615ULL))) {
                 procedure_13(environment_0, environment_1, environment_2, environment_3, environment_4, environment_5, environment_6, environment_7, environment_8, environment_9, environment_10, environment_11, environment_12, environment_13, environment_14, environment_15, environment_16, environment_17);
               } else {
                 if ((get<4>(environment_10[get<0>(environment_0[uint64_t(0)])]) == uint64_t(0))) {
@@ -2388,7 +2388,7 @@ int main() {
             }
             if ((get<0>(environment_0[uint64_t(8)]) == uint64_t(0))) {
               procedure_11(environment_0, environment_1, environment_2, environment_3, environment_4, environment_5, environment_6, environment_7, environment_8, environment_9, environment_10, environment_11, environment_12, environment_13, environment_14, environment_15, environment_16, environment_17, 0);
-              if ((get<0>(environment_0[uint64_t(0)]) == uint64_t(18446744073709551615))) {
+              if ((get<0>(environment_0[uint64_t(0)]) == uint64_t(18446744073709551615ULL))) {
                 procedure_13(environment_0, environment_1, environment_2, environment_3, environment_4, environment_5, environment_6, environment_7, environment_8, environment_9, environment_10, environment_11, environment_12, environment_13, environment_14, environment_15, environment_16, environment_17);
               } else {
                 if ((get<4>(environment_10[get<0>(environment_0[uint64_t(0)])]) != uint64_t(2))) {
