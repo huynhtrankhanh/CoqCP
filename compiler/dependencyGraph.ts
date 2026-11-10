@@ -179,7 +179,7 @@ export const validateCyclicDependencies = (modules: CoqCPAST[]) => {
 
   const errors: ValidationError[] = []
   for (let i = 0; i + 1 < cycle.length; i++) {
-    const edgeIndex = edgeIndexMap.get([cycle[0], cycle[1]])!
+    const edgeIndex = edgeIndexMap.get([cycle[i], cycle[i + 1]])!
     const mention = mentionLocation[edgeIndex]
     errors.push({
       type: 'call implicated in cycle',
