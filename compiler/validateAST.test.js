@@ -1,6 +1,6 @@
 // @ts-check
 import { CoqCPASTTransformer, ParseError } from './parse'
-import { sortAndValidateAST } from './validateAST'
+import { sortAndValidateAST, validateAST } from './validateAST'
 import { consumeNever } from './consumeNever'
 /**
  * @param {string[]} codes
@@ -322,4 +322,25 @@ procedure("hello", {}, () => {
       }
     }
   })
+})
+
+test('validation does not remove invalid array declarations', () => {
+  const module = new CoqCPASTTransformer('module(M); environment({a: array([int8], 0)})').transform()
+  const first = validateAST([module])
+  expect(first.some(error => error.type === "array length can't be less than 1")).toBe(true)
+  expect(module.environment.arrays.has('a')).toBe(true)
+  expect(validateAST([module])).toEqual(first)
+})
+
+test.each([
+  ['!1', 'unary operator expects boolean'],
+  ['!f32("1")', 'unary operator expects boolean'],
+  ['-true', 'unary operator expects numeric'],
+  ['+true', 'unary operator expects numeric'],
+  ['~true', 'unary operator expects integer'],
+  ['~f32("1")', 'unary operator expects integer'],
+])('reports the expected operand type for %s', (expression, expected) => {
+  const result = getCombinedError([`module(M); procedure("main", {}, () => { writeChar(${expression}) })`])
+  expect(result.type).toBe('validation error')
+  expect(result.errors.map(error => error.type)).toContain(expected)
 })

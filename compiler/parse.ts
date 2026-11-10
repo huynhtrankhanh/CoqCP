@@ -245,6 +245,12 @@ export class CoqCPASTTransformer {
             )
           }
 
+          if (property.computed)
+            throw new ParseError(
+              'computed keys are not supported. ' +
+                formatLocation(property.key.loc)
+            )
+
           let keyName: string
 
           if (property.key.type === 'Identifier') keyName = property.key.name
@@ -383,6 +389,12 @@ export class CoqCPASTTransformer {
             )
           }
 
+          if (property.computed)
+            throw new ParseError(
+              'computed keys are not supported. ' +
+                formatLocation(property.key.loc)
+            )
+
           let keyName: string
 
           if (property.key.type === 'Identifier') keyName = property.key.name
@@ -440,7 +452,10 @@ export class CoqCPASTTransformer {
         }
 
         if (bodyNode.params.length !== 0) {
-          throw new ParseError("inner function can't take arguments")
+          throw new ParseError(
+            "inner function can't take arguments. " +
+              formatLocation(bodyNode.loc)
+          )
         }
 
         const body: Instruction[] = this.transformBodyNode(bodyNode.body)
@@ -488,7 +503,9 @@ export class CoqCPASTTransformer {
         node.callee.name,
         node.arguments.map((x) => {
           if (x.type === 'SpreadElement') {
-            throw new ParseError("spread syntax isn't recognized")
+            throw new ParseError(
+              "spread syntax isn't recognized. " + formatLocation(x.loc)
+            )
           }
 
           return x
@@ -1033,6 +1050,12 @@ export class CoqCPASTTransformer {
               )
             }
 
+            if (property.computed)
+              throw new ParseError(
+                'computed keys are not supported. ' +
+                  formatLocation(property.key.loc)
+              )
+
             let name: string
 
             if (property.key.type === 'Identifier') name = property.key.name
@@ -1108,6 +1131,12 @@ export class CoqCPASTTransformer {
                 'spread syntax not allowed. ' + formatLocation(property.loc)
               )
 
+            if (property.computed)
+              throw new ParseError(
+                'computed keys are not supported. ' +
+                  formatLocation(property.key.loc)
+              )
+
             let arrayName: string
 
             if (property.key.type === 'Identifier')
@@ -1149,6 +1178,12 @@ export class CoqCPASTTransformer {
                 "spread syntax isn't recognized. " +
                   formatLocation(property.loc)
               )
+            if (property.computed)
+              throw new ParseError(
+                'computed keys are not supported. ' +
+                  formatLocation(property.key.loc)
+              )
+
             let name: string
             if (property.key.type === 'Identifier') name = property.key.name
             else if (property.key.type === 'Literal') {

@@ -1,3 +1,4 @@
+import { CoqCPASTTransformer } from './parse'
 import { transformer } from './exampleCode'
 import { cppCodegen } from './cppCodegen'
 
@@ -106,4 +107,10 @@ int main() {
 }
 `)
   })
+})
+
+
+test('emits a standard unsigned literal for large int64 values', () => {
+  const ast = new CoqCPASTTransformer('module(M); procedure("main", {}, () => { writeChar(18446744073709551615) })').transform()
+  expect(cppCodegen([ast])).toContain('uint64_t(18446744073709551615ULL)')
 })

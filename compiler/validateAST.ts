@@ -58,6 +58,7 @@ export type ValidationError =
       | {
           type:
             | 'unary operator expects numeric'
+            | 'unary operator expects integer'
             | "unary operator can't operate on tuples"
             | "unary operator can't operate on strings"
             | 'unary operator expects boolean'
@@ -145,7 +146,6 @@ export const validateAST = (sortedModules: CoqCPAST[]): ValidationError[] => {
             type: 'bad number literal',
             location: { ...array.length.location, moduleName },
           })
-          environment.arrays.delete(key)
           continue
         }
         const evaluated = BigInt(raw)
@@ -154,7 +154,6 @@ export const validateAST = (sortedModules: CoqCPAST[]): ValidationError[] => {
             type: 'not representable int64',
             location: { ...array.length.location, moduleName },
           })
-          environment.arrays.delete(key)
           continue
         }
         if (
@@ -165,7 +164,6 @@ export const validateAST = (sortedModules: CoqCPAST[]): ValidationError[] => {
             type: "array length can't be less than 1",
             location: { ...array.length.location, moduleName },
           })
-          environment.arrays.delete(key)
           continue
         }
       }
@@ -983,7 +981,9 @@ export const validateAST = (sortedModules: CoqCPAST[]): ValidationError[] => {
             if (isFloat(valueType)) {
               if (operator === 'minus' || operator === 'plus') return valueType
               errors.push({
-                type: 'unary operator expects numeric',
+                type: operator === 'boolean not'
+                  ? 'unary operator expects boolean'
+                  : 'unary operator expects integer',
                 location: { ...instruction.location, moduleName },
               })
               return 'illegal'
@@ -996,7 +996,7 @@ export const validateAST = (sortedModules: CoqCPAST[]): ValidationError[] => {
                   return valueType
                 case 'boolean not': {
                   errors.push({
-                    type: 'unary operator expects numeric',
+                    type: 'unary operator expects boolean',
                     location: { ...instruction.location, moduleName },
                   })
                   return 'illegal'
@@ -1023,7 +1023,9 @@ export const validateAST = (sortedModules: CoqCPAST[]): ValidationError[] => {
                 case 'minus':
                 case 'plus': {
                   errors.push({
-                    type: 'unary operator expects boolean',
+                    type: operator === 'bitwise not'
+                      ? 'unary operator expects integer'
+                      : 'unary operator expects numeric',
                     location: { ...instruction.location, moduleName },
                   })
                   return 'illegal'

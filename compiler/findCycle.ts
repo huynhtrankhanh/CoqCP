@@ -34,7 +34,7 @@ export function findCycle(edges: [number, number][]): number[] | undefined {
     for (let i = head[vertex]; i < head[vertex + 1]; i++) {
       let adjacent = values[i]
       if (positionInPath[adjacent] === -1) {
-        if (visited[vertex]) continue
+        if (visited[adjacent]) continue
         const dfsResult = dfs(adjacent)
         if (dfsResult !== undefined) return dfsResult
       } else {

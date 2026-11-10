@@ -62,8 +62,7 @@ function compile(files: string[], coqOutput: string, cppOutput: string) {
 
   if (parseErrors.length > 0) {
     parseErrors.forEach((error) => console.error(error))
-    process.exit(1)
-    return
+    return false
   }
 
   const modulePathMap = new Map(
@@ -81,8 +80,7 @@ function compile(files: string[], coqOutput: string, cppOutput: string) {
 
   if (validationErrors.length > 0) {
     validationErrors.forEach((error) => console.error(error))
-    process.exit(1)
-    return
+    return false
   }
 
   const coqCode = coqCodegen(sortedModules)
@@ -91,6 +89,7 @@ function compile(files: string[], coqOutput: string, cppOutput: string) {
   const cppCode = cppCodegen(sortedModules)
   fs.writeFileSync(cppOutput, cppCode, 'utf-8')
   console.log(chalk.green('Compilation successful!'))
+  return true
 }
 
 // Watch and compile function
@@ -144,11 +143,12 @@ function main() {
         process.exit(1)
         return
       }
-      compile(
+      const success = compile(
         newInputs.map((x) => path.join(folderPath, x)),
         path.join(folderPath, coqOutput),
         path.join(folderPath, cppOutput)
       )
+      if (!success) process.exitCode = 1
     } else {
       console.log('Unrecognized type')
       process.exit(1)
@@ -171,7 +171,7 @@ function main() {
       if (options.watch) {
         watchAndCompile(inputFiles, coqOutput, cppOutput)
       } else {
-        compile(inputFiles, coqOutput, cppOutput)
+        if (!compile(inputFiles, coqOutput, cppOutput)) process.exitCode = 1
       }
     })
 

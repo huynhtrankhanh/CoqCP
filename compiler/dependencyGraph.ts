@@ -53,6 +53,7 @@ export const findDependencies = ({ procedures }: CoqCPAST) => {
         break
       case 'subscript':
         findDependencies(valueType.value)
+        findDependencies(valueType.index)
         break
       case 'condition':
         findDependencies(valueType.condition)
@@ -183,7 +184,7 @@ export const validateCyclicDependencies = (modules: CoqCPAST[]) => {
     const mention = mentionLocation[edgeIndex]
     errors.push({
       type: 'call implicated in cycle',
-      location: { ...mention, moduleName: modules[cycle[1]].moduleName },
+      location: { ...mention, moduleName: modules[cycle[i + 1]].moduleName },
     })
   }
 
