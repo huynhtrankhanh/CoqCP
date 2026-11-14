@@ -4,6 +4,10 @@
 [🗒️ **Read the thesis report**](./ITCSIU21011_HuynhTranKhanh.pdf)  
 [💻 **Read the instructions on how to run the compiler**](./docs/InternalImperativeLanguage.md)
 
+> **⚠️🚨 There are several soundness bugs in Rocq 9.3.0! The adversarial checker should be considered broken as a downstream consequence!**
+>
+> When a program that ensures the correctness of computer programs has critical soundness bugs, do we actually have any hope?
+
 This is a repository of formally verified competitive programming code. Formal verification is very important.
 
 https://codeforces.com/blog/entry/111737
