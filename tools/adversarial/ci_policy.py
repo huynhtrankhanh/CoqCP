@@ -8,7 +8,7 @@ POLICY_FILE = Path(__file__).resolve().parents[2] / "verification/trusted_axioms
 def trusted_policy():
     data = json.loads(POLICY_FILE.read_text())
     if (set(data) != {"format", "rocq_version", "axioms", "indices_not_mattering"}
-            or data["format"] != 1 or data["rocq_version"] != "9.3.0"
+            or data["format"] != 1 or data["rocq_version"] != "master"
             or any(not isinstance(data[field], list)
                    or any(not isinstance(name, str) for name in data[field])
                    or len(set(data[field])) != len(data[field])

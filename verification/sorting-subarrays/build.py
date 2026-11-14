@@ -9,7 +9,7 @@ import subprocess
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--rocq", default="/opt/rocq/9.3.0/bin/rocq")
+    parser.add_argument("--rocq", default="/opt/rocq/master/bin/rocq")
     args = parser.parse_args()
     task = Path(__file__).resolve().parent
     repo = task.parents[1]
@@ -19,13 +19,15 @@ def main():
     submitted = out / "Submission"
     trusted.mkdir()
     submitted.mkdir()
-    shutil.copy2(task / "spec/Spec.v", trusted / "Spec.v")
+    for name in ["Sorting.v", "Spec.v"]:
+        shutil.copy2(task / "spec" / name, trusted / name)
     flags = [args.rocq, "compile", "-q", "-R", str(repo / "theories"), "CoqCP",
              "-Q", str(trusted), "Trusted", "-Q", str(submitted), "Submission"]
 
     def compile_file(source):
         subprocess.run([*flags, str(source)], cwd=out, check=True)
 
+    compile_file(trusted / "Sorting.v")
     compile_file(trusted / "Spec.v")
     for name in ["Bits", "Tree", "Threshold", "Simulation", "Search", "Algorithm",
                  "ByteIO", "MainIO", "Candidate"]:

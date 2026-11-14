@@ -104,9 +104,12 @@ npm --prefix compiler test
 node compiler/dist/cli '?json' programs/Knapsack.module.json
 ```
 
-The project uses the latest stable releases checked on October 4, 2026: Rocq
-9.3.0, its separately released Stdlib 9.2.0, and stdpp 1.13.0. Versions are pinned
-in [coqcp-toolchain.opam](../coqcp-toolchain.opam).
+The project follows Rocq master, with compatible Stdlib and stdpp dependencies
+recorded in [coqcp-toolchain.opam](../coqcp-toolchain.opam). Each installation
+resolves master to a commit, which the adversarial checker records in its toolchain identity.
+Rerun the installer to update to the current master commit. The installer tracks
+the branch without opam pins and checks the installed source identity. The proof
+and adversarial workflows also run daily to detect upstream changes.
 
 On Ubuntu 24.04 with a running Docker daemon accessible to the evaluator user,
 install the toolchain outside the repository:
@@ -117,7 +120,7 @@ sudo apt-get install ca-certificates curl git python3 build-essential ocaml opam
 sudo install -d -o "$(id -un)" -g "$(id -gn)" /opt/rocq
 bash tools/install-toolchain.sh
 bash tools/install-gvisor.sh
-export PATH=/opt/rocq/9.3.0/bin:$PATH
+export PATH=/opt/rocq/master/bin:$PATH
 rocq --version
 ```
 

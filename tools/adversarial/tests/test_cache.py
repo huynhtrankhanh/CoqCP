@@ -43,6 +43,8 @@ class CacheTests(unittest.TestCase):
                 Path(name).with_suffix(".vo").name:
                     base64.b64encode((inputs / name).read_bytes()).decode()
                 for name in config["sources"]}})
+        if argv[0] == "/rocqchk":
+            return b""
         self.calls["kernel"] += 1
         return gate.encoded({"status": "spec-checked" if "--spec-only" in argv else "accepted",
                              "rocq_version": gate.VERSION, "axioms": []})

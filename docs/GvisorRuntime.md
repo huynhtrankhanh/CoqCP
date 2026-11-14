@@ -45,11 +45,12 @@ See [gVisor installation](https://gvisor.dev/docs/user_guide/install/) for the
 multi-file distribution and [Docker setup](https://gvisor.dev/docs/user_guide/quick_start/docker/).
 
 The runtime image contains Python, GMP, and libseccomp. Its default base is
-digest-pinned Ubuntu 24.04, matching the GitHub Actions runner where the native
-toolchain is built. A toolchain built on another distribution needs a compatible
+digest-pinned Ubuntu 26.04, which can execute Rocq master binaries built on the
+current development host and remains compatible with native toolchains built on
+the older GitHub Actions runner. A toolchain built on another distribution needs a compatible
 libc in its runtime image. Evaluators can build the same Dockerfile with
 `--build-arg BASE_IMAGE=<compatible image digest>`, retaining the fixed tag
-`coqcp-gvisor:rocq-9.3.0`. The checker freezes the resulting immutable image ID,
+`coqcp-gvisor:rocq-master`. The checker freezes the resulting immutable image ID,
 so changing the image requires new specification bundles.
 
 ## Execution and trust

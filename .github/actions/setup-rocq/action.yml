@@ -1,5 +1,5 @@
-name: Install pinned Rocq toolchain
-description: Install Rocq 9.3.0, Stdlib 9.2.0, and stdpp 1.13.0 in /opt/rocq
+name: Install Rocq master toolchain
+description: Install Rocq master and compatible libraries in /opt/rocq
 runs:
   using: composite
   steps:
@@ -12,8 +12,8 @@ runs:
         $task_sudo apt-get install -y --no-install-recommends ca-certificates curl git python3 build-essential ocaml opam libgmp-dev pkg-config m4 rsync unzip passwd util-linux
         $task_sudo mkdir -p /opt/rocq
         $task_sudo chown "$(id -u):$(id -g)" /opt/rocq
-    - name: Install the pinned proof dependencies
+    - name: Install the proof dependencies
       shell: bash
       run: |
         bash tools/install-toolchain.sh
-        echo /opt/rocq/9.3.0/bin >> "$GITHUB_PATH"
+        echo /opt/rocq/master/bin >> "$GITHUB_PATH"

@@ -24,7 +24,7 @@ test('Rocq accepts every projection of a heterogeneous tuple', () => {
   try {
     const filename = path.join(directory, 'Tuples.v')
     writeFileSync(filename, coqCodegen(modules))
-    execFileSync('/opt/rocq/9.3.0/bin/rocq', [
+    execFileSync('/opt/rocq/master/bin/rocq', [
       'compile',
       '-q',
       '-R',

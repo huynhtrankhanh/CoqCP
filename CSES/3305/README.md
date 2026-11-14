@@ -108,7 +108,7 @@ additionally exercised by the pipe-based grader.
 
 ## Build and check
 
-With the repository's pinned Rocq toolchain on `PATH`:
+With the repository's Rocq master toolchain on `PATH`:
 
 ```sh
 npm --prefix compiler run build

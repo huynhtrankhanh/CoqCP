@@ -167,11 +167,45 @@ class ProtocolValidationTests(unittest.TestCase):
         ]
         with tempfile.TemporaryDirectory() as temporary:
             bundle = Path(temporary)
-            runtime = {"coqlib": "/coqlib"}
+            runtime = {"coqlib": "/coqlib", "rocq": "/rocq"}
             for response in invalid:
                 with self.subTest(response=response), self.assertRaises(gate.Rejected):
                     gate.kernel_check(bundle, None, runtime, self.Sandbox(response), allowed,
                                       spec_only=True)
+
+
+class StandaloneCheckerTests(unittest.TestCase):
+    def test_checks_all_libraries_before_contract_and_rejects_failure(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            bundle, artifacts = root / "bundle", root / "artifacts"
+            bundle.mkdir()
+            artifacts.mkdir()
+            for name in ("Candidate.vo", "Helper.vo"):
+                (artifacts / name).touch()
+            runtime = {"rocq": "/rocq", "coqlib": "/coqlib"}
+
+            class Sandbox:
+                def __init__(self, fail=False):
+                    self.calls = []
+                    self.fail = fail
+                def run(self, args, mounts):
+                    self.calls.append(args)
+                    if self.fail:
+                        raise gate.Rejected("rocqchk failed")
+                    return gate.encoded({"status": "accepted", "rocq_version": gate.VERSION,
+                                         "axioms": []})
+
+            sandbox = Sandbox()
+            gate.kernel_check(bundle, artifacts, runtime, sandbox, [])
+            self.assertEqual(sandbox.calls[0][:2], ["/rocqchk", "-silent"])
+            self.assertEqual(sandbox.calls[0][-3:],
+                             ["Trusted.Spec", "Submission.Candidate", "Submission.Helper"])
+            self.assertEqual(sandbox.calls[1][0], "/tool/spec-check")
+            sandbox = Sandbox(fail=True)
+            with self.assertRaisesRegex(gate.Rejected, "rocqchk failed"):
+                gate.kernel_check(bundle, artifacts, runtime, sandbox, [])
+            self.assertEqual(len(sandbox.calls), 1)
 
 
 class AcceptanceTests(unittest.TestCase):
@@ -212,6 +246,13 @@ class AcceptanceTests(unittest.TestCase):
 
     def test_valid_program(self):
         self.evaluate(VALID, accepted=True)
+
+    def test_published_functor_guard_attack_is_rejected(self):
+        witness = (PATH.parent / "tests/soundness/GuardFlagThroughFunctor.v").read_text()
+        report = self.evaluate(VALID + "\n" + witness)
+        self.assertEqual(report["stage"], "kernel-and-contract", report)
+        self.assertIn("IllFormedRecBody", report["reason"])
+
 
 
     def test_vm_large_unary_computation_and_kernel_recheck(self):

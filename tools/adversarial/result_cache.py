@@ -121,9 +121,10 @@ class ResultCache:
             hashes[name] = checksum
         self._save("compile", key, {"artifacts": hashes})
 
-    def checked(self, key, allowed, status):
+    def checked(self, key, allowed, status, version=None):
         try:
-            report = self.gate.validate_kernel_report(self._payload("kernel", key), allowed, status)
+            report = self.gate.validate_kernel_report(self._payload("kernel", key), allowed, status,
+                                                      version or self.gate.VERSION)
         except (OSError, ValueError, self.gate.Rejected):
             self.counts["kernel"]["misses"] += 1
             return None

@@ -74,7 +74,7 @@ the TypeScript compiler and native C++ runtime remain outside the formal proof.
 
 ## Build and check
 
-With the repository's pinned Rocq toolchain on `PATH`:
+With the repository's Rocq master toolchain on `PATH`:
 
 ```sh
 npm --prefix compiler run build

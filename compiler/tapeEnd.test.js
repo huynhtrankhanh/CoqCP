@@ -280,7 +280,7 @@ Print Assumptions cursor_and_control.
 `
     )
     const result = execFileSync(
-      '/opt/rocq/9.3.0/bin/rocq',
+      '/opt/rocq/master/bin/rocq',
       [
         'compile',
         '-q',

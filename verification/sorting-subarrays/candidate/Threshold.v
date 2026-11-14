@@ -1,6 +1,7 @@
 From CoqCP Require Import Options.
 From Stdlib Require Import Lists.List Bool.Bool Arith.PeanoNat Lia ZArith.ZArith Sorting.Permutation.
-From stdpp Require Import numbers sorting.
+From stdpp Require Import numbers.
+From Trusted Require Import Sorting.
 From Submission Require Import Bits.
 Require Trusted.Spec.
 Import ListNotations.

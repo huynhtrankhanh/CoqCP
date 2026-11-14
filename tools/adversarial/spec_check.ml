@@ -55,8 +55,16 @@ let audit env opac allowed =
      implementations too. Parameters of signatures/functor arguments are
      requirements, not global axioms; sealed modules' actual bodies are
      available in Struct, and opac tracks their hidden dependencies. *)
-  let opaque_axioms = Coq_checklib.Mod_checking.constants_of_opaques env opac in
-  let axioms = ref (List.fold_left (fun acc constant -> Cset_env.add constant acc) Cset_env.empty opaque_axioms) in
+  let axioms = ref (Names.KerName.Set.fold (fun name acc ->
+    let constant = Constant.make1 name in
+    Cset.add constant acc)
+    opac.Coq_checklib.Mod_checking.undef Cset.empty) in
+  Names.KerName.Map.iter (fun name flags ->
+    if flags.Coq_checklib.CheckFlags.unguarded || flags.nonpositive ||
+       flags.typeintype || flags.badelims || flags.uip ||
+       (flags.indices_nomatter && not (List.mem (Names.KerName.to_string name) Ci_policy.indices_not_mattering))
+    then fail ("Unsafe typing flags: " ^ Names.KerName.to_string name))
+    opac.Coq_checklib.Mod_checking.unsafe_flags;
   let rec signature check_axioms mp = function
     | NoFunctor fields -> structure check_axioms mp fields
     | MoreFunctor (id, argument, body) ->
@@ -67,17 +75,9 @@ let audit env opac allowed =
     | SFBconst body ->
       let constant = Constant.make2 mp label in
       safe_flags (Constant.to_string constant) body.const_typing_flags;
-      if check_axioms && not (Declareops.constant_has_body body) &&
-         (match Environ.lookup_constant_opt constant env with None -> true | Some _ -> false) then begin
-        (* Global dependencies are already in [axioms]. The upstream helper
-           folds all constants, so query this hidden declaration alone: its
-           sealed-body dependencies still come from the same opaque table.
-           Adding it to the full environment would rescan every global for
-           each hidden functor declaration. No typechecking happens here. *)
-        let local = Environ.add_constant constant body Environ.empty_env in
-        let dependencies = Coq_checklib.Mod_checking.constants_of_opaques local opac in
-        List.iter (fun dependency -> axioms := Cset_env.add dependency !axioms) dependencies
-      end
+      (* The upstream checker collects hidden implementation assumptions in
+         its library-wide report, including unapplied functors. *)
+      ignore check_axioms
     | SFBmind body -> safe_inductive (ModPath.to_string mp ^ "." ^ Id.to_string label) body
     | SFBmodule body -> implementation check_axioms (ModPath.MPdot (mp, label)) body
     | SFBmodtype body -> signature false (ModPath.MPdot (mp, label)) (Mod_declarations.mod_type body)
@@ -93,7 +93,7 @@ let audit env opac allowed =
   let globals = Environ.Internal.View.view env in
   ModPath.Map.iter (fun mp body -> implementation true mp body) globals.env_modules;
   ModPath.Map.iter (fun mp body -> signature false mp (Mod_declarations.mod_type body)) globals.env_modtypes;
-  let names = Cset_env.fold (fun constant acc -> Constant.to_string constant :: acc) !axioms [] in
+  let names = Cset.fold (fun constant acc -> Constant.to_string constant :: acc) !axioms [] in
   List.iter (fun name ->
     if not (List.mem name allowed) then fail ("Unapproved axiom: " ^ name)) names;
   List.sort String.compare names
@@ -105,7 +105,6 @@ let () =
        Process limits still bound the heap. *)
     let gc = Gc.get () in
     Gc.set { gc with minor_heap_size = 2 * 1024 * 1024; space_overhead = 200 };
-    if Coq_config.version <> "9.3.0" then fail "This checker requires Rocq 9.3.0";
     if not Coq_config.bytecode_compiler then fail "This checker requires Rocq VM support";
     (* Match upstream rocqchk's VM mode: discard stored VM metadata and
        recompile bytecode from the declarations before checking them. *)
@@ -142,7 +141,7 @@ let () =
       |> Safe_typing.set_impredicative_set false |> Safe_typing.set_indices_matter false
       |> Safe_typing.set_VM true |> Safe_typing.set_native_compiler false
       |> Safe_typing.set_allow_sprop true in
-    let senv, opac = Check.recheck_library senv ~norec:[] ~admit:[]
+    let senv, opac = Check.recheck_library ~output_context:true senv ~norec:[] ~admit:[]
       ~check:(List.map logical_file check) in
     let env = Safe_typing.env_of_safe_env senv in
     let specification = Environ.lookup_modtype (field_path "Trusted.Spec" "SOLUTION") env in

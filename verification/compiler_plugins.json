@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "rocq_version": "9.3.0",
+  "rocq_version": "master",
   "plugins": [
     "rocq-runtime.plugins.ltac",
     "rocq-runtime.plugins.cc_core",

@@ -10,7 +10,7 @@ import time
 
 RUNTIME = "coqcp-gvisor"
 INSTALL = Path("/opt/rocq/gvisor")
-IMAGE = "coqcp-gvisor:rocq-9.3.0"
+IMAGE = "coqcp-gvisor:rocq-master"
 RUNTIME_ARGS = ["--platform=systrap", "--network=none", "--gvisor-marker-file=true"]
 
 

@@ -1,6 +1,9 @@
 name: Rocq Axiom Check
 
 on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
   push:
     branches:
       - main

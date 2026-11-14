@@ -9,8 +9,8 @@ The candidate controls its program, proof scripts, helper source files, notation
 and compiler diagnostics. It does not control the specification, axiom policy,
 toolchain, build commands, kernel gate, or namespace mappings used for acceptance.
 
-The sandbox is **gVisor + seccomp**, running native **Rocq 9.3.0**,
-**Rocq Stdlib 9.2.0**, and **stdpp 1.13.0**, pinned in
+The sandbox is **gVisor + seccomp**, running native **Rocq master**,
+compatible **Rocq Stdlib** and **stdpp**, as specified in
 [coqcp-toolchain.opam](../coqcp-toolchain.opam). The kernel and Rocq VM remain
 trusted. Native conversion, dynamic plugins, subprocesses from submitted code,
 and asynchronous proofs remain disabled. Approved tactic plugins are statically
@@ -33,7 +33,7 @@ sudo apt-get install ca-certificates curl git python3 build-essential ocaml opam
 sudo install -d -o "$(id -un)" -g "$(id -gn)" /opt/rocq
 bash tools/install-toolchain.sh
 bash tools/install-gvisor.sh
-export PATH=/opt/rocq/9.3.0/bin:$PATH
+export PATH=/opt/rocq/master/bin:$PATH
 rocq --version
 rocq makefile -f _CoqProject -o Makefile
 make -j2
@@ -47,7 +47,7 @@ It preserves other daemon settings and restarts Docker. Its `systrap` platform
 requires no KVM device or nested virtualization. Checking uses Docker on every
 invocation; the daemon and runtime are evaluator infrastructure. Run the checker
 as a non-root user. Inputs retain that user's ownership inside the sandbox.
-Only installed runtime directories from `/opt/rocq/9.3.0` are mounted; opam state,
+Only installed runtime directories from `/opt/rocq/master` are mounted; opam state,
 downloads, and build logs are excluded.
 
 gVisor always disables networking and filters socket operations.
@@ -231,6 +231,11 @@ flowchart LR
   A --> K
   K --> R[Acceptance report and artifact hashes]
 ```
+
+Before the contract gate runs, the sandbox invokes the standalone `rocqchk`
+on the frozen specification and every submitted library, recursively checking
+dependencies with VM conversion enabled. A failure rejects the submission;
+successful results are cached only with the full toolchain and inputs.
 
 The kernel gate is [spec_check.ml](../tools/adversarial/spec_check.ml). It links
 `rocq-runtime.checklib`, the same compiled-library loader and checker used by
@@ -455,7 +460,7 @@ closed.
 
 [The CI workflow](../.github/workflows/adversarial.yml) builds trusted project
 libraries, runs the regressions, checks the examples, and uploads the resulting
-bundles and certificates. Each Ubuntu 24.04 job installs the pinned gVisor
+bundles and certificates. Each CI job installs the pinned gVisor
 `systrap` runtime, restores the native proof toolchain, and builds project
 libraries. Proof execution requires the local Docker daemon but no KVM device.
 These CI regressions check the infrastructure in the proposed commit. A
@@ -478,12 +483,12 @@ build chain that records the relationship to the accepted artifact hashes.
 
 Useful upstream references:
 
-- [Rocq module signatures and subtyping](https://rocq-prover.org/doc/V9.3.0/refman/language/core/modules.html)
-- [Compiled-library checker](https://rocq-prover.org/doc/V9.3.0/refman/practical-tools/coq-commands.html#compiled-libraries-checker-rocqchk)
-- [Rocq 9.3.0 checker loader](https://github.com/rocq-prover/rocq/blob/V9.3.0/checker/checkLibrary.ml)
-- [Rocq 9.3.0 module subtyping interface](https://github.com/rocq-prover/rocq/blob/V9.3.0/kernel/subtyping.mli)
-- [Rocq 9.3.0 release](https://github.com/rocq-prover/rocq/releases/tag/V9.3.0)
-- [Stdlib 9.2.0 release](https://github.com/rocq-prover/stdlib/releases/tag/V9.2.0)
+- [Rocq module signatures and subtyping](https://rocq-prover.org/doc/master/refman/language/core/modules.html)
+- [Compiled-library checker](https://rocq-prover.org/doc/master/refman/practical-tools/coq-commands.html#compiled-libraries-checker-rocqchk)
+- [Rocq master checker loader](https://github.com/rocq-prover/rocq/blob/master/checker/checkLibrary.ml)
+- [Rocq master module subtyping interface](https://github.com/rocq-prover/rocq/blob/master/kernel/subtyping.mli)
+- [Rocq master](https://github.com/rocq-prover/rocq/tree/master)
+- [Rocq Stdlib](https://github.com/rocq-prover/stdlib)
 - [stdpp releases](https://gitlab.mpi-sws.org/iris/stdpp/-/tags)
 - [gVisor documentation](https://gvisor.dev/docs/)
 - [libseccomp](https://github.com/seccomp/libseccomp)

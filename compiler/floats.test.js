@@ -10,7 +10,7 @@ import { mkdtempSync, writeFileSync, rmSync } from 'fs'
 import { tmpdir } from 'os'
 import path from 'path'
 
-const rocq = process.env.ROCQ || '/opt/rocq/9.3.0/bin/rocq'
+const rocq = process.env.ROCQ || '/opt/rocq/master/bin/rocq'
 const parse = (source) => new CoqCPASTTransformer(source).transform()
 const compile = (sources) => {
   const modules = sortModules(sources.map(parse))

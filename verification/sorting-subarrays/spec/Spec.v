@@ -1,6 +1,6 @@
 From CoqCP Require Import Options Imperative DecimalEncoding.
 From Stdlib Require Import Lists.List ZArith.ZArith.
-From stdpp Require Import sorting.
+From Trusted Require Import Sorting.
 Import ListNotations.
 
 (* Public indices are one based, and both query endpoints are inclusive. *)

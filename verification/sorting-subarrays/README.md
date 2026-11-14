@@ -21,6 +21,9 @@ array and merge sorting the selected interval. It specifies the original
 one-based, inclusive indices and all problem bounds. `SOLUTION.correct`
 requires the submitted program's answer to equal the element at `K` after
 all these reference operations, for every valid input.
+The reference sort and its supporting proofs live in [spec/Sorting.v](spec/Sorting.v).
+They use the stdpp merge-sort algorithm without importing the standard sorting
+module's unrelated set-extensionality axiom.
 
 All algorithm definitions and proofs are submitted as source under
 [`candidate/`](candidate/):
@@ -101,7 +104,7 @@ candidate source only.
 Use the same manifest-driven runner as CI, with working Docker/gVisor access:
 
 ```sh
-export PATH=/opt/rocq/9.3.0/bin:$PATH
+export PATH=/opt/rocq/master/bin:$PATH
 python3 tools/adversarial/examples.py --only sorting-subarrays \
   --output .verification/sorting-adversarial
 ```

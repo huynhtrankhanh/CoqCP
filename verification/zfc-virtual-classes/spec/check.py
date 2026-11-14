@@ -12,7 +12,7 @@ import subprocess
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', required=True, type=Path)
-    parser.add_argument('--rocq', default='/opt/rocq/9.3.0/bin/rocq')
+    parser.add_argument('--rocq', default='/opt/rocq/master/bin/rocq')
     args = parser.parse_args()
     spec = Path(__file__).resolve().parent
     repo = spec.parents[2]

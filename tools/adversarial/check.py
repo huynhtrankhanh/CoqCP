@@ -22,7 +22,7 @@ REPO = Path(__file__).resolve().parents[2]
 TOOLS = Path(__file__).resolve().parent
 BIN = REPO / ".verification/bin"
 DEFAULT_CACHE = REPO / ".verification/cache"
-VERSION = "9.3.0"
+VERSION = "master"
 TOOLCHAIN = Path("/opt/rocq") / VERSION
 PLUGIN_POLICY = REPO / "verification/compiler_plugins.json"
 BINARIES = ["spec-check", "sandbox-exec", "compile-safe"]
@@ -152,9 +152,17 @@ def build():
 
 
 def build_fingerprints():
+    # The gate and compiler are statically linked: any rebuilt OCaml library
+    # must invalidate them even if the Rocq master commit did not change.
+    state = hashlib.sha256()
+    for path in sorted((TOOLCHAIN / "lib").rglob("*")):
+        if path.is_file() and path.suffix in {".cmxa", ".cmi", ".a"}:
+            state.update(encoded([str(path), digest(path)]))
     return dict({name: digest(TOOLS / name) for name in
                  ["spec_check.ml", "sandbox_exec.c", "compile_safe.ml", "compile_lockdown.c"]},
-                trusted_axioms=digest(POLICY_FILE), compiler_plugins=digest(PLUGIN_POLICY))
+                trusted_axioms=digest(POLICY_FILE), compiler_plugins=digest(PLUGIN_POLICY),
+                toolchain=digest(TOOLCHAIN / "rocq-master-commit"),
+                linked_libraries=state.hexdigest())
 
 
 def compiler_plugins():
@@ -181,17 +189,21 @@ def ensure_built():
 def toolchain():
     rocq = command("rocq")
     if not Path(rocq).is_relative_to(TOOLCHAIN):
-        raise Rejected(f"Use the pinned Rocq installation under {TOOLCHAIN}")
+        raise Rejected(f"Use the managed Rocq installation under {TOOLCHAIN}")
     probe_env = {"PATH": str(TOOLCHAIN / "bin") + ":/usr/bin:/bin", "HOME": "/tmp",
                  "OCAMLPATH": str(TOOLCHAIN / "lib"),
                  "OCAMLFIND_CONF": str(TOOLCHAIN / "lib/findlib.conf")}
     output = subprocess.check_output([rocq, "--version"], env=probe_env).decode()
-    if not re.search(r"version " + re.escape(VERSION) + r"\b", output):
-        raise Rejected(f"Supported Rocq version is {VERSION}; installed: {output.strip()}")
+    version = subprocess.check_output([rocq, "compile", "--print-version"],
+                                      env=probe_env).decode().split()[0]
+    commit_file = TOOLCHAIN / "rocq-master-commit"
+    commit = commit_file.read_text().strip()
+    if not re.fullmatch(r"[0-9a-f]{40}", commit):
+        raise Rejected("Missing or invalid Rocq master commit identity")
     coqlib = Path(subprocess.check_output([rocq, "compile", "-q", "-where"],
                      env=probe_env).decode().strip()).resolve()
     if not coqlib.is_relative_to(TOOLCHAIN / "lib"):
-        raise Rejected("Rocq libraries must belong to the pinned toolchain")
+        raise Rejected("Rocq libraries must belong to the managed toolchain")
     from gvisor_backend import identity, ocaml_stdlib
     sandbox_identity = identity(sys.modules[__name__])
     stdlib = ocaml_stdlib(sys.modules[__name__])
@@ -216,7 +228,7 @@ def toolchain():
         state.update(encoded([str(path), stat.S_IMODE(path.stat().st_mode)]))
     for path in sorted(set(files)):
         state.update(encoded([str(path), digest(path), stat.S_IMODE(path.stat().st_mode)]))
-    return {"version": VERSION, "rocq": rocq, "backend": "gvisor",
+    return {"version": version, "master_commit": commit, "rocq": rocq, "backend": "gvisor",
             "coqlib": str(coqlib), "fingerprint": state.hexdigest(),
             "sandbox_identity": sandbox_identity, "ocaml_stdlib": str(stdlib)}
 
@@ -274,11 +286,11 @@ def compile_uncached(inputs, sources, bundle, sandbox):
     return artifacts
 
 
-def validate_kernel_report(report, allowed, expected_status):
+def validate_kernel_report(report, allowed, expected_status, expected_version=VERSION):
     if (not isinstance(report, dict)
             or set(report) != {"status", "rocq_version", "axioms"}
             or report.get("status") != expected_status
-            or report.get("rocq_version") != VERSION
+            or report.get("rocq_version") != expected_version
             or not isinstance(report.get("axioms"), list)
             or any(not isinstance(name, str) for name in report["axioms"])
             or report["axioms"] != sorted(set(report["axioms"]))
@@ -309,8 +321,18 @@ def kernel_check(bundle, artifacts, runtime, sandbox, allowed, *, spec_only=Fals
     expected_status = "spec-checked" if spec_only else "accepted"
 
     def run():
+        # Recheck every submitted library and its dependencies with the upstream
+        # standalone checker as well as the contract/policy gate.
+        libraries = ["Trusted.Spec"]
+        if not spec_only:
+            libraries += ["Submission." + path.stem for path in sorted(artifacts.glob("*.vo"))]
+        chk = [str(Path(runtime["rocq"]).with_name("rocqchk")), "-silent", "-bytecode-compiler", "yes",
+               "-coqlib", coqlib]
+        for physical, logical in roots:
+            chk += ["-Q", physical, logical]
+        sandbox.run(chk + libraries, mounts)
         report = decoded(sandbox.run(args, mounts), "kernel checker response")
-        return validate_kernel_report(report, set(allowed), expected_status)
+        return validate_kernel_report(report, set(allowed), expected_status, runtime.get("version", VERSION))
 
     cache = getattr(sandbox, "cache", None)
     if cache is None:
@@ -318,7 +340,7 @@ def kernel_check(bundle, artifacts, runtime, sandbox, allowed, *, spec_only=Fals
     request = {"runtime": runtime, "limits": dict(sandbox.limits), "argv": args,
                "mounts": {target: snapshot(sys.modules[__name__], host) for host, target in mounts}}
     with cache.lock("kernel", request) as key:
-        report = cache.checked(key, set(allowed), expected_status)
+        report = cache.checked(key, set(allowed), expected_status, runtime.get("version", VERSION))
         if report is not None:
             return report
         report = run()
@@ -433,7 +455,7 @@ def validate_bundle(bundle, spec_id, runtime):
     if (manifest["specification"] != "Trusted.Spec.SOLUTION"
             or manifest["implementation"] != "Submission.Candidate.Implementation"):
         raise Rejected("Invalid specification manifest interface")
-    validate_kernel_report(manifest["baseline"], set(allowed), "spec-checked")
+    validate_kernel_report(manifest["baseline"], set(allowed), "spec-checked", runtime["version"])
     for path in bundle.rglob("*"):
         if path.is_symlink() or not (path.is_dir() or path.is_file()):
             raise Rejected("Specification bundle contains a symlink or special file")

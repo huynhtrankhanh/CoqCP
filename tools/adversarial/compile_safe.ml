@@ -6,7 +6,6 @@ external lockdown : unit -> unit = "coqcp_compile_lockdown"
 let denied what = CErrors.user_err Pp.(str ("Disabled in the submission compiler: " ^ what))
 
 let () =
-  if Coq_config.version <> "9.3.0" then failwith "This compiler requires Rocq 9.3.0";
   Mltop.set_top {
     load_plugin = (fun plugin -> denied ("dynamic ML plugin " ^ Mltop.PluginSpec.to_package plugin));
     load_module = (fun _ -> denied "native ML module loading");

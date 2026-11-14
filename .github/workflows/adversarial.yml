@@ -1,6 +1,9 @@
 name: Adversarial Proof Checking
 
 on:
+  schedule:
+    - cron: '17 4 * * *'
+  workflow_dispatch:
   push:
     branches: [main]
     paths:

@@ -8,7 +8,7 @@ import subprocess
 import tempfile
 
 REPO = Path(__file__).resolve().parents[2]
-IMAGE = "coqcp-gvisor:rocq-9.3.0"
+IMAGE = "coqcp-gvisor:rocq-master"
 DOCKER = ["docker", "--host=unix:///var/run/docker.sock"]
 
 

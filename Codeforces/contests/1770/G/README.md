@@ -87,7 +87,7 @@ The recorded validation includes the frozen bundle ID and proof-source hashes.
 Use the pinned toolchain and compile the registered project libraries first:
 
 ```sh
-export PATH=/opt/rocq/9.3.0/bin:$PATH
+export PATH=/opt/rocq/master/bin:$PATH
 npm --prefix compiler run build
 node compiler/dist/cli '?json' Codeforces/contests/1770/G/KoxiaAndBracket.module.json
 rocq makefile -f _CoqProject -o Makefile

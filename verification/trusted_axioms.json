@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "rocq_version": "9.3.0",
+  "rocq_version": "master",
   "axioms": [
     "Stdlib.Logic.FunctionalExtensionality.functional_extensionality_dep"
   ],

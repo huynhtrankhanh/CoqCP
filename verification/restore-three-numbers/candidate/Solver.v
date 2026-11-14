@@ -1,9 +1,7 @@
 From CoqCP Require Import Options.
 Require Export Trusted.Spec.
-From Stdlib Require Import Relations.
 From stdpp Require Import numbers.
 From stdpp Require Import list.
-From stdpp Require Import sorting.
 
 Open Scope Z_scope.
 
@@ -15,22 +13,6 @@ Record input_list : Type := {
     inner_c : Z;
     constraints : valid_input_list value inner_a inner_b inner_c
 }.
-
-(* Define general properties (move to shared file?)*)
-Lemma z_permutation_by_merge_sort:
-  forall (x y : list Z), (merge_sort Z.le x = merge_sort Z.le y) -> Permutation x y.
-Proof.
-  intros x y H.
-  assert (Hx: Permutation (merge_sort Z.le x) x). {
-    apply merge_sort_Permutation.
-  }
-  assert (Hy: Permutation (merge_sort Z.le y) y). {
-    apply merge_sort_Permutation.
-  }
-  rewrite <- H in Hy.
-  apply Permutation_sym in Hx.
-  apply (Permutation_trans Hx Hy).
-Qed.
 
 Lemma eq_sum_for_permutation (l1 l2 : list Z) :
   Permutation l1 l2 -> foldr Z.add 0 l1 = foldr Z.add 0 l2.
@@ -66,8 +48,7 @@ Ltac valid_input_list_tactic :=
     repeat (destruct H as [H1 | H]; try lia);
     contradiction
   | repeat (split; try lia);
-    apply z_permutation_by_merge_sort;
-    reflexivity
+    apply (bool_decide_unpack _); vm_compute; reflexivity
   ].
 
 (* Example 1 *)
