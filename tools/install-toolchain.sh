@@ -32,8 +32,11 @@ for task_package in rocq-core rocq-runtime; do
     opam pin remove "$task_package" --switch="$task_switch" --no-action --yes
   fi
 done
-# The development repository can lag master. Override only its source URL;
-# retain upstream's package metadata and follow the branch, without opam pins.
+# The development repository can lag master. Resolve master once and override
+# only the source URL to that exact commit; retain upstream's package metadata
+# without opam pins and without racing concurrent upstream merges.
+task_commit=$(git ls-remote https://github.com/rocq-prover/rocq.git refs/heads/master | cut -f1)
+[[ "$task_commit" =~ ^[0-9a-f]{40}$ ]]
 task_overlay="$OPAMROOT/rocq-master-overlay"
 mkdir -p "$task_overlay/packages"
 printf 'opam-version: "2.0"\n' > "$task_overlay/repo"
@@ -41,11 +44,12 @@ for task_package in rocq-runtime rocq-core; do
   task_dir="$task_overlay/packages/$task_package/$task_package.dev"
   mkdir -p "$task_dir"
   opam show "$task_package.dev" --switch="$task_switch" --raw > "$task_dir/opam"
-  python3 - "$task_dir/opam" <<'PY'
+  python3 - "$task_dir/opam" "$task_commit" <<'PY'
 import pathlib, re, sys
 path = pathlib.Path(sys.argv[1])
+commit = sys.argv[2]
 content = path.read_text()
-content, count = re.subn(r'url\s*\{[^}]*\}', 'url { src: "git+https://github.com/rocq-prover/rocq.git#master" }', content, count=1, flags=re.S)
+content, count = re.subn(r'url\s*\{[^}]*\}', f'url {{ src: "git+https://github.com/rocq-prover/rocq.git#{commit}" }}', content, count=1, flags=re.S)
 if count != 1:
     raise SystemExit('Upstream package has no source URL')
 path.write_text(content)
@@ -56,18 +60,15 @@ if ! opam repository list --all --short | grep -Fxq rocq-master-overlay; then
 fi
 opam repository set-repos rocq-master-overlay rocq-core-dev rocq-extra-dev rocq-released default --switch="$task_switch" --yes
 opam update rocq-master-overlay --switch="$task_switch"
-task_commit=$(git ls-remote https://github.com/rocq-prover/rocq.git refs/heads/master | cut -f1)
-[[ "$task_commit" =~ ^[0-9a-f]{40}$ ]]
 # A failed or interrupted update must never leave a valid-looking identity.
 rm -f "$OPAMROOT/$task_switch/rocq-master-commit"
 export OCAMLPATH="$OPAMROOT/$task_switch/lib"
 opam install "$task_repo/coqcp-toolchain.opam" --switch="$task_switch" --deps-only --yes --jobs=4
-opam reinstall rocq-runtime.dev rocq-core.dev --switch="$task_switch" --yes --jobs=4
-task_after=$(git ls-remote https://github.com/rocq-prover/rocq.git refs/heads/master | cut -f1)
+opam upgrade --switch="$task_switch" --yes --jobs=4
 for task_package in rocq-runtime rocq-core; do
   task_installed=$(git -C "$OPAMROOT/$task_switch/.opam-switch/sources/$task_package.dev" rev-parse HEAD)
-  if [[ "$task_after" != "$task_commit" || "$task_installed" != "$task_commit" ]]; then
-    echo 'Rocq master or the installed source changed during installation; rerun the installer.' >&2
+  if [[ "$task_installed" != "$task_commit" ]]; then
+    echo "Installed $task_package.dev source ($task_installed) does not match resolved Rocq master commit ($task_commit)." >&2
     exit 1
   fi
 done
